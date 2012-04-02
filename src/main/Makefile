@@ -65,11 +65,11 @@ SRC2	=\
 	${DR2}/Neut_Heating.mod.f \
 	${DR2}/Photoel-Freqs.f \
 	${DR2}/RSDENA_EXB.f \
-	${DR2}/RSJACA.f \
+	${DR2}/RSJACA.mod.f \
 	${DR2}/RSLPSD.mod.f \
 	${DR2}/RSLPST.f \
 	${DR2}/RSPE2B.f \
-	${DR2}/RSPRIM.f \
+	${DR2}/RSPRIM.mod.f \
 	${DR2}/RSTEMC_EXB.f \
 	${DR2}/Rates.f \
 	${DR2}/FLIP_GRID.f
@@ -82,11 +82,12 @@ SRC3	=\
 	${DR3}/flux_tube_solver.${VERSION}.f90 \
 	${DR3}/perpendicular_transport.f90 \
 	${DR3}/stepback_mag.f90 \
-	${DR3}/interpolate_flux_tube.v15.f90 \
+	${DR3}/interpolate_flux_tube.v16.f90 \
 	${DR3}/io_plasma_bin.f90 \
 	${DR3}/io_plasma_bin_readinit.f90 \
 	${DR3}/activate_perp_transport.f90 \
-	${DR3}/dbg_estimate_trans_error.f90
+	${DR3}/dbg_estimate_trans_error.f90 \
+	${DR3}/read_vexb.f90
 # DR6: eldyn
 SRC6	=\
 	${DR6}/efield.f \
@@ -97,6 +98,7 @@ SRC6	=\
 	${DR6}/supim_exb.f
 # DR4: main driver
 SRC4	=\
+	${DR4}/get_flip_grid.f90 \
 	${DR4}/allocate_arrays.f90 \
 	${DR4}/output_plasma_grid.f90 \
 	${DR4}/driver_ipe.${VERSION}.glb.eld.${TEST}.f90
@@ -176,7 +178,7 @@ $(FINAL_OBJS): $(HEADS) Makefile
 
 ### useful commands ###
 
-clean:
+cln:
 	$(RM) $(PACKAGE) $(FINAL_OBJS)
 	$(RM) core *.mod
 
