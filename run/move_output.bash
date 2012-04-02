@@ -17,11 +17,11 @@ mv  ../plasma0[0-9]*  ./
 mv  ../plasma1[0-9]*  ./
 mv  ../fort.*            ./
 mv  ../logfile*.log  ./
-mv  ../FLIP*log  ./
-mv  ../ut_rec.log ./
+mv  ../FLIP_ERR  ./
+mv  ../ut_rec ./
 mv  ../IPE.inp  ./
-mv  ../ipe*.log ./
 mv  ../error ./
 mv  ../output ./
+mv  ../ipe*.log ./
 #mv  ../STDIN.*  ./
 #mv  ../gmon.out  ./
