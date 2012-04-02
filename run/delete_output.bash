@@ -16,6 +16,7 @@
 HOME_DIR=/lfs0/projects/idea/maruyama/sandbox/ipe/run
 rm  plasma0[0-9]*  plasma1[0-7]*
 rm  fort.*
-rm  logfile*.log  FLIP*log  ut_rec.log
+rm  logfile*.log  FLIP_*  ut_rec*
+rm  error output
 rm  gmon.out
 #######rm  r.ipe.*.e*  r.ipe.*.o* r.ipe.*.pe*  r.ipe.*.po* 
