@@ -34,6 +34,8 @@
       INTEGER (KIND=int_prec), PARAMETER, PUBLIC :: lun_max2=lun_min2+ISPEC+3-1
       INTEGER (KIND=int_prec), DIMENSION(lun_min2:lun_max2),PUBLIC,TARGET :: LUN_PLASMA2 !READ
       INTEGER (KIND=int_prec), PUBLIC :: record_number_plasma
+!nm20120311
+      INTEGER (KIND=int_prec), PUBLIC :: luntmp1,luntmp2,luntmp3
       PRIVATE
       PUBLIC :: open_output_files,output,close_files
 
@@ -53,13 +55,15 @@
         WRITE( UNIT=LUN_LOG, FMT=*) string_tmp
 
 !--- unit=8
-        filename ='FLIP_ERROR_FLAG_'//TRIM(string_tmp)//'.log'
+!nm20120303        filename ='FLIP_ERROR_FLAG_'//TRIM(string_tmp)//'.log'
+        filename ='FLIP_ERR'
         FORM_dum ='formatted  ' 
         STATUS_dum ='unknown'
         CALL open_file ( filename, PRUNIT, FORM_dum, STATUS_dum )  
 
 !--- unit=9
-        filename ='logfile'//TRIM(string_tmp)//'.log'
+!nm20120303        filename ='logfile'//TRIM(string_tmp)//'.log'
+        filename ='input_par'
         FORM_dum ='formatted  ' 
         STATUS_dum ='unknown'
         CALL open_file ( filename, LUN_LOG, FORM_dum, STATUS_dum )  
@@ -105,7 +109,8 @@ END IF !( sw_output_plasma_grid ) THEN
 !nm20110923        CALL open_file ( filename, LUN_PLASMA2, FORM_dum, STATUS_dum )
 
         LUN_UT=lun_min1-1 !=99
-        filename ='ut_rec.log'
+!nm20120303        filename ='ut_rec.log'
+        filename ='ut_rec'
         FORM_dum ='formatted  ' 
         STATUS_dum ='unknown'
         CALL open_file ( filename, LUN_UT, FORM_dum, STATUS_dum ) 
@@ -135,7 +140,8 @@ END IF !( sw_output_plasma_grid ) THEN
 !          CALL open_file ( filename, LUN_PLASMA12, FORM_dum, STATUS_dum )
 
           LUN_UT2=lun_min2-1 !=199
-          filename ='startup_ut_rec.log'
+!nm20120303          filename ='startup_ut_rec.log'
+          filename ='stup_ut_rec'
           FORM_dum ='formatted  ' 
           STATUS_dum ='old'
           CALL open_file ( filename, LUN_UT2, FORM_dum, STATUS_dum )
@@ -152,7 +158,8 @@ END IF !( sw_output_plasma_grid ) THEN
              ELSE IF ( (i-lun_min2) < 100 ) THEN
                 WRITE( string_tmp, FMT="(i2)" )(i-lun_min2)
              END IF
-             filename ='startup'//TRIM(string_tmp)
+!nm20120303             filename ='startup'//TRIM(string_tmp)
+             filename ='stup'//TRIM(string_tmp)
              !if(sw_debug) 
              print *,(i-lun_min2),'filename',filename
              CALL open_file ( filename, LUN_PLASMA2(i), FORM_dum, STATUS_dum )
