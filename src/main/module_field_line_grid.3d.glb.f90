@@ -77,7 +77,7 @@
 ! initialise plasma grids
         SUBROUTINE init_plasma_grid ( )
         USE module_physical_constants,ONLY: earth_radius, pi, G0,zero
-        USE module_input_parameters,ONLY: sw_debug,lpstrt,lpstop,mpstrt,mpstop
+        USE module_input_parameters,ONLY: sw_debug,lpstrt,lpstop,mpstrt,mpstop,sw_grid, fac_BM
         IMPLICIT NONE
 
         INTEGER (KIND=int_prec) :: i, mp,lp
@@ -85,6 +85,7 @@
         INTEGER (KIND=int_prec), parameter :: sw_sinI=0  !0:flip; 1:APEX
         INTEGER (KIND=int_prec), POINTER :: in,is
         REAL(KIND=real_prec), DIMENSION(NPTS2D) ::  r_meter2D     !.. distance from the center of the Earth[meter]
+        INTEGER (KIND=int_prec) :: midpoint
 !---------
 ! array initialization
       plasma_grid_Z(:)     = zero
@@ -111,11 +112,17 @@
         IN => JMIN_IN(lp)
         IS => JMAX_IS(lp)
 
+
         IF (mp==NMP0)  CALL Get_Pvalue_Dipole ( r_meter2D(IN), plasma_grid_GL(IN), Pvalue(lp) )
 
 !debug write
 !nm20120123: IF ( sw_debug ) THEN
 IF ( mpstrt<=mp.AND.mp<=mpstop .AND. lpstrt<=lp.AND.lp<=lpstop) THEN
+
+!dbg20120305
+midpoint = IN + ( IS - IN )/2
+print *,'midpoint',midpoint,plasma_grid_Z(midpoint)
+
 print "('lp=',i6,'  IN=',i6,'  IS=',i6,'  NPTS=',i6)", lp,IN,IS,(IS-IN+1)
 print "('r [m]      =',2E12.4)", r_meter2D(in),r_meter2D(is)
 print "('G-LAT [deg]=',2f10.4)",(90.-plasma_grid_3d(in,mp)%GCOLAT*180./pi),(90.-plasma_grid_3d(is,mp)%GCOLAT*180./pi)
@@ -136,6 +143,7 @@ print "('Pvalue     =',F10.4)", Pvalue(lp)
 END IF !( sw_debug ) THEN
 
 
+IF ( sw_grid==0 ) THEN  !APEX
 ! assuming Newtonian gravity: G0 is gravity at the sea level (z=0) 
 !NOTE: positive in NORTHern hemisphere; negative in SOUTHern hemisphere
          flux_tube: DO i=IN,IS
@@ -158,9 +166,20 @@ IF ( sw_debug )  then
     print *,'sinI: flip'
   else if ( sw_sinI==1 ) then
     print *, 'sinI: APEX'
-  endif
+  endif !  if ( sw_sinI==0 ) then
   print "('GRavity[m2 s-1]=',4E12.4)",plasma_grid_3d(in:in+2,mp)%GR,plasma_grid_3d(is,mp)%GR
-END IF
+END IF !( sw_debug )  then
+
+!nm20120304: introducing the flip grid
+!reminder:
+!(1) neutral wind should be calculated using sinI from flip_grid: "SINDIP"
+ELSE IF ( sw_grid==1 ) THEN  !FLIP
+  IF ( mpstrt<=mp.AND.mp<=mpstop .AND. lpstrt<=lp.AND.lp<=lpstop) THEN
+
+   print *,'calling get_FLIP_grid',mp,lp
+   CALL get_flip_grid (mp,lp)
+  ENDIF
+END IF !( sw_grid==0 ) THEN  !APEX
 
 !debug20110314
 if( sw_debug .and. mp==1 .and. lp>=lpstrt .and. lp<=lpstop ) then
@@ -179,6 +198,8 @@ endif !(mp==1) then
      END DO
 if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
 
+!dbg20120313
+ plasma_grid_3d(1:NPTS2D,mpstrt:mpstop)%BM = plasma_grid_3d(1:NPTS2D,mpstrt:mpstop)%BM * fac_BM
 
         END SUBROUTINE init_plasma_grid
 !---------------------------
