@@ -1,0 +1,51 @@
+###! DATE: 08 September, 2011
+###!********************************************
+###!***      Copyright 2011 NAOMI MARUYAMA   ***
+###!***      ALL RIGHTS RESERVED             ***
+###!********************************************
+###! LICENSE AGREEMENT Ionosphere Plasmasphere Electrodynamics (IPE) model
+###! DEVELOPER: Dr. Naomi Maruyama
+###! CONTACT INFORMATION:
+###! E-MAIL : Naomi.Maruyama@noaa.gov
+###! PHONE  : 303-497-4857
+###! ADDRESS: 325 Broadway, Boulder, CO 80305
+###!--------------------------------------------  
+# Make settings and options for compiler lf95(linux64 L8.00) on naomilx.swpc.noaa.gov
+FORTRAN_COMPILER=ifort 
+# Locations:
+HOME_dev=~/ipe/source
+
+# Compiler:
+### command and flags ###
+# uncomment when debugging
+# -pg: profile
+DEBUG1=#####-traceback -check all -ftrapuv #####-fpe0
+DEBUG =#####-g -pg
+OPT_FLAG=-O3
+PARALLEL_FLAG=####-openmp
+MEM_FLAG=###########-heap-arrays 10
+
+# common (*.o)
+###LD	= $(FORTRAN_COMPILER)
+LDFLAGS	= ${OPT_FLAG} $(DEBUG) ${PARALLEL_FLAG} ${MEM_FLAG}  
+LDLIBS	= -lm   #######-L$(NETCDF_DIR)/lib -lnetcdf
+
+# flip: Fortran77 (*.f .FOR .for)
+FC	= $(FORTRAN_COMPILER)
+FFLAGS	=${OPT_FLAG} $(DEBUG) ${PARALLEL_FLAG} ${MEM_FLAG}  
+
+# eldyn: Fortran77 (*.f .FOR .for)
+FFLAGS_e=${OPT_FLAG} $(DEBUG) ${PARALLEL_FLAG} ${MEM_FLAG} 
+
+# Fortran90 (*.f90)
+FFLAGS90=${OPT_FLAG} $(DEBUG) ${PARALLEL_FLAG} ${MEM_FLAG} 
+
+# etc
+SHELL	= /bin/sh
+RM	= rm -f
+PROF	= gprof
+#
+
+MOD_PATH=-module  
+INCLUDE_PATH=-I
+

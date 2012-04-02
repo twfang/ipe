@@ -1,0 +1,7 @@
+#SHELL=/bin/bash
+OBJ=$(OBJ4)
+FC90=$(FC90)
+FFLAGS90=$(FFLAG4) 
+LFLAGS=$(LFLAG4)
+HOME_dev=$(HOME_dev)
+include  $(HOME_dev)/Makefile.original
