@@ -1,0 +1,47 @@
+;20110729: temporarily comment out the plasma output (heating rate
+;paarameters) 
+pro read_file,n_read,LUN, JMIN_IN,JMAX_IS,Z_km,mlat_deg, UT_hr,LT_hr, XIONN_m3,XIONV_ms1,TE_TI_k,NHEAT_mks,hrate_mks,sw_debug
+
+     mp=0L
+
+if sw_debug eq 1 then  print,'size jmin',SIZE(jmin_in)
+if sw_debug eq 1 then  print,'size jmax',SIZE(jmax_is)
+
+   GL_rad  = mlat_deg
+   Z_meter = Z_km
+
+if sw_debug eq 1 then  print,'size z_meter',SIZE(Z_meter)
+if sw_debug eq 1 then  print,'size gl_rad ',SIZE(gl_rad)
+
+   IF ( n_read eq 0 ) THEN BEGIN
+; read plasma0
+     readu, LUN[0], JMIN_IN,JMAX_IS,Z_meter,GL_rad
+     mlat_deg = ( !PI*0.50 - GL_rad ) * 180.0 / !PI
+     Z_km     = Z_meter * 1.0E-3
+
+if sw_debug eq 1 then  print, 'plasma0: IN=',JMIN_IN[mp,0],' IS=',JMAX_IS[mp,0],Z_km[mp,0],mlat_deg[mp,0]
+
+   ENDIF
+
+if sw_debug eq 1 then  print,'size lt_hr',SIZE(lt_hr)
+
+UT_sec=0L
+; read plasma1
+     readu, LUN[1], UT_sec,LT_hr
+ UT_hr = UT_sec /3600.
+print,'n_read=',n_read,' UT_hr=',UT_hr,' LT_hr=',LT_hr[0,0]
+
+     readu, LUN[1], XIONN_m3 
+if sw_debug eq 1 then  print, 'XIONN_m3=',XIONN_m3[0,0,0]
+
+     readu, LUN[1], XIONV_ms1 
+if sw_debug eq 1 then  print, 'XIONV_ms1=',XIONV_ms1[0,0,0]
+
+     readu, LUN[1], TE_TI_k
+if sw_debug eq 1 then  print, 'TE_TI_k=',TE_TI_k[0,0,0]
+
+;t     readu, LUN[1], NHEAT_mks, hrate_mks
+;t if sw_debug eq 1 then  print, 'NHEAT_mks=',NHEAT_mks[0,0]
+
+
+END ;PRO read_file

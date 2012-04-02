@@ -1,0 +1,101 @@
+;x axis: mag lat [de]
+;y axis: z_km(ht) [km]
+pro plot_contour_3d
+plot_type=1 ;densities
+mlat_title='60'
+plot_UT =16.97+12. ;64.97 ;17.06;40.97 ;52.97 ;
+title_hemi='SH'
+sw_debug=1
+plot_DIR='figures/'
+n_file=1L
+NMP=2L
+NLP=209L
+
+;high resolution
+;if ( mlat_title eq '10' ) then  FLDIM =  265L  else $
+;if ( mlat_title eq '35' ) then  FLDIM = 1357L  else $
+;if ( mlat_title eq '60' ) then  FLDIM = 2141L  else $
+;if ( mlat_title ge '85' ) then  
+FLDIM = 4501L
+FLDIMphil=401
+NPTS2D=165717L
+
+   LUN  = INTARR(n_file)
+;;;  UT_hr = fltarr(n_file)
+  LT_hr = fltarr(  NMP,NLP)
+plot_z = dblarr(4, NMP,NPTS2D)
+
+
+
+mp_plot=0L
+IN2D=lonarr(NLP)
+IS2D=lonarr(NLP)
+z_km    =dblarr(NPTS2D)
+mlat_deg=dblarr(NPTS2D)
+   read_grid_ascii_3d , mp_plot,in2d,is2d,z_km,mlat_deg
+
+;debug
+lp=138-1
+print,'lp',lp,' IN=',in2d[lp]-1,' IS=',is2d[lp]-1
+for j=in2d[lp]-1,is2d[lp]-1  do print, j,z_km[j]
+STOP
+
+
+; temporary array just for reading
+ UT_hr0 = 0.0
+ LT_hr0 = fltarr(NMP,NLP)
+     Z0 = dblarr(NMP,NPTS2D)
+   TNX0 = dblarr(NMP,NPTS2D)
+    UN0 = dblarr(NMP,NPTS2D)
+   NNO0 = dblarr(NMP,NPTS2D)
+ PHION0 = dblarr(NMP,NPTS2D)
+   EHT0 = dblarr(3,NMP,NPTS2D)   
+    TI0 = dblarr(3,NMP,NPTS2D)
+     N0 = dblarr(4,NMP,NPTS2D)
+
+;dbg
+glon=fltarr(NMP)
+glon=[ 283.5511, 102.7601 ]
+
+;opening files
+   open_fort168, n_file,LUN,sw_debug,title_hemi
+
+   while ( EOF(LUN[0]) eq 0 ) do begin
+
+     for i = 0, n_file-1  do begin
+
+         if ( i eq 0 ) then title_hemi='NH'  else $ ;168
+         if ( i eq 1 ) then title_hemi='SH'         ;171
+
+         read_fort168_3d, LUN[i],UT_hr0,LT_hr0,Z0,TNX0,UN0,NNO0,EHT0,TI0,N0,PHION0,in2d,is2d,title_hemi,sw_debug       
+     endfor ;i = 0, n_file-1 do begin
+
+
+;;;       UT_hr[ i                              ] = UT_hr0
+       LT_hr[     0:NMP-1,0:NLP-1            ] = LT_hr0[0:NMP-1,0:NLP-1          ]
+
+;dbg: temporary solution
+for m=0,1 do begin
+  LT_hr[ m,0] = UT_hr0 + glon[m]/15.
+  if (LT_hr[ m,0:NLP-1] ge 24.) then   LT_hr[ m,0:NLP-1] = LT_hr[ m,0:NLP-1] mod 24.
+endfor
+;dbg
+
+       plot_z[0:3, 0:NMP-1,0:NPTS2D-1] = N0[0:3,0:NMP-1,0:NPTS2D-1]
+
+
+
+if ( UT_hr0 ge plot_UT ) then begin
+   
+   contour_plot_2d,  mp_plot,nlp $ 
+, in2d,is2d,z_km,mlat_deg  $             ;input 
+, plot_z   $ ;input
+, uthr
+
+endif ;( UT_hr0 eq plot_UT ) then begin
+
+   endwhile                            ; ( EOF(LUN168) ne 0 ) then begin
+
+   for i = 0, n_file-1  do    FREE_LUN, LUN[i]
+
+end ;pro plot_contour_3d

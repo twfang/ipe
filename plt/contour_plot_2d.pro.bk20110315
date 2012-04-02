@@ -1,0 +1,332 @@
+;!!!!UNDERCONSTRUCTION!!!
+;20110203: copied from /home/naomi/sandbox/SUPIM/plot_idl/contour_result.pro
+
+ PRO  contour_plot_2d,  mp   $
+, in2d,is2d,z_km,mlat_deg  $             ;input 
+, plot_z   $ ;input
+, uthr
+
+;sw_plot_den=1L
+
+size_result = SIZE(in2d)
+NLP=size_result[2]
+print, 'NLP=', NLP
+size_result = SIZE(z_km)
+NPTS2D=size_result[1]
+print, 'NPTS2D=', NPTS2D
+
+
+
+
+N_LDCT=33
+lp_strt=8L
+lp_stop=9L ;NLP-1-1 ;138L
+VarType_min=0L
+VarType_max=0L ;NPAR-1
+VarType_step=1L
+
+if ( uthr le 0.00 ) then $
+  time_string='0'+STRTRIM(STRING( uthr-24.0, FORMAT='(F7.4)'),1)+'UT' $
+else if ( uthr le 9.00 ) then $
+  time_string='0'+STRTRIM(STRING( uthr, FORMAT='(F7.4)'),1)+'UT'  $
+else $
+  time_string=STRTRIM(STRING( uthr, FORMAT='(F7.4)'),1)+'UT' 
+
+;042004:
+;if ( elhr le 0.00 ) then $
+FileID=time_string+'_mp'+STRTRIM(STRING( mp, FORMAT='(i3)'),1)+'_20110314'
+
+VarTitle=[ 'Ne','Te','No+','To+','Vo+','NH+','TH+','VH+','NHe+','THe+','VHe+' ]
+
+VarUnit= $
+['[log cm-3]','[K]','[log cm-3]','[K]','[m/s]','[log cm-3]','[K]','[m/s]','[log cm-3]','[K]','[m/s]']
+X_Title='MAGNETIC LATITUDE [deg.]'
+Y_Title='ALTITUDE [km]'
+
+;RE=6.3712E+03  ;[km]
+
+
+lp=0L
+ihem=0L   ;0:north; 1:south
+istrt=0L
+istop=-1L
+istep=0L
+X=dblarr(4)
+Y=dblarr(4)
+
+;          Ne   ; Te     ; No+  ; To+   ;  Vo+    ; NH+   ; TH+    ;  VH+
+ARY_min0=[ $
+;112305:           0.9   , 0.16E+3 $
+           0.10  , 0.20E+3 $
+        ,  0.10  , 0.20E+3, -0.20E+3 $ ;O+
+;112305:        ,  0.10  , 0.16E+3, -0.70E+4 $ ;H+
+        ,  0.10  , 0.20E+3, -0.70E+4 $ ;H+
+;112305:        ,  0.10  , 0.16E+3, -0.70E+4 ] ;He+
+        ,  0.10  , 0.20E+3, -0.70E+4 ] ;He+
+
+ARY_max0=[ $
+;112305:           5.7   , 1.66E+4 $
+           4.9   , 9.50E+3 $
+        ,  4.9   , 7.00E+3,  0.20E+3 $ ;O+
+;112305:        ,  5.7   , 1.66E+4,  0.70E+4 $ ;H+
+        ,  4.9   , 7.00E+3,  0.70E+4 $ ;H+
+;112305:        ,  5.7   , 1.66E+4,  0.70E+4 ] ;He+
+        ,  4.9   , 7.00E+3,  0.70E+4 ] ;He+
+
+col_min=0.   +0.3
+col_max=256. -0.3
+N_LVLs=100  ;intarr(2)       ; number of contour levels
+;*** Load color table
+LOADCT, N_LDCT
+
+
+
+; window size
+X_SIZE=27. ;9.7
+Y_SIZE=21.
+X0= 5.0 ;[cm]
+Y0= 7.0 ;
+dX= 19. ;20.7
+dY= 11. ;14.0
+
+;color bar
+dX1=  7.5
+dY1=  0.4
+X1=X0+dX-dx1+1.5    ;7.5   ;8.   ;18.1
+Y1=Y0+dY+1.5 ;-0.5     ;+ 1.6   ;1.3   ;18.8
+
+xx=dblarr(npts2D)
+yy=dblarr(npts2D)
+;; plot GLAT v.s. ALT Flux-Tube Distribution
+for lp=0,NLP-1 do begin   ;ifl-->lp
+
+  in = IN2D[mp,lp] -1L
+  is = IS2D[mp,lp] -1L
+;  print, 'mp',mp,' lp',lp,' in',in,' is',is
+
+  istrt=istop +1
+  istop=istrt+(is-in) ;istrt +(iseb(ifl)-ineb(ifl))
+
+;  print,'istrt=',istrt,' istop=',istop
+
+; set up values to be plotted
+;!!!!UNDERCONSTRUCTION!!!
+  xx(istrt:istop) = mlat_deg(in:is,mp)  ;glatd(ineb(ifl):iseb(ifl), ifl)
+  yy(istrt:istop) = z_km(in:is,mp)  ;gpz(  ineb(ifl):iseb(ifl), ifl)
+endfor  ;lp=lp_strt,lp_stop do begin
+
+; plot range
+gLATmax=88.1238
+gLATmin= -gLATmax
+HTmin=  80.  ;min(yy)   ;75.   ;400. ;
+HTmax=5080. ;36950. ;7944. ;500. ;max(yy)   ;1000. ;600. ;
+
+
+
+for VarType=VarType_min , VarType_max,  VarType_step   do begin
+print,'now plotting ',VarTitle(VarType)
+
+FILE_DISP='/lfs0/projects/idea/maruyama/sandbox/ipe/source/plot/figures/'+FileID+'_'+VarTitle(VarType)+'.SH2.ps'
+MainTitle='PLASMASPHERE '+VarTitle(VarType)+' '+VarUnit(VarType)
+SET_PLOT, 'ps' ;'x'
+   ; Open a file in the current directory 
+   ; to contain the PostScript plot.
+DEVICE, BITS_PER_PIXEL=24,/COLOR, $
+FILENAME=FILE_DISP, /LANDSCAPE,    $
+SET_FONT='Courier',       /TT_FONT, $
+XSIZE=X_SIZE, YSIZE=Y_SIZE, XOFFSET=0.0, YOFFSET=X_SIZE
+
+
+Plot, xx(0:istop), yy(0:istop)     $
+, Xstyle = 1, Xrange = [ gLATmin, gLATmax]  $
+, Ystyle = 1, Yrange = [ HTmin, HTmax]      $
+, TITLE = MainTitle+'   '+FileID, SUBTitle =' ' $   ;FileID $
+, XTITLE = X_Title,    YTITLE = Y_Title  $
+, PSYM =  3,  SYMSIZE=1.0  ;$
+;, Color =col_max $
+;, CharSize = 1.5 $
+;, THICK    = 1.0 $
+;, Pos = [X0/X_SIZE, Y0/Y_SIZE, (X0+dX)/X_SIZE, (Y0+dY)/Y_SIZE]
+
+;20110314debug
+;if ( sw_plot_den eq 1 ) then begin
+print,'plot contour Ne...'
+
+;091604:debug
+istop_save=istop
+
+
+
+ARY_minZ=ARY_max0(VarType)
+ARY_maxZ=ARY_min0(VarType)
+
+for lp=lp_strt+1 , lp_stop do begin
+  midpoint0 = IS2D[mp,lp-1] + ((IS2D[mp,lp-1]-IN2D[mp,lp-1]+1)-1)/2  -1      ;(npts+1)/2 -1
+  midpoint1 = IS2D[mp,lp  ] + ((IS2D[mp,lp  ]-IN2D[mp,lp  ]+1)-1)/2  -1 
+
+  ;for ihem=0,1   do begin
+  for ihem=1,1   do begin
+
+    istrt=midpoint1
+    if ( ihem eq 0 ) then begin ;North
+      istep=-1
+      istop=in2d[mp,lp]-istep 
+    endif else begin   ;South
+      istep=+1
+      istop=is2d[mp,lp]-istep 
+    endelse
+
+    for ipts1=istrt,istop,istep   do begin
+
+      ipts0 = midpoint0 +  ipts1 - istrt 
+
+if ( z_km(ipts0  ,mp) gt HTmin ) and ( z_km(ipts0  ,mp) lt (HTmax-90.) ) then begin
+if ( mlat_deg(ipts0  ,mp) gt gLATmin ) and ( mlat_deg(ipts0  ,mp) lt gLATmax ) then begin
+
+;print,'lp',lp,'ipts0',ipts0,ipts0+istep,ipts1,ipts1+istep
+
+Xa=mlat_deg(ipts0  ,mp)
+Xb=mlat_deg(ipts0+istep,mp)   ;glatd(ipts  ,ifl)+dLAT  ;
+Xc=mlat_deg(ipts1+istep,mp)  ;Xb  ;
+Xd=mlat_deg(ipts1  ,mp)  ;Xa  ;
+Ya=z_km(ipts0  ,mp)
+Yb=z_km(ipts0+istep,mp) ;Ya ;
+Yc=z_km(ipts1+istep,mp) ;Ya+dHT ;
+Yd=z_km(ipts1  ,mp)  ;Yc     ;
+
+;042904: debug
+;042904: Xb=Xa+dLAT  ;
+;042904: Xc=Xb  ;
+;042904: Xd=Xa  ;
+;042904: Yb=Ya ;
+;042904: Yc=Ya+dHT ;
+;042904: Yd=Yc     ;
+
+
+ X=[Xa, Xb, Xc, Xd]  ;glat [deg]
+ Y=[Ya, Yb, Yc, Yd]  ;altitude [km]
+
+if ( VarType eq 0 ) then begin
+
+;original
+averageNe=plot_z[0, mp,ipts1] * 1.0E-6
+  Value= $
+  ALOG10( averageNe )
+;Nel(ipts,ifl)
+  
+;092904: temporary debug
+;092904: value=100.*nhe(ipts,ifl)/nel(ipts,ifl)
+
+endif else if ( VarType eq 1 ) then $
+
+Value=te(ipts,ifl)  $
+
+else if ( VarType eq 2 ) then  begin
+
+  averageNe=Nox(ipts,ifl)*1.0E-6 ;cm-3      ;m-3  ;
+  Value= $
+ ALOG10( averageNe )
+;Nox(ipts,ifl) 
+ 
+endif  else if ( VarType eq 3 ) then $
+  Value=tox(ipts,ifl) $
+else if ( VarType eq 4 ) then $
+  Value=vox(ipts,ifl) $  ;/4.0 $
+
+
+else if ( VarType eq 5 ) then  begin
+
+  averageNe=Nhy(ipts,ifl)*1.0E-6
+  Value=ALOG10( averageNe )
+  
+endif  else if ( VarType eq 6 ) then $
+  Value=thy(ipts,ifl) $
+else if ( VarType eq 7 ) then $
+  Value=vhy(ipts,ifl) $
+
+else if ( VarType eq 8 ) then  begin
+
+  averageNe=Nhe(ipts,ifl)*1.0E-6
+  Value=ALOG10( averageNe )
+  
+endif  else if ( VarType eq 9 ) then $
+  Value=the(ipts,ifl) $
+else if ( VarType eq 10 ) then $
+  Value=vhe(ipts,ifl)
+
+
+; save actual MIN & MAX values
+if ( Value lt ARY_minZ ) then  ARY_minZ=Value
+if ( Value gt ARY_maxZ ) then  ARY_maxZ=Value
+
+
+ColorData=(col_max-col_min)*(Value-ARY_min0(VarType))/(ARY_max0(VarType)-ARY_min0(VarType)) + col_min
+
+
+;061904: for fancy looking
+if ( ColorData lt col_min ) then  ColorData=col_min
+if ( ColorData gt col_max ) then  ColorData=col_max
+
+;091604: debug
+;091604: if ( (ipts MOD 2)  eq 0 ) then $
+POLYFILL, X , Y       $      ;[, Z]]
+, FILL_PATTERN=0      $      ; solid fill
+, COLOR=ColorData    ;$
+;[, IMAGE_COORD=array]
+;[, /IMAGE_INTERP] 
+;[, /LINE_FILL] 
+;[, PATTERN=array] 
+;[, SPACING=centimeters] 
+;[, TRANSPARENT=value]
+;[, CLIP=[X 0 , Y 0 , X 1 , Y 1 ]] 
+;[, /DATA | , /DEVICE | , /NORMAL] 
+;[, LINESTYLE={0 | 1 | 2 | 3 | 4 | 5}] 
+;[, /NOCLIP] 
+;[, ORIENTATION=ccw_degrees_from_horiz] 
+;[, /T3D] 
+;[, THICK=value] 
+;[, Z=value]
+
+endif ;( glatd(ipts  ,ifl-1) gt gLATmin ) and ( glatd(ipts  ,ifl-1) lt gLATmax) thenbegin
+endif  ;( gpz(ipts  ,ifl-1) gt HTmin ) then begin
+endfor  ;ipts=istrt,istop,istep   do begin
+endfor  ;ihem=1,1   do begin
+
+
+endfor  ;lp=lp_strt,lp_stop do begin
+
+
+
+
+
+
+
+
+
+
+Draw_Colorbar, ARY_min0(VarType), ARY_max0(VarType), N_LVLs $
+, col_min, col_max, X1, Y1, dX1, dY1, X_SIZE, Y_SIZE, VarType
+
+
+;LT
+;xyouts, (X0-2.)/X_SIZE, (Y0+dY+2.45)/Y_SIZE, STRTRIM(STRING( zthr, FORMAT='(F5.2)'),1)+'LT'  $
+;, charsize=1.0, charthick=1.0, /norm, /noclip
+
+
+; add MIN & MAX values
+xyouts, (X0-2.)/X_SIZE, (Y0+dY+1.6)/Y_SIZE, 'MIN='+STRTRIM(STRING( ARY_minZ, FORMAT='(E11.3)'),1)  $
+, charsize=1.0, charthick=1.0, /norm, /noclip
+xyouts, (X0+2.)/X_SIZE, (Y0+dY+1.6)/Y_SIZE, 'MAX='+STRTRIM(STRING( ARY_maxZ, FORMAT='(E11.3)'),1)  $
+, charsize=1.0, charthick=1.0, /norm, /noclip
+
+
+
+print, ' ARY_minZ', ARY_minZ, ' ARY_maxZ', ARY_maxZ
+;endif ;( sw_plot_den eq 1) then begin
+
+    ; Close the "OUTPUT_DEVICE".
+DEVICE, /CLOSE
+
+endfor  ;VarType=0,1 do begin  ;0,NPAR-1
+
+end

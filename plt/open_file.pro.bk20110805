@@ -1,0 +1,27 @@
+;opening files
+pro open_file, HOME_DIR, input_DIR, LUN,version
+
+;HOME_DIR='/lfs0/projects/idea/maruyama/sandbox/ipe/run/'
+;input_DIR=['','','']
+;;input_DIR[0:1]=rundate+'_'+version+'.'+title_res+'.or/' 
+;input_DIR[0:1]=rundate+'_'+version+'.'+title_res+'/' 
+;;input_DIR[0:1]='20110725_3d.'+title_res+'/' 
+
+size_results=SIZE(input_DIR)
+n_file=size_results[1]
+print,'n_file=',n_file
+
+input_flnm=['','','']
+input_flnm[0]='plasma0'
+input_flnm[1]='plasma1'
+;input_flnm[2]='plasma2'
+
+  for i = 0, n_file-1  do begin
+
+    openr, LUNi, HOME_DIR+input_DIR[i]+input_flnm[i], /GET_LUN $
+         , /F77_UNFORMATTED
+    LUN[i]=LUNi
+    print,'opening file:',HOME_DIR+input_DIR[i]+input_flnm[i], LUN[i]
+
+  endfor ;i = 0, n_file-1  do begin
+end ;pro open_file

@@ -1,0 +1,31 @@
+;opening files
+pro open_file, n_file,LUN,sw_debug
+machine_plot='home/maruyama'
+HOME_DIR='/'+machine_plot+'/sandbox/ipe/run/'
+
+input_DIR=['','','']
+;input_DIR[0:1]='20110201_3D/20110314_24_48hrs_f107_180/' 
+;input_DIR[0:1]='20110414lowres_f180_'+machine_run+'/' 
+input_DIR[0:1]='20110517test_mpi/' 
+;input_DIR[0:1]='20110315debug_f107_80/' 
+
+input_flnm=['','','']
+input_flnm[0]='plasma0'
+input_flnm[1]='plasma1'
+;input_flnm[2]='plasma2'
+
+  for i = 0, n_file-1  do begin
+
+;if ( machine_run eq 'vapor' ) then $
+;    openr, LUNi, HOME_DIR+input_DIR[i]+input_flnm[i], /GET_LUN $
+;         , /F77_UNFORMATTED $
+;         ,/SWAP_ENDIAN      $;big endian ibm vapor
+;else if ( machine_run eq 'jet' ) then $
+    openr, LUNi, HOME_DIR+input_DIR[i]+input_flnm[i], /GET_LUN $
+         , /F77_UNFORMATTED 
+
+    LUN[i]=LUNi
+    print,'opening file:',HOME_DIR+input_DIR[i]+input_flnm[i], LUN[i]
+
+  endfor ;i = 0, n_file-1  do begin
+end ;pro open_file
