@@ -18,7 +18,7 @@ PROJECT_DIR="$HOME_DIR"/ipe
 RUN_DIR=/home/Naomi.Maruyama/iper
 RUN_DATE=20120217
 TEST0=3d.trans
-RUNID=v52
+RUNID=v33.2
 ###NEW_RUN_DIR="$RUN_DATE"."$TEST0"."$RUNID"
 NEW_RUN_DIR="$RUNID"
 ###for ipe_grid
@@ -28,20 +28,25 @@ NEW_RUN_DIR="$RUNID"
 #3. tilted dipole
 #4. tilted dipole : new Q
 sw_new_dir="F"
-sw_grid="2"
+sw_grid="5"
 sw_nmltinp="F"
 sw_startup="T"
     sw_startup_special="F" 
 sw_rscrpt="F"
+sw_efield="F"
+RUNID0=v33.jet
+UT0=248306
 ###for IPE.inp
 if [ "$sw_nmltinp" = "T" ]; then
-    RUN_DIR1="$RUN_DATE"."$TEST0".v44
+###    RUN_DIR1="$RUNID0"/ut"$UT0"
+###    RUN_DIR1="$RUNID0"/
+    RUN_DIR1=v31.2/
 fi
 #
 ###for startup
 if [ "$sw_startup" = "T" ]; then
-###    RUN_DIR2=20120207."$TEST0".v36.jet/But82706
-    RUN_DIR2=v36.jet/But82706
+    RUN_DIR2="$RUNID0"/but"$UT0"
+###    RUN_DIR2="$RUNID0"
 fi
 #
 if [ "$sw_new_dir" = "T" ]; then
@@ -55,25 +60,25 @@ fi
 #
 if [ "$sw_startup" = "T" ]; then
 ###i should use the loop!!!
-    ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma00  ./startup00
-    ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma01  ./startup01
-    ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma02  ./startup02
-    ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma03  ./startup03
-    ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma04  ./startup04
-    ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma05  ./startup05
-    ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma06  ./startup06
-    ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma07  ./startup07
-    ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma08  ./startup08
-    ln -s "$RUN_DIR"/"$RUN_DIR2"/ut_rec.log  ./startup_ut_rec.log
+    ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma00  ./stup00
+    ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma01  ./stup01
+    ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma02  ./stup02
+    ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma03  ./stup03
+    ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma04  ./stup04
+    ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma05  ./stup05
+    ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma06  ./stup06
+    ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma07  ./stup07
+    ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma08  ./stup08
+    ln -s "$RUN_DIR"/"$RUN_DIR2"/ut_rec    ./stup_ut_rec
 
   if [ "$sw_startup_special" = "F" ]; then
-      ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma09  ./startup09
-      ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma10  ./startup10
-      ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma11  ./startup11
+      ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma09  ./stup09
+      ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma10  ./stup10
+      ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma11  ./stup11
   else
-      ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma13  ./startup09
-      ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma14  ./startup10
-      ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma15  ./startup11
+      ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma13  ./stup09
+      ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma14  ./stup10
+      ln -s "$RUN_DIR"/"$RUN_DIR2"/plasma15  ./stup11
   fi
 
 fi
@@ -105,14 +110,23 @@ else
 fi
 #
 if [ "$sw_rscrpt" = "T" ]; then
-FN0=r.ipe
-FN="$FN0"."$RUNID"
-#    ls -tl  "$RUN_DIR"/"$RUN_DIR1"/"$FN"
-#    cp  "$RUN_DIR"/"$RUN_DIR1"/"$FN"  "$PWD"/
+	RUN_DIR4="$RUNID0"
+	FN0=r.ipe
+	ls -tl  "$RUN_DIR"/"$RUN_DIR4"/"$FN0"
+	cp  "$RUN_DIR"/"$RUN_DIR4"/"$FN0"  ./
+#FN="$FN0"."$RUNID"
 ####note: i do not know how to readin the file name into a variable
 #    cat filename.log
 #    FN=`cat filename.log`
 #    echo 'FN' "$FN"
 #####modify the file name from v45 to v48
 #####modify what's in the file from v45 to v48: cat ...| sed    
+fi
+#
+if [ "$sw_efield" = "T" ]; then
+
+    RUN_DIR3="$HOME_DIR"/sandbox/efield
+    ln -s "$RUN_DIR3"/coeff_lflux.dat  ./
+    ln -s "$RUN_DIR3"/coeff_hflux.dat  ./
+    ln -s "$RUN_DIR3"/wei96.cofcnts    ./
 fi
