@@ -13,14 +13,14 @@
 # Make settings and options for compiler lf95(linux64 L8.00) on naomilx.swpc.noaa.gov
 FORTRAN_COMPILER=$(COMPILER) 
 # Locations:
-HOME_dev=~/ipe/source
+HOME_dev=~/ipe/src
 
 # Compiler:
 ### command and flags ###
 # uncomment when debugging
 # -pg: profile
 DEBUG1=###-traceback -check all -ftrapuv #####-fpe0
-DEBUG =###-g -pg
+DEBUG =###-g -pg  $(DEBUG1)
 OPT_FLAG=-O3
 PARALLEL_FLAG=####-openmp
 MEM_FLAG=###########-heap-arrays 10
