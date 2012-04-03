@@ -1,5 +1,6 @@
 pro read_fort167,LUN167,UT_hr,LT_hr,Z,SL,GL,BM,GR,SZA,O0,H0,N20,O20,HE0,N4S0,sw_debug, title_hemi
 
+read_special=1L
 
   ;get FLDIM
    size_result = size(Z)
@@ -7,10 +8,16 @@ if ( sw_debug eq 1 ) then   print, 'size=',size_result
    FLDIM = size_result[1]
 
 
-   string_tmp1='U167, North, UT='
+fmt00='(A29,2F10.3)'
+   string_tmp1=$
+'mp=  4 lp=100 U167 North, UT='
+;'U167, North, UT='
 ;NH
-   readf, LUN167, string_tmp1, UT_hr, LT_hr, FORMAT='(A16,2F10.2)'
-if ( sw_debug eq 1 ) then      print, string_tmp1, UT_hr, LT_hr
+   readf, LUN167, string_tmp1, UT_hr, LT_hr, FORMAT=$
+fmt00
+;'(A16,2F10.2)'
+if ( sw_debug eq 1 ) then $
+      print, 'check read-in:',string_tmp1, UT_hr, LT_hr
 
 
    string_tmp2='   JMIN   JMAX   CTIPDIM  INNO  IHEPLS  INPLS'
@@ -81,9 +88,30 @@ SZA(J) =SZAj
 N4S0(J) =N4Sj
 
 
-;if ( sw_debug eq 1 ) then   if ( j eq 10 ) then  $
+;if ( sw_debug eq 1 ) then $
+;   if ( j eq 5 ) then  $
 ;print, j, Zj,SLj,GLj,BMj,GRj,SZAj,Oj,Hj,N2j,O2j,HEj,N4Sj , FORMAT='(i4,F10.2,22E9.2)'
 
-   ENDFOR
 
+
+
+   ENDFOR
+if ( read_special eq 1 ) then begin
+;dbg20120304:
+n_read=1000
+string_tmp4='  E      SIGEXO  SIGIONO  SIGEXN2  SIGION2  SIGEL    PRED     FYSUM    TSIGNE   PHIUP    PHIDWN   PRODUP   PRODWN'
+
+   readf, LUN167, string_tmp4
+if ( sw_debug eq 1 ) then      print, 'NH extra!',string_tmp4
+for n=0,n_read do begin
+   readf, LUN167,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12, FORMAT='(F6.1,12E9.2)'
+
+if ( a0 le 1.5 ) then $
+   print,n,a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12, FORMAT='(i3,F6.1,12E9.2)'
+
+if ( a0 le 1.5 ) $
+;if ( a1 le 0.00 ) $
+then break
+endfor
+endif ;( read_special eq 1 ) then begin
 END ;pro read_fort167
