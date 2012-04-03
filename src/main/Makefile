@@ -18,8 +18,9 @@
 include  Make.$(machine)
 VERSION=3d
 RESOLUTION=glb.eld
-TEST=v36
-PACKAGE=ipe.exe
+#####TEST=v36
+TEST=v17
+PACKAGE=ipe.${TEST}.exe
 # DR0: modules
 DR0=${HOME_dev}/main
 FFLAG0=${FFLAGS90}
@@ -43,7 +44,7 @@ SRC0	=\
 	${DR0}/module_IPE_dimension.${RESOLUTION}.f90 \
 	${DR0}/module_physical_constants.f90 \
 	${DR0}/module_unit_conversion.f90 \
-	${DR0}/module_input_parameters.${TEST}.f90 \
+	${DR0}/module_input_parameters.f90 \
 	${DR0}/module_io.${VERSION}.f90 \
 	${DR0}/module_field_line_grid.${VERSION}.glb.f90
 # DR1: neutrals
@@ -75,14 +76,14 @@ SRC2	=\
 	${DR2}/FLIP_GRID.f
 # DR3: plasma
 SRC3	=\
-	${DR3}/module_plasma.${VERSION}.dbg.f90 \
+	${DR3}/module_plasma.${VERSION}.f90 \
 	${DR3}/get_pvalue_dipole.f90 \
 	${DR3}/get_sza.${VERSION}.f90 \
 	${DR3}/get_sinim.f90 \
 	${DR3}/flux_tube_solver.${VERSION}.f90 \
 	${DR3}/perpendicular_transport.f90 \
 	${DR3}/stepback_mag.f90 \
-	${DR3}/interpolate_flux_tube.v16.f90 \
+	${DR3}/interpolate_flux_tube.${TEST}.f90 \
 	${DR3}/io_plasma_bin.f90 \
 	${DR3}/io_plasma_bin_readinit.f90 \
 	${DR3}/activate_perp_transport.f90 \
@@ -101,7 +102,7 @@ SRC4	=\
 	${DR4}/get_flip_grid.f90 \
 	${DR4}/allocate_arrays.f90 \
 	${DR4}/output_plasma_grid.f90 \
-	${DR4}/driver_ipe.${VERSION}.glb.eld.${TEST}.f90
+	${DR4}/driver_ipe.${VERSION}.glb.eld.f90
 #
 #HEADS	= $(PACKAGE).h
 OBJ0	= $(SRC0:.f90=.o)
