@@ -1,3 +1,4 @@
+!note:20120207: v36: used only activating the perp.transport gradually...
 ! DATE: 08 September, 2011
 !********************************************
 !***      Copyright 2011 NAOMI MARUYAMA   ***
@@ -47,7 +48,13 @@
       INTEGER,PUBLIC :: sw_neutral_heating_flip  !.. switch for neutral heating calculation in FLIP: 1:ON; 0:OFF
       REAL (KIND=real_prec), PUBLIC :: init_Te_max !.. max Te[K] in the initial profile
       INTEGER, PUBLIC :: sw_DEBUG_flip           !.. switch to turn on debug writes:0=off; 1=on for solver
-
+      INTEGER, PUBLIC :: sw_ERSTOP_flip          !.. switch to turn on STOP in SUB-WRITE_EFLAG
+!dbg20120301: N+ BAND solver issue
+      LOGICAL, PUBLIC :: sw_LCE  !local chemical equilibruium below ht_LCE[km]
+      REAL (KIND=real_prec), PUBLIC :: ht_LCE !.. max ht[km] for LCE
+      REAL (KIND=real_prec), PUBLIC :: ZLBNP_inp !.. ZLBNP
+!dbg20120304:
+      REAL (KIND=real_prec), PUBLIC :: FNFAC_flip !.. FNFAC in RSPRIM.FOR
 
 !--- MSIS/HWM specific input parameters
       REAL (KIND=real_prec), DIMENSION(7), PUBLIC :: AP   ! magnetic index(daily)
@@ -66,6 +73,8 @@
 !             ap(1) = magnetic index(daily) (use 4 in lower atmos.)     
 !             ap(2)=current 3hr ap index (used only when sw(9)=-1.) 
 !
+!--- ELDYN specific input parameters
+      REAL (KIND=real_prec), PUBLIC :: kp_eld   ! geomagnetic index
 !--- all the SWITCHes either integer or logical or character
       LOGICAL, PUBLIC :: sw_debug
       LOGICAL, PUBLIC :: sw_debug_mpi
@@ -77,9 +86,12 @@
       INTEGER(KIND=int_prec), PUBLIC :: sw_pcp        !0:heelis; 1:weimer
       INTEGER(KIND=int_prec), PUBLIC :: sw_grid       !0:APEX; 1:FLIP
 ! if sw_grid=1 
-      REAL (KIND=real_prec), PUBLIC :: PCO_flip  
-      REAL (KIND=real_prec), PUBLIC :: BLON_flip 
+!dbg20120304: nolonger used
+!nm20120304      REAL (KIND=real_prec), PUBLIC :: PCO_flip  
+!nm20120304      REAL (KIND=real_prec), PUBLIC :: BLON_flip 
       LOGICAL, PUBLIC :: sw_output_plasma_grid
+      LOGICAL, PUBLIC :: sw_rw_sw_perp_trans
+      LOGICAL, PUBLIC :: sw_dbg_perp_trans
       INTEGER(KIND=int_prec),DIMENSION(NMP_all), PUBLIC :: sw_perp_transport 
 !0:WITHOUT perpendicular transport
 !1:THETA only transport included
@@ -99,7 +111,13 @@
 !1:parallel transport included
       INTEGER(KIND=int_prec), PUBLIC :: sw_ksi
 !0: ksi_factor=1.0---no compressional effect/no adiabatic heating
-!1: ksi_factor from richards thesis---including compressional effect/adiabatic heating
+!1: ksi_factor from richards thesis---including compressional effect/adiabatic heating ,,,used until 20120314 with interpolate_ft.v16.f90
+!2:20120330: new way of calculating the ksi_factor with interpolate_ft.v17.f90
+      INTEGER(KIND=int_prec), PUBLIC :: sw_divv
+!0: div * Vem=0
+!1: div * Vem included in the parallel transport solver as was done in FLIP
+!dbg20120313 
+      REAL(KIND=real_prec), PUBLIC :: fac_BM
 
       NAMELIST/NMIPE/start_time &
      &,stop_time &
@@ -125,29 +143,39 @@
      &,start_time_depleted &
      &,sw_neutral_heating_flip &
      &,init_Te_max &
-     &,sw_DEBUG_flip
-      NAMELIST/NMMSIS/AP
+     &,sw_DEBUG_flip &
+     &,sw_ERSTOP_flip &
+     &,sw_LCE &
+     &,ht_LCE &
+     &,ZLBNP_inp &
+     &,FNFAC_flip
+      NAMELIST/NMMSIS/AP  &
+     &,kp_eld
       NAMELIST/NMSWITCH/&
            &  sw_neutral     &
            &, sw_pcp         &
            &, sw_grid        &
-           &, PCO_flip       &
-           &, BLON_flip      &
            &, sw_output_plasma_grid        &
+           &, sw_rw_sw_perp_trans &
+           &, sw_dbg_perp_trans &
            &, sw_perp_transport &
            &, lpmin_perp_trans &
            &, lpmax_perp_trans &
            &, sw_exb_up &
            &, sw_para_transport &
            &, sw_ksi &
+           &, sw_divv &
            &, lpstrt,lpstop,lpstep  &
            &, mpstrt,mpstop,mpstep  &
            &, sw_debug       &
            &, sw_debug_mpi   &
            &, sw_output_fort167   &
            &, record_number_plasma_start   &
+           &, fac_BM   &
            &, iout
 
+!nm20120304           &, PCO_flip       &
+!nm20120304           &, BLON_flip      &
 
 
       PRIVATE
@@ -202,8 +230,30 @@ WRITE(UNIT=LUN_LOG0,FMT=*)'real_prec=',real_prec,' int_prec=',int_prec
 
 
         CLOSE(LUN_nmlt)
-
+print *,'finished reading namelist:',filename
         CLOSE(LUN_LOG0)
+
+        IF ( sw_rw_sw_perp_trans )  CALL setup_sw_perp_transport ()
+!note:20120207: v36: used only activating the perp.transport gradually...
+
+ 
         END SUBROUTINE read_input_parameters
 
+!note:20120207: v36: used only activating the perp.transport gradually only during daytime...
+        SUBROUTINE setup_sw_perp_transport () 
+        IMPLICIT NONE
+        INTEGER(KIND=int_prec),parameter :: luntmp=300
+        INTEGER(KIND=int_prec) :: istat,mp,mpin
+
+!        sw_perp_transport( 1:3 )=1 
+!        sw_perp_transport(56:80)=1 
+!when I have the output file to read...
+open(unit=luntmp, file='startup_fort.300',status='old',form='formatted',iostat=istat)
+DO mp=1,NMP_all
+read(unit=luntmp, fmt='(2i3)') mpin,sw_perp_transport(mpin)
+print *,'mpin=',mpin,' sw_p',sw_perp_transport(mpin)
+END DO
+!close(unit=luntmp)
+
+        END SUBROUTINE setup_sw_perp_transport
 END MODULE module_input_parameters
