@@ -1,4 +1,4 @@
-pro read_grid,LUN,JMIN_IN,JMAX_IS,Z_km,mlat_deg,sw_debug
+pro read_grid,LUN,JMIN_IN,JMAX_IS,Z_km,mlat_deg,sw_debug,glat_deg,glon_deg
 
      mp=0L
 
@@ -48,10 +48,12 @@ print,'mlat_deg',mlat_deg[ipts]
 
     dum=fltarr(NPTS2D_dum, NMP_all)
     readu, LUN[1], dum
+    glat_deg = ( !PI*0.50 - dum ) * 180.0 / !PI
 print,'GCOLAT-deg',90.-dum[ipts, mp]*180./!PI
 
     dum=fltarr(NPTS2D_dum, NMP_all)
     readu, LUN[1], dum
+    glon_deg = ( dum ) * 180.0 / !PI
 print,'GLON_rad-deg',dum[ipts, mp]*180./!PI  
 
 ;     readu, LUN[1], JMIN_IN,JMAX_IS,Z_meter,GL_rad
