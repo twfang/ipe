@@ -5,11 +5,12 @@
  PRO  contour_plot_2d $
 , in2d,is2d,z_km,mlat_deg  $             ;input 
 , plot_z,plot_VEXB,n_read   $ ;input
-, uthr, plot_DIR, title_res,rundate,title_test,sw_debug, title_hemi,sw_anim,mp_plot, lt_hr
+, uthr, plot_DIR, title_res,rundate,title_test,sw_debug, title_hemi,sw_anim,mp_plot, lt_hr,fac_window $
+, sw_output2file
 
 n_read0=0L
-sw_plot_grid=0L  ;1: plot grid only
-sw_arrow_exb=1
+sw_plot_grid=1L  ;1: plot grid only
+sw_arrow_exb=0
 reference_arrow=40L  ;m/s
 factor_arrow=5.
 lp_step_arrow=7
@@ -20,7 +21,7 @@ mpstep=1
 
 
 HTmin=   90.  ;min(yy)   ;75.   ;400. ;
-HTmax=3.000000E+03;700.; 
+HTmax=600.;3.000000E+03;700.; 
 ; plot range
 if ( title_hemi eq 'NH' ) then begin
   gLATmax=+65.;+90.;-10.;
@@ -29,8 +30,8 @@ endif else if ( title_hemi eq 'SH' ) then begin
   gLATmax=-5.;+90.;-10.;
   gLATmin=-65.;+50.;-gLATmax;-27.; 
 endif else if ( title_hemi eq 'glb' ) then begin
-  gLATmax=+60.;+90.;-10.;
-  gLATmin=-60.;+50.;-gLATmax;-27.; 
+  gLATmax=+90.;+90.;-10.;
+  gLATmin=-gLATmax;-27.; 
 endif else if ( title_hemi eq 'eq' ) then begin
   gLATmax=+30.;+90.;-10.;
   gLATmin=-0.5;+50.;-gLATmax;-27.;
@@ -60,7 +61,7 @@ NPAR = size_result[2]
 N_LDCT=39;33
 lp_strt=28-1;  0+1 ;58;0;63 ;1-1L
 lp_stop=NLP-1-1 ;138L;
-VarType_min=0L
+VarType_min=1L
 VarType_max=1L ;PAR-1
 VarType_step=1L
 
@@ -222,7 +223,7 @@ if ( sw_debug eq 1 ) then  print, 'after',!P.BACKGROUND
 
 ; plot height profile
   device, decomposed = 0 ,retain=2
-  window, 0 ,XSIZE=1000,YSIZE=800
+  window, 0 ,XSIZE=1000*fac_window,YSIZE=800*fac_window
 
 ;t  axis_color = 0.0 ;255.99 $
 ;t  char_size = 1.5
@@ -231,19 +232,28 @@ endif
 
 LOADCT, N_LDCT
 
-;if ( sw_plot_grid eq 1 ) then begin
+if ( sw_plot_grid eq 1 ) then begin ;20120328
+LOADCT, 0
 Plot, xx(0:istop), yy(0:istop)     $
 , Xstyle = 1, Xrange = [ gLATmin, gLATmax]  $
 , Ystyle = 1, Yrange = [ HTmin, HTmax]      $
 , TITLE = MainTitle+'   '+FileID, SUBTitle =' ' $   ;FileID $
 , XTITLE = X_Title,    YTITLE = Y_Title  $
 , PSYM =  3,  SYMSIZE=1.0  $
-;, Color = col_min  $
+, Color = 255. $ ;col_min  $
 ;, CharSize = 1.5 $
 ;, THICK    = 1.0 $
-, Pos = [X0/X_SIZE, Y0/Y_SIZE, (X0+dX)/X_SIZE, (Y0+dY)/Y_SIZE] $
-,/NODATA
-;endif ;( sw_plot_grid ne 1 ) then begin
+, Pos = [X0/X_SIZE, Y0/Y_SIZE, (X0+dX)/X_SIZE, (Y0+dY)/Y_SIZE] ; $
+;,/NODATA
+
+if ( sw_output2file eq 1 ) then begin
+  print,'output to file=',plot_DIR+'ipe_grid.'+device_type
+  output_png,plot_DIR+'ipe_grid.v2.'+device_type
+endif
+LOADCT, N_LDCT
+RETURN
+
+endif ;( sw_plot_grid ne 1 ) then begin ;20120328
 
 
 ;tmp20110414: plot grid only
@@ -256,13 +266,16 @@ ARY_maxZ=ARY_min0(VarType)
 
 for lp=lp_strt , lp_stop do begin
 
-if ( sw_debug ) then $
+;if ( sw_debug ) then $
+if ( (lp+1) ge 148 ) AND ( (lp+1) le 155 ) then $
  print,'lp=', lp, in2d[lp], mlat_deg[ in2d[lp] ]
 
 ; midpoint = JMIN_IN(lp) + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
   midpoint =      IN2D[lp]+ (     IS2D[lp] -    IN2D[lp]    )/2  -1 
-if ( sw_debug ) then $
- print,midpoint,'mlat',mlat_deg[ midpoint ]  ,'midpoint z', z_km[ midpoint ],' max z',MAX( z_km[ IN2D[lp]:IS2D[lp] ] )
+
+;if ( sw_debug ) then $
+if ( (lp+1) ge 148 ) AND ( (lp+1) le 155 ) then $
+ print,(lp+1),midpoint,'mlat',mlat_deg[ midpoint ]  ,'midpoint z', z_km[ midpoint ],' max z',MAX( z_km[ IN2D[lp]:IS2D[lp] ] )
 
 
   for ihem=0,1   do begin
@@ -468,7 +481,7 @@ else if ( device_type eq 'png' ) then begin
 
   if ( sw_anim eq 1 ) then FILE_DISP=plot_DIR+'anim/'+STRTRIM( string( (n_read+1), FORMAT='(i3)'), 1)+'.'+device_type
 
-  output_png, FILE_DISP
+  if ( sw_output2file eq 1 ) then  output_png, FILE_DISP
 endif
 
 endfor  ;VarType=0,1 do begin  ;0,NPAR-1
