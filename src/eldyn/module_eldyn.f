@@ -66,6 +66,7 @@
       IMPLICIT NONE
 !20120304:      CHARACTER(len=*),PARAMETER :: path='~/sandbox/efield/'
 !
+      print *,'begin init_eldyn'
       CALL efield_init( 
      &'coeff_lflux.dat',
      &'coeff_hflux.dat',
