@@ -1,0 +1,97 @@
+FOR NEW IPE GT
+--------------------------------------------------------------------------------------
+set up for make & run :
+
+run_ipe_gtgip.ksh
+
+
+make -f Makefile.IPE_THERMO
+
+new input file :  input_test_gt    - I need to check what's needed from this for GT_thermosphere_init
+
+IPE input file : IPE.inp  (have to copy IPE_GT.inp on top of it)
+
+
+FOR DEBUGGING :
+
+>dbx ./test_gt.exe
+
+
+
+For debug option output :
+
+/mtb/save/wx20lrm/DATA/IONOSPHERE/gtONLY/OUTPUT/CheckGT.dat
+
+
+Input files :
+
+INP.inp   - default input parameter file
+
+Main source code :
+driver_ipe_gt.3d.f90
+
+Input, Output files, hardwired in driver_ipe_gt.3d.f90 :
+
+GT_input_dataset = '/mtb/save/wx20lrm/DATA/IONOSPHERE/gtgipIPE/INPUT/Day_80_180_dipole_test.gt.20110913.v1.nc'
+GT_output_dataset = '/mtb/save/wx20lrm/DATA/IONOSPHERE/gtgipIPE/OUTPUT/Day_80_180_testInterp.nc'
+static_file_location = '/mtb/save/wx20lrm/DATA/IONOSPHERE/static_files/'
+
+input for running a full test :
+fullTestIPE.inp
+
+input for running  a short test :
+testGT.inp
+
+
+
+
+FOR ORIGNAL TEST_GT :
+
+------------------------------------------------------------------------------------
+
+
+Below is the IPE related directories on vapor.
+
+vapor:/u/wx20nm/save_directory/sandbox/ipe/source/
+
+a list of sub-directories:
+eldyn/                  : electrodynamics
+field_line_grid/     : the directory contains the static files for the ionosphere grid
+flip/                     : the ionosphere-plasmasphere code Phil Richards has developed (the person who will be visiting in August)
+main/                  : main directory including the main driver, IO related routines, read_input_files, ...etc.
+mpi/                   : the directory contains test MPI code
+neutral/              : the code related to the thermosphere
+plasma/             : the code related to the ionosphere-plasmasphere.'
+plot/                  : the directory contains the IDL programs to make figures
+
+
+test_gt/            : contains all the files required for you to do the GT test.
+
+
+Before compiling the code under test_gt, you will need the following:
+
+$ cd test_gt
+$ source  setup_ipe.bash
+
+$ make
+....I made sure that compiling works...
+
+To run the code:
+$ ./test_gt.exe
+
+For the moment, the switch to choose the neutral model, "sw_neutral" is set up to use the empirical neutral model "MSIS" in the namelist 
+input file, "IPE.inp". Once your test program has become ready, then we would like to set the switch to "GT".
+
+
+The following two files will need your help in completing the calls to GT routines:
+driver_ipe_gt.3d.f90                : call GT_thermosphere_init (...)
+module_neutral_gt.3d.mpi.f90: call GT_thermosphere (...)
+
+
+
+
+
+
+
+
+

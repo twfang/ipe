@@ -1,0 +1,25 @@
+&gtipeINPUTS
+GT_input_dataset = '/scratch2/portfolios/NCEPDEV/ptmp/Leslie.Mayer/DATA/IONOSPHERE/gtgipIPE/INPUT/Day_80_180_dipole_test.gt.20110913.v1.nc'
+GT_output_dataset = '/scratch2/portfolios/NCEPDEV/ptmp/Leslie.Mayer/DATA/IONOSPHERE/gtgipIPE/OUTPUT/testGTIPE.nc'
+ionoStartDir = '/scratch2/portfolios/NCEPDEV/ptmp/Leslie.Mayer/DATA/IONOSPHERE/gtgipIPE/INPUT/'
+staticFileDir = '/scratch2/portfolios/NCEPDEV/ptmp/Leslie.Mayer/DATA/IONOSPHERE/static_files/'
+nday = 80                                                    
+f107 = 180.                  
+GT_timestep_in_seconds = 60  
+amplitude%a_11 = 0.
+amplitude%a_22 = 300.
+amplitude%a_23 = 0.
+amplitude%a_24 = 0.
+amplitude%a_25 = 0.                 ! amplitudes
+tidalPhase%t_11 = 8.0
+tidalPhase%t_22 = 1.0
+tidalPhase%t_23 = 7.4
+tidalPhase%t_24 = 5.5
+tidalPhase%t_25 = 10.         ! tidal phases
+smoothingFrequency = 5  ! How often to smooth (in # of time steps)
+neutralCompositionFrequency = 1
+switches%electro = .FALSE.
+switches%External_model_provides_NO_N4S_densities = .FALSE.
+switches%External_model_provides_low_lat_E_fields = .FALSE.
+switches%input_Auroral_production_is_single_overall_rate = .TRUE.
+/
