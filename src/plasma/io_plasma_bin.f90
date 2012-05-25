@@ -15,21 +15,24 @@
       SUBROUTINE io_plasma_bin ( switch, utime )
       USE module_precision
       USE module_IO,ONLY: LUN_PLASMA1,LUN_PLASMA2,lun_min1,lun_min2,lun_ut,lun_ut2,record_number_plasma,lun_max1
-      USE module_PLASMA,ONLY: plasma_3d,plasma_3d4n,VEXBup
+      USE module_PLASMA,ONLY: plasma_3d,VEXBup  !dbg20120501
       USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS
-      USE module_IPE_dimension,ONLY: NMP0,NMP1,NLP,NPTS2D,ISPEC,ISPEV,NLP_all,IPDIM,ISPET
-      USE module_input_parameters,ONLY:sw_debug,record_number_plasma_start
+      USE module_IPE_dimension,ONLY: NMP0,NMP1,NLP,NPTS2D,ISPEC,ISPEV,NLP_all,IPDIM,ISPET,ISTOT
+      USE module_input_parameters,ONLY:sw_debug,record_number_plasma_start &
+&,sw_record_number,stop_time,duration
       USE module_physical_constants,ONLY:zero
       IMPLICIT NONE
 !------------------------
       INTEGER (KIND=int_prec), INTENT(IN) :: switch !2:read; 1:write
-      INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]
+      INTEGER (KIND=int_prec), INTENT(INOUT) :: utime !universal time [sec]
       REAL (KIND=real_prec),DIMENSION(:,:), ALLOCATABLE :: dumm  !(NPTS2D,NMP)
       INTEGER (KIND=int_prec) :: stat_alloc
       INTEGER (KIND=int_prec) :: jth,mp,lp,npts
       INTEGER (KIND=int_prec),pointer :: lun,in,is
       INTEGER (KIND=int_prec) :: n_read,n_read_min, utime_dum,record_number_plasma_dum
       INTEGER (KIND=int_prec),PARAMETER :: n_max=10000
+      INTEGER (KIND=int_prec) :: n_count
+      INTEGER (KIND=int_prec) :: ipts !dbg20120501
 !----------------------------------
 
 IF ( switch<1.or.switch>2 ) THEN
@@ -60,7 +63,7 @@ IF ( switch==1 ) THEN
 
 record_number_plasma = record_number_plasma+1
 
-j_loop1: DO jth=1,(ISPEC+3+ISPEV)
+j_loop1: DO jth=1,ISTOT !=(ISPEC+3+ISPEV)
 
 mp_loop1:do mp=NMP0,NMP1
  lp_loop1:do lp=1,nlp
@@ -69,17 +72,18 @@ IN=>JMIN_IN(lp)
 IS=>JMAX_IS(lp)
   npts = IS-IN+1 
 
-IF ( jth<=ISPEC ) THEN
-  dumm(IN:IS,mp) = plasma_3d(mp,lp)%N_m3(jth,        1:npts)
-ELSE IF ( jth==(ISPEC+1) ) THEN
-  dumm(IN:IS,mp) = plasma_3d(mp,lp)%Te_k(            1:npts)
-ELSE IF ( jth<=(ISPEC+3) ) THEN
-  dumm(IN:IS,mp) = plasma_3d(mp,lp)%Ti_k(jth-ISPEC-1,1:npts)
-ELSE IF ( jth<=(ISPEC+3+ISPEV) ) THEN
-  dumm(IN:IS,mp) = plasma_3d4n(IN:IS,mp)%V_ms1(jth-ISPEC-3)
-ELSE 
+  dumm(IN:IS,mp) = plasma_3d(jth,IN:IS,mp)
+!dbg20120501  IF ( jth<=ISPEC ) THEN
+!dbg20120501  dumm(IN:IS,mp) = plasma_3d(mp,lp)%N_m3(jth,        1:npts)
+!dbg20120501ELSE IF ( jth==(ISPEC+1) ) THEN
+!dbg20120501  dumm(IN:IS,mp) = plasma_3d(mp,lp)%Te_k(            1:npts)
+!dbg20120501ELSE IF ( jth<=(ISPEC+3) ) THEN
+!dbg20120501  dumm(IN:IS,mp) = plasma_3d(mp,lp)%Ti_k(jth-ISPEC-1,1:npts)
+!dbg20120501ELSE IF ( jth<=(ISPEC+3+ISPEV) ) THEN
+!dbg20120501  dumm(IN:IS,mp) = plasma_3d4n(IN:IS,mp)%V_ms1(jth-ISPEC-3)
+!dbg20120501ELSE 
 
-END IF
+!dbg20120501END IF
 ! end do i_loop!i
 
 
@@ -121,37 +125,66 @@ print *,'sub-io_pl: start_uts=',utime
 ! array initialization
   DO mp=NMP0,NMP1
     DO lp=1,NLP_all
-      DO npts=1,IPDIM
-        plasma_3d(mp,lp)%N_m3(1:ISPEC,npts) = zero
-        plasma_3d(mp,lp)%Te_k(        npts) = zero
-        plasma_3d(mp,lp)%Ti_k(1:ISPET,npts) = zero
-      END DO
-    END DO
-  END DO
+      DO ipts=JMIN_IN(lp),JMAX_IS(lp)
+        DO jth=1,ISTOT
+          plasma_3d(jth,ipts,mp) = zero
+!dbg20120501        plasma_3d(mp,lp)%N_m3(1:ISPEC,npts) = zero
+!dbg20120501        plasma_3d(mp,lp)%Te_k(        npts) = zero
+!dbg20120501        plasma_3d(mp,lp)%Ti_k(1:ISPET,npts) = zero
+        END DO!j
+      END DO!ipts
+   END DO!lp
+ END DO!mp
 !UT
+!nm20120509: automatically keep running global run
+!0:you need to specify the record_number_plasma_start by your self...
+IF ( sw_record_number==0 ) THEN
       read_loop0: DO n_read=1,n_max !=10000
-      READ (UNIT=lun_ut2,FMT=*) record_number_plasma_dum, utime_dum
-print *,' record_# ', record_number_plasma_dum,' uts=', utime_dum
-        IF (n_read==1) THEN
-          n_read_min=record_number_plasma_dum
-print *,'n_read=',n_read,'n_read_min=', n_read_min
-        END IF
-        IF (record_number_plasma_dum==record_number_plasma_start) THEN
-           IF (utime_dum==utime) THEN
-print *,'n_read=',n_read,' confirmed that ipe output exist at rec#=',record_number_plasma_dum,' at UT=', utime_dum
-             CLOSE(UNIT=lun_ut2)
-             EXIT  read_loop0
-           ELSE !IF (utime_dum/=utime) THEN
-print *,'n_read',n_read,'!STOP! INVALID start_time!',utime, record_number_plasma_dum, utime_dum
-             STOP
+         READ (UNIT=lun_ut2,FMT=*) record_number_plasma_dum, utime_dum
+         print *,' record_# ', record_number_plasma_dum,' uts=', utime_dum
+         IF (n_read==1) THEN
+           n_read_min=record_number_plasma_dum
+           print *,'n_read=',n_read,'n_read_min=', n_read_min
+         END IF
+         IF (record_number_plasma_dum==record_number_plasma_start) THEN
+            IF (utime_dum==utime) THEN
+               print *,'n_read=',n_read,' confirmed that ipe output exist at rec#=',record_number_plasma_dum,' at UT=', utime_dum
+              CLOSE(UNIT=lun_ut2)
+              EXIT  read_loop0
+            ELSE !IF (utime_dum/=utime) THEN
+               print *,'n_read',n_read,'!STOP! INVALID start_time!',utime, record_number_plasma_dum, utime_dum
+              STOP
            END IF
 
         ELSE IF (n_read==n_max.OR.record_number_plasma_dum>record_number_plasma_start) THEN
-print *,'n_read',n_read,'!STOP! INVALID record number!',record_number_plasma_dum, utime_dum
-          STOP
+           print *,'n_read',n_read,'!STOP! INVALID record number!',record_number_plasma_dum, utime_dum
+           STOP
         END IF
       END DO read_loop0!: DO n_read=1,n_max          
-        
+ELSE IF ( sw_record_number==1 ) THEN
+!1: automatically keep running global run: the code sets up the record_number from the very last record...
+      n_count=0
+      read_loop1: DO n_read=1,n_max !=10000
+
+         READ (UNIT=lun_ut2,FMT=*,END=19) record_number_plasma_dum, utime_dum
+         n_count=n_count+1
+
+         IF (n_read==1) THEN
+           n_read_min=record_number_plasma_dum
+           print *,'n_read=',n_read,'n_read_min=', n_read_min
+         END IF
+
+      END DO read_loop1!: DO n_read=1,n_max !=10000
+19    CONTINUE
+      record_number_plasma_start = record_number_plasma_dum
+      utime = utime_dum
+
+      print *,'new record_number_plasma_start=',record_number_plasma_start
+      print *,'new start_time=',utime
+
+      stop_time = utime + duration
+      print *,'new stop_time=',stop_time,' duration=', duration
+END IF !( sw_record_number==0 ) THEN        
 
 j_loop2: DO jth=1,(ISPEC+3)  !t  +ISPEV)
 
@@ -160,14 +193,16 @@ LUN => LUN_PLASMA2(jth-1+lun_min2)
 if(sw_debug) print *,'jth=',jth,' LUN2=',LUN
 
 read_loop: DO n_read=n_read_min, record_number_plasma_start
-if(jth==ISPEC+3) print *,'n_read=',n_read
+  if(jth==ISPEC+3) &
+     & print *,'n_read=',n_read
 !(1) UT
 !      READ (UNIT=lun ) utime_dum
 !if(sw_debug) 
 !print *,'LUN=',lun,'!dbg! read UT  finished: jth=',jth,utime_dum
-      READ (UNIT=lun ) dumm
+  READ (UNIT=lun ) dumm
 !if(sw_debug) 
-if (jth==ISPEC+3) print *,'!dbg! read dummy finished jth',jth
+  if (jth==ISPEC+3) &
+     & print *,'!dbg! read dummy finished jth',jth
 
 
 !      IF ( utime_dum==utime ) THEN
@@ -188,15 +223,18 @@ IN=>JMIN_IN(lp)
 IS=>JMAX_IS(lp)
   npts = IS-IN+1 
 
-IF ( jth<=ISPEC ) THEN
-  plasma_3d(mp,lp)%N_m3(jth,         1:npts) = dumm(IN:IS,mp) 
-ELSE IF ( jth==(ISPEC+1) ) THEN
-  plasma_3d(mp,lp)%Te_k(             1:npts) = dumm(IN:IS,mp)
-ELSE IF ( jth<=(ISPEC+3) ) THEN
-  plasma_3d(mp,lp)%Ti_k(jth-ISPEC-1, 1:npts) = dumm(IN:IS,mp)
+  DO ipts=IN,IS
+    plasma_3d(jth,ipts,mp) = dumm(ipts,mp) 
+  END DO
+!dbg20120501IF ( jth<=ISPEC ) THEN
+!dbg20120501  plasma_3d(mp,lp)%N_m3(jth,         1:npts) = dumm(IN:IS,mp) 
+!dbg20120501ELSE IF ( jth==(ISPEC+1) ) THEN
+!dbg20120501  plasma_3d(mp,lp)%Te_k(             1:npts) = dumm(IN:IS,mp)
+!dbg20120501ELSE IF ( jth<=(ISPEC+3) ) THEN
+!dbg20120501  plasma_3d(mp,lp)%Ti_k(jth-ISPEC-1, 1:npts) = dumm(IN:IS,mp)
 !t ELSE IF ( jth<=(ISPEC+3+ISPEV) ) THEN
 !t   plasma_3d4n(IN:IS,mp)%V_ms1(jth-ISPEC-3  ) = dumm(IN:IS,mp)
-END IF
+!dbg20120501END IF
 
 !print *,'IN'
 IF ( ASSOCIATED(IN) ) NULLIFY(in,is)
