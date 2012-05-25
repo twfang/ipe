@@ -77,7 +77,8 @@
 ! initialise plasma grids
         SUBROUTINE init_plasma_grid ( )
         USE module_physical_constants,ONLY: earth_radius, pi, G0,zero
-        USE module_input_parameters,ONLY: sw_debug,lpstrt,lpstop,mpstrt,mpstop,sw_grid, fac_BM
+        USE module_input_parameters,ONLY: sw_debug,lpstrt,lpstop,mpstrt,mpstop,sw_grid  
+!dbg, fac_BM
         IMPLICIT NONE
 
         INTEGER (KIND=int_prec) :: i, mp,lp
@@ -99,7 +100,7 @@
 
       Pvalue(:) = zero
       apex_longitude_loop: DO mp = NMP0,NMP1
-      IF ( mpstrt<=mp.AND.mp<=mpstop ) & 
+      IF ( sw_debug.AND.mpstrt<=mp.AND.mp<=mpstop ) & 
      &  print *,"sub-init_plasma_grid: mp=",mp
 
 
@@ -116,8 +117,8 @@
         IF (mp==NMP0)  CALL Get_Pvalue_Dipole ( r_meter2D(IN), plasma_grid_GL(IN), Pvalue(lp) )
 
 !debug write
-!nm20120123: IF ( sw_debug ) THEN
-IF ( mpstrt<=mp.AND.mp<=mpstop .AND. lpstrt<=lp.AND.lp<=lpstop) THEN
+IF ( sw_debug.AND. & !) THEN
+& mpstrt<=mp.AND.mp<=mpstop .AND. lpstrt<=lp.AND.lp<=lpstop) THEN
 
 !dbg20120305
 midpoint = IN + ( IS - IN )/2
@@ -140,7 +141,7 @@ print "('Be3 [T] NH/SH  =',2E12.4)", Be3(1,mp,lp), Be3(2,mp,lp)
 print "('SL [m]     =',4E13.5)", plasma_grid_3d(in:in+1,mp)%SL, plasma_grid_3d(is-1:is,mp)%SL
 print "('Z  [m]     =',4E13.5)",  plasma_grid_Z(in:in+1),  plasma_grid_Z(is-1:is)
 print "('Pvalue     =',F10.4)", Pvalue(lp)
-END IF !( sw_debug ) THEN
+END IF !( sw_debug etc ) THEN
 
 
 IF ( sw_grid==0 ) THEN  !APEX
@@ -199,7 +200,11 @@ endif !(mp==1) then
 if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
 
 !dbg20120313
- plasma_grid_3d(1:NPTS2D,mpstrt:mpstop)%BM = plasma_grid_3d(1:NPTS2D,mpstrt:mpstop)%BM * fac_BM
+!     DO mp = 1,NMP_all 
+!       DO i = 1,NPTS2D 
+!         plasma_grid_3d(i,mp)%BM = plasma_grid_3d(i,mp)%BM * fac_BM
+!       END DO
+!     END DO
 
         END SUBROUTINE init_plasma_grid
 !---------------------------
