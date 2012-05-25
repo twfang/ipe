@@ -1,3 +1,4 @@
+!dbg20120501: add v// to perp transport
 !20110911: note: openmp was tried on jet but did not work: only thread 0 was used not the other thread...although other threads did exist...needs more investigation...
 ! DATE: 08 September, 2011
 !********************************************
@@ -13,32 +14,40 @@
 !--------------------------------------------  
       MODULE module_PLASMA
       USE module_precision
-      USE module_IPE_dimension,ONLY: ISPEC,ISPET,ISPEV,IPDIM, NPTS2D,NLP_all
+      USE module_IPE_dimension,ONLY: ISPEC,ISPET,ISPEV,IPDIM, NPTS2D,NLP_all,ISTOT
       IMPLICIT NONE
 ! --- PRIVATE ---
 !
 ! --- PUBLIC ---
 !solver REALL needs these parameters from the previous time step
       !.. TE_TI_k(3,J) = Te, TE_TI_k(2,J) = Ti = TE_TI_k(2,J) [kelvin]
-      TYPE :: plasma_data_1d
-        REAL(KIND=real_prec), DIMENSION(      IPDIM) :: Te_k  !TE_TI(3)
-        REAL(KIND=real_prec), DIMENSION(ISPET,IPDIM) :: Ti_k  !TE_TI(1:2)
-        REAL(KIND=real_prec), DIMENSION(ISPEC,IPDIM) :: N_m3
+!dbg20120501      TYPE :: plasma_data_1d
+!dbg20120501        REAL(KIND=real_prec), DIMENSION(      IPDIM) :: Te_k  !TE_TI(3)
+!dbg20120501        REAL(KIND=real_prec), DIMENSION(ISPET,IPDIM) :: Ti_k  !TE_TI(1:2)
+!dbg20120501        REAL(KIND=real_prec), DIMENSION(ISPEC,IPDIM) :: N_m3
 !dbg20110927        REAL(KIND=real_prec), DIMENSION(ISPEV,IPDIM) :: V_ms1
 !dbg20110927        REAL(KIND=real_prec), DIMENSION(      IPDIM) :: heating_rate_e_cgs ![eV cm-3 s-1] !EHT(3)
 !dbg20110927        REAL(KIND=real_prec), DIMENSION(ISPET,IPDIM) :: heating_rate_i_cgs  !EHT(1:2)
 !dbg20110923        REAL(KIND=real_prec), DIMENSION(      IPDIM) :: NO_m3 
-      END TYPE  plasma_data_1d
-      TYPE(plasma_data_1d),ALLOCATABLE,TARGET,PUBLIC :: plasma_3d(:,:)
+!dbg20120501      END TYPE  plasma_data_1d
+!      TYPE(plasma_data_1d),ALLOCATABLE,TARGET,PUBLIC :: plasma_3d(:,:)
 
 !neutral needs these parameters from the ionosphere in addition to N&T
-      TYPE :: plasma_data_1d4n
-        REAL(KIND=real_prec), DIMENSION(ISPEV) :: V_ms1
+!dbg20120501      TYPE :: plasma_data_1d4n
+!dbg20120501        REAL(KIND=real_prec), DIMENSION(ISPEV) :: V_ms1
 !???      REAL(KIND=real_prec) :: NHEAT
-      END TYPE  plasma_data_1d4n
-      TYPE(plasma_data_1d4n),ALLOCATABLE,TARGET,PUBLIC :: plasma_3d4n(:,:) !(NPTS2D, NMP0:NMP1)
+!dbg20120501      END TYPE  plasma_data_1d4n
+!dbg20120501      TYPE(plasma_data_1d4n),ALLOCATABLE,TARGET,PUBLIC :: plasma_3d4n(:,:) !(NPTS2D, NMP0:NMP1)
 
-      TYPE(plasma_data_1d), PUBLIC :: n0_1d !N&T after perpendicular transport
+!dbg20120501      TYPE(plasma_data_1d), PUBLIC :: n0_1d !N&T after perpendicular transport
+!dbg20120501
+      REAL(KIND=real_prec),ALLOCATABLE,TARGET,PUBLIC :: plasma_3d(:,:,:)!ISTOT,NPTS2D,NMP
+      REAL(KIND=real_prec),DIMENSION(ISTOT,IPDIM),PUBLIC :: plasma_1d
+!1:9:den:o+,h+,he+,n+
+!10 :te
+!11:12:ti
+!13:16:vi:o+,h+,he+,n+
+
 
 !only for debug, o+
 !d      REAL(KIND=real_prec), DIMENSION(NPTS2D), PUBLIC :: n0_2dbg 
@@ -53,7 +62,7 @@
       INTEGER (KIND=int_prec),PUBLIC:: utime_save
 
       PRIVATE
-      PUBLIC :: plasma,plasma_data_1d,plasma_data_1d4n
+      PUBLIC :: plasma !dbg20120501 ,plasma_data_1d,plasma_data_1d4n
 
 
       CONTAINS
@@ -71,7 +80,8 @@
 !--- local variables ---
       INTEGER (KIND=int_prec) :: mp
       INTEGER (KIND=int_prec) :: lp
-      INTEGER (KIND=int_prec) :: i,j,midpoint
+      INTEGER (KIND=int_prec) :: i,j,midpoint, i1d,k  !dbg20120501
+      INTEGER (KIND=int_prec) :: jth  !dbg20120501
 !d      INTEGER :: lun_dbg=999
 !t      REAL(KIND=real_prec) :: phi_t0   !magnetic longitude,phi at T0
 !t      REAL(KIND=real_prec) :: theta_t0 !magnetic latitude,theta at T0
@@ -94,13 +104,14 @@ end if
         if ( sw_debug )  WRITE (0,"('sub-p: mp=',I4)")mp
 !d        n0_2dbg(:)=zero
 
-        DO i=1,NPTS2D
-          plasma_3d4n(i,mp)%V_ms1(1:ISPEV)=zero
-        END DO
+!dbg20120412: sw_divvpar4t
+!        DO i=1,NPTS2D
+!          plasma_3d4n(i,mp)%V_ms1(1:ISPEV)=zero
+!        END DO
 
 
 !!!dbg20120125: only temporary used to switch on the transport only during the daytime...
-        IF ( sw_rw_sw_perp_trans.AND.sw_perp_transport(mp)==0 )  CALL activate_perp_transport (utime,mp)
+!dbg20120509        IF ( sw_rw_sw_perp_trans.AND.sw_perp_transport(mp)==0 )  CALL activate_perp_transport (utime,mp)
 !!!dbg20120125:
 
         apex_latitude_height_loop: DO lp = lpstrt,lpstop,lpstep
@@ -110,12 +121,15 @@ end if
 !dbg20120228: debug how2validate the transport
 if(sw_dbg_perp_trans.and.utime==start_time.and.lp==lpstrt)then
 DO j=1,NLP_all
-DO i=1,IPDIM
-plasma_3d(mp,j)%N_m3( 1:ISPEC,i)=100.0
-plasma_3d(mp,j)%Te_k(         i)=100.0
-plasma_3d(mp,j)%Ti_k( 1:ISPET,i)=100.0
-END DO !i=1,IPDIM
-END DO !j=1,NLP_all
+   DO i=JMIN_IN(j),JMAX_IS(j)
+      DO jth=1,ISTOT
+         plasma_3d(jth,i,mp)=100.0
+!dbg20120501      plasma_3d(mp,j)%N_m3( 1:ISPEC,i)=100.0
+!dbg20120501      plasma_3d(mp,j)%Te_k(         i)=100.0
+!dbg20120501      plasma_3d(mp,j)%Ti_k( 1:ISPET,i)=100.0
+      END DO !jth
+   END DO !i
+END DO !j
 end if
 !if(sw_dbg_perp_trans) print *, '1!dbg max o+',MAXVAL( plasma_3d(mp,lp)%N_m3( 1,1:IPDIM) ),MINVAL( plasma_3d(mp,lp)%N_m3( 1,1:IPDIM) )
 
@@ -124,11 +138,24 @@ end if
 
 !20111025: not sure if these lines work when ut=0 & HPEQ=0.5(initial profiles are prepared within flip) , or maybe it is ok if they are zero?
 !save the values from the previous time step...
-          DO i=1,IPDIM
-            n0_1d%N_m3( 1:ISPEC,i)=plasma_3d(mp,lp)%N_m3( 1:ISPEC,i)
-            n0_1d%Te_k(         i)=plasma_3d(mp,lp)%Te_k(         i)
-            n0_1d%Ti_k( 1:ISPET,i)=plasma_3d(mp,lp)%Ti_k( 1:ISPET,i)
-          END DO
+          DO i=JMIN_IN(lp),JMAX_IS(lp)
+             i1d=i-JMIN_IN(lp)+1
+             DO jth=1,ISTOT
+                plasma_1d(jth,i1d) = plasma_3d(jth,i,mp)
+!dbg20120501          DO i=1,IPDIM
+!dbg20120501            n0_1d%N_m3( 1:ISPEC,i) = plasma_3d(mp,lp)%N_m3( 1:ISPEC,i)
+!dbg20120501            n0_1d%Te_k(         i) = plasma_3d(mp,lp)%Te_k(         i)
+!dbg20120501            n0_1d%Ti_k( 1:ISPET,i) = plasma_3d(mp,lp)%Ti_k( 1:ISPET,i)
+             END DO !jth
+          END DO !i
+!dbg20120501
+!dbg20120501          j=1
+!dbg20120501          DO i=JMIN_IN(lp),JMAX_IS(lp)
+!dbg20120501            i1d=i-JMIN_IN(lp)+1
+!dbg20120501            DO k=1,2
+!dbg20120501              plasma_1d(k,j,i1d)=plasma_3d4n(i,mp)%V_ms1(k)
+!dbg20120501            END DO
+!dbg20120501          END DO
 
 !if(sw_dbg_perp_trans) print *, '2!dbg max o+',MAXVAL( n0_1d%N_m3( 1,1:IPDIM) ),MINVAL( n0_1d%N_m3( 1,1:IPDIM) )
 
@@ -138,12 +165,12 @@ end if
 
 
 
-          IF ( sw_perp_transport(mp)>=1 ) THEN
+!dbg20120509          IF ( sw_perp_transport(mp)>=1 ) THEN
+          IF ( sw_perp_transport>=1 ) THEN
             IF ( lp>=lpmin_perp_trans.AND.lp<=lpmax_perp_trans ) THEN
               CALL perpendicular_transport ( utime,mp,lp )
 
-!dbg20110927:put the values back to the 3D array!
-!dbg plasma_3d(mp,lp)%N_m3(1:ISPEC,1:IPDIM)=n0_1d%N_m3(1:ISPEC,1:IPDIM)
+
 
 
             ELSE  !IF ( lp>lpmin_perp_trans ) THEN
@@ -170,11 +197,27 @@ endif
           ELSE IF ( sw_para_transport==0 ) THEN 
 
 !dbg20111101:v9: temporary ...
-            DO i=1,IPDIM
-              plasma_3d(mp,lp)%N_m3( 1:ISPEC,i)=            n0_1d%N_m3( 1:ISPEC,i)
-              plasma_3d(mp,lp)%Te_k(         i)=            n0_1d%Te_k(         i)
-              plasma_3d(mp,lp)%Ti_k( 1:ISPET,i)=            n0_1d%Ti_k( 1:ISPET,i)
-            END DO
+            DO i=JMIN_IN(lp),JMAX_IS(lp)
+             i1d=i-JMIN_IN(lp)+1
+              DO jth=1,ISTOT
+                 plasma_3d(jth,i,mp) = plasma_1d(jth,i1d)
+!dbg20120501            DO i=1,IPDIM
+!dbg20120501              plasma_3d(mp,lp)%N_m3( 1:ISPEC,i)=            n0_1d%N_m3( 1:ISPEC,i)
+!dbg20120501              plasma_3d(mp,lp)%Te_k(         i)=            n0_1d%Te_k(         i)
+!dbg20120501              plasma_3d(mp,lp)%Ti_k( 1:ISPET,i)=            n0_1d%Ti_k( 1:ISPET,i)
+              END DO !jth
+           END DO !i
+
+!dbg20120501
+!dbg20120501            j=1
+!dbg20120501            DO i=JMIN_IN(lp),JMAX_IS(lp)
+!dbg20120501            i1d=i-JMIN_IN(lp)+1
+!dbg20120501            DO k=1,2
+!dbg20120501              plasma_3d4n(i,mp)%V_ms1(k)=                   plasma_1d(k,j,i1d)
+!dbg20120501            END DO
+!dbg20120501          END DO            
+
+
           END IF !( sw_para_transport==1 ) THEN           
 
 ! calculate neutral heating rate: NHEAT_mks in [eV kg-1 s-1]
@@ -189,7 +232,7 @@ endif
       END DO apex_longitude_loop !: DO mp = 
 
 !dbg20120228: debug how2validate the transport
-if(sw_dbg_perp_trans) call dbg_estimate_trans_error (utime)
+!dbg20120501 if(sw_dbg_perp_trans) call dbg_estimate_trans_error (utime)
 
 ! output plasma parameters to a file
       IF ( MOD( (utime-start_time),ip_freq_output)==0 ) THEN 
