@@ -13,7 +13,7 @@
 !
       SUBROUTINE allocate_arrays ( switch )
       USE module_precision
-      USE module_IPE_dimension,ONLY: NPTS2D,NMP_all,NLP_all,NMP0,NMP1
+      USE module_IPE_dimension,ONLY: NPTS2D,NMP_all,NLP_all,NMP0,NMP1,ISTOT
       USE module_FIELD_LINE_GRID_MKS,ONLY: &
      & plasma_grid_3d &
      &,apexD ,apexE &
@@ -21,7 +21,8 @@
      &,mlon_rad, plasma_grid_Z, plasma_grid_GL
   
 !t      USE module_NEUTRAL_MKS,ONLY: 
-      USE module_PLASMA,ONLY: plasma_3d, plasma_3d4n,VEXBup
+!dbg20120501      USE module_PLASMA,ONLY: plasma_3d, plasma_3d4n,VEXBup
+      USE module_PLASMA,ONLY: plasma_3d, VEXBup
       USE module_heating_rate,ONLY: hrate_cgs_save
       USE module_input_parameters,ONLY: sw_neutral_heating_flip
       IMPLICIT NONE
@@ -47,8 +48,9 @@ print *,'ALLOCATing ARRAYS'
 !---
      &,     mlon_rad(  NMP_all+1    ) &
 !---plasma
-     &,    plasma_3d(   NMP0:NMP1,NLP_all) &
-     &,    plasma_3d4n( NPTS2D, NMP0:NMP1) &
+     &,    plasma_3d(ISTOT,NPTS2D,NMP0:NMP1) &
+!dbg20120501     &,    plasma_3d(   NMP0:NMP1,NLP_all) &
+!dbg20120501     &,    plasma_3d4n( NPTS2D, NMP0:NMP1) &
      &,    VEXBup(      NMP0:NMP1,NLP_all) &
      &,STAT=stat_alloc         )
  
@@ -94,7 +96,7 @@ print *,'DE-ALLOCATing ARRAYS'
      &,      mlon_rad &
 !---plasma
      &,  plasma_3d   &
-     &,  plasma_3d4n &
+!dbg20120501     &,  plasma_3d4n &
      &,  VEXBup      &
      &,STAT=stat_alloc         )
  
