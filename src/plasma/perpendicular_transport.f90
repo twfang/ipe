@@ -78,7 +78,8 @@ if(sw_debug) print *,'interpolate_flux_tube finished!'
 !---
 
 !3:both THETA&PHI:transport included, NH/SH flux tubes are moving separately with different ExB drift
-IF ( sw_perp_transport(mp)==3 ) THEN 
+!dbg20120509: IF ( sw_perp_transport(mp)==3 ) THEN 
+IF ( sw_perp_transport==3 ) THEN 
   ihem_max=2
 ELSE
   ihem_max=1
@@ -183,7 +184,8 @@ END DO which_hemisphere!:  DO ihem=1,ihem_max
 !---
 
 !3:both THETA&PHI:transport included, NH/SH flux tubes are moving separately with different ExB drift
-IF ( sw_perp_transport(mp)==3 ) THEN 
+!dbg20120509 IF ( sw_perp_transport(mp)==3 ) THEN 
+IF ( sw_perp_transport==3 ) THEN 
   ihem_max=2
 ELSE
   ihem_max=1
