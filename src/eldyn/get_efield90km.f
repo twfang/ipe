@@ -1,4 +1,3 @@
-!20110919: TODO: ed2 needs to be calulcated!!!
 !FUNC-linearinterpolation does not work! need more debugging. temporary use the average of the two potentials.
 !another idea is to 2Dbilinear interpolation of potential onto the ipe grid, and then one can do the usual central differencing.
 ! DATE: 08 September, 2011
@@ -24,7 +23,7 @@
       USE module_IPE_dimension,ONLY: NMP_all,NLP_all
       USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS
      &,mlon_rad,ht90
-      USE module_input_parameters,ONLY: sw_debug,NYEAR,NDAY,start_time
+      USE module_input_parameters,ONLY: sw_debug,NYEAR,NDAY
       USE magfield_module,ONLY:sunloc,sunlons
       IMPLICIT NONE
 !
@@ -39,13 +38,14 @@
 !      REAL(KIND=real_prec) :: potent_i0,potent_i1
 !      REAL(KIND=real_prec) :: LINEAR_INTERPOLATION !the intepolated value YY at (XX)
       REAL(KIND=real_prec) :: mlon90_deg !deg
-      REAL(KIND=real_prec) :: d_phi_m !in radian
+      REAL(KIND=real_prec) :: d_phi_m, d_lam_m !in radian
       REAL(KIND=real_prec) :: r !in meter
       INTEGER (KIND=int_prec) :: jj0,jj1
-      INTEGER(KIND=int_prec) :: i0,i1
-      REAL(KIND=real_prec) :: pot_i0,pot_i1
+      INTEGER(KIND=int_prec) :: i0,i1,ihem
+      REAL(KIND=real_prec) :: pot_i0,pot_i1, pot_j0,pot_j1
       REAL(KIND=real_prec),DIMENSION(0:nmlon) :: mlon130_rad
       REAL(KIND=real_prec) :: mlon130_0
+      REAL(KIND=real_prec) :: cos2Lambda_m,sinLambda_m(2),sinI_m(2)
 !
 ! array initialization
       Ed1_90(:,:)=zero
@@ -161,7 +161,7 @@
 
       END IF !( j0(1,1)>0 ) THEN
 
-      d_phi_m = dlonm * dtr
+      d_phi_m = dlonm * dtr !constant
       r = earth_radius + ht90 ![m]
 
 
@@ -225,9 +225,8 @@
         mlat_loop90km1: DO lp=1,NLP_all
           IN => JMIN_IN(lp)
           IS => JMAX_IS(lp)
-      if(utime==start_time.and.mp==1.and.lp>153.and.lp<158)
-     & print"('remember mlat is not decreasing! mp',i3
-     &,' lp',i3,' IN=',i5,' latN',F6.2
+      if(mp==1.and.lp>150.and.lp<158)
+     & print"('mp',i3,' lp',i3,' IN=',i5,' latN',F6.2
      &,' IS=',i5,' latS',F6.2)",mp,lp
      &,IN,(90.-plasma_grid_GL(IN)*rtd)
      &,IS,(90.-plasma_grid_GL(IS)*rtd)
@@ -281,13 +280,47 @@
      &*(pot_i1-pot_i0)
      &/d_phi_m
 
+
+
+! computing ed2_90(mp,lp) continues
+! calculate sinIm !eq(3.7)
+      cos2Lambda_m = coslam_m(lp) * coslam_m(lp) ! 0<cos2<1
+      sinLambda_m(1)  = + SQRT( 1.0 - cos2Lambda_m )  !>0 ---NH 
+      sinLambda_m(2)  = - SQRT( 1.0 - cos2Lambda_m )  !<0 ---SH 
+      sinI_m(1:2)= 2.0 * sinLambda_m(1:2) / SQRT(4.0-3.0*cos2Lambda_m)
+
+
+!NH
+      ihem=1
+      jj0=j0(ihem,lp)              !1:NH
+      jj1=j1(ihem,lp)              !1:NH
+      d_lam_m = theta90_rad( jj1 ) - theta90_rad( jj0 )
+      pot_j1=( potent(i0,jj1)+potent(i1,jj1) )*0.50
+      pot_j0=( potent(i0,jj0)+potent(i1,jj0) )*0.50
+      if (d_lam_m==0.)then
+      print *,'sub-get_ed2:NH!STOP! INVALID',lp,d_lam_m
+      STOP
+      endif
+      ed2_90(mp,lpconj(lp))=+1.0/r/sinI_m(ihem)
+     &*(pot_j1-pot_j0) /d_lam_m
+     &*(-1.0)  !dbg20120604: suggested from plotting 
+!dbg20111108     &*(-1.)*sinI_m(ihem)     !E_m_lambda (5.10)
+!SH
+      ihem=2
+      jj0=j0(ihem,lp)              !2:SH
+      jj1=j1(ihem,lp)              !2:SH
+      d_lam_m = theta90_rad( jj1 ) - theta90_rad( jj0 )
+      pot_j1=( potent(i0,jj1)+potent(i1,jj1) )*0.50
+      pot_j0=( potent(i0,jj0)+potent(i1,jj0) )*0.50
+      ed2_90(mp,lp)=+1.0/r/sinI_m(ihem)
+     &*(pot_j1-pot_j0) /d_lam_m
+     &*(-1.0)  !dbg20120604
+!dbg20111108     &*(-1.)*sinI_m(ihem)  !E_m_lambda (5.10)
+
           !explicitly disassociate the pointers
           NULLIFY (IN,IS)
         END DO mlat_loop90km1 !: DO lp=1,NLP_all
       END DO mlon_loop90km0     !: DO mp=1,nmp
-
-! computing ed2_90(mp,lp) continues....for now zero
-      ed2_90(:,:)=0.0
 
       END SUBROUTINE GET_EFIELD90km
 !
