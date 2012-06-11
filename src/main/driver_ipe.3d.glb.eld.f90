@@ -51,7 +51,7 @@
 
 ! set up plasma grids by reading file
       CALL init_plasma_grid ( )
-!print *,'after init_plasma_grid'
+
 
 IF ( sw_output_plasma_grid ) THEN
   print *, 'sub-init_p: output plasma_grid'
@@ -63,8 +63,10 @@ END IF
 
 ! initialise the flux tubes from previous runs
       IF ( HPEQ_flip==0.0 ) THEN
+        print *,'before CALL io_plasma_bin finished! READ: start_time=', start_time,stop_time
         CALL io_plasma_bin ( 2, start_time )
-        print *,'CALL io_plasma_bin finished! READ'
+        print *,'after CALL io_plasma_bin finished! READ: start_time=', start_time,stop_time
+
       END IF
 !20120215: CALL io_plasma_bin_readinit ( start_time )
 !20120215: print *,'CALL io_plasma_bin_readinit finished!'
@@ -72,10 +74,8 @@ END IF
 
 ! initialization of electrodynamic module:
 ! read in E-field
-!!!dbg20120125:      IF ( sw_perp_transport>=1 )  
-!print *,'before init_eldyn'
-      CALL init_eldyn ( )
-!print *,'after init_eldyn'
+      IF ( sw_perp_transport>=1 ) & 
+     & CALL init_eldyn ( )
 
       time_loop: DO utime = start_time, stop_time, time_step
 
@@ -84,8 +84,8 @@ END IF
 ! interplate from plasma to neutral grid: Nei,Tei,Vi,NHEAT, auroral heating?
 
 !nm20110907:moved here because empirical Efield is needed for both neutral &plasma
-!!!dbg20120125:      IF ( sw_perp_transport>=1 )  
-         CALL eldyn ( utime )
+      IF ( sw_perp_transport>=1 ) & 
+     &   CALL eldyn ( utime )
 
 ! update neutral 3D structure: use MSIS/HWM to get the values in the flux tube grid
         IF ( MOD( (utime-start_time),ip_freq_msis)==0 ) THEN 
@@ -114,14 +114,15 @@ END IF
       CALL close_files ( )
 
 
+!dbg20120509: no longer need 
 !20120207 I have to output the sw_perp_transport to a file for the next run...
-IF ( sw_rw_sw_perp_trans ) THEN
-open(unit=luntmp, file='fort.300',status='unknown',form='formatted',iostat=istat)
-DO mp=1,NMP_all
-write(unit=luntmp, fmt='(2i3)') mp,sw_perp_transport(mp)
-print *,'mp=',mp,' sw_p',sw_perp_transport(mp)
-END DO
-close(unit=luntmp)
-END IF !( sw_tmp_sw_perp_trans ) THEN
+!IF ( sw_rw_sw_perp_trans ) THEN
+!open(unit=luntmp, file='fort.300',status='unknown',form='formatted',iostat=istat)
+!DO mp=1,NMP_all
+!write(unit=luntmp, fmt='(2i3)') mp,sw_perp_transport(mp)
+!print *,'mp=',mp,' sw_p',sw_perp_transport(mp)
+!END DO
+!close(unit=luntmp)
+!END IF !( sw_tmp_sw_perp_trans ) THEN
 
 END PROGRAM  test_plasma
