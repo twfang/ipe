@@ -1,5 +1,5 @@
 !note:20120207: v36: used only activating the perp.transport gradually...
-! DATE: 08 September, 2011
+! DATE: 08&,sw_r_or_th !nm20111114
 !********************************************
 !***      Copyright 2011 NAOMI MARUYAMA   ***
 !***      ALL RIGHTS RESERVED             ***
@@ -92,15 +92,21 @@
       LOGICAL, PUBLIC :: sw_output_plasma_grid
       LOGICAL, PUBLIC :: sw_rw_sw_perp_trans
       LOGICAL, PUBLIC :: sw_dbg_perp_trans
-      INTEGER(KIND=int_prec),DIMENSION(NMP_all), PUBLIC :: sw_perp_transport 
+      INTEGER(KIND=int_prec), PUBLIC :: sw_perp_transport 
 !0:WITHOUT perpendicular transport
 !1:THETA only transport included
 !2:both THETA&PHI:transport included, NH/SH flux tubes are moving together with the same ExB drift
 !3:both THETA&PHI:transport included, NH/SH flux tubes are moving separately with different ExB drift
 ! if sw_perp_tr=>1
+      INTEGER (KIND=int_prec), PUBLIC :: sw_r_or_th 
+!0: theta method, good for global
+!1: r method, good for mid/low latitude
+
       INTEGER (KIND=int_prec), PUBLIC :: lpmin_perp_trans !=15 :mlatN=78deg???
       INTEGER (KIND=int_prec), PUBLIC :: lpmax_perp_trans !=151:mlatN=5.64deg
       INTEGER (KIND=int_prec), PUBLIC :: record_number_plasma_start
+      INTEGER (KIND=int_prec), PUBLIC :: sw_record_number
+      INTEGER (KIND=int_prec), PUBLIC :: duration !used when sw_record_n=1
       INTEGER (KIND=int_prec), PUBLIC :: sw_exb_up
 ! (0) self consistent electrodynamics
 ! (1) WACCM E empirical model
@@ -114,8 +120,8 @@
 !1: ksi_factor from richards thesis---including compressional effect/adiabatic heating ,,,used until 20120314 with interpolate_ft.v16.f90
 !2:20120330: new way of calculating the ksi_factor with interpolate_ft.v17.f90
       INTEGER(KIND=int_prec), PUBLIC :: sw_divv
-!0: div * Vem=0
-!1: div * Vem included in the parallel transport solver as was done in FLIP
+!0: div * V//=0
+!1: div * V// included in the Te/i solver
 !dbg20120313 
       REAL(KIND=real_prec), PUBLIC :: fac_BM
 
@@ -159,6 +165,7 @@
            &, sw_rw_sw_perp_trans &
            &, sw_dbg_perp_trans &
            &, sw_perp_transport &
+           &, sw_r_or_th &
            &, lpmin_perp_trans &
            &, lpmax_perp_trans &
            &, sw_exb_up &
@@ -171,6 +178,8 @@
            &, sw_debug_mpi   &
            &, sw_output_fort167   &
            &, record_number_plasma_start   &
+           &, sw_record_number   &
+           &, duration   &
            &, fac_BM   &
            &, iout
 
@@ -231,29 +240,14 @@ WRITE(UNIT=LUN_LOG0,FMT=*)'real_prec=',real_prec,' int_prec=',int_prec
 
         CLOSE(LUN_nmlt)
 print *,'finished reading namelist:',filename
+stop_time=start_time+duration
+print *,'stop_time',stop_time
         CLOSE(LUN_LOG0)
 
-        IF ( sw_rw_sw_perp_trans )  CALL setup_sw_perp_transport ()
+!dbg20120509        IF ( sw_rw_sw_perp_trans )  CALL setup_sw_perp_transport ()
 !note:20120207: v36: used only activating the perp.transport gradually...
 
  
         END SUBROUTINE read_input_parameters
 
-!note:20120207: v36: used only activating the perp.transport gradually only during daytime...
-        SUBROUTINE setup_sw_perp_transport () 
-        IMPLICIT NONE
-        INTEGER(KIND=int_prec),parameter :: luntmp=300
-        INTEGER(KIND=int_prec) :: istat,mp,mpin
-
-!        sw_perp_transport( 1:3 )=1 
-!        sw_perp_transport(56:80)=1 
-!when I have the output file to read...
-open(unit=luntmp, file='startup_fort.300',status='old',form='formatted',iostat=istat)
-DO mp=1,NMP_all
-read(unit=luntmp, fmt='(2i3)') mpin,sw_perp_transport(mpin)
-print *,'mpin=',mpin,' sw_p',sw_perp_transport(mpin)
-END DO
-!close(unit=luntmp)
-
-        END SUBROUTINE setup_sw_perp_transport
 END MODULE module_input_parameters
