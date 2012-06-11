@@ -43,3 +43,4 @@ INTEGER(KIND=int_prec), PARAMETER :: NLP =NLP_all
 INTEGER(KIND=int_prec), PARAMETER :: ISPEC = 9   !.. Species dimension for density
 INTEGER(KIND=int_prec), PARAMETER :: ISPEV = 4   !.. Species dimension for V field line velocity
 INTEGER(KIND=int_prec), PARAMETER :: ISPET = 2   !.. Species dimension for T temperature
+INTEGER(KIND=int_prec), PARAMETER :: ISTOT =16   !..=ISPEC+3+ISEV,TOTAL Species
