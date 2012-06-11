@@ -18,7 +18,7 @@
      &, sw_INNO,FPAS_flip,HPEQ_flip,HEPRAT_flip,COLFAC_flip,sw_IHEPLS,sw_INPLS,sw_debug,iout, start_time, sw_wind_flip, sw_depleted_flip, start_time_depleted, sw_output_fort167
       USE module_NEUTRAL_MKS,ONLY: ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3 &
      &, TN_k,TINF_k,un_ms1
-      USE module_PLASMA,ONLY: plasma_3d,plasma_3d4n,n0_1d
+      USE module_PLASMA,ONLY: plasma_3d, plasma_1d !dbg20120501
 !dbg20110927      USE module_heating_rate,ONLY: NHEAT_cgs
       USE module_physical_constants,ONLY: pi,zero
       USE module_IO,ONLY: PRUNIT,LUN_FLIP1,LUN_FLIP2,LUN_FLIP3,LUN_FLIP4
@@ -65,6 +65,7 @@
 !      INTEGER (KIND=int_prec) :: stat_alloc
       INTEGER (KIND=int_prec) :: ipts,i
       INTEGER (KIND=int_prec),PARAMETER :: ip_freq_output_fort=900      
+      INTEGER (KIND=int_prec) :: jth !dbg20120501
 !----------------------------------
 
 
@@ -241,14 +242,36 @@ IF ( sw_debug )  WRITE(UNIT=PRUNIT,FMT="('mp=',i6,' lp=',i6,' UT=',F10.2)") mp,l
 
       DO ipts=1,CTIPDIM
 !N&T from the previous time step are absolute necesary for the solver...
-         XIONNX(1:ISPEC,ipts) = n0_1d%N_m3(1:ISPEC,ipts)
-         TE_TIX(3      ,ipts) = n0_1d%Te_k(        ipts)
-         TE_TIX(2      ,ipts) = n0_1d%Ti_k(      2,ipts)
-         TE_TIX(1      ,ipts) = n0_1d%Ti_k(      1,ipts) 
+!dbg20120501
+        DO jth=1,ISPEC
+          XIONNX(jth,ipts) = plasma_1d(jth,ipts)
+        END DO !jth
+!te
+        TE_TIX(3,ipts) = plasma_1d(ISPEC+1,ipts)
+!ti
+        DO jth=1,2
+          TE_TIX(jth,ipts) = plasma_1d(jth+ISPEC+1,ipts)
+        END DO !jth
+!vi
+        DO jth=1,ISPEC
+IF ( jth<=2 ) THEN
+          XIONVX(jth,ipts) = plasma_1d(jth+ISPEC+3,ipts) 
+ELSE
+          XIONVX(jth,ipts) = zero
+END IF
+        END DO !jth
+!dbg20120501         XIONNX(1:ISPEC,ipts) = n0_1d%N_m3(1:ISPEC,ipts)
+!dbg20120501         TE_TIX(3      ,ipts) = n0_1d%Te_k(        ipts)
+!dbg20120501         TE_TIX(2      ,ipts) = n0_1d%Ti_k(      2,ipts)
+!dbg20120501         TE_TIX(1      ,ipts) = n0_1d%Ti_k(      1,ipts) 
 
-!dbg20110927         XIONVX(1:ISPEV    ,ipts)= plasma_3d(mp,lp)%V_ms1(1:ISPEV,ipts)
-!dbg20110927         XIONVX(ISPEV:ISPEC,ipts)= plasma_3d(mp,lp)%V_ms1(1      ,ipts) !not used
-         XIONVX(1:ISPEC,ipts) = zero  !dbg20110927
+!### need to change these derived data type to a simpler arrays!!!
+!nm20120412: need to restore the save V//(1:2) for parallel conv. effect
+!nm20120412         XIONVX(1:ISPEC,ipts) = zero  !dbg20110927
+!dbg20120501: add v// to perp transport
+!dbg20120501         XIONVX(1,ipts)=plasma_1d(1,1,ipts) 
+!dbg20120501         XIONVX(2,ipts)=plasma_1d(2,1,ipts) 
+!dbg20120501         XIONVX(3:ISPEC,ipts) = zero
 
 !dbg20110927         EHTX(3          ,ipts)= plasma_3d(mp,lp)%heating_rate_e_cgs(  ipts)
 !dbg20110927         EHTX(2          ,ipts)= plasma_3d(mp,lp)%heating_rate_i_cgs(2,ipts)
@@ -317,12 +340,26 @@ IF ( sw_debug )  WRITE(UNIT=PRUNIT,FMT="('mp=',i6,' lp=',i6,' UT=',F10.2)") mp,l
 
 ! output
       DO ipts=1,CTIPDIM
-         plasma_3d(mp,lp)%N_m3( 1:ISPEC,ipts) = XIONNX(1:ISPEC,ipts)
-         plasma_3d(mp,lp)%Te_k(         ipts) = TE_TIX(3      ,ipts)
-         plasma_3d(mp,lp)%Ti_k(       2,ipts) = TE_TIX(2      ,ipts)
-         plasma_3d(mp,lp)%Ti_k(       1,ipts) = TE_TIX(1      ,ipts)
+!dbg20120501
+         DO jth=1,ISPEC
+            plasma_3d(jth,ipts+IN-1,mp) = XIONNX(jth,ipts)
+         END DO !jth
 
-         plasma_3d4n(ipts+IN-1,mp)%V_ms1( 1:ISPEV     ) = XIONVX(1:ISPEV,ipts)
+!te
+         plasma_3d(ISPEC+1,ipts+IN-1,mp) = TE_TIX(3,ipts)
+!ti
+         DO jth=1,2
+            plasma_3d(jth+ISPEC+1,ipts+IN-1,mp) = TE_TIX(jth,ipts)
+         END DO !jth
+!vi
+         DO jth=1,ISPEV
+           plasma_3d(jth+ISPEC+3,ipts+IN-1,mp) = XIONVX(jth,ipts)
+         END DO !jth
+!dbg20120501         plasma_3d(mp,lp)%N_m3( 1:ISPEC,ipts) = XIONNX(1:ISPEC,ipts)
+!dbg20120501         plasma_3d(mp,lp)%Te_k(         ipts) = TE_TIX(3      ,ipts)
+!dbg20120501         plasma_3d(mp,lp)%Ti_k(       2,ipts) = TE_TIX(2      ,ipts)
+!dbg20120501         plasma_3d(mp,lp)%Ti_k(       1,ipts) = TE_TIX(1      ,ipts)
+!dbg20120501         plasma_3d4n(ipts+IN-1,mp)%V_ms1( 1:ISPEV     ) = XIONVX(1:ISPEV,ipts)
 !dbg20110927
 !dbg20110927         plasma_3d(mp,lp)%V_ms1(1:ISPEV,ipts) = XIONVX(1:ISPEV,ipts)
 !dbg20110927         plasma_3d(mp,lp)%heating_rate_e_cgs(  ipts)=EHTX(3   ,ipts) 
