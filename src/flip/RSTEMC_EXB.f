@@ -45,6 +45,7 @@ C.. loss processes for ions. It calls TERLIN to do the interpolation
       !.. TEJ TIJ NUX UNJ DS GRADTE GRADTI GRAV OLOSS HLOSS HPROD
       USE AVE_PARAMS    !.. midpoint values - TEJ TIJ NUX UNJ etc.
       USE ION_DEN_VEL   !.. O+ H+ He+ N+ NO+ O2+ N2+ O+(2D) O+(2P)
+      USE module_input_parameters,ONLY: sw_divv
       IMPLICIT NONE
       INTEGER J,ILJ,ID,I,K
       DOUBLE PRECISION DT,N(4,FLDIM),TI(3,FLDIM),TISAV(3,FLDIM),F(20)
@@ -60,9 +61,11 @@ C.. loss processes for ions. It calls TERLIN to do the interpolation
       DOUBLE PRECISION IlossN             !.. Integrated i - n cooling rate
       DOUBLE PRECISION RCrate             !.. Integrated additional ion heating rate
       DOUBLE PRECISION NI                 !.. Ion density
-      DOUBLE PRECISION HLOSI(3),ICOOL(22)      !.. Ion- neutral cooling rates
-      DOUBLE PRECISION kNT(3),DIVV_UP,DIVV_LO  !.. Div of velocity cmpts
-      DATA BOLTZ/1.3807E-16 /
+      DOUBLE PRECISION HLOSI(3),ICOOL(22) !.. Ion- neutral cooling rates
+      DOUBLE PRECISION DIVV_UP,DIVV_LO    !.. Div of velocity cmpts
+      DOUBLE PRECISION IVEL(2,3),VLIMIT   !.. Velocity cmpts and limiting velocity
+      DATA BOLTZ/1.3807E-16 /             !.. Boltzmann constant
+      DATA VLIMIT/1.0E+6 /                !.. Velocity limit in cm/sec          
   
       !..evaluate terms at J-1, J, J+1 for integration, J is the
       !..actual grid point. All terms divided by magnetic field (BM)
@@ -82,8 +85,13 @@ C.. loss processes for ions. It calls TERLIN to do the interpolation
         HLOSI(I)=ICOOL(1)*(TI(2,K)-TN(K))/BM(K)
         !.. determine the thermal conductivity KI 
         KI(I)=1.84E-8*(N(1,K)+4*N(2,K))*(TI(2,K)**2.5)/NE
-        !.. kNT is used in convection term d(vel)/ds coefficient
-        kNT(I)=BOLTZ*NE*TI(2,K)
+        IVEL(1,I)=XIONV(1,K)
+        IVEL(2,I)=XIONV(2,K)
+        !.. Make sure velocities cannot get too high
+        IF(IVEL(1,I).GT.VLIMIT) IVEL(1,I)=VLIMIT
+        IF(IVEL(1,I).LT.-VLIMIT) IVEL(1,I)=-VLIMIT
+        IF(IVEL(2,I).GT.VLIMIT) IVEL(2,I)=VLIMIT
+        IF(IVEL(2,I).LT.-VLIMIT) IVEL(2,I)=-VLIMIT
       ENDDO
 
       !.. distances between grid points
@@ -108,23 +116,41 @@ C.. loss processes for ions. It calls TERLIN to do the interpolation
       HFLUX_UP=KI_UP*(TI(2,J+1)-TI(2,J))/DS_UP/B_UP
       HFLUX_LO=KI_LO*(TI(2,J)-TI(2,J-1))/DS_LO/B_LO
 
-      !.. Calculate the divergence of the velocity term (SMALL)
-      DIVV_UP=0.5*(kNT(3)+kNT(2))*(XIONV(1,J+1)-XIONV(1,J))/DS_UP/B_UP
-      DIVV_LO=0.5*(kNT(2)+kNT(1))*(XIONV(1,J)-XIONV(1,J-1))/DS_LO/B_LO
+      !.. Calculate the divergence of the velocity terms (integrated). 
+      !.. DIVV_UP and DIVV_LO are the values at the upper and lower .
+      !.. bounds of the integral.
+      !.. 2nd last term on RHS in Bailey, PSS 1983 equation 15
+      !.. The O+ and H+ contributions are treated separately in each term.
+      IF ( sw_divv==1 ) THEN
+      DIVV_UP=BOLTZ*0.5*(XIONN(1,J+1)*TI(2,J+1)+XIONN(1,J)*TI(2,J))*
+     >     (IVEL(1,3)-IVEL(1,2))/B_UP
+     >   +BOLTZ*0.5*(XIONN(2,J+1)*TI(2,J+1)+XIONN(2,J)*TI(2,J))*
+     >     (IVEL(2,3)-IVEL(2,2))/B_UP
+      DIVV_LO=BOLTZ*0.5*(XIONN(1,J)*TI(2,J)+XIONN(1,J-1)*TI(2,J-1))*
+     >     (IVEL(1,2)-IVEL(1,1))/B_UP
+     >   +BOLTZ*0.5*(XIONN(2,J)*TI(2,J)+XIONN(2,J-1)*TI(2,J-1))*
+     >     (IVEL(2,2)-IVEL(2,1))/B_UP
+      ELSE IF ( sw_divv==0 ) THEN
+        DIVV_UP=0.00
+        DIVV_LO=0.00
+      END IF
 
       !.. Integrated energy equation for ions
       F(1)=DERIVT-ElossI+IlossN-HFLUX_UP+HFLUX_LO-RCrate
-      !..>   +DIVV_UP-DIVV_LO  !.. divV term (small)
+     >   +DIVV_UP-DIVV_LO  !.. div.V term
       
       !.. diagnostic print
       IF(ILJ.EQ.4) THEN
         WRITE(ID,501)
-        WRITE(ID,5555) Z(J),F(1),DERIVT,ElossI,IlossN,HFLUX_UP,HFLUX_LO
-     >      ,DIVV_UP,DIVV_LO
+        WRITE(ID,5555) Z(J),TI(3,J),TI(2,J),TN(J),F(1),DERIVT,ElossI,
+     >    IlossN,HFLUX_UP,HFLUX_LO,DIVV_UP,DIVV_LO,
+     >    HFLUX_UP-HFLUX_LO,DIVV_UP-DIVV_LO,
+     >    (HFLUX_UP-HFLUX_LO)/(1.0E-33+DIVV_UP-DIVV_LO)
       ENDIF
- 501  FORMAT(' Ti: ALT     F        dn/dt      C_ie      C_in'
-     >   ,6X,'HFLUX_UP   HFLUX_LO')
- 5555   FORMAT(F9.1,1P,22E10.2)
+ 501  FORMAT(' Ti: ALT      Te       Ti       Tn      F        dT/dt'
+     > ,6X,'C_ie      C_in    HFLUX_UP  HFLUX_LO   DIVV_UP  DIVV_LO'
+     > ,2X,'  DIVCOND  DIVCONV')
+ 5555   FORMAT(4F9.1,1P,22E10.2)
       RETURN
       END
 C:::::::::::::::: GET_IcoolN ::::::::::::::::::::::
@@ -215,6 +241,7 @@ C.. TERLIN interpolates and the integration is done between the midpoints.
       USE THERMOSPHERE         !.. ON HN N2N O2N HE TN UN EHT COLFAC
       USE FIELD_LINE_GRID      !.. FLDIM JMIN JMAX FLDIM Z BM GR SL GL SZA
       USE ION_DEN_VEL          !.. O+ H+ He+ N+ NO+ O2+ N2+ O+(2D) O+(2P)
+      USE module_input_parameters,ONLY: sw_divv
       IMPLICIT NONE
       INTEGER J,ILJ,ID,I,K
       !.. I/O parameters, see comments above
@@ -231,8 +258,9 @@ C.. TERLIN interpolates and the integration is done between the midpoints.
       DOUBLE PRECISION ElossN       !.. Integrated e-n cooling rate
       DOUBLE PRECISION EHrate       !.. Integrated photoelectron heating rate
       DOUBLE PRECISION kNT(3),DIVV_UP,DIVV_LO  !.. Div of velocity cmpts
-
-      DATA  BOLTZ /1.3807E-16/  !.. Boltzmann constant
+      DOUBLE PRECISION EVEL(3),VLIMIT     !.. Velocity cmpts, limiting velocity
+      DATA BOLTZ/1.3807E-16 /             !.. Boltzmann constant
+      DATA VLIMIT/1.0E+6 /                !.. Velocity limit in cm/sec          
 
       !.. Loop to evaluate terms at J-1, J, J+1 for integration, J is 
       !.. the actual grid point. All terms divided by magnetic field (BM)
@@ -254,6 +282,11 @@ C.. TERLIN interpolates and the integration is done between the midpoints.
         CALL GET_EcoolI(K,FLDIM,TI(3,K),TI(2,K),BM(K),CE_ION(I))
         !.. kNT is used in convection term div(vel)/ds coefficient
         kNT(I)=BOLTZ*NE*TI(3,K)
+        !.. Average electron velocity from ion flux = flux(O+) + flux(H+)
+        EVEL(I)=(XIONV(1,K)*XIONN(1,K)+XIONV(2,K)*XIONN(2,K))/
+     >    (XIONN(1,K)+XIONN(2,K))
+        IF(EVEL(I).GT.VLIMIT) EVEL(I)=VLIMIT
+        IF(EVEL(I).LT.-VLIMIT) EVEL(I)=-VLIMIT
       ENDDO
 
       !.. distances along field line between grid points for the integration 
@@ -278,23 +311,34 @@ C.. TERLIN interpolates and the integration is done between the midpoints.
       HFLUX_UP=KE_UP*(TI(3,J+1)-TI(3,J))/DS_UP/B_UP
       HFLUX_LO=KE_LO*(TI(3,J)-TI(3,J-1))/DS_LO/B_LO
 
-      !.... Calculate the divergence of the velocity term (SMALL)
-      DIVV_UP=0.5*(kNT(3)+kNT(2))*(XIONV(1,J+1)-XIONV(1,J))/DS_UP/B_UP
-      DIVV_LO=0.5*(kNT(2)+kNT(1))*(XIONV(1,J)-XIONV(1,J-1))/DS_LO/B_LO
+      !.. Calculate the divergence of the velocity term (integrated). 
+      !.. DIVV_UP and DIVV_LO are the values at the upper and lower .
+      !.. bounds of the integral.
+      !.. 2nd last term on RHS in Bailey, PSS 1983 equation 15
+      IF ( sw_divv==1 ) THEN
+      DIVV_UP=0.5*(kNT(3)+kNT(2))*(EVEL(3)-EVEL(2))/B_UP
+      DIVV_LO=0.5*(kNT(2)+kNT(1))*(EVEL(2)-EVEL(1))/B_LO
+      ELSE IF ( sw_divv==0 ) THEN
+        DIVV_UP=0.00
+        DIVV_LO=0.00
+      END IF
+       
 
       !.. Integrated energy equation for ions
       F(2)=DERIVT+ElossI+ElossN-EHrate- HFLUX_UP+HFLUX_LO
-      !..>   +DIVV_UP-DIVV_LO  !.. divV term (small)
+     >   +DIVV_UP-DIVV_LO  !.. div.V term (small)
  
       !..This section for diagnostic print
-      IF(ILJ.EQ.4) THEN
+      IF(ILJ.EQ.3) THEN
         WRITE(ID,501)
-        WRITE(ID,5555) Z(J),F(2),DERIVT,ElossI,ElossN,HFLUX_UP,HFLUX_LO
-     >    ,EHrate,DIVV_UP,DIVV_LO
+        WRITE(ID,5555) Z(J),TI(3,J),TI(2,J),TN(J),F(2),DERIVT,ElossI,
+     >    ElossN,EHrate,HFLUX_UP,HFLUX_LO,DIVV_UP,DIVV_LO,
+     >    HFLUX_UP-HFLUX_LO,DIVV_UP-DIVV_LO
       ENDIF
- 501  FORMAT(1X,'Te: ALT     F        dn/dt      C_ei      C_en'
-     >   ,6X,'HFLUX_UP   HFLUX_LO    H_tot')
- 5555 FORMAT(F9.1,1P,22E10.2)
+ 501  FORMAT(' Te: ALT      Te       Ti       Tn        F      dT/dt'
+     > ,6X,'C_ei      C_en     EHrate   HFLUX_UP  HFLUX_LO'
+     > ,3X,'DIVV_UP   DIVV_LO  DIVCOND  DIVCONV')
+ 5555 FORMAT(4F9.1,1P,22E10.2)
       RETURN
       END
 C:::::::::::::::::::::::::::::: GET_EcoolN ::::::::::::::::::::::::::::::::::::::::::::
