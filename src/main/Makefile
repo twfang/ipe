@@ -18,8 +18,7 @@
 include  Make.$(machine)
 VERSION=3d
 RESOLUTION=glb.eld
-#####TEST=v36
-TEST=v17
+TEST=v18
 PACKAGE=ipe.${TEST}.exe
 # DR0: modules
 DR0=${HOME_dev}/main
@@ -62,7 +61,7 @@ SRC2	=\
 	${DR2}/ELECXS.f \
 	${DR2}/INIT-PROFILES.f \
 	${DR2}/KEMPRN.f \
-	${DR2}/MINORA.mod.f \
+	${DR2}/MINORA.f \
 	${DR2}/Neut_Heating.mod.f \
 	${DR2}/Photoel-Freqs.f \
 	${DR2}/RSDENA_EXB.f \
@@ -85,10 +84,11 @@ SRC3	=\
 	${DR3}/stepback_mag.f90 \
 	${DR3}/interpolate_flux_tube.${TEST}.f90 \
 	${DR3}/io_plasma_bin.f90 \
-	${DR3}/io_plasma_bin_readinit.f90 \
-	${DR3}/activate_perp_transport.f90 \
-	${DR3}/dbg_estimate_trans_error.f90 \
 	${DR3}/read_vexb.f90
+###
+###	${DR3}/io_plasma_bin_readinit.f90 \
+###	${DR3}/activate_perp_transport.f90 \
+###	${DR3}/dbg_estimate_trans_error.f90 \
 # DR6: eldyn
 SRC6	=\
 	${DR6}/efield.f \
