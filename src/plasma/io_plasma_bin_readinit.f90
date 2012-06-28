@@ -16,7 +16,7 @@
       USE module_precision
       USE module_IO,ONLY: LUN_PLASMA1,LUN_PLASMA2,lun_min1,lun_min2,lun_ut,lun_ut2,record_number_plasma,lun_max1
       USE module_PLASMA,ONLY: plasma_3d,plasma_3d4n,VEXBup
-      USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS, plasma_grid_3d
+      USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS, plasma_grid_3d,ISL,IBM,IGR,IQ,IGCOLAT,IGLON
       USE module_IPE_dimension,ONLY: NMP0,NMP1,NLP,NPTS2D,ISPEC,ISPEV,NLP_all,IPDIM,ISPET,NMP_all
       USE module_input_parameters,ONLY:sw_debug,record_number_plasma_start
       USE module_physical_constants,ONLY:zero,pi
@@ -88,9 +88,9 @@ print *,'start_time=',utime
   midpoint = JMIN_IN(lpj) + ( JMAX_IS(lpj) - JMIN_IN(lpj) )/2
 !calculate LT(mp) [hr] for utime @ midpoint
   do  mp=1,NMP_all
-     ltime(mp)=REAL(utime)/3600. + plasma_grid_3d(midpoint,mp)%GLON*180.0/pi/15.0
+     ltime(mp)=REAL(utime)/3600. + plasma_grid_3d(midpoint,mp,IGLON)*180.0/pi/15.0
      IF ( ltime(mp) > 24.0 )  ltime(mp) = MOD(ltime(mp), 24.0)
-print *,mp,'ltime',ltime(mp),' glon',(plasma_grid_3d(midpoint,mp)%GLON*180.0/pi)
+print *,mp,'ltime',ltime(mp),' glon',(plasma_grid_3d(midpoint,mp,IGLON)*180.0/pi)
   end do
 
 !UT
@@ -110,7 +110,7 @@ print *,mp,'ltime',ltime(mp),' glon',(plasma_grid_3d(midpoint,mp)%GLON*180.0/pi)
 
 !print *,'goto the next part! utime_dum=',utime_dum,' utime_min=', utime_min
 !utime_dum
-     ltime_mp1=REAL(utime_dum)/3600. + plasma_grid_3d(midpoint,mp1)%GLON*180.0/pi/15.0
+     ltime_mp1=REAL(utime_dum)/3600. + plasma_grid_3d(midpoint,mp1,IGLON)*180.0/pi/15.0
      IF ( ltime_mp1 > 24.0 )  ltime_mp1 = MOD(ltime_mp1, 24.0)
 !print *, 'ltime_mp1', ltime_mp1
 
@@ -120,7 +120,7 @@ print *,mp,'ltime',ltime(mp),' glon',(plasma_grid_3d(midpoint,mp)%GLON*180.0/pi)
 print *,'ltmp1-dlt',(ltime_mp1-dlt),' lt_mp',ltime(mp),' ltmp1+dlt',(ltime_mp1+dlt) 
          if ( record_number(mp)==0 ) then
            record_number(mp)=record_number_plasma_dum
-           print *,' mp',mp,' glon=',plasma_grid_3d(midpoint,1)%GLON*180.0/pi
+           print *,' mp',mp,' glon=',plasma_grid_3d(midpoint,1,IGLON)*180.0/pi
            flag(mp)=1
            CYCLE read_loop0
 !note: i hope that more than one record_number is matching,,,but error check just in case,,, 

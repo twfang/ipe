@@ -16,6 +16,7 @@ C... ZWR= altitude for printing spectrum.
       USE PRODUCTION !.. EUV, photoelectron, and auroral production
       USE MINORNEUT !.. N4S N2D NNO N2P N2A O1D O1S EQN2D
       IMPLICIT NONE
+      include "gptl.inc"
       INTEGER J,IE,IK,IS  !.. altitude, energy, species loop control variables
       INTEGER IDGE(201),JOE(201),JN2E(201) !.. indices for degraded electrons
       INTEGER IPAS,IPASC    !.. grid indices for pitch angle trapping
@@ -27,6 +28,7 @@ C... ZWR= altitude for printing spectrum.
       INTEGER EFLAG(11,11) 
       !.. For CMINOR. Turns He+, N+, and NO solutions on and off 
       INTEGER IHEPLS,INPLS,INNO
+      integer ret
       REAL ALT,ZLB,ZPAS,ZPROD,ZWR
       REAL AVESEC,SHAPE,AVMU,FNORM
       REAL ELOSS,ELOSSN2,ELOSSO2,ELOSSOX
@@ -69,7 +71,10 @@ C... ZWR= altitude for printing spectrum.
 
       !.. Setting up energy cell boundaries first time thru only
       !.. If Printing, go to 1 eV resolution  
+      ret = gptlstart ('PE2S')
+      ret = gptlstart ('PE2S IF1')
       IF(IEMAX.LE.0)  THEN
+         ret = gptlstart ('PE2S ECELLS')
          IF(ZWR.LT.80) THEN
 	     !.. can use lower resolution for the FLIP run
            CALL ECELLS(35.0,800.0,1.0,50.0,EMAX,IEMAX,EB,E,DELTE)
@@ -78,7 +83,9 @@ C... ZWR= altitude for printing spectrum.
 	     !.. use high resolution for printing
            CALL ECELLS(65.0,800.0,1.0,20.0,EMAX,IEMAX,EB,E,DELTE)
          ENDIF
+         ret = gptlstop  ('PE2S ECELLS')
          !.. set up bins for degraded primaries from ionizations
+         ret = gptlstart ('PE2S FNDBIN')
          DO IE=IEMAX,2,-1
            !.. Calculate the average energy of the secondaries.
            ELIM=0.5*(E(IE)-EPOT)  !.. Maximum secondary energy
@@ -93,28 +100,35 @@ C... ZWR= altitude for printing spectrum.
            IF(E(IE).GT.ELOSSOX) CALL FNDBIN(IE,IEMAX,ELOSSOX,E,JOE)
            IF(E(IE).GT.ELOSSN2) CALL FNDBIN(IE,IEMAX,ELOSSN2,E,JN2E)
          ENDDO
+         ret = gptlstop  ('PE2S FNDBIN')
 
          !.. proportion of total secondary ions in energy bin E(IE). Note that 
 	   !.. a running sum of secondary electrons is kept but only distributed
 	   !.. immediately prior to calculating the flux at the next lowest energy. 
          !.. The apportionment is based on an empirical calculation using the 
          !.. full Opal et al. [1971] distributions
+         ret = gptlstart ('PE2S calc1')
          DO IE=1,IEMAX
            PROB(IE)=0.2526*EXP(-0.2526*E(IE))
          ENDDO
+         ret = gptlstop  ('PE2S calc1')
       ENDIF
+      ret = gptlstop ('PE2S IF1')
 
 !nm20110923      JTI=JTI+1
 
 	!..IF(JTI.EQ.2) ZWR=300
 
       !.. Get production frequencies (RJOX,RJN2,RJO2,RJHE) for the energy cells
+      ret = gptlstart ('PE2S CONVF_EUVAC')
       IF(ABS((F107-F107SV)/F107).GE.0.05) THEN
         F107SV=F107
         CALL CONVF_EUVAC(IEMAX,F107,F107A,E,DELTE,UVFAC,
      >   RJOX,RJN2,RJO2,RJHE)
       ENDIF  !.. Endif F107
+      ret = gptlstop  ('PE2S CONVF_EUVAC')
 
+      ret = gptlstart ('PE2S calc2')
       IEQ=(JMAX+1)/2
 
       !.. Set pitch angle trapping factor. FPAS is controlled by input
@@ -208,14 +222,20 @@ C////////////main calculations  begin here ////////////
         IF(FPAS.LT.0.0) FPAS=0.0
         IF(VTOT*BM(M2).GT.0.0) PASK=FPAS/(VTOT*2.038E+8*BM(M2))
       ENDIF
+      ret = gptlstop ('PE2S calc2')
 
       !.. Evaluate ionization branching ratios for O+
+      ret = gptlstart ('PE2S OXRAT')
       CALL OXRAT(E(IE),SPRD(1,1),SPRD(1,2),SPRD(1,3))
+      ret = gptlstop  ('PE2S OXRAT')
 
       !.. O, O2, and N2 elastic cross sections
+      ret = gptlstart ('PE2S ELASTC')
       CALL ELASTC(E(IE),PEBSC,SIGEL)
+      ret = gptlstop  ('PE2S ELASTC')
 
       !.. Loop for calculating primary and cascade production
+      ret = gptlstart ('PE2S loop1')
       DO J=JMIN,JMAX
         PRED(J)=0.0D0
         IF(Z(J).LE.ZPROD) THEN
@@ -231,13 +251,19 @@ C////////////main calculations  begin here ////////////
           EUVION(1,11,J)=EUVION(1,11,J)+PRED(J)*E(IE)*DELTE(IE)
         ENDIF
       ENDDO
+      ret = gptlstop  ('PE2S loop1')
 
       !.. Get total cross sections
+      ret = gptlstart ('PE2S SIGEXS')
       CALL SIGEXS(E(IE),SIGEX,SIGION,SIGO1D) !.. PGR cross sections
+      ret = gptlstop  ('PE2S SIGEXS')
 
       !.. Get OX partial cross sections
+      ret = gptlstart ('PE2S OXSIGS')
       CALL OXSIGS(E(IE),PARSIG,TSIG)
+      ret = gptlstop  ('PE2S OXSIGS')
 
+      ret = gptlstart ('PE2S calc3')
       !.. energy loss to thermal electrons by coulomb collisions
       DO J=JMIN,JMAX
         ET=8.618E-5*TI(3,J)
@@ -276,25 +302,35 @@ C////////////main calculations  begin here ////////////
         PHIUP(ICN)=PHIDWN(ICN)
         PHIUP(ICF)=PHIDWN(ICF)
       ENDDO
+      ret = gptlstop  ('PE2S calc3')
 
       !.. take the adiabatic variation of pitch angle into account
+      ret = gptlstart ('PE2S PITCH')
       CALL PITCH(FLDIM,IE,0,M,JMIN,JMAX,T1,T2,PRED,PRODUP,PRODWN,BM,Z)
+      ret = gptlstop  ('PE2S PITCH')
 
       !.. calculate interhemispheric fluxes. The iteration is to adjust 
       !.. for interhemispheric fluxes.Used to be 4 times
       DO ITS=1,2
+        ret = gptlstart ('PE2S TRIS1')
         CALL TRIS1(FLDIM,1,M2,M,IE,M,BM,Z,JMAX,PRED,IPAS,FPAS,PHIDWN,
      >     PHIUP,T1,T2,DS,PRODUP,PRODWN)
+        ret = gptlstop  ('PE2S TRIS1')
+        ret = gptlstart ('PE2S TRISM1')
         CALL TRISM1(FLDIM,-1,JMAXM,JMAX1,IE,M,BM,Z,JMAX,PRED,IPASC,FPAS,
      >     PHIDWN,PHIUP,T1,T2,DS,PRODUP,PRODWN)
+        ret = gptlstop  ('PE2S TRISM1')
       ENDDO
       !.. reset the fluxes
+      ret = gptlstart ('PE2S PITCH')
       CALL PITCH(FLDIM,IE,1,M,JMIN,JMAX,T1,T2,PRED,PRODUP,PRODWN,BM,Z)
+      ret = gptlstop  ('PE2S PITCH')
 
       !.. EHPAS=heating due to pitch angle trapping: DE= normal loss in the
       !.. protonosphere to electrons. Modification made 1/29/1996 ->
       !.. EHPAS= Energy * (FPAS/VOL) * flux * delta E * area at PAS alt.
 
+      ret = gptlstart ('PE2S calc4')
       EHPAS=E(IE)*PASK*(PHIUP(IPAS)+PHIDWN(IPASC))*DELTE(IE)*
      >       BM(M2)/BM(IPAS)
       IF(DE.GT.E(IE).OR.NINT(FRPAS).EQ.2) EHPAS=0.0
@@ -319,8 +355,10 @@ C////////////main calculations  begin here ////////////
         IF(Z(J).GT.Z(IPAS)) EHT(3,J)=EHT(3,J)+EHPAS
 c        IF(IABS(J-IEQ).LT.Z(IPAS)) EHT(3,J)=EHT(3,J)+EHPAS
       ENDDO
+      ret = gptlstop ('PE2S calc4')
 
       !.. Calculate thermal electron heating and ion production rates
+      ret = gptlstart ('PE2S loop2')
       DO J=JMIN,JMAX
         PHISUM=FYSUM(J)*DELTE(IE)
         IF(Z(J).LE.Z(M)) THEN
@@ -347,8 +385,10 @@ c        IF(IABS(J-IEQ).LT.Z(IPAS)) EHT(3,J)=EHT(3,J)+EHPAS
           ENDDO
         ENDIF
       ENDDO
+      ret = gptlstop ('PE2S loop2')
 
       !.. printing fluxes
+      ret = gptlstart ('PE2S prints')
       IF(ZWR.GT.80) THEN
         WRITE(IU9,313) E(IE),SIGEX(1),SIGION(1),SIGEX(3),SIGION(3)
      >    ,SIGEL(1),PRED(IWR),FYSUM(IWR),TSIGNE(IWR),PHIUP(IWR)
@@ -357,8 +397,10 @@ c        IF(IABS(J-IEQ).LT.Z(IPAS)) EHT(3,J)=EHT(3,J)+EHPAS
      >    ,SIGEL(1),PRED(IWRC),FYSUM(IWRC),TSIGNE(IWRC),PHIUP(IWRC)
      >    ,PHIDWN(IWRC),PRODUP(IE,IWRC),PRODWN(IE,IWRC)
       ENDIF
+      ret = gptlstop  ('PE2S prints')
 
       !.. Calculate Cascade production ....
+      ret = gptlstart ('PE2S loop3')
       DO J=JMIN,JMAX
         !.. Cascade from thermal electron collisions
         TSIGNE(J)=TSIGNE(J)*DELTE(IE)/DELTE(IE-1)
@@ -400,6 +442,7 @@ c        IF(IABS(J-IEQ).LT.Z(IPAS)) EHT(3,J)=EHT(3,J)+EHPAS
      >      ,E,DELTE,SIGO1D)
         ENDIF
       ENDDO
+      ret = gptlstop ('PE2S loop3')
 
       IE=IE-1  !.. Go to next lowest energy
 
@@ -411,10 +454,13 @@ C=========================== END OF MAIN ENERGY LOOP ============
  80   CONTINUE
 
       !.. add energy from last energy bin to electron heating
+      ret = gptlstart ('PE2S loop4')
       DO J=JMIN,JMAX
          ELEFT=+(PRODUP(IE,J)+PRODWN(IE,J))*E(1)
          EHT(3,J)=EHT(3,J)+ELEFT
       ENDDO
+      ret = gptlstop  ('PE2S loop4')
+      ret = gptlstop  ('PE2S')
 
       RETURN
  313  FORMAT(F6.1,1P,22E9.2)
@@ -788,10 +834,12 @@ C......  In the array DELTA. This routine comes from Carnahan, Luther,
 C......  And Wilkes, Applied Numerical Methods, Wiley, 1969, page 446
       SUBROUTINE TRIDAG(FLDIM,DELTA,FIRST,LAST,A,B,C,D)
       IMPLICIT NONE
-      INTEGER J,FLDIM,K,NUM,LAST,FIRST,FIRSTP1
+      include "gptl.inc"
+      INTEGER J,FLDIM,K,NUM,LAST,FIRST,FIRSTP1,ret
       REAL A(FLDIM),B(FLDIM),C(FLDIM),D(FLDIM)
       REAL ALPHA(FLDIM),DELTA(FLDIM),GAMMA(FLDIM)
       !..  COMPUTE INTERMEDIATE ARRAYS ALPHA & GAMMA
+      ret = gptlstart ('TRIDAG')
       ALPHA(FIRST)=B(FIRST)
       GAMMA(FIRST)=D(FIRST)/ALPHA(FIRST)
       FIRSTP1=FIRST+1
@@ -807,6 +855,7 @@ C......  And Wilkes, Applied Numerical Methods, Wiley, 1969, page 446
         J=LAST-K
         DELTA(J)=GAMMA(J)-C(J)*DELTA(J+1)/ALPHA(J)
       ENDDO
+      ret = gptlstop  ('TRIDAG')
         RETURN
         END
 C::::::::::::::::::::: T_XS_N2 :::::::::::::::::::::::::::

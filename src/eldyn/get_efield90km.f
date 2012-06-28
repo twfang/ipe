@@ -303,7 +303,6 @@
       endif
       ed2_90(mp,lpconj(lp))=+1.0/r/sinI_m(ihem)
      &*(pot_j1-pot_j0) /d_lam_m
-     &*(-1.0)  !dbg20120604: suggested from plotting 
 !dbg20111108     &*(-1.)*sinI_m(ihem)     !E_m_lambda (5.10)
 !SH
       ihem=2
@@ -314,7 +313,6 @@
       pot_j0=( potent(i0,jj0)+potent(i1,jj0) )*0.50
       ed2_90(mp,lp)=+1.0/r/sinI_m(ihem)
      &*(pot_j1-pot_j0) /d_lam_m
-     &*(-1.0)  !dbg20120604
 !dbg20111108     &*(-1.)*sinI_m(ihem)  !E_m_lambda (5.10)
 
           !explicitly disassociate the pointers

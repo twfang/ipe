@@ -13,7 +13,7 @@
 SUBROUTINE output_plasma_grid ( )
       USE module_precision
         USE module_IO,ONLY: filename
-        USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad
+        USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,ISL,IBM,IGR,IQ,IGCOLAT,IGLON
         USE module_IPE_dimension,ONLY: NPTS2D,NMP0,NMP1,NMP_all,NLP,NLP_all
 IMPLICIT NONE
 !-------------local
@@ -26,6 +26,7 @@ IMPLICIT NONE
       filename ='plasma_grid'
       FORM_dum ='unformatted' 
       STATUS_dum ='unknown'
+!SMS$SERIAL BEGIN
       CALL open_file ( filename, LUN, FORM_dum, STATUS_dum ) 
 
     WRITE(UNIT=lun) NMP0
@@ -38,6 +39,7 @@ IMPLICIT NONE
     WRITE(UNIT=lun) mlon_rad( 1: NMP_all+1 ) !rad
     WRITE(UNIT=lun) plasma_grid_Z(1:NPTS2D)  !meter
     WRITE(UNIT=lun) plasma_grid_GL(1:NPTS2D) !rad
+!SMS$SERIAL END
 
 
 IF (.NOT.ALLOCATED(dumm) ) THEN
@@ -52,17 +54,21 @@ STOP 'sub-output_p:!STOP! dumm has been allocated already???!!!'
 END IF
 
 mp_loop0:do mp=NMP0,NMP1
-  dumm(1:NPTS2D,mp) = plasma_grid_3d(1:NPTS2D, mp)%GCOLAT 
+  dumm(1:NPTS2D,mp) = plasma_grid_3d(1:NPTS2D, mp,IGCOLAT)
 end do mp_loop0
 
 !dbg20110927!SEGMENTATION FAULT!!!
+!SMS$SERIAL BEGIN
     WRITE(UNIT=lun) dumm !GCOLAT  !rad
+!SMS$SERIAL END
 
 mp_loop1:do mp=NMP0,NMP1
-  dumm(1:NPTS2D,mp) = plasma_grid_3d(1:NPTS2D, mp)%GLON
+  dumm(1:NPTS2D,mp) = plasma_grid_3d(1:NPTS2D, mp,IGLON)
 end do mp_loop1
 
+!SMS$SERIAL BEGIN
     WRITE(UNIT=lun) dumm !GLON !rad
+!SMS$SERIAL END
 
 IF ( ALLOCATED(dumm) ) THEN 
   DEALLOCATE ( dumm &
@@ -76,7 +82,9 @@ STOP 'sub-output_p:!STOP! dumm has not been allocated???!!!'
 END IF
 
 
+!SMS$SERIAL BEGIN
     CLOSE(UNIT=lun)
+!SMS$SERIAL END
 print *,'output_plasma_grid finished successfully!!!'
 STOP
 END SUBROUTINE output_plasma_grid

@@ -13,7 +13,7 @@
 !NOTE: dbg20120125: only temporary used to switch on the transport only during the daytime...
       subroutine activate_perp_transport (utime,mp)
         USE module_precision
-        USE module_FIELD_LINE_GRID_MKS,ONLY: plasma_grid_3d,JMIN_IN,JMAX_IS
+        USE module_FIELD_LINE_GRID_MKS,ONLY: plasma_grid_3d,JMIN_IN,JMAX_IS,ISL,IBM,IGR,IQ,IGCOLAT,IGLON
         USE module_input_parameters,ONLY: sw_perp_transport
         USE module_physical_constants,ONLY: pi
         IMPLICIT NONE
@@ -30,7 +30,7 @@
 ! calculate LT at midpoint
       midpoint = JMIN_IN(lpj) + ( JMAX_IS(lpj) - JMIN_IN(lpj) )/2
 !nm20110909: calculating LT should be made FUNCTION!!!
-      ltime = REAL(utime,real_prec)/3600.0 + (plasma_grid_3d(midpoint,mp)%GLON*180.0/pi)/15.0
+      ltime = REAL(utime,real_prec)/3600.0 + (plasma_grid_3d(midpoint,mp,IGLON)*180.0/pi)/15.0
       IF ( ltime > 24.0 )  ltime = MOD(ltime, 24.0)
        
       IF ( ltime>=ltime_min .AND. ltime<=ltime_max ) THEN

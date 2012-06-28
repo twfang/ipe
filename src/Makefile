@@ -18,27 +18,28 @@
 include  Make.$(machine)
 VERSION=3d
 RESOLUTION=glb.eld
-TEST=v14
-PACKAGE	= ipe.${VERSION}.${RESOLUTION}.${TEST}.exe
+TEST=v18
+PACKAGE=../bin/ipe.${TEST}.exe
 # DR0: modules
 DR0=${HOME_dev}/main
-FFLAG0=${FFLAGS90}
+FFLAG1=${FFLAGS90}
 # DR1: neutral
 DR1=${HOME_dev}/neutral
-FFLAG1=${FFLAGS90}  ${MOD_PATH}${DR0}  ${INCLUDE_PATH}${DR0}
+FFLAG1=${FFLAGS90}  ${MOD_PATH}${DR0}  ${INCLUDE_PATH}${DR0} ${SMSFLAGS}
 # DR2: FLIP
 DR2=${HOME_dev}/flip
-FFLAG2=${FFLAGS}    -fpe0 ${MOD_PATH}${DR0}  ${INCLUDE_PATH}${DR0}
+FFLAG2=${FFLAGS}      ${MOD_PATH}${DR0}  ${INCLUDE_PATH}${DR0} ${GPTL_CPPFLAGS} ${GPTL_LDFLAGS} ${SMSFLAGS}
 # DR3: plasma
 DR3=${HOME_dev}/plasma
-FFLAG3=${FFLAGS90}  -fpe0 ${MOD_PATH}${DR0}  ${INCLUDE_PATH}${DR0}
+FFLAG3=${FFLAGS90}    ${MOD_PATH}${DR0}  ${INCLUDE_PATH}${DR0} ${GPTL_CPPFLAGS} ${GPTL_LDFLAGS} ${SMSFLAGS}
 # DR6: eldyn
 DR6=${HOME_dev}/eldyn
-FFLAG6=${FFLAGS_e}  -fpe0  ${MOD_PATH}${DR0}  ${INCLUDE_PATH}${DR0}
+FFLAG6=${FFLAGS_e}    ${MOD_PATH}${DR0}  ${INCLUDE_PATH}${DR0} ${SMSFLAGS}
 # DR4: main driver
 DR4=${HOME_dev}/main
-FFLAG4=${FFLAGS90}
+FFLAG4=${FFLAGS90} ${GPTL_CPPFLAGS} ${GPTL_LDFLAGS}
 SRC0	=\
+	${DR0}/module_decomp.f90 \
 	${DR0}/module_precision.f90 \
 	${DR0}/module_IPE_dimension.${RESOLUTION}.f90 \
 	${DR0}/module_physical_constants.f90 \
@@ -62,20 +63,20 @@ SRC2	=\
 	${DR2}/INIT-PROFILES.f \
 	${DR2}/KEMPRN.f \
 	${DR2}/MINORA.f \
-	${DR2}/Neut_Heating.f \
+	${DR2}/Neut_Heating.mod.f \
 	${DR2}/Photoel-Freqs.f \
 	${DR2}/RSDENA_EXB.f \
-	${DR2}/RSJACA.f \
-	${DR2}/RSLPSD.f \
+	${DR2}/RSJACA.mod.f \
+	${DR2}/RSLPSD.mod.f \
 	${DR2}/RSLPST.f \
 	${DR2}/RSPE2B.f \
-	${DR2}/RSPRIM.f \
+	${DR2}/RSPRIM.mod.f \
 	${DR2}/RSTEMC_EXB.f \
 	${DR2}/Rates.f \
 	${DR2}/FLIP_GRID.f
 # DR3: plasma
 SRC3	=\
-	${DR3}/module_plasma.${VERSION}.dbg.f90 \
+	${DR3}/module_plasma.${VERSION}.f90 \
 	${DR3}/get_pvalue_dipole.f90 \
 	${DR3}/get_sza.${VERSION}.f90 \
 	${DR3}/get_sinim.f90 \
@@ -83,7 +84,11 @@ SRC3	=\
 	${DR3}/perpendicular_transport.f90 \
 	${DR3}/stepback_mag.f90 \
 	${DR3}/interpolate_flux_tube.${TEST}.f90 \
-	${DR3}/io_plasma_bin.f90
+	${DR3}/io_plasma_bin.f90 \
+	${DR3}/read_vexb.f90
+
+
+#dbg20120509	${DR3}/activate_perp_transport.f90 \
 # DR6: eldyn
 SRC6	=\
 	${DR6}/efield.f \
@@ -94,8 +99,10 @@ SRC6	=\
 	${DR6}/supim_exb.f
 # DR4: main driver
 SRC4	=\
+	${DR4}/get_flip_grid.f90 \
 	${DR4}/allocate_arrays.f90 \
 	${DR4}/output_plasma_grid.f90 \
+	${DR4}/stop.f90 \
 	${DR4}/driver_ipe.${VERSION}.glb.eld.f90
 #
 #HEADS	= $(PACKAGE).h
@@ -118,23 +125,37 @@ all: $(PACKAGE)
 FINAL_OBJS=\
 	$(OBJ0) \
 	$(OBJ1) \
-	$(OBJ2) \
 	$(OBJ6) \
 	$(OBJ3) \
+	$(OBJ2) \
 	$(OBJ4)
 
-$(PACKAGE): D0_OBJ  D1_OBJ  D2_OBJ  D6_OBJ  D3_OBJ  D4_OBJ
-	$(FC) $(LDFLAGS) $(FINAL_OBJS) -o $@ $(LDLIBS)
+$(PACKAGE): D0_OBJ  D1_OBJ  D6_OBJ  D3_OBJ  D2_OBJ  D4_OBJ
+	echo par $(par)
+ifeq ($(PAR),sms)
+	$(FCparallel) $(LDFLAGS) $(FINAL_OBJS) -o $@ $(LDLIBS) $(GPTL_LDFLAGS) $(SMS_LDFLAGS)
+else
+	$(FC) $(LDFLAGS) $(FINAL_OBJS) -o $@ $(LDLIBS) $(GPTL_LDFLAGS) $(SMS_LDFLAGS)
+endif
 
 $(FINAL_OBJS): $(HEADS) Makefile
 
  D0_OBJ :
-	cd ${DR0} ; make -f Makefile.obj0  all \
-	"OBJ0=${OBJ0}" \
+	cd ${DR0} ; ${MAKE} all \
+	"OBJS=${OBJ0}" \
 	"FC=${FC}" \
-	"FFLAG0=${FFLAG0}" \
-	"LFLAG0=${LDFLAGS}" \
-	"HOME_dev=${HOME_dev}"
+	"FCparallel=${FC}" \
+	"FFLAGS=${FFLAG0}" \
+	"LFLAGS=${LDFLAGS}" \
+	"HOME_dev=${HOME_dev}" \
+	"PAR=${PAR}" \
+	"CPP=${CPP}" \
+	"CPP_FLAGS=${CPP_FLAGS}" \
+	"PPP=${PPP}" \
+	"PPP_FLAGS=${PPP_FLAGS}" \
+	"PPP_FLAGS1=${PPP_FLAGS1}" \
+	"SMSFLAGS=${SMSFLAGS}" \
+	"PINCLUDES=${PINCLUDES}" 
  D1_OBJ :
 	cd ${DR1} ; ${MAKE} all \
 	"OBJ1=${OBJ1}" \
@@ -164,18 +185,28 @@ $(FINAL_OBJS): $(HEADS) Makefile
 	"LFLAG6=${LDFLAGS}" \
 	"HOME_dev=${HOME_dev}"
  D4_OBJ :
-	cd ${DR4} ; make -f Makefile.obj4  all \
-	"OBJ4=${OBJ4}" \
+	cd ${DR4} ; ${MAKE} all \
+	"OBJS=${OBJ4}" \
 	"FC=${FC}" \
-	"FFLAG4=${FFLAG4}" \
-	"LFLAG4=${LDFLAGS}" \
-	"HOME_dev=${HOME_dev}"
+	"FCparallel=${FC}" \
+	"FFLAGS=${FFLAG4}" \
+	"LFLAGS=${LDFLAGS}" \
+	"HOME_dev=${HOME_dev}" \
+	"PAR=${PAR}" \
+	"CPP=${CPP}" \
+	"CPP_FLAGS=${CPP_FLAGS}" \
+	"PPP=${PPP}" \
+	"PPP_FLAGS=${PPP_FLAGS}" \
+	"PPP_FLAGS1=${PPP_FLAGS1}" \
+	"SMSFLAGS=${SMSFLAGS}" \
+	"PINCLUDES=${PINCLUDES}" 
 
 ### useful commands ###
 
-clean:
+cln:
 	$(RM) $(PACKAGE) $(FINAL_OBJS)
-	$(RM) core *.mod
+	$(RM) ${DR0}/*.mod ${DR0}/*.tmp ${DR0}/*.f ${DR0}/*~
+	$(RM) ${DR0}/*_sms.f90 ${DR0}/*ppptmp*
 
 tar:
 	@echo $(PACKAGE)-$(VER) > .package

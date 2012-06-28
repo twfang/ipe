@@ -1,0 +1,57 @@
+#!/bin/csh
+#
+mkdir ipe_${$}
+echo Created ipe_${$}
+set  rundir = "ipe_${$}"
+cd  $rundir
+cp ../../bin/ipe.v18.exe .
+cp ../coef*              .
+cp ../GPTLnamelist       .
+cp ../SMSnamelist        .
+cp ../IPE.inp            .
+cp ../wei96.cofcnts      .
+cp ../stup_ut_rec        .
+ln -s /scratch2/portfolios/BMC/acb/IPEdata/* .
+
+set compute_tasks = 1
+# Make rundir a full path for runscript
+set rundir = $cwd
+
+cat << EOF >! runscript
+#!/bin/csh
+  cd $rundir
+  pwd
+  module load intel
+  module load mpt
+  module list
+  set par = "parallel"
+  set par = "serial"
+  if (\$par == 'parallel') then
+    set cmd = "time mpirun -np $compute_tasks ./ipe.v18.exe"
+  else
+    set cmd = "time ./ipe.v18.exe"
+  endif
+  echo "running \$cmd" >& output
+  (\$cmd) > output
+
+if (\$status != 0) then
+  echo ipe failed
+  exit 23
+else
+  echo ipe finished
+endif
+exit 0
+EOF
+
+chmod 755 ./runscript
+
+qsub -N ipe \
+     -l walltime=08:00:00 \
+     -A acb \
+     -r y \
+     -l mem=1800M \
+     -l procs=1 \
+     -l nodes=1:ppn=1 \
+     ./runscript || echo "qsub failed" && exit 1
+
+exit 0

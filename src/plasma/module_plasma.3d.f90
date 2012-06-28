@@ -16,6 +16,7 @@
       USE module_precision
       USE module_IPE_dimension,ONLY: ISPEC,ISPET,ISPEV,IPDIM, NPTS2D,NLP_all,ISTOT
       IMPLICIT NONE
+      include "gptl.inc"
 ! --- PRIVATE ---
 !
 ! --- PUBLIC ---
@@ -80,7 +81,7 @@
 !--- local variables ---
       INTEGER (KIND=int_prec) :: mp
       INTEGER (KIND=int_prec) :: lp
-      INTEGER (KIND=int_prec) :: i,j,midpoint, i1d,k  !dbg20120501
+      INTEGER (KIND=int_prec) :: i,j,midpoint, i1d,k,ret  !dbg20120501
       INTEGER (KIND=int_prec) :: jth  !dbg20120501
 !d      INTEGER :: lun_dbg=999
 !t      REAL(KIND=real_prec) :: phi_t0   !magnetic longitude,phi at T0
@@ -98,6 +99,8 @@ end if
 ! save ut so that other subroutines can refer to it
       utime_save=utime
 
+      ret = gptlstart ('apex_lon_loop') !24772.857
+!     print*,'JFM mpstrt,mpstop,mpstep', mpstrt,mpstop,mpstep !1,80,1
       apex_longitude_loop: DO mp = mpstrt,mpstop,mpstep !1,NMP
         mp_save=mp
         IF ( sw_neutral_heating_flip==1 ) hrate_cgs_save(:,:)=zero
@@ -113,7 +116,8 @@ end if
 !!!dbg20120125: only temporary used to switch on the transport only during the daytime...
 !dbg20120509        IF ( sw_rw_sw_perp_trans.AND.sw_perp_transport(mp)==0 )  CALL activate_perp_transport (utime,mp)
 !!!dbg20120125:
-
+!        print*,'JFM mp,lpstrt,lpstop,lpstep',mp,lpstrt,lpstop,lpstep !1,1,170,1
+                                                                      !2,1,170,1
         apex_latitude_height_loop: DO lp = lpstrt,lpstop,lpstep
           lp_save=lp
 
@@ -138,6 +142,10 @@ end if
 
 !20111025: not sure if these lines work when ut=0 & HPEQ=0.5(initial profiles are prepared within flip) , or maybe it is ok if they are zero?
 !save the values from the previous time step...
+!     print*,'JFM,mp,lp,JMIN_IN,JMAX_IS',mp,lp,JMIN_IN(lp),JMAX_IS(lp)!1,  1,    1, 1115
+                                                                      !1,  2, 1118, 2232
+                                                                      !1,  3, 2235, 3349
+                                                                      !1,170,44430,44438
           DO i=JMIN_IN(lp),JMAX_IS(lp)
              i1d=i-JMIN_IN(lp)+1
              DO jth=1,ISTOT
@@ -166,6 +174,7 @@ end if
 
 
 !dbg20120509          IF ( sw_perp_transport(mp)>=1 ) THEN
+          ret = gptlstart ('perp_transport')
           IF ( sw_perp_transport>=1 ) THEN
             IF ( lp>=lpmin_perp_trans.AND.lp<=lpmax_perp_trans ) THEN
               CALL perpendicular_transport ( utime,mp,lp )
@@ -181,6 +190,7 @@ print "('NO PERP. TRANS: mp=',I3,' lp=',I4,' mlatNd',F8.3,' apht',F8.2)", mp,lp,
 endif
             END IF
           END IF !( sw_perp_transport>=1 ) THEN
+          ret = gptlstop ('perp_transport')
           
 
 ! update the boundary conditions if the top of the flux tube is open
@@ -191,6 +201,7 @@ endif
 !!          CALL Get_SZA ( utime,mp,lp ) 
 
 ! call flux tube solver
+          ret = gptlstart ('flux_tube_solver')
           IF ( sw_para_transport==1 ) THEN 
 
             CALL flux_tube_solver ( utime,mp,lp )
@@ -219,6 +230,7 @@ endif
 
 
           END IF !( sw_para_transport==1 ) THEN           
+          ret = gptlstop ('flux_tube_solver')
 
 ! calculate neutral heating rate: NHEAT_mks in [eV kg-1 s-1]
 !20110729: temporarily commented out to save time...
@@ -230,11 +242,13 @@ endif
 
         END DO apex_latitude_height_loop !: DO lp = 1
       END DO apex_longitude_loop !: DO mp = 
+      ret = gptlstop ('apex_lon_loop')
 
 !dbg20120228: debug how2validate the transport
 !dbg20120501 if(sw_dbg_perp_trans) call dbg_estimate_trans_error (utime)
 
 ! output plasma parameters to a file
+      ret = gptlstart ('io_plasma_bin')
       IF ( MOD( (utime-start_time),ip_freq_output)==0 ) THEN 
 if(sw_debug) print *,'before call to output plasma',utime,start_time,ip_freq_output
 !dbg20110923segmentation fault??? memory allocation run time error???
@@ -248,6 +262,7 @@ if(sw_debug) print *,'before call to output plasma',utime,start_time,ip_freq_out
 !d END IF !( sw_perp_transport>=1 ) THEN
 
       END IF      !IF ( MOD( (utime-start_time),ip_freq_output)==0 ) THEN 
+      ret = gptlstop ('io_plasma_bin')
 
       END SUBROUTINE plasma
       END MODULE module_PLASMA

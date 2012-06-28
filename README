@@ -1,0 +1,25 @@
+date: 20120514
+brief instruction on how to compile & run the ipe
+
+go to the directory where makefile is located
+$ cd src
+
+Depending on your shell, set up the environment by doing one of the following:
+$ source stp_ipe.zeus.bash
+$ source stp_ipe.zeus.csh
+
+clean before compile 
+$ make cln
+
+compile
+$ make
+
+go to the run directory
+cd ../../run
+
+run the executable
+$ ../src/ipe.v18.exe
+
+or submit a job:
+$ qsubipe
+

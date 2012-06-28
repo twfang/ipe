@@ -134,7 +134,8 @@
           write(unit=2001,FMT='(20E12.4)')ed1 *1.0E+03 !V/m-->mV/m
           write(unit=2002,FMT='(20E12.4)')ed2 *1.0E+03 !V/m-->mV/m
           write(unit=2008,FMT='(20E12.4)')ed1_90 *1.0E+03 !V/m-->mV/m
-          write(unit=2009,FMT='(I12)')utime !sec
+          write(unit=2009,FMT='(20E12.4)')ed2_90 *1.0E+03 !V/m-->mV/m
+          write(unit=2010,FMT='(I12)')utime !sec
         END IF
 !c
       return

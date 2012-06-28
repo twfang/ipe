@@ -15,7 +15,7 @@
 ! calculate Solar Zenith Angle [radians]
       SUBROUTINE Get_SZA ( utime,mp,lp,SZA_rad )
         USE module_precision
-        USE module_FIELD_LINE_GRID_MKS,ONLY: plasma_grid_3d,JMIN_IN,JMAX_IS
+        USE module_FIELD_LINE_GRID_MKS,ONLY: plasma_grid_3d,JMIN_IN,JMAX_IS,ISL,IBM,IGR,IQ,IGCOLAT,IGLON
         USE module_physical_constants,ONLY: pi,zero
         USE module_input_parameters,ONLY: NDAY,sw_debug
         USE module_IPE_dimension,ONLY: IPDIM
@@ -50,7 +50,7 @@
         field_line_loop: DO i=IN,IS
           ii = i-IN+1 !make sure SZA_rad(1:~)
 !!        theta = aa - (m-1.0)*bb/2.0  !geographic CO-latitude [deg]
-          rlat = pi/2.0 - plasma_grid_3d(i,mp)%GCOLAT  ![radian]
+          rlat = pi/2.0 - plasma_grid_3d(i,mp,IGCOLAT)  ![radian]
           ty = (NDAY+15.5)*12.0/365.0
           IF ( ty>12.0 ) ty = ty - 12.0
 !.. declination angle [radian]
@@ -66,7 +66,7 @@
              utime12 = REAL(utime) +12.0*3600.0
           ENDIF
 ! Sub Solar Angle: the angle at some point on the Earth to the east from a line running north/south through the sub-solar point...
-          ssa = plasma_grid_3d(i,mp)%GLON*180.0/pi + utime12/240.0  
+          ssa = plasma_grid_3d(i,mp,IGLON)*180.0/pi + utime12/240.0  
           rlt = 180.0 + ssa
           IF ( rlt>360.0 ) rlt = rlt - 360.0
           rlt_r = rlt*pi/180.0  !convert from [deg] to [rad]

@@ -34,10 +34,16 @@
          REAL(KIND=real_prec) :: GCOLAT !.. geographic co-latitude [rad]
          REAL(KIND=real_prec) :: GLON   !.. geographic longitude [rad]
       END TYPE plasma_grid
-      TYPE(plasma_grid), ALLOCATABLE, TARGET,PUBLIC :: plasma_grid_3d(:,:)      
+!     TYPE(plasma_grid), ALLOCATABLE, TARGET,PUBLIC :: plasma_grid_3d(:,:)      
+      INTEGER (KIND=int_prec) :: ISL=1,IBM=2,IGR=3,IQ=4,IGCOLAT=5,IGLON=6
+!SMS$DISTRIBUTE(dh,1,2) BEGIN
+      REAL(KIND=real_prec),ALLOCATABLE,TARGET,PUBLIC :: plasma_grid_3d(:,:,:)      
+!SMS$DISTRIBUTE END
+!SMS$DISTRIBUTE(dh,1) BEGIN
       REAL(KIND=real_prec),ALLOCATABLE,TARGET,PUBLIC :: plasma_grid_Z(:) !.. altitude [meter] (NPTS2D)
       REAL(KIND=real_prec),ALLOCATABLE,TARGET,PUBLIC :: plasma_grid_GL(:)!.. magnetic co-latitude Eq(6.1) [rad]
       REAL(KIND=real_prec),ALLOCATABLE,TARGET,PUBLIC :: mlon_rad(:) !mag longitude in [rad]
+!SMS$DISTRIBUTE END
       REAL(KIND=real_prec),PARAMETER, PUBLIC :: dlonm90km = 4.5 ![deg]
 !      REAL(KIND=real_prec), ALLOCATABLE, PUBLIC ::  GCOLAT(:,:)    !.. geographic co-latitude [rad]
 !      REAL(KIND=real_prec), ALLOCATABLE, PUBLIC ::  GLON(:,:)      !.. geographic longitude [rad]
@@ -46,7 +52,9 @@
 !      REAL(KIND=real_prec), ALLOCATABLE, PUBLIC ::  SL_meter(:,:)  !.. distance of point from northern hemisphere foot point [meter]
 !      REAL(KIND=real_prec), ALLOCATABLE, PUBLIC ::  BM_T(:,:)     !.. magnetic field strength [T]
 
+!SMS$DISTRIBUTE(dh,2,3) BEGIN
       REAL(KIND=real_prec), ALLOCATABLE, PUBLIC ::  Be3(:,:,:)     ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]
+!SMS$DISTRIBUTE END
 !------------
 !...calculated parameters
 !      REAL(KIND=real_prec), ALLOCATABLE,     PUBLIC ::  Z_meter(:,:) !.. altitude [meter]
@@ -65,8 +73,11 @@
          REAL(KIND=real_prec) :: up
       END TYPE geographic_coords
 
-      TYPE(geographic_coords), ALLOCATABLE, PUBLIC ::  apexD(:,:,:)    !(3,NPTS2D,NMP).. Eq(3.8-10) Richmond 1995
-      TYPE(geographic_coords), ALLOCATABLE, PUBLIC ::  apexE(:,:,:)    !(2,NPTS2D,NMP).. Eq(3.11-12) Richmond 1995
+      INTEGER (KIND=int_prec) :: east=1,north=2,up=3
+!SMS$DISTRIBUTE(dh,2,3) BEGIN
+      REAL(KIND=real_prec), ALLOCATABLE, PUBLIC ::  apexD(:,:,:,:)     !(3,NPTS2D,NMP).. Eq(3.8-10) Richmond 1995
+      REAL(KIND=real_prec), ALLOCATABLE, PUBLIC ::  apexE(:,:,:,:)     !(2,NPTS2D,NMP).. Eq(3.11-12) Richmond 1995
+!SMS$DISTRIBUTE END
 !
       PRIVATE :: read_plasma_grid_global !dbg ,test_grid_output
       PUBLIC :: init_plasma_grid
@@ -126,19 +137,19 @@ print *,'midpoint',midpoint,plasma_grid_Z(midpoint)
 
 print "('lp=',i6,'  IN=',i6,'  IS=',i6,'  NPTS=',i6)", lp,IN,IS,(IS-IN+1)
 print "('r [m]      =',2E12.4)", r_meter2D(in),r_meter2D(is)
-print "('G-LAT [deg]=',2f10.4)",(90.-plasma_grid_3d(in,mp)%GCOLAT*180./pi),(90.-plasma_grid_3d(is,mp)%GCOLAT*180./pi)
+print "('G-LAT [deg]=',2f10.4)",(90.-plasma_grid_3d(in,mp,IGCOLAT)*180./pi),(90.-plasma_grid_3d(is,mp,IGCOLAT)*180./pi)
 print "('M-LAT [deg]=',2f10.4)",(90.-plasma_grid_GL(in)*180./pi),(90.-plasma_grid_GL(is)*180./pi)
-print "('GLON  [deg]=',2f10.4)",(plasma_grid_3d(in,mp)%GLON*180./pi),(plasma_grid_3d(is,mp)%GLON*180./pi)
-print "('Qvalue     =',2E12.4)", plasma_grid_3d(in,mp)%Q, plasma_grid_3d(is,mp)%Q
-print "('BM [Tesla]    =',2E12.4)", plasma_grid_3d(in,mp)%BM, plasma_grid_3d(is,mp)%BM
+print "('GLON  [deg]=',2f10.4)",(plasma_grid_3d(in,mp,IGLON)*180./pi),(plasma_grid_3d(is,mp,IGLON)*180./pi)
+print "('Qvalue     =',2E12.4)", plasma_grid_3d(in,mp,IQ), plasma_grid_3d(is,mp,IQ)
+print "('BM [Tesla]    =',2E12.4)", plasma_grid_3d(in,mp,IBM), plasma_grid_3d(is,mp,IBM)
 !print "('D1         =',2E12.4)", apexD(1,in,mp)%east, apexD(1,is,mp)%east
 !print "('D2         =',2E12.4)", apexD(2,in,mp)%east, apexD(2,is,mp)%east
-print "('D3         =',6E12.4)", apexD(3,in,mp)%east,apexD(3,in,mp)%north,apexD(3,in,mp)%up, apexD(3,is,mp)%east,apexD(3,is,mp)%north,apexD(3,is,mp)%up
-print "('E1         =',2E12.4)", apexE(1,in,mp)%east, apexE(1,is,mp)%east
-print "('E2         =',2E12.4)", apexE(2,in,mp)%east, apexE(2,is,mp)%east
+print "('D3         =',6E12.4)", apexD(3,in,mp,east),apexD(3,in,mp,north),apexD(3,in,mp,up), apexD(3,is,mp,east),apexD(3,is,mp,north),apexD(3,is,mp,up)
+print "('E1         =',2E12.4)", apexE(1,in,mp,east), apexE(1,is,mp,east)
+print "('E2         =',2E12.4)", apexE(2,in,mp,east), apexE(2,is,mp,east)
 print "('Be3 [T] NH/SH  =',2E12.4)", Be3(1,mp,lp), Be3(2,mp,lp)
 
-print "('SL [m]     =',4E13.5)", plasma_grid_3d(in:in+1,mp)%SL, plasma_grid_3d(is-1:is,mp)%SL
+print "('SL [m]     =',4E13.5)", plasma_grid_3d(in:in+1,mp,ISL), plasma_grid_3d(is-1:is,mp,ISL)
 print "('Z  [m]     =',4E13.5)",  plasma_grid_Z(in:in+1),  plasma_grid_Z(is-1:is)
 print "('Pvalue     =',F10.4)", Pvalue(lp)
 END IF !( sw_debug etc ) THEN
@@ -155,8 +166,8 @@ IF ( sw_grid==0 ) THEN  !APEX
 !d &, plasma_grid_GL(i), apexD(3,i,mp)%east, apexD(3,i,mp)%north, apexD(3,i,mp)%up
 
            CALL Get_sinI ( sw_sinI, sinI, plasma_grid_GL(i) &
-     &, apexD(3,i,mp)%east, apexD(3,i,mp)%north, apexD(3,i,mp)%up ) 
-           plasma_grid_3d(i,mp)%GR  =  G0 * ( earth_radius * earth_radius ) / ( r_meter2D(i) * r_meter2D(i) ) * sinI * (-1.0)
+     &, apexD(3,i,mp,east), apexD(3,i,mp,north), apexD(3,i,mp,up) ) 
+           plasma_grid_3d(i,mp,IGR)  =  G0 * ( earth_radius * earth_radius ) / ( r_meter2D(i) * r_meter2D(i) ) * sinI * (-1.0)
 
 !IF ( sw_debug )  print "(4E12.4)", Z_meter(i,mp),sinI, (G0 * ( earth_radius * earth_radius ) / ( r_meter2D(i) * r_meter2D(i) )),  GR_mks(i,mp)
         
@@ -168,7 +179,7 @@ IF ( sw_debug )  then
   else if ( sw_sinI==1 ) then
     print *, 'sinI: APEX'
   endif !  if ( sw_sinI==0 ) then
-  print "('GRavity[m2 s-1]=',4E12.4)",plasma_grid_3d(in:in+2,mp)%GR,plasma_grid_3d(is,mp)%GR
+  print "('GRavity[m2 s-1]=',4E12.4)",plasma_grid_3d(in:in+2,mp,IGR),plasma_grid_3d(is,mp,IGR)
 END IF !( sw_debug )  then
 
 !nm20120304: introducing the flip grid
@@ -202,7 +213,7 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
 !dbg20120313
 !     DO mp = 1,NMP_all 
 !       DO i = 1,NPTS2D 
-!         plasma_grid_3d(i,mp)%BM = plasma_grid_3d(i,mp)%BM * fac_BM
+!         plasma_grid_3d(i,mp,IBM) = plasma_grid_3d(i,mp,IBM) * fac_BM
 !       END DO
 !     END DO
 
@@ -254,7 +265,8 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
       REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP_all) ::  dum6    !.. Eq(3.10) Richmond 1995
 !dbg20110927      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP_all) ::  E1_all    !.. Eq(3.11) Richmond 1995
 !dbg20110927      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP_all) ::  E2_all    !.. Eq(3.12) Richmond 1995
-      REAL(KIND=real_prec), DIMENSION(2,NMP_all,NLP_all) ::  Be3_all         ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]
+!JFM  REAL(KIND=real_prec), DIMENSION(2,NMP_all,NLP_all) ::  Be3_all         ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]
+      REAL(KIND=real_prec), DIMENSION(NMP_all,NLP_all) ::  Be3_all1,Be3_all2 ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]
 
 !-------------local
         CHARACTER (LEN=11) :: FORM_dum
@@ -274,18 +286,18 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
       JMIN_IN(:) = -999
       JMAX_IS(:) = -999
       r_meter2D(:) = zero
-      plasma_grid_3d(:,:)%GCOLAT = zero
-      plasma_grid_3d(:,:)%GLON   = zero
-      plasma_grid_3d(:,:)%Q      = zero
+      plasma_grid_3d(:,:,IGCOLAT) = zero
+      plasma_grid_3d(:,:,IGLON)   = zero
+      plasma_grid_3d(:,:,IQ)      = zero
       plasma_grid_GL(:  )        = zero
-      plasma_grid_3d(:,:)%SL     = zero
-      plasma_grid_3d(:,:)%BM     = zero
-      apexD(:,:,:)%east  = zero
-      apexD(:,:,:)%north = zero
-      apexD(:,:,:)%up    = zero
-      apexE(:,:,:)%east  = zero
-      apexE(:,:,:)%north = zero
-      apexE(:,:,:)%up    = zero
+      plasma_grid_3d(:,:,ISL)     = zero
+      plasma_grid_3d(:,:,IBM)     = zero
+      apexD(:,:,:,east ) = zero
+      apexD(:,:,:,north) = zero
+      apexD(:,:,:,up   ) = zero
+      apexE(:,:,:,east ) = zero
+      apexE(:,:,:,north) = zero
+      apexE(:,:,:,up   ) = zero
       Be3(:,:,:) = zero
 
 
@@ -302,9 +314,9 @@ JMAX_IS(          1:NLP)=JMAX_IS_all(            1,1:NLP)
       print *,"reading JMIN_IN etc completed"
       READ (UNIT=LUN_pgrid, FMT=*) dum0, dum1, dum2, dum3 !gr_2d, gcol_2d, glon_2d, q_coordinate_2d
 r_meter2D(     1:NPTS2D                 ) = dum0(1:NPTS2D,1        ) !r_meter
-plasma_grid_3d(1:NPTS2D,NMP0:NMP1)%GCOLAT = dum1(1:NPTS2D,NMP0:NMP1) !GCOLAT
-plasma_grid_3d(1:NPTS2D,NMP0:NMP1)%GLON   = dum2(1:NPTS2D,NMP0:NMP1) !GLON
-plasma_grid_3d(1:NPTS2D,NMP0:NMP1)%Q      = dum3(1:NPTS2D,NMP0:NMP1) !Q
+plasma_grid_3d(1:NPTS2D,NMP0:NMP1,IGCOLAT) = dum1(1:NPTS2D,NMP0:NMP1) !GCOLAT
+plasma_grid_3d(1:NPTS2D,NMP0:NMP1,IGLON)   = dum2(1:NPTS2D,NMP0:NMP1) !GLON
+plasma_grid_3d(1:NPTS2D,NMP0:NMP1,IQ)     = dum3(1:NPTS2D,NMP0:NMP1) !Q
 
       print *,"reading r_meter etc completed"
       READ (UNIT=LUN_pgrid, FMT=*) dum0          !bcol_2d
@@ -312,8 +324,8 @@ plasma_grid_GL(1:NPTS2D)     =  dum0(1:NPTS2D,1) !GL
 
       print *,"reading GL_rad etc completed"
       READ (UNIT=LUN_pgrid, FMT=*) dum0, dum1 !integral_ds_2d, apex_BMAG_2d
-plasma_grid_3d(1:NPTS2D,NMP0:NMP1)%SL     =dum0(1:NPTS2D,NMP0:NMP1) !SL
-plasma_grid_3d(1:NPTS2D,NMP0:NMP1)%BM     =dum1(1:NPTS2D,NMP0:NMP1) !BM
+plasma_grid_3d(1:NPTS2D,NMP0:NMP1,ISL)     =dum0(1:NPTS2D,NMP0:NMP1) !SL
+plasma_grid_3d(1:NPTS2D,NMP0:NMP1,IBM)     =dum1(1:NPTS2D,NMP0:NMP1) !BM
       print *,"reading SL_meter etc completed"
       READ (UNIT=LUN_pgrid, FMT=*) dum4, dum5, dum6      !Apex_D1_2d
 !D2
@@ -325,22 +337,26 @@ plasma_grid_3d(1:NPTS2D,NMP0:NMP1)%BM     =dum1(1:NPTS2D,NMP0:NMP1) !BM
 !dbg20110923  apexD(2,1:NPTS2D,NMP0:NMP1)%north =  dum5(2,1:NPTS2D,NMP0:NMP1)
 !dbg20110923  apexD(2,1:NPTS2D,NMP0:NMP1)%up    =  dum5(3,1:NPTS2D,NMP0:NMP1)
 !D3
-  apexD(3,1:NPTS2D,NMP0:NMP1)%east  =  dum6(1,1:NPTS2D,NMP0:NMP1) !D3
-  apexD(3,1:NPTS2D,NMP0:NMP1)%north =  dum6(2,1:NPTS2D,NMP0:NMP1)
-  apexD(3,1:NPTS2D,NMP0:NMP1)%up    =  dum6(3,1:NPTS2D,NMP0:NMP1)
+  apexD(3,1:NPTS2D,NMP0:NMP1,east ) =  dum6(1,1:NPTS2D,NMP0:NMP1) !D3
+  apexD(3,1:NPTS2D,NMP0:NMP1,north) =  dum6(2,1:NPTS2D,NMP0:NMP1)
+  apexD(3,1:NPTS2D,NMP0:NMP1,up   ) =  dum6(3,1:NPTS2D,NMP0:NMP1)
       print *,"reading D1-3 etc completed"
       READ (UNIT=LUN_pgrid, FMT=*) dum4, dum5          !Apex_E1_2d
 !E1
-  apexE(1,1:NPTS2D,NMP0:NMP1)%east  =  dum4(1,1:NPTS2D,NMP0:NMP1) !E1
-  apexE(1,1:NPTS2D,NMP0:NMP1)%north =  dum4(2,1:NPTS2D,NMP0:NMP1)
-  apexE(1,1:NPTS2D,NMP0:NMP1)%up    =  dum4(3,1:NPTS2D,NMP0:NMP1)
+  apexE(1,1:NPTS2D,NMP0:NMP1,east ) =  dum4(1,1:NPTS2D,NMP0:NMP1) !E1
+  apexE(1,1:NPTS2D,NMP0:NMP1,north) =  dum4(2,1:NPTS2D,NMP0:NMP1)
+  apexE(1,1:NPTS2D,NMP0:NMP1,up   ) =  dum4(3,1:NPTS2D,NMP0:NMP1)
 !E2
-  apexE(2,1:NPTS2D,NMP0:NMP1)%east  =  dum5(1,1:NPTS2D,NMP0:NMP1) !E2
-  apexE(2,1:NPTS2D,NMP0:NMP1)%north =  dum5(2,1:NPTS2D,NMP0:NMP1)
-  apexE(2,1:NPTS2D,NMP0:NMP1)%up    =  dum5(3,1:NPTS2D,NMP0:NMP1)
+  apexE(2,1:NPTS2D,NMP0:NMP1,east ) =  dum5(1,1:NPTS2D,NMP0:NMP1) !E2
+  apexE(2,1:NPTS2D,NMP0:NMP1,north) =  dum5(2,1:NPTS2D,NMP0:NMP1)
+  apexE(2,1:NPTS2D,NMP0:NMP1,up   ) =  dum5(3,1:NPTS2D,NMP0:NMP1)
       print *,"reading E1/2 etc completed"
-      READ (UNIT=LUN_pgrid, FMT=*) Be3_all(1,1:NMP_all,1:NLP_all),Be3_all(2,1:NMP_all,1:NLP_all) !Apex_BE3_N
-Be3(1:2,NMP0:NMP1,1:NLP)=    Be3_all(1:2,NMP0:NMP1,1:NLP)
+!JFM  READ (UNIT=LUN_pgrid, FMT=*) Be3_all(1,1:NMP_all,1:NLP_all),Be3_all(2,1:NMP_all,1:NLP_all) !Apex_BE3_N
+!JFM  READ (UNIT=LUN_pgrid, FMT=*) Be3_all(1,:,:),Be3_all(2,:,:) !Apex_BE3_N
+      READ (UNIT=LUN_pgrid, FMT=*) Be3_all1,Be3_all2 !Apex_BE3_N
+!JFM  Be3(1:2,NMP0:NMP1,1:NLP)=    Be3_all(1:2,NMP0:NMP1,1:NLP)
+Be3(1,NMP0:NMP1,1:NLP)=    Be3_all1(NMP0:NMP1,1:NLP)
+Be3(2,NMP0:NMP1,1:NLP)=    Be3_all2(NMP0:NMP1,1:NLP)
       print *,"reading Be3 etc completed"
       CLOSE(UNIT=LUN_pgrid)
       print *,"global grid reading finished, file closed..."

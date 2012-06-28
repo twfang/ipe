@@ -7,6 +7,7 @@ xyz.o: xyz.f
 
 ### rules ###
 
+.SUFFIXES:
 .SUFFIXES: .o .c .cc .f .FOR .for .f90 .mod .F
 #
 .c.o:
@@ -18,6 +19,7 @@ xyz.o: xyz.f
 .FOR.o:
 	$(FC) $(FFLAGS) -c $< -o $@
 .f90.mod:
+	echo mod $(FC) $(FFLAGS90)
 	$(FC) $(FFLAGS90) -c $< -o $@
 .f90.o:
 	$(FC) $(FFLAGS90) -c $< -o $@

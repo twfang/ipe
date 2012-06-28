@@ -332,6 +332,7 @@ C.... Written by P. Richards June-September 2010.
       USE module_FIELD_LINE_GRID_MKS,ONLY:mp_save,lp_save
 
       IMPLICIT NONE
+      include "gptl.inc"
       INTEGER CTIPDIM         !.. CTIPe array dimension, must equal to FLDIM
 !nm20110923      INTEGER JTI             !.. Dummy variable to count the number of calls to this routine
       INTEGER I,J,JMINX,JMAXX !.. lcv + spatial grid indices
@@ -376,9 +377,11 @@ C.... Written by P. Richards June-September 2010.
       DATA M_TO_CM,M3_TO_CM3/1.0E+2,1.0E-6/    !.. Unit conversion factors
 !dbg20110120:      DATA DEBUG/1/  !.. turn on debug writes if DEBUG=1
       INTEGER :: midpoint !nm20110312
+      integer :: ret
 
+      ret = gptlstart ('CTIPINT init_params')
       CALL initialize_module_parameters ( )
-
+      ret = gptlstop  ('CTIPINT init_params')
 !nm20110923      JTI=JTI+1
 
       !.. Load debug flag into EFLAG for sending to subroutines
@@ -389,7 +392,7 @@ C.... Written by P. Richards June-September 2010.
         EFLAG(11,1) =-1
         RETURN
       ENDIF
-
+      ret = gptlstart ('CTIPINT upload')
       !.. Upload field line grid parameters to FIELD_LINE_GRID module
       JMIN=JMINX
       JMAX=JMAXX
@@ -441,24 +444,33 @@ C.... Written by P. Richards June-September 2010.
         NHEAT(J)=0.0
         O2DISF(J)=0.0
       ENDDO
-
+      ret = gptlstop ('CTIPINT upload')
       !.. Set up initial temperature and density profiles.
       !.. 0.1 < HPEQ < 1.0.
+      ret = gptlstart ('CTIPINT PROFIN')
       IF(HPEQ.GT.0.001)
      >  CALL PROFIN(IHEPLS,INPLS,PCO,F107,N,TI,HPEQ,HEPRAT)
-
+      ret = gptlstop  ('CTIPINT PROFIN')
       !.. This routine adjusts the H+ and He+ densities for depleted flux tubes      
       !..  if HPEQ is negative. 0.1 < -HPEQ < 1.0
+      ret = gptlstart ('CTIPINT NEW_HP')
       IF(HPEQ.LT.-0.001) CALL NEW_HP(JMIN,JMAX,PCO,HPEQ,N,EFLAG)
+      ret = gptlstop  ('CTIPINT NEW_HP')
 
       !.. Update solar EUV flux factors
+      ret = gptlstart ('CTIPINT FACEUV')
       CALL FACEUV(F107,F107A,UVFAC,EUVFLUX)
+      ret = gptlstop  ('CTIPINT FACEUV')
 
       !.. Update Schumann-Runge UV flux factors
+      ret = gptlstart ('CTIPINT FACSR')
       CALL FACSR(UVFAC,F107,F107A)
+      ret = gptlstop  ('CTIPINT FACSR')
 
       !.... evaluate primary EUV production
+      ret = gptlstart ('CTIPINT PRIMPR')
       CALL PRIMPR(F107,F107A,UVFAC,COLUM,EUVFLUX)
+      ret = gptlstop  ('CTIPINT PRIMPR')
 
       !.. electron density for photoelectron routine
       DO J=JMIN,JMAX
@@ -468,16 +480,21 @@ C.... Written by P. Richards June-September 2010.
 
       !.. 2-stream photoelectron routine to get electron heating 
       !.. rate and secondary ion production
+      ret = gptlstart ('CTIPINT PE2S')
       CALL PE2S(F107,F107A,N,TI,FPAS,-1.0E22,EDEN,UVFAC,COLUM,
      > IHEPLS,INPLS,INNO)
+      ret = gptlstop  ('CTIPINT PE2S')
 
       !-- Sum the EUV, photoelectron, and auroral production rate
+      ret = gptlstart ('CTIPINT SUMPRD')
       CALL SUMPRD(JMIN,JMAX)
+      ret = gptlstop  ('CTIPINT SUMPRD')
 
       !.. Loop to calculate O+(4S) total ionization rate
       !.. PHION=total O+(4S) prod, including EUV, e*, dissoc of O2 and
       !.. minor ions. BCKPRD = small background production to eliminate 
       !,, instability below 200 km
+      ret = gptlstart ('CTIPINT tot ion')
       DO J=JMIN,JMAX 
          PHION(J)=1.0E-22
          N(3,J)=1.0E-22
@@ -508,8 +525,10 @@ C.... Written by P. Richards June-September 2010.
          !.. Sum minor ions N+, NO+, O2+, N2+ for electron density at low altitudes
          N(3,J)=XIONN(4,J)+XIONN(5,J)+XIONN(6,J)+XIONN(7,J)+XIONN(8,J)
       ENDDO
+      ret = gptlstop ('CTIPINT tot ion')
 
       !.. Debug write
+      ret = gptlstart ('CTIPINT sw_output')
       IF ( sw_output_fort167 ) THEN
 c      IF(JTI.EQ.1) THEN
         WRITE(UNIT=LUN_FLIP1,FMT=201)  
@@ -575,26 +594,36 @@ c      IF(JTI.EQ.1) THEN
 !     &,SUMION(1,7,J),SUMION(2,4,J),SUMION(2,5,J)
         ENDDO
       END IF !( sw_debug ) THEN
+      ret = gptlstop ('CTIPINT sw_output')
 c      ENDIF
 
       !..  electron and ion temperature solution
       midpoint = (JMAX/2)+1
+      ret = gptlstart ('CTIPINT TLOOPS')
       IF( sw_TEI>0) ! .AND. Z(midpoint)>100.00 )
      >  CALL TLOOPS(JMIN,JMAX,CTIPDIM,Z,N,TI,DT,DTMIN,EFLAG)   !$$$ 
+      ret = gptlstop  ('CTIPINT TLOOPS')
       !.. O+, H+ solution
+      ret = gptlstart ('CTIPINT DLOOPS')
       IF( sw_OHPLS>0) ! .AND. Z(midpoint)>120.00 )
      >  CALL DLOOPS(JMIN,JMAX,CTIPDIM,Z,N,TI,DT,DTMIN,EFLAG)   !$$$  
+      ret = gptlstop  ('CTIPINT DLOOPS')
 
       !.. He+ solution
+      ret = gptlstart ('CTIPINT XION')
       IF(EFLAG(2,1).EQ.0.AND.IHEPLS.GT.0) ! .AND. Z(midpoint)>200.00 )
      & CALL XION(TI,DT,DTMIN,9,EFLAG)
+      ret = gptlstop  ('CTIPINT XION')
 
       !.. N+ solution
 !dbg20120301:
       IF ( sw_DEBUG_flip==1 )  print *,'!dbg! apex ht=',z(midpoint)
      &, midpoint,lp_save,mp_save
+      ret = gptlstart ('CTIPINT XION')
       IF(EFLAG(2,1).EQ.0.AND.INPLS.GT.0) CALL XION(TI,DT,DTMIN,11,EFLAG)
+      ret = gptlstop  ('CTIPINT XION')
 
+      ret = gptlstart ('CTIPINT transfer')
         !.. transfer densities from FLIP to CTIP variable
       DO J=JMIN,JMAX
         NNOX(J)=NNO(J)/M3_to_CM3
@@ -611,6 +640,7 @@ c      ENDIF
         EHTX(I,J)=EHT(I,J)
       ENDDO
       ENDDO
+      ret = gptlstop ('CTIPINT transfer')
 
 !.. I=1 is used to turn on NHEAT writes
 !nm033111:      IF(DEBUG.EQ.1.AND.JTI.EQ.115) I=1 
@@ -621,6 +651,7 @@ c      ENDIF
       END IF
 
         !.. Get neutral gas heating rate NHEAT
+        ret = gptlstart ('CTIPINT get NHEAT')
         DO J=JMIN,JMAX
           IF(Z(J).GE.80.AND.Z(J).LE.700) THEN
             !.. electron density for photoelectron routine
@@ -638,7 +669,8 @@ c      ENDIF
      &       ,NHEAT(J)   !.. OUTPUT: Total neutral heating rate
      &       ,O2DISF(J)) !.. OUTPUT: O2 dissociation frequency !PGR added index
           ENDIF
-      ENDDO
+        ENDDO
+        ret = gptlstop ('CTIPINT get NHEAT')
 c      ENDIF
 
       !---------------------- DEBUG WRITE -----------------------------------
@@ -661,9 +693,11 @@ c      ENDIF
 
 !nm20110715: for diagnostics only
 !.. 2-stream photoelectron routine called to print fluxes
+      ret = gptlstart ('CTIPINT PE2S')
       IF(sw_DEBUG_flip.EQ.1)  !nm20110923
      &  CALL PE2S(F107,F107A,N,TI,FPAS,300.0,EDEN,UVFAC,COLUM
      &    ,IHEPLS,INPLS,INNO)
+      ret = gptlstop  ('CTIPINT PE2S')
 
 
       RETURN

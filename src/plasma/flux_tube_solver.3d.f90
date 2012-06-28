@@ -13,7 +13,7 @@
       SUBROUTINE flux_tube_solver ( utime,mp,lp )
       USE module_precision
       USE module_IPE_dimension,ONLY: ISPEC,ISPEV,IPDIM
-      USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,Pvalue
+      USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,Pvalue,ISL,IBM,IGR,IQ,IGCOLAT,IGLON
       USE module_input_parameters,ONLY: time_step,F107D,F107AV,DTMIN_flip  &
      &, sw_INNO,FPAS_flip,HPEQ_flip,HEPRAT_flip,COLFAC_flip,sw_IHEPLS,sw_INPLS,sw_debug,iout, start_time, sw_wind_flip, sw_depleted_flip, start_time_depleted, sw_output_fort167
       USE module_NEUTRAL_MKS,ONLY: ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3 &
@@ -25,6 +25,7 @@
       USE module_unit_conversion,ONLY: M_TO_KM
 
       IMPLICIT NONE
+      include "gptl.inc"
 !------------------------
       INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]
       INTEGER (KIND=int_prec), INTENT(IN) :: mp    !longitude
@@ -63,7 +64,7 @@
       INTEGER :: PRUNIT_dum !.. Unit number to print results
       INTEGER (KIND=int_prec) :: midpoint
 !      INTEGER (KIND=int_prec) :: stat_alloc
-      INTEGER (KIND=int_prec) :: ipts,i
+      INTEGER (KIND=int_prec) :: ipts,i,ret
       INTEGER (KIND=int_prec),PARAMETER :: ip_freq_output_fort=900      
       INTEGER (KIND=int_prec) :: jth !dbg20120501
 !----------------------------------
@@ -104,10 +105,10 @@
       
       ZX(1:CTIPDIM)  = plasma_grid_Z(IN:IS) * M_TO_KM !convert from m to km 
       PCO = Pvalue(lp)  !Pvalue is a single value
-      SLX(1:CTIPDIM) = plasma_grid_3d(IN:IS,mp)%SL
+      SLX(1:CTIPDIM) = plasma_grid_3d(IN:IS,mp,ISL)
       GLX(1:CTIPDIM) = pi/2. - plasma_grid_GL(IN:IS)  ! magnetic latitude [radians]
-      BMX(1:CTIPDIM) = plasma_grid_3d(IN:IS,mp)%BM   !Tesla
-      GRX(1:CTIPDIM) = plasma_grid_3d(IN:IS,mp)%GR
+      BMX(1:CTIPDIM) = plasma_grid_3d(IN:IS,mp,IBM)   !Tesla
+      GRX(1:CTIPDIM) = plasma_grid_3d(IN:IS,mp,IGR)
 
       OX(1:CTIPDIM) = ON_m3(IN:IS,mp) !(m-3)
       HX(1:CTIPDIM) = HN_m3(IN:IS,mp)
@@ -137,7 +138,9 @@
 !nm20110822: moved from module_plasma
 !! I need to get the new get_sza based on phil's method
 !! calculate Solar Zenith Angle [radians]
+      ret = gptlstart ('Get_SZA')
       CALL Get_SZA ( utime,mp,lp, SZA_dum )
+      ret = gptlstop  ('Get_SZA')
 !      SZA_dum(JMINX:JMAXX)   = SZA_rad(IN:IS)
 !nm20110822: no more allocatable arrays
 !      IF ( ALLOCATED( SZA_rad  ) )  DEALLOCATE( SZA_rad, STAT=stat_alloc  )
@@ -219,12 +222,13 @@ print "('INPLS        =',I6)",INPLS
 END IF !( sw_debug ) then
 
 
+ret = gptlstart ('sw_output_fort167')
 IF( sw_output_fort167 ) then
 !dbg20120125:      midpoint = JMINX + (CTIPDIM-1)/2
       midpoint = IN + (IS-IN)/2
       IF ( lp>=1 .AND. lp<=6 )  midpoint = midpoint - 1
 !nm20110909: calculating LT should be made FUNCTION!!!
-      ltime = REAL(utime)/3600.0 + (plasma_grid_3d(midpoint,mp)%GLON*180.0/pi)/15.0
+      ltime = REAL(utime)/3600.0 + (plasma_grid_3d(midpoint,mp,IGLON)*180.0/pi)/15.0
       IF ( ltime > 24.0 )  ltime = MOD(ltime, 24.0)
 
       WRITE(UNIT=LUN_FLIP1,FMT="('mp=',i3,' lp=',i3,' U',i3,' North, UT=',2F10.3)") mp,lp,LUN_FLIP1,REAL(UTIME)/3600., ltime
@@ -234,12 +238,14 @@ IF( sw_output_fort167 ) then
 
 print *,'sub-fl: UTs=',UTIME,' LThr=',ltime,' mp',mp,' lp',lp
 END IF !( sw_debug ) then
+ret = gptlstop  ('sw_output_fort167')
 
 
 
 !dbg20110131:
 IF ( sw_debug )  WRITE(UNIT=PRUNIT,FMT="('mp=',i6,' lp=',i6,' UT=',F10.2)") mp,lp,REAL(UTIME)/3600.
 
+      ret = gptlstart ('flux_tube_solver_loop1')
       DO ipts=1,CTIPDIM
 !N&T from the previous time step are absolute necesary for the solver...
 !dbg20120501
@@ -292,8 +298,10 @@ END IF
          END IF
          NHEAT(             ipts)=zero !dbg20110927
       END DO !ipts=
+      ret = gptlstop ('flux_tube_solver_loop1')
 
 ! call the flux tube solver (FLIP)
+      ret = gptlstart ('CTIPINT')
       CALL CTIPINT( &
      &             JMINX, & !.. index of the first point on the field line
      &             JMAXX, & !.. index of the last point on the field line
@@ -331,6 +339,7 @@ END IF
      &     XIONNX(1:ISPEC,1:CTIPDIM),XIONVX(1:ISPEC,1:CTIPDIM), & !.. IN/OUT: 2D array, Storage for ion densities and velocities
      &             NHEAT(1:CTIPDIM), & !.. OUT: array, Neutral heating rate (eV/cm^3/s) 
      &             EFLAG)  !.. OUT: 2D array, Error Flags
+      ret = gptlstop  ('CTIPINT')
 
 !dbg20110802: 3D multiple-lp run
 !if ( sw_debug )  sw_debug=.false.
@@ -339,6 +348,7 @@ END IF
 
 
 ! output
+      ret = gptlstart ('flux_tube_solver_loop2')
       DO ipts=1,CTIPDIM
 !dbg20120501
          DO jth=1,ISPEC
@@ -368,11 +378,14 @@ END IF
 !dbg20110923         IF ( INNO<0 ) &  !when flip calculates NO
 !dbg20110923        &  plasma_3d(mp,lp)%NO_m3(      ipts) =   NNOX(        ipts)
       END DO       !DO ipts=1,CTIPDIM
+      ret = gptlstop  ('flux_tube_solver_loop2')
 !dbg20110927      NHEAT_cgs(IN:IS,mp) =  NHEAT(        1:CTIPDIM) 
 
+      ret = gptlstart ('WRITE_EFLAG')
       PRUNIT_dum = PRUNIT
       CALL WRITE_EFLAG(PRUNIT_dum, &  !.. Unit number to print results
      &                  EFLAG)    !.. Error flag array
+      ret = gptlstop  ('WRITE_EFLAG')
 
 
 !nm20110822: no more allocatable arrays

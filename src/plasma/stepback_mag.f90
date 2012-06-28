@@ -16,7 +16,7 @@
      &, phi_t0 , theta_t0 )
       USE module_precision
       USE module_eldyn,ONLY: Ed1_90,Ed2_90,coslam_m,lpconj
-      USE module_FIELD_LINE_GRID_MKS,ONLY: Be3,mlon_rad,plasma_grid_GL,JMIN_IN,JMAX_IS,ht90,plasma_grid_Z  !,apexE, geographic_coords
+      USE module_FIELD_LINE_GRID_MKS,ONLY: Be3,mlon_rad,plasma_grid_GL,JMIN_IN,JMAX_IS,ht90,plasma_grid_Z !,apexE, geographic_coords
       USE module_physical_constants,ONLY: earth_radius,rtd,pi
 !      USE cons_module,ONLY: h0 !potential solver reference height[cm] =90km
       USE module_input_parameters,ONLY: time_step,sw_debug
@@ -143,7 +143,7 @@ NULLIFY(phi_t1)
      &, phi_t0 , theta_t0, r0_apex )
       USE module_precision
       USE module_eldyn,ONLY: Ed1_90,Ed2_90,lpconj
-      USE module_FIELD_LINE_GRID_MKS,ONLY: Be3,mlon_rad,plasma_grid_Z,JMIN_IN,JMAX_IS,ht90,apexE,plasma_grid_GL,plasma_grid_3d
+      USE module_FIELD_LINE_GRID_MKS,ONLY: Be3,mlon_rad,plasma_grid_Z,JMIN_IN,JMAX_IS,ht90,apexE,plasma_grid_GL,plasma_grid_3d,east,north,up,ISL,IBM,IGR,IQ,IGCOLAT,IGLON
       USE module_physical_constants,ONLY: earth_radius,rtd,pi
       USE module_input_parameters,ONLY: time_step,sw_exb_up,sw_debug,lpstrt,lpstop,mpstrt,mpstop,start_time,lpmin_perp_trans
       USE module_plasma,ONLY: VEXBup
@@ -199,7 +199,7 @@ if(sw_debug) print *,'sub-StR:',mp,lp,r,r_apex,plasma_grid_Z(midpoint)
 if(sw_debug)&
 & print *,'sub-StR:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]', Ed1_90(mp,lp0)*1.0E+3,' be3[tesla]',Be3(ihem,mp,lp) 
 
-        VEXBup(mp,lp) = (v_e(1) * apexE(1,midpoint,mp)%up)    + (v_e(2) * apexE(2,midpoint,mp)%up)
+        VEXBup(mp,lp) = (v_e(1) * apexE(1,midpoint,mp,up))    + (v_e(2) * apexE(2,midpoint,mp,up))
 
 !dbg20120301:temp solution: make sure flux tube does not go beyond the sim region...
 if ( lp==lpstrt.or.lp==lpstop ) then
@@ -208,7 +208,7 @@ endif
 
 if(sw_debug)&
 & print *,'sub-StR:' &
-&, v_e(1),apexE(1,midpoint,mp)%up,v_e(2),apexE(2,midpoint,mp)%up
+&, v_e(1),apexE(1,midpoint,mp,up),v_e(2),apexE(2,midpoint,mp,up)
 
         ELSE IF ( sw_exb_up==2 ) THEN 
 
@@ -219,7 +219,7 @@ if(sw_debug)&
 !(3)  SUPIM empirical model: 
 !note: becomes zero at R=4000km
 
-          GLON_deg = plasma_grid_3d(midpoint,mp)%GLON*180./pi
+          GLON_deg = plasma_grid_3d(midpoint,mp,IGLON)*180./pi
           LT_SEC = utime + GLON_deg/15.*3600.
           IF ( LT_SEC>=86400.)  LT_SEC=LT_SEC-86400.
           IF ( LT_SEC<     0.)  LT_SEC=LT_SEC+86400.

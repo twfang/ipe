@@ -1,5 +1,5 @@
 !note:20120207: v36: used only activating the perp.transport gradually...
-! DATE: 08&,sw_r_or_th !nm20111114
+! DATE: 08 September, 2011
 !********************************************
 !***      Copyright 2011 NAOMI MARUYAMA   ***
 !***      ALL RIGHTS RESERVED             ***
@@ -98,10 +98,6 @@
 !2:both THETA&PHI:transport included, NH/SH flux tubes are moving together with the same ExB drift
 !3:both THETA&PHI:transport included, NH/SH flux tubes are moving separately with different ExB drift
 ! if sw_perp_tr=>1
-      INTEGER (KIND=int_prec), PUBLIC :: sw_r_or_th 
-!0: theta method, good for global
-!1: r method, good for mid/low latitude
-
       INTEGER (KIND=int_prec), PUBLIC :: lpmin_perp_trans !=15 :mlatN=78deg???
       INTEGER (KIND=int_prec), PUBLIC :: lpmax_perp_trans !=151:mlatN=5.64deg
       INTEGER (KIND=int_prec), PUBLIC :: record_number_plasma_start
@@ -165,7 +161,6 @@
            &, sw_rw_sw_perp_trans &
            &, sw_dbg_perp_trans &
            &, sw_perp_transport &
-           &, sw_r_or_th &
            &, lpmin_perp_trans &
            &, lpmax_perp_trans &
            &, sw_exb_up &

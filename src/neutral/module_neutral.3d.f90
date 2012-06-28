@@ -42,7 +42,7 @@
 !---------------------------
       subroutine neutral (utime) 
       USE module_IPE_dimension,ONLY: IPDIM
-      use module_FIELD_LINE_GRID_MKS, only : plasma_grid_3d,plasma_grid_Z, apexD, JMIN_IN,JMAX_IS
+      use module_FIELD_LINE_GRID_MKS, only : plasma_grid_3d,plasma_grid_Z, apexD, JMIN_IN,JMAX_IS,east,north,up,ISL,IBM,IGR,IQ,IGCOLAT,IGLON
       USE module_physical_constants,ONLY: pi,zero
       USE module_input_parameters,ONLY: F107D,F107AV,AP,NYEAR,NDAY,sw_debug,lpstrt,lpstop,lpstep,mpstrt,mpstop,mpstep,sw_grid,start_time,stop_time,sw_neutral
       USE module_unit_conversion,ONLY: M_TO_KM
@@ -120,8 +120,8 @@ IF( sw_debug )  print *,'sub-neut: mp=',mp,lp,IN,IS,npts
 !  print *, '!STOP! Vn_ms1 DEALLOCATION FAILED! in neutral:',stat_alloc,mp,lp,in,is,npts
 !  STOP
 !end if
-          glon_deg(1:NPTS) = plasma_grid_3d(IN:IS,mp)%GLON*180./pi
-          glat_deg(1:NPTS) = 90. - plasma_grid_3d(IN:IS,mp)%GCOLAT*180./pi
+          glon_deg(1:NPTS) = plasma_grid_3d(IN:IS,mp,IGLON)*180./pi
+          glat_deg(1:NPTS) = 90. - plasma_grid_3d(IN:IS,mp,IGCOLAT)*180./pi
           alt_km  (1:NPTS) = plasma_grid_Z(IN:IS) * M_TO_KM  !/ 1000. 
 
 !print *,'get_ther:npts=',npts
@@ -175,14 +175,14 @@ IF( sw_debug )  print *,'sub-neut: mp=',mp,lp,IN,IS,npts
          
 
 ! un(3)=Ue3=d3*U: positive parallel to a field line, Eq(5.6) 
-               dotprod = apexD(3,i,mp)%east*apexD(3,i,mp)%east  &
-                    &              + apexD(3,i,mp)%north*apexD(3,i,mp)%north &
-                    &              + apexD(3,i,mp)%up*apexD(3,i,mp)%up
+               dotprod = apexD(3,i,mp,east )*apexD(3,i,mp,east )  &
+                    &  + apexD(3,i,mp,north)*apexD(3,i,mp,north) &
+                    &  + apexD(3,i,mp,up   )*apexD(3,i,mp,up   )
                IF ( dotprod > 0.0 ) THEN
                   Un_ms1(3,i,mp) = & 
-                       &     ( apexD(3,i,mp)%east*Vn_ms1(1,ipts) &
-                       &     + apexD(3,i,mp)%north*Vn_ms1(2,ipts) &
-                       &     + apexD(3,i,mp)%up*Vn_ms1(3,ipts)     ) / &
+                       &     ( apexD(3,i,mp,east )*Vn_ms1(1,ipts)     &
+                       &     + apexD(3,i,mp,north)*Vn_ms1(2,ipts)     &
+                       &     + apexD(3,i,mp,up   )*Vn_ms1(3,ipts) ) / &
                        &     SQRT(  dotprod   )
                ELSE
                   Un_ms1(3,i,mp) = 0.0
@@ -208,7 +208,7 @@ print *,'glati',glati,'glongi',glongi
 !FLIP or: UN(J)= -ABS(COSDIP(J))*BCOMPU * 100.0   !.. The wind along B in cm/s 
 !*(-1) will be done in flux_tube_solver...f90
 ! unit: meter s-1: unit conversion to cm/s will be done in CTIP-INT.f
-               Un_ms1(3,i,mp) = ABS( apexD(3,i,mp)%north )*BCOMPU    !.. The wind along B
+               Un_ms1(3,i,mp) = ABS( apexD(3,i,mp,north) )*BCOMPU    !.. The wind along B
 
 print *,'flip grid2 :npts=',npts
 

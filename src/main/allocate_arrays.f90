@@ -34,12 +34,12 @@ IF ( switch==0 ) THEN
 print *,'ALLOCATing ARRAYS'
       ALLOCATE ( &
 !---field line grid
-     &    plasma_grid_3d(NPTS2D, NMP0:NMP1) &
-     &,   plasma_grid_Z( NPTS2D           ) &
-     &,   plasma_grid_GL(NPTS2D           ) &
+     &    plasma_grid_3d(NPTS2D, NMP0:NMP1,6) &
+     &,   plasma_grid_Z( NPTS2D             ) &
+     &,   plasma_grid_GL(NPTS2D             ) &
 !---
-     &,        apexD(3:3,NPTS2D, NMP0:NMP1) &
-     &,        apexE(2,NPTS2D,NMP_all) &
+     &,        apexD(3:3,NPTS2D, NMP0:NMP1,3) &
+     &,        apexE(2,NPTS2D,NMP_all,3) &
 !---
      &,          Be3(2, NMP0:NMP1,NLP_all) &
      &,       Pvalue(             NLP_all) &
