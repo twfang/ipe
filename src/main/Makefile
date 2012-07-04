@@ -6,8 +6,9 @@ FFLAGS90=$(FFLAGS)
 LFLAGS=$(LFLAGS)
 HOME_dev=$(HOME_dev)
 all:
-	echo compiler $(FC)
-	echo FFLAGS $(FFLAGS)
+	echo main compiler $(FC) $(FCparallel)
+	echo main par $(PAR)
+	echo main FFLAGS $(FFLAGS)
 ifeq ($(PAR),sms)
 	echo building sms
 	echo $(FCparallel)

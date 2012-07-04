@@ -252,6 +252,7 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
 !... read in parameters
       INTEGER(KIND=int_prec), DIMENSION(NMP_all,NLP_all) :: JMIN_IN_all,JMAX_IS_all  !.. first and last indices on field line grid
 
+!SMS$DISTRIBUTE(dh,NPTS2D) BEGIN
       REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP_all) ::  dum0     !.. distance from the center of the Earth[meter]
       REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP_all) ::  dum1  !.. geographic co-latitude [rad]
       REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP_all) ::  dum2    !.. geographic longitude [rad]
@@ -281,6 +282,7 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
 
 !dbg      INTEGER(KIND=int_prec) :: sw_test_grid=0  !1: ON testgrid; 0: OFF 
 !---
+!SMS$DISTRIBUTE END
 
 ! array initialization
       JMIN_IN(:) = -999

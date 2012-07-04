@@ -11,8 +11,10 @@ $ source stp_ipe.zeus.csh
 clean before compile 
 $ make cln
 
-compile
+compile serial
 $ make
+compile parallel
+$ make PAR=sms
 
 go to the run directory
 cd ../../run

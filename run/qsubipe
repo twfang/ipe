@@ -31,8 +31,8 @@ cat << EOF >! runscript
   else
     set cmd = "time ./ipe.v18.exe"
   endif
-  echo "running \$cmd" >& output
-  (\$cmd) > output
+  echo "running \$cmd" > output
+  (\$cmd) >> output
 
 if (\$status != 0) then
   echo ipe failed

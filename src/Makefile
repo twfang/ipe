@@ -131,7 +131,7 @@ FINAL_OBJS=\
 	$(OBJ4)
 
 $(PACKAGE): D0_OBJ  D1_OBJ  D6_OBJ  D3_OBJ  D2_OBJ  D4_OBJ
-	echo par $(par)
+
 ifeq ($(PAR),sms)
 	$(FCparallel) $(LDFLAGS) $(FINAL_OBJS) -o $@ $(LDLIBS) $(GPTL_LDFLAGS) $(SMS_LDFLAGS)
 else
@@ -144,7 +144,7 @@ $(FINAL_OBJS): $(HEADS) Makefile
 	cd ${DR0} ; ${MAKE} all \
 	"OBJS=${OBJ0}" \
 	"FC=${FC}" \
-	"FCparallel=${FC}" \
+	"FCparallel=${FCparallel}" \
 	"FFLAGS=${FFLAG0}" \
 	"LFLAGS=${LDFLAGS}" \
 	"HOME_dev=${HOME_dev}" \
