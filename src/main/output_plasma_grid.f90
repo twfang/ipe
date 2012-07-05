@@ -14,7 +14,7 @@ SUBROUTINE output_plasma_grid ( )
       USE module_precision
         USE module_IO,ONLY: filename
         USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,ISL,IBM,IGR,IQ,IGCOLAT,IGLON
-        USE module_IPE_dimension,ONLY: NPTS2D,NMP0,NMP1,NMP_all,NLP,NLP_all
+        USE module_IPE_dimension,ONLY: NPTS2D,NMP,NLP
 IMPLICIT NONE
 !-------------local
         CHARACTER (LEN=11) :: FORM_dum
@@ -29,21 +29,19 @@ IMPLICIT NONE
 !SMS$SERIAL BEGIN
       CALL open_file ( filename, LUN, FORM_dum, STATUS_dum ) 
 
-    WRITE(UNIT=lun) NMP0
-    WRITE(UNIT=lun) NMP1
-    WRITE(UNIT=lun) NMP_all
-    WRITE(UNIT=lun) NLP_all
+    WRITE(UNIT=lun) NMP
+    WRITE(UNIT=lun) NLP
     WRITE(UNIT=lun) NPTS2D
-    WRITE(UNIT=lun) JMIN_IN(1:NLP_all)
-    WRITE(UNIT=lun) JMAX_IS(1:NLP_all)
-    WRITE(UNIT=lun) mlon_rad( 1: NMP_all+1 ) !rad
+    WRITE(UNIT=lun) JMIN_IN(1:NLP)
+    WRITE(UNIT=lun) JMAX_IS(1:NLP)
+    WRITE(UNIT=lun) mlon_rad( 1: NMP+1 ) !rad
     WRITE(UNIT=lun) plasma_grid_Z(1:NPTS2D)  !meter
     WRITE(UNIT=lun) plasma_grid_GL(1:NPTS2D) !rad
 !SMS$SERIAL END
 
 
 IF (.NOT.ALLOCATED(dumm) ) THEN
-  ALLOCATE ( dumm(1:NPTS2D,NMP0:NMP1) &
+  ALLOCATE ( dumm(NPTS2D,NMP) &
      &,STAT=stat_alloc )         
       IF ( stat_alloc/=0 ) THEN
         print *,"sub-output_p:!STOP! ALLOCATION FAILD!:",stat_alloc
@@ -53,7 +51,7 @@ ELSE
 STOP 'sub-output_p:!STOP! dumm has been allocated already???!!!'
 END IF
 
-mp_loop0:do mp=NMP0,NMP1
+mp_loop0:do mp=1,NMP
   dumm(1:NPTS2D,mp) = plasma_grid_3d(1:NPTS2D, mp,IGCOLAT)
 end do mp_loop0
 
@@ -62,7 +60,7 @@ end do mp_loop0
     WRITE(UNIT=lun) dumm !GCOLAT  !rad
 !SMS$SERIAL END
 
-mp_loop1:do mp=NMP0,NMP1
+mp_loop1:do mp=1,NMP
   dumm(1:NPTS2D,mp) = plasma_grid_3d(1:NPTS2D, mp,IGLON)
 end do mp_loop1
 

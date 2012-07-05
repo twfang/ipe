@@ -17,7 +17,7 @@
       USE module_IO,ONLY: LUN_PLASMA1,LUN_PLASMA2,lun_min1,lun_min2,lun_ut,lun_ut2,record_number_plasma,lun_max1
       USE module_PLASMA,ONLY: plasma_3d,VEXBup  !dbg20120501
       USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS
-      USE module_IPE_dimension,ONLY: NMP0,NMP1,NLP,NPTS2D,ISPEC,ISPEV,NLP_all,IPDIM,ISPET,ISTOT
+      USE module_IPE_dimension,ONLY: NMP,NLP,NPTS2D,ISPEC,ISPEV,IPDIM,ISPET,ISTOT
       USE module_input_parameters,ONLY:sw_debug,record_number_plasma_start &
 &,sw_record_number,stop_time,duration
       USE module_physical_constants,ONLY:zero
@@ -45,7 +45,7 @@ if(sw_debug)  print *,'sub-io_plasma_bin: switch=',switch,' utime[sec]' ,utime
 
 !output time dependent plasma parameters
 IF (.NOT.ALLOCATED(dumm) ) THEN
-  ALLOCATE ( dumm(1:NPTS2D,NMP0:NMP1) &
+  ALLOCATE ( dumm(1:NPTS2D,NMP) &
      &,STAT=stat_alloc )         
       IF ( stat_alloc/=0 ) THEN
         print *,"sub-io_p:!STOP! ALLOCATION FAILD!:",stat_alloc
@@ -65,7 +65,7 @@ record_number_plasma = record_number_plasma+1
 
 j_loop1: DO jth=1,ISTOT !=(ISPEC+3+ISPEV)
 
-mp_loop1:do mp=NMP0,NMP1
+mp_loop1:do mp=1,NMP
  lp_loop1:do lp=1,nlp
 !  i_loop:do i=
 IN=>JMIN_IN(lp)
@@ -123,8 +123,8 @@ ELSE IF ( switch==2 ) THEN
 print *,'sub-io_pl: start_uts=',utime
 
 ! array initialization
-  DO mp=NMP0,NMP1
-    DO lp=1,NLP_all
+  DO mp=1,NMP
+    DO lp=1,NLP
       DO ipts=JMIN_IN(lp),JMAX_IS(lp)
         DO jth=1,ISTOT
           plasma_3d(jth,ipts,mp) = zero
@@ -217,7 +217,7 @@ read_loop: DO n_read=n_read_min, record_number_plasma_start
     END DO read_loop !: DO n_read=1,n_read_max
 
 
-mp_loop2:do mp=NMP0,NMP1
+mp_loop2:do mp=1,NMP
  lp_loop2:do lp=1,NLP
 IN=>JMIN_IN(lp)
 IS=>JMAX_IS(lp)

@@ -17,7 +17,7 @@
       USE module_IO,ONLY: LUN_PLASMA1,LUN_PLASMA2,lun_min1,lun_min2,lun_ut,lun_ut2,record_number_plasma,lun_max1
       USE module_PLASMA,ONLY: plasma_3d,plasma_3d4n,VEXBup
       USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS, plasma_grid_3d,ISL,IBM,IGR,IQ,IGCOLAT,IGLON
-      USE module_IPE_dimension,ONLY: NMP0,NMP1,NLP,NPTS2D,ISPEC,ISPEV,NLP_all,IPDIM,ISPET,NMP_all
+      USE module_IPE_dimension,ONLY: NPTS2D,ISPEC,ISPEV,NLP,IPDIM,ISPET,NMP
       USE module_input_parameters,ONLY:sw_debug,record_number_plasma_start
       USE module_physical_constants,ONLY:zero,pi
       IMPLICIT NONE
@@ -32,11 +32,11 @@
       INTEGER (KIND=int_prec),PARAMETER :: n_max=10000
 !20120215
       INTEGER (KIND=int_prec) :: lpj,midpoint,mpx,record_number_min
-      INTEGER (KIND=int_prec),DIMENSION(NMP_all) :: record_number,flag
-      INTEGER (KIND=int_prec),DIMENSION(ISPEC+3,NMP_all) :: flag2d
+      INTEGER (KIND=int_prec),DIMENSION(NMP) :: record_number,flag
+      INTEGER (KIND=int_prec),DIMENSION(ISPEC+3,NMP) :: flag2d
       REAL (KIND=real_prec),PARAMETER :: dlt=0.125 !within15min
       REAL (KIND=real_prec),PARAMETER :: utime_min=248306-86400+900  !sec: the begining of the final 24hrs
-      REAL (KIND=real_prec),DIMENSION(NMP_all) :: ltime
+      REAL (KIND=real_prec),DIMENSION(NMP) :: ltime
       INTEGER (KIND=int_prec), parameter :: mp1=1
       REAL (KIND=real_prec) :: ltime_mp1
       INTEGER (KIND=int_prec), parameter :: n_read_min1=17 !utime=75506
@@ -53,7 +53,7 @@
 
 !output time dependent plasma parameters
 IF (.NOT.ALLOCATED(dumm) ) THEN
-  ALLOCATE ( dumm(1:NPTS2D,NMP0:NMP1) &
+  ALLOCATE ( dumm(1:NPTS2D,NMP) &
      &,STAT=stat_alloc )         
       IF ( stat_alloc/=0 ) THEN
         print *,"sub-io_p:!STOP! ALLOCATION FAILD!:",stat_alloc
@@ -71,8 +71,8 @@ dumm(:,:)=zero
 print *,'start_time=',utime
 
 ! array initialization
-  DO mp=NMP0,NMP1
-    DO lp=1,NLP_all
+  DO mp=1,NMP
+    DO lp=1,NLP
       DO npts=1,IPDIM
         plasma_3d(mp,lp)%N_m3(1:ISPEC,npts) = zero
         plasma_3d(mp,lp)%Te_k(        npts) = zero
@@ -87,15 +87,15 @@ print *,'start_time=',utime
 ! calculate LT at midpoint
   midpoint = JMIN_IN(lpj) + ( JMAX_IS(lpj) - JMIN_IN(lpj) )/2
 !calculate LT(mp) [hr] for utime @ midpoint
-  do  mp=1,NMP_all
+  do  mp=1,NMP
      ltime(mp)=REAL(utime)/3600. + plasma_grid_3d(midpoint,mp,IGLON)*180.0/pi/15.0
      IF ( ltime(mp) > 24.0 )  ltime(mp) = MOD(ltime(mp), 24.0)
 print *,mp,'ltime',ltime(mp),' glon',(plasma_grid_3d(midpoint,mp,IGLON)*180.0/pi)
   end do
 
 !UT
-  record_number(1:NMP_all)=0
-  flag(1:NMP_all)=0
+  record_number(1:NMP)=0
+  flag(1:NMP)=0
   read_loop0: DO n_read=n_read_min1, n_read_max
      READ (UNIT=lun_ut2,FMT=*) record_number_plasma_dum, utime_dum
 
@@ -115,7 +115,7 @@ print *,mp,'ltime',ltime(mp),' glon',(plasma_grid_3d(midpoint,mp,IGLON)*180.0/pi
 !print *, 'ltime_mp1', ltime_mp1
 
 
-     mp_loop0:do mp=1,NMP_all
+     mp_loop0:do mp=1,NMP
        IF ( (ltime_mp1-dlt) <= ltime(mp).AND. ltime(mp) <= (ltime_mp1+dlt) ) then
 print *,'ltmp1-dlt',(ltime_mp1-dlt),' lt_mp',ltime(mp),' ltmp1+dlt',(ltime_mp1+dlt) 
          if ( record_number(mp)==0 ) then
@@ -135,7 +135,7 @@ print *,'ltmp1-dlt',(ltime_mp1-dlt),' lt_mp',ltime(mp),' ltmp1+dlt',(ltime_mp1+d
       END DO read_loop0!: DO n_read=1,n_max
 
 !error check
-      do mp=1,nmp_all
+      do mp=1,nmp
          if ( flag(mp)==0 ) then           
             print *,mp,flag(mp),'!STOP! matching record not found!!!'
             STOP
@@ -147,7 +147,7 @@ print *,'ltmp1-dlt',(ltime_mp1-dlt),' lt_mp',ltime(mp),' ltmp1+dlt',(ltime_mp1+d
 record_number_min = MINVAL(record_number)
 print *,'record_number_min',record_number_min 
 
-flag2d(1:ISPEC+3 , 1:NMP_all)=0
+flag2d(1:ISPEC+3 , 1:NMP)=0
 j_loop2: DO jth=1,(ISPEC+3)  !t  +ISPEV)
 
 LUN => LUN_PLASMA2(jth-1+lun_min2)
@@ -173,13 +173,13 @@ if (jth==ISPEC+3) print *,'!dbg! read dummy finished jth',jth
       else
 
 !check if recordnumber match?
-         mp_loop1: do mp=1,nmp_all
+         mp_loop1: do mp=1,nmp
             IF ( n_read==record_number(mp) ) THEN
                mpx=mp
                EXIT mp_loop1
 
             ELSE
-               if ( mp==nmp_all ) then
+               if ( mp==nmp ) then
                   print *,'matching record not found, goto the next read!'
                   CYCLE read_loop
                end if
@@ -190,7 +190,7 @@ if (jth==ISPEC+3) print *,'!dbg! read dummy finished jth',jth
 
 
 
-!mp_loop2:do mp=NMP0,NMP1
+!mp_loop2:do mp=1,NMP
       mp=mpx
       flag2d(jth,mp)=1
       print *,'assigning mp1 values at mp=',mp
@@ -239,7 +239,7 @@ END IF
 
 !error check2
       do jth=1,ISPEC+3
-      do mp=1,nmp_all
+      do mp=1,nmp
          if ( flag2d(jth,mp)==0 ) then           
             print *,jth,mp,flag2d(jth,mp),'!STOP!  values not assigned!!! ERROR!'
             STOP

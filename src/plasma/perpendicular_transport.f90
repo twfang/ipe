@@ -63,7 +63,7 @@ if(sw_debug) print *,'interpolate_flux_tube finished!'
       USE module_precision
       USE module_physical_constants,ONLY: rtd
       USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,dlonm90km
-      USE module_IPE_dimension,ONLY: NMP_all,NLP_all
+      USE module_IPE_dimension,ONLY: NMP,NLP
       USE module_input_parameters,ONLY:sw_perp_transport,sw_debug
      IMPLICIT NONE
 !--- INPUT ---
@@ -93,13 +93,13 @@ which_hemisphere: DO ihem=1,1  !ihem_max
 !!!dbg20120125:  mlon_deg = phi_t0(ihem)*rtd
 !!!dbg20120125:  mp_t0(ihem,1) = INT( (mlon_deg/dlonm90km) , int_prec )+1
 !!!dbg20120125:  mp_t0(ihem,2) = mp_t0(ihem,1)+1
-  mpx_loop: DO mpx=1,NMP_all
+  mpx_loop: DO mpx=1,NMP
     IF ( mlon_rad(mpx)<=phi_t0(ihem) .AND. phi_t0(ihem)<mlon_rad(mpx+1) ) THEN
       mp_t0(ihem,1) =mpx
       mp_t0(ihem,2) =mpx+1
       EXIT mpx_loop
     END IF
-  END DO mpx_loop !: DO mpx=1,NMP_all
+  END DO mpx_loop !: DO mpx=1,NMP
 !dbg20120125:
 if(sw_debug) print *,'dbg20120125! sub-find_neighbor_grid:', mp_t0(ihem,1:2),phi_t0(ihem)*rtd, mlon_rad(mp_t0(ihem,1:2))*rtd
 !STOP
@@ -133,13 +133,13 @@ if(sw_debug) print *,'sub-Fi: check GL NH[deg]',(90.-plasma_grid_GL( JMIN_IN(lp)
     END IF
   END IF! ( plasma_grid_3d(IN,lp)%GL <= theta_t0(ihem) ) THEN 
 
-lp_loop: DO l=lp_min,NLP_all-1  !nearest point-->EQ
+lp_loop: DO l=lp_min,NLP-1  !nearest point-->EQ
 IF ( plasma_grid_GL( JMIN_IN(l) )<=theta_t0(ihem) .AND. theta_t0(ihem)<plasma_grid_GL( JMIN_IN(l+1) )  ) THEN
   lp_t0(ihem,1)=l
   lp_t0(ihem,2)=l+1
   EXIT lp_loop
 ELSE
-  if (l==NLP_all-1) then
+  if (l==NLP-1) then
   print *,'sub-Fi:NH: !STOP! could not find the lp',plasma_grid_GL( JMIN_IN(l) ),theta_t0(ihem)
   STOP
   end if
@@ -165,7 +165,7 @@ END DO which_hemisphere!:  DO ihem=1,ihem_max
       USE module_precision
       USE module_physical_constants,ONLY: rtd,earth_radius
       USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,dlonm90km, plasma_grid_Z
-      USE module_IPE_dimension,ONLY: NMP_all,NLP_all
+      USE module_IPE_dimension,ONLY: NMP,NLP
       USE module_input_parameters,ONLY:sw_perp_transport,sw_debug
      IMPLICIT NONE
 !--- INPUT ---
@@ -179,7 +179,7 @@ END DO which_hemisphere!:  DO ihem=1,ihem_max
       REAL(KIND=real_prec) :: Z_t0
       INTEGER (KIND=int_prec),DIMENSION(2,2), INTENT(OUT) :: mp_t0,lp_t0
       INTEGER (KIND=int_prec) :: lp_min,l
-      INTEGER (KIND=int_prec) :: midpoint(NLP_all)
+      INTEGER (KIND=int_prec) :: midpoint(NLP)
       INTEGER (KIND=int_prec) :: lp1,lp2,midpoint1,midpoint2,mpx
 !---
 
@@ -199,13 +199,13 @@ which_hemisphere: DO ihem=1,1  !ihem_max
 !!!dbg20120125:  mlon_deg = phi_t0(ihem)*rtd
 !!!dbg20120125:  mp_t0(ihem,1) = INT( (mlon_deg/dlonm90km) , int_prec )+1
 !!!dbg20120125:  mp_t0(ihem,2) = mp_t0(ihem,1)+1
-  mpx_loop: DO mpx=1,NMP_all
+  mpx_loop: DO mpx=1,NMP
     IF ( mlon_rad(mpx)<=phi_t0(ihem) .AND. phi_t0(ihem)<mlon_rad(mpx+1) ) THEN
       mp_t0(ihem,1) =mpx
       mp_t0(ihem,2) =mpx+1
       EXIT mpx_loop
     END IF
-  END DO mpx_loop !: DO mpx=1,NMP_all
+  END DO mpx_loop !: DO mpx=1,NMP
 !dbg20120125:
 if(sw_debug) print *,'dbg20120125! sub-find_neighbor_grid_R:', mp_t0(ihem,1:2),phi_t0(ihem)*rtd, mlon_rad(mp_t0(ihem,1:2))*rtd
 !STOP
@@ -221,8 +221,8 @@ IF ( theta_t0(ihem) < plasma_grid_GL( JMIN_IN(1) ) ) THEN
    lp_t0(ihem,2)=1
    print *,'sub-Fi: mp',mp,' lp',lp,'needs special pole interpolation'
    RETURN
-ELSE IF ( theta_t0(ihem) > plasma_grid_GL( JMIN_IN(NLP_all) ) ) THEN
-   print *,'sub-Fi: !STOP! invalid theta_t0',mp,lp,theta_t0(ihem),plasma_grid_GL( JMIN_IN(NLP_all) )
+ELSE IF ( theta_t0(ihem) > plasma_grid_GL( JMIN_IN(NLP) ) ) THEN
+   print *,'sub-Fi: !STOP! invalid theta_t0',mp,lp,theta_t0(ihem),plasma_grid_GL( JMIN_IN(NLP) )
    STOP
 ELSE   !IF ( plasma_grid_GL( JMIN_IN(lp) ) <= theta_t0(ihem) ) THEN 
 
@@ -240,7 +240,7 @@ if(sw_debug) print *,'sub-FiR: check GL NH[deg]',(90.-plasma_grid_GL( JMIN_IN(lp
 !      END IF
 !    END IF
 
-lp_loop0: DO l=1,NLP_all-1  !longest -->shortest flux tube
+lp_loop0: DO l=1,NLP-1  !longest -->shortest flux tube
  midpoint(l) = JMIN_IN(l) + ( JMAX_IS(l) - JMIN_IN(l) )/2
 END DO lp_loop0
 
@@ -251,14 +251,14 @@ z_t0 = r0_apex - earth_radius
 !d print *,JMIN_IN(l),JMAX_IS(l), midpoint(l),z_t0
 
 
-lp_loop: DO l=1,NLP_all-1  !longest -->shortest flux tube
+lp_loop: DO l=1,NLP-1  !longest -->shortest flux tube
  
   IF ( plasma_grid_Z( midpoint(l+1) )<=Z_t0 .AND. Z_t0<plasma_grid_Z( midpoint(l) )  ) THEN
     lp_t0(ihem,1)=l   !1outer flux tube
     lp_t0(ihem,2)=l+1 !2inner flux tube
     EXIT lp_loop
   ELSE
-    if (l==NLP_all-1) then
+    if (l==NLP-1) then
       print *,'sub-FiR:NH: !STOP! could not find the lp',plasma_grid_Z( midpoint(l) ),z_t0
       STOP
     end if

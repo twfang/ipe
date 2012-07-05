@@ -14,7 +14,7 @@
 !--------------------------------------------  
       MODULE module_PLASMA
       USE module_precision
-      USE module_IPE_dimension,ONLY: ISPEC,ISPET,ISPEV,IPDIM, NPTS2D,NLP_all,ISTOT
+      USE module_IPE_dimension,ONLY: ISPEC,ISPET,ISPEV,IPDIM, NPTS2D,NLP,ISTOT
       IMPLICIT NONE
       include "gptl.inc"
 ! --- PRIVATE ---
@@ -38,7 +38,7 @@
 !dbg20120501        REAL(KIND=real_prec), DIMENSION(ISPEV) :: V_ms1
 !???      REAL(KIND=real_prec) :: NHEAT
 !dbg20120501      END TYPE  plasma_data_1d4n
-!dbg20120501      TYPE(plasma_data_1d4n),ALLOCATABLE,TARGET,PUBLIC :: plasma_3d4n(:,:) !(NPTS2D, NMP0:NMP1)
+!dbg20120501      TYPE(plasma_data_1d4n),ALLOCATABLE,TARGET,PUBLIC :: plasma_3d4n(:,:) !(NPTS2D, NMP)
 
 !dbg20120501      TYPE(plasma_data_1d), PUBLIC :: n0_1d !N&T after perpendicular transport
 !dbg20120501
@@ -57,7 +57,7 @@
 !      REAL(KIND=real_prec), DIMENSION(ISPEC,NPTS2D,NMP), PUBLIC :: XIONV_ms1
 
 !V_ExB m/s at the apex height
-      REAL(KIND=real_prec), DIMENSION(:,:),ALLOCATABLE, PUBLIC :: VEXBup !DIMENSION(NMP0:NMP1,NLP)
+      REAL(KIND=real_prec), DIMENSION(:,:),ALLOCATABLE, PUBLIC :: VEXBup !DIMENSION(NMP,NLP)
 
 ! save ut so that other subroutines can refer to it
       INTEGER (KIND=int_prec),PUBLIC:: utime_save
@@ -124,7 +124,7 @@ end if
 
 !dbg20120228: debug how2validate the transport
 if(sw_dbg_perp_trans.and.utime==start_time.and.lp==lpstrt)then
-DO j=1,NLP_all
+DO j=1,NLP
    DO i=JMIN_IN(j),JMAX_IS(j)
       DO jth=1,ISTOT
          plasma_3d(jth,i,mp)=100.0

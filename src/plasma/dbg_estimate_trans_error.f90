@@ -13,19 +13,19 @@
 !NOTE: dbg20120228: only temporary used to estimate the error created by the perp transport for debug purpose
       subroutine dbg_estimate_trans_error ( utime )
         USE module_precision
-        USE module_IPE_dimension,ONLY:NMP_all,NLP_all,IPDIM
+        USE module_IPE_dimension,ONLY:NMP,NLP,IPDIM
         USE module_PLASMA,ONLY:plasma_3d
         IMPLICIT NONE
         INTEGER (KIND=int_prec),  INTENT(IN)  :: utime    !universal time [sec]
 
 !---local variables---
         INTEGER (KIND=int_prec) :: lp,mp
-        REAL (KIND=real_prec),dimension(NMP_all,NLP_all) :: opmaxpc,opminpc
+        REAL (KIND=real_prec),dimension(NMP,NLP) :: opmaxpc,opminpc
         REAL (KIND=real_prec),PARAMETER :: fixedval=100.0
 
 !
-do lp=1,NLP_all
-do mp=1,NMP_all
+do lp=1,NLP
+do mp=1,NMP
 opmaxpc(mp,lp)=( &
      MAXVAL( plasma_3d(mp,lp)%N_m3( 1,1:IPDIM) )-fixedval &
               & )/fixedval

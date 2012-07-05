@@ -22,7 +22,7 @@
       USE module_ELDYN,ONLY: init_eldyn, eldyn
 !SMS$IGNORE END
       USE module_IO,ONLY: open_output_files,output,close_files
-      USE module_IPE_dimension,ONLY: NMP_all,NLP_all
+      USE module_IPE_dimension,ONLY: NMP,NLP
       IMPLICIT NONE
       include "gptl.inc"
 
@@ -34,7 +34,7 @@
       ret = gptlinitialize ()
       ret = gptlstart ('Total')
 
-!SMS$CREATE_DECOMP(dh,<NMP_all,NLP_all>,<5,5>)
+!SMS$CREATE_DECOMP(dh,<NMP,NLP>,<5,5>)
 
       WRITE(*,*)" DATE: 08 September, 2011"
       WRITE(*,*)"********************************************"
@@ -155,7 +155,7 @@ END IF
 !20120207 I have to output the sw_perp_transport to a file for the next run...
 !IF ( sw_rw_sw_perp_trans ) THEN
 !open(unit=luntmp, file='fort.300',status='unknown',form='formatted',iostat=istat)
-!DO mp=1,NMP_all
+!DO mp=1,NMP
 !write(unit=luntmp, fmt='(2i3)') mp,sw_perp_transport(mp)
 !print *,'mp=',mp,' sw_p',sw_perp_transport(mp)
 !END DO

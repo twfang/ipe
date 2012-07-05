@@ -13,7 +13,7 @@
 !--------------------------------------------  
       MODULE module_input_parameters
       USE module_precision
-      USE module_IPE_dimension,ONLY: NMP_all
+      USE module_IPE_dimension,ONLY: NMP
       IMPLICIT NONE
 
 !--- IPE wide run parameters
@@ -190,7 +190,7 @@
 !---------------------------
 ! initialise plasma grids
         SUBROUTINE read_input_parameters ( )
-        USE module_IPE_dimension,ONLY: NLP_all,NMP0,NMP1,NLP,NPTS2D
+        USE module_IPE_dimension,ONLY: NLP,NMP,NPTS2D
         IMPLICIT NONE
 !---------
         INTEGER(KIND=int_prec),PARAMETER :: LUN_nmlt=1
@@ -228,7 +228,7 @@
         WRITE(UNIT=LUN_LOG0, NML=NMSWITCH)
 
 
-WRITE(UNIT=LUN_LOG0,FMT=*)'NMP_all=',NMP_all,' NLP_all=',NLP_all,' NMP0=',NMP0,' NMP1=',NMP1,' NLP=',NLP,' NPTS2D=',NPTS2D
+WRITE(UNIT=LUN_LOG0,FMT=*)'NMP=',NMP,' NLP=',NLP,' NPTS2D=',NPTS2D
 
 WRITE(UNIT=LUN_LOG0,FMT=*)'real_prec=',real_prec,' int_prec=',int_prec
 

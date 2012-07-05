@@ -18,7 +18,7 @@
 !      program ts_efield
       MODULE module_eldyn
       USE module_precision
-      USE module_IPE_dimension,ONLY: NMP_all,NLP_all
+      USE module_IPE_dimension,ONLY: NMP,NLP
 !----------------------
 !c idea
 !      subroutine idea_geteb(im,ix,dayno,utsec,f107,kp,maglat,maglon,
@@ -51,12 +51,12 @@
 !      data utsec_last/-1./
 !      save first,utsec_last,ed11,ed22,ylatm1,ylonm1
 
-      REAL(KIND=real_prec),DIMENSION(0:nmlat),PUBLIC ::   theta90_rad
-      INTEGER(KIND=int_prec),DIMENSION(2,   NLP_all  ),PUBLIC :: j0,j1 !1:NH; 2:SH
-      REAL(KIND=real_prec),DIMENSION(NMP_all,NLP_all*2),PUBLIC::Ed1_90
-      REAL(KIND=real_prec),DIMENSION(NMP_all,NLP_all*2),PUBLIC::Ed2_90
-      REAL(KIND=real_prec),DIMENSION(        NLP_all*2),PUBLIC::coslam_m
-      INTEGER (KIND=int_prec),DIMENSION(     NLP_all  ),PUBLIC :: lpconj !4 NH
+      REAL(KIND=real_prec)   ,DIMENSION(0:nmlat  ),PUBLIC :: theta90_rad
+      INTEGER(KIND=int_prec) ,DIMENSION(2  ,NLP  ),PUBLIC :: j0,j1 !1:NH; 2:SH
+      REAL(KIND=real_prec)   ,DIMENSION(NMP,NLP*2),PUBLIC :: Ed1_90
+      REAL(KIND=real_prec)   ,DIMENSION(NMP,NLP*2),PUBLIC :: Ed2_90
+      REAL(KIND=real_prec)   ,DIMENSION(    NLP*2),PUBLIC :: coslam_m
+      INTEGER (KIND=int_prec),DIMENSION(    NLP  ),PUBLIC :: lpconj !4 NH
 
 !
       PRIVATE

@@ -32,7 +32,7 @@ C..... The input parameters JMIN, EHT were also added
       USE module_heating_rate,ONLY: hrate_cgs_save
      &,get_neutral_heating_rate
       USE module_precision
-      USE module_IPE_dimension,ONLY: NPTS2D,NMP0,NMP1
+      USE module_IPE_dimension,ONLY: NPTS2D
       USE module_PLASMA,ONLY: utime_save
       IMPLICIT NONE
       INTEGER IJ,K          !.. loop control variables

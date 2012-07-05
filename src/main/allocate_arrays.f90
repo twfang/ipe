@@ -13,7 +13,7 @@
 !
       SUBROUTINE allocate_arrays ( switch )
       USE module_precision
-      USE module_IPE_dimension,ONLY: NPTS2D,NMP_all,NLP_all,NMP0,NMP1,ISTOT
+      USE module_IPE_dimension,ONLY: NPTS2D,NMP,NLP,ISTOT
       USE module_FIELD_LINE_GRID_MKS,ONLY: &
      & plasma_grid_3d &
      &,apexD ,apexE &
@@ -34,24 +34,24 @@ IF ( switch==0 ) THEN
 print *,'ALLOCATing ARRAYS'
       ALLOCATE ( &
 !---field line grid
-     &    plasma_grid_3d(NPTS2D, NMP0:NMP1,6) &
+     &    plasma_grid_3d(NPTS2D, 1:NMP,6) &
      &,   plasma_grid_Z( NPTS2D             ) &
      &,   plasma_grid_GL(NPTS2D             ) &
 !---
-     &,        apexD(3:3,NPTS2D, NMP0:NMP1,3) &
-     &,        apexE(2,NPTS2D,NMP_all,3) &
+     &,        apexD(3:3,NPTS2D, 1:NMP,3) &
+     &,        apexE(2,NPTS2D,NMP,3) &
 !---
-     &,          Be3(2, NMP0:NMP1,NLP_all) &
-     &,       Pvalue(             NLP_all) &
-     &,      JMIN_IN(             NLP_all) &
-     &,      JMAX_IS(             NLP_all) &
+     &,          Be3(2, 1:NMP,NLP) &
+     &,       Pvalue(             NLP) &
+     &,      JMIN_IN(             NLP) &
+     &,      JMAX_IS(             NLP) &
 !---
-     &,     mlon_rad(  NMP_all+1    ) &
+     &,     mlon_rad(  NMP+1    ) &
 !---plasma
-     &,    plasma_3d(ISTOT,NPTS2D,NMP0:NMP1) &
-!dbg20120501     &,    plasma_3d(   NMP0:NMP1,NLP_all) &
-!dbg20120501     &,    plasma_3d4n( NPTS2D, NMP0:NMP1) &
-     &,    VEXBup(      NMP0:NMP1,NLP_all) &
+     &,    plasma_3d(ISTOT,NPTS2D,1:NMP) &
+!dbg20120501     &,    plasma_3d(   1:NMP,NLP) &
+!dbg20120501     &,    plasma_3d4n( NPTS2D, 1:NMP) &
+     &,    VEXBup(      1:NMP,NLP) &
      &,STAT=stat_alloc         )
  
       IF ( stat_alloc==0 ) THEN

@@ -30,15 +30,18 @@ INTEGER(KIND=int_prec), PARAMETER :: IPDIM = &   !.. Field line grid dimension
        !&  1117 !mlat=88[deg] at 90km lowres
        &  1115 !mlat=88[deg] at 90km lowres
 
-INTEGER(KIND=int_prec), PARAMETER :: NPTS2D =44438
-  ! # of points along all the flux tubes in one longitude plane
-INTEGER(KIND=int_prec), PARAMETER :: NMP_all =80
+INTEGER(KIND=int_prec), PARAMETER :: NPTS2D = 44438
+! # of points along all the flux tubes in one longitude plane
+INTEGER(KIND=int_prec), PARAMETER :: NMP    =    80
   !.. # of flux tubes in longitude the entire grid
-INTEGER(KIND=int_prec), PARAMETER :: NMP0  =1       !mp lower bound 4 allocating array
-INTEGER(KIND=int_prec), PARAMETER :: NMP1  =NMP_all !mp upper bound
-INTEGER(KIND=int_prec), PARAMETER :: NLP_all =170 
+INTEGER(KIND=int_prec), PARAMETER :: NLP    =   170 
+
+!INTEGER(KIND=int_prec), PARAMETER :: NMP_all =80
+!INTEGER(KIND=int_prec), PARAMETER :: NMP0  =1       !mp lower bound 4 allocating array
+!INTEGER(KIND=int_prec), PARAMETER :: NMP1  =NMP_all !mp upper bound
+!INTEGER(KIND=int_prec), PARAMETER :: NLP_all =170 
   !low res # of flux tubes in a meridional(height-latitutde) plane (the entire grid)
-INTEGER(KIND=int_prec), PARAMETER :: NLP =NLP_all
+!INTEGER(KIND=int_prec), PARAMETER :: NLP =NLP_all
   !low res # of flux tubes in a meridional(height-latitutde) plane for allocation
 INTEGER(KIND=int_prec), PARAMETER :: ISPEC = 9   !.. Species dimension for density
 INTEGER(KIND=int_prec), PARAMETER :: ISPEV = 4   !.. Species dimension for V field line velocity

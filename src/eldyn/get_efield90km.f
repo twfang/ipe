@@ -20,7 +20,7 @@
       USE module_physical_constants,ONLY:pi,rtd,dtr,earth_radius,zero
       USE module_eldyn,ONLY:j0,j1,theta90_rad
      &,ed1_90,ed2_90,coslam_m,lpconj
-      USE module_IPE_dimension,ONLY: NMP_all,NLP_all
+      USE module_IPE_dimension,ONLY: NMP,NLP
       USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS
      &,mlon_rad,ht90
       USE module_input_parameters,ONLY: sw_debug,NYEAR,NDAY
@@ -79,12 +79,12 @@
 
 ! note that mlat90km is the constant in m-lon
         mp=1 
-        mlat_loop90km0: DO lp=1,NLP_all
+        mlat_loop90km0: DO lp=1,NLP
 
 ! NH
 !memo: mlat90_deg=(90.-plasma_grid_3d(IN,mp)%GL*rtd)
           IN => JMIN_IN(lp)
-          lpconj(lp) = NLP_all - lp + NLP_all + 1
+          lpconj(lp) = NLP - lp + NLP + 1
       write(unit=2006,FMT='(i4,f10.4)')lpconj(lp)
      &,(90.-plasma_grid_GL(IN)*rtd)
           coslam_m(lpconj(lp))=COS(pi*0.5-plasma_grid_GL(IN))
@@ -157,7 +157,7 @@
 
           !explicitly disassociate the pointers
           NULLIFY (IN,IS)
-        END DO mlat_loop90km0!: DO lp=1,NLP_all
+        END DO mlat_loop90km0!: DO lp=1,NLP
 
       END IF !( j0(1,1)>0 ) THEN
 
@@ -182,7 +182,7 @@
      &        mlon130_rad(i)=mlon130_rad(i)-pi*2.0
       END DO mlon130_loop0 !: DO i=0,nmlon
 
-      mlon_loop90km0: DO mp=1,NMP_all
+      mlon_loop90km0: DO mp=1,NMP
 !mlon_rad: from 0 to 355.5 with dlon_ipe=4.5 deg resolution
 !          mlon90_deg = mlon_rad(mp)*rtd
 
@@ -222,7 +222,7 @@
       end if
 
 
-        mlat_loop90km1: DO lp=1,NLP_all
+        mlat_loop90km1: DO lp=1,NLP
           IN => JMIN_IN(lp)
           IS => JMAX_IS(lp)
       if(mp==1.and.lp>150.and.lp<158)
@@ -317,7 +317,7 @@
 
           !explicitly disassociate the pointers
           NULLIFY (IN,IS)
-        END DO mlat_loop90km1 !: DO lp=1,NLP_all
+        END DO mlat_loop90km1 !: DO lp=1,NLP
       END DO mlon_loop90km0     !: DO mp=1,nmp
 
       END SUBROUTINE GET_EFIELD90km

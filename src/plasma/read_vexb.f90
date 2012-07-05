@@ -13,7 +13,7 @@
 !NOTE: 20120308: read the EXB drift values from old runs
       subroutine read_vexb ( utime,lp,mp )
         USE module_precision
-        USE module_IPE_dimension,ONLY:NMP_all,NLP_all,IPDIM
+        USE module_IPE_dimension,ONLY:NMP,NLP,IPDIM
         USE module_PLASMA,ONLY:VEXBup
         USE module_input_parameters,ONLY:start_time,stop_time
         USE module_IO, ONLY:filename,FORM_dum,STATUS_dum,luntmp1,luntmp2
@@ -49,7 +49,7 @@ endif
 !ExB
       READ (UNIT=luntmp2) VEXBup
 
-!print *,'check EXB MAX',MAXVAL( vexbup(1:NMP_all,lp) ),MINVAL( vexbup(1:NMP_all,lp) )
+!print *,'check EXB MAX',MAXVAL( vexbup(1:NMP,lp) ),MINVAL( vexbup(1:NMP,lp) )
 print *,'check EXB lp=135',mp, vexbup(mp,135) ,utime
 
 if( utime==stop_time ) then 

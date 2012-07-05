@@ -13,7 +13,7 @@
 !--------------------------------------------  
       MODULE module_PLASMA
       USE module_precision
-      USE module_IPE_dimension,ONLY: ISPEC,ISPET,ISPEV,IPDIM, NPTS2D,NLP_all
+      USE module_IPE_dimension,ONLY: ISPEC,ISPET,ISPEV,IPDIM, NPTS2D,NLP
       IMPLICIT NONE
 ! --- PRIVATE ---
 !
@@ -36,7 +36,7 @@
         REAL(KIND=real_prec), DIMENSION(ISPEV) :: V_ms1
 !???      REAL(KIND=real_prec) :: NHEAT
       END TYPE  plasma_data_1d4n
-      TYPE(plasma_data_1d4n),ALLOCATABLE,TARGET,PUBLIC :: plasma_3d4n(:,:) !(NPTS2D, NMP0:NMP1)
+      TYPE(plasma_data_1d4n),ALLOCATABLE,TARGET,PUBLIC :: plasma_3d4n(:,:) !(NPTS2D, NMP)
 
       TYPE(plasma_data_1d), PUBLIC :: n0_1d !N&T after perpendicular transport
 
@@ -47,7 +47,7 @@
 !      REAL(KIND=real_prec), DIMENSION(ISPEC,NPTS2D,NMP), PUBLIC :: XIONV_ms1
 
 !V_ExB m/s at the apex height
-      REAL(KIND=real_prec), DIMENSION(:,:),ALLOCATABLE, PUBLIC :: VEXBup !DIMENSION(NMP0:NMP1,NLP)
+      REAL(KIND=real_prec), DIMENSION(:,:),ALLOCATABLE, PUBLIC :: VEXBup !DIMENSION(NMP,NLP)
 
 ! save ut so that other subroutines can refer to it
       INTEGER (KIND=int_prec),PUBLIC:: utime_save
@@ -109,13 +109,13 @@ end if
 
 !dbg20120228: debug how2validate the transport
 if(sw_dbg_perp_trans.and.utime==start_time.and.lp==lpstrt)then
-DO j=1,NLP_all
+DO j=1,NLP
 DO i=1,IPDIM
 plasma_3d(mp,j)%N_m3( 1:ISPEC,i)=100.0
 plasma_3d(mp,j)%Te_k(         i)=100.0
 plasma_3d(mp,j)%Ti_k( 1:ISPET,i)=100.0
 END DO !i=1,IPDIM
-END DO !j=1,NLP_all
+END DO !j=1,NLP
 end if
 !if(sw_dbg_perp_trans) print *, '1!dbg max o+',MAXVAL( plasma_3d(mp,lp)%N_m3( 1,1:IPDIM) ),MINVAL( plasma_3d(mp,lp)%N_m3( 1,1:IPDIM) )
 

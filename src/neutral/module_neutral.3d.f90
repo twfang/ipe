@@ -12,14 +12,14 @@
 !--------------------------------------------  
       MODULE module_NEUTRAL_MKS
       USE module_precision
-      USE module_IPE_dimension,ONLY: NPTS2D,NMP0,NMP1
+      USE module_IPE_dimension,ONLY: NPTS2D,NMP
       IMPLICIT NONE
 
 ! --- PUBLIC ---
 !dbg20110516: temporary moved to module plasma because it is calculated by flip right now.
 !      REAL(KIND=real_prec), dimension(NPTS2D,NMP), PUBLIC ::  NNO_m3
 
-      REAL(KIND=real_prec), dimension(NPTS2D, NMP0:NMP1), PUBLIC ::  &
+      REAL(KIND=real_prec), dimension(NPTS2D, NMP), PUBLIC ::  &
      &                    ON_m3, &
      &                    HN_m3, &
      &                   N2N_m3, &
@@ -32,7 +32,7 @@
 ! follow APEX paper: components (east, north, up)
 !t      REAL(KIND=real_prec), dimension(3,NPTS2D,NMP),PUBLIC  :: Un_ms1  !Ue1 Eq(5.6) in magnetic frame !1st dim: corresponds to apexD1-3
 !dbg20110923: temporary reduce the array size for memory saving...
-      REAL(KIND=real_prec), dimension(3:3,NPTS2D, NMP0:NMP1),PUBLIC  :: Un_ms1  !Ue1 Eq(5.6) in magnetic frame !1st dim: corresponds to apexD1-3
+      REAL(KIND=real_prec), dimension(3:3,NPTS2D, NMP),PUBLIC  :: Un_ms1  !Ue1 Eq(5.6) in magnetic frame !1st dim: corresponds to apexD1-3
 
       PRIVATE
       PUBLIC :: neutral

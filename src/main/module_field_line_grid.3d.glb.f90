@@ -14,7 +14,7 @@
 !--------------------------------------------  
       MODULE module_FIELD_LINE_GRID_MKS
       USE module_precision
-      USE module_IPE_dimension,ONLY: NPTS2D,NMP0,NMP1,NMP_all,NLP,NLP_all
+      USE module_IPE_dimension,ONLY: NPTS2D,NMP,NLP
       IMPLICIT NONE
 
 ! --- PRIVATE ---
@@ -96,7 +96,9 @@
         REAL (KIND=real_prec) :: sinI
         INTEGER (KIND=int_prec), parameter :: sw_sinI=0  !0:flip; 1:APEX
         INTEGER (KIND=int_prec), POINTER :: in,is
+!!SMS$DISTRIBUTE(dh,NPTS2D) BEGIN
         REAL(KIND=real_prec), DIMENSION(NPTS2D) ::  r_meter2D     !.. distance from the center of the Earth[meter]
+!!SMS$DISTRIBUTE END
         INTEGER (KIND=int_prec) :: midpoint
 !---------
 ! array initialization
@@ -110,7 +112,8 @@
       print *,"Z_meter calculation completed"
 
       Pvalue(:) = zero
-      apex_longitude_loop: DO mp = NMP0,NMP1
+!SMS$PARALLEL(dh, mp, lp) BEGIN
+      apex_longitude_loop: DO mp = 1,NMP !JFM 1,80
       IF ( sw_debug.AND.mpstrt<=mp.AND.mp<=mpstop ) & 
      &  print *,"sub-init_plasma_grid: mp=",mp
 
@@ -119,13 +122,14 @@
 !NOTE: in FLIP, PCO is only used in setting up the rough plasmasphere H+ initial profiles (See PROFIN). It does not have to be accurate.
 
 !dbg20120112:      Pvalue(:) = zero
-      apex_latitude_height_loop:   DO lp = 1,NLP
+      apex_latitude_height_loop:   DO lp = 1,NLP !JFM 1,170
 
         IN => JMIN_IN(lp)
         IS => JMAX_IS(lp)
+!write(88,*) mp,lp,IN,IS ! JFM 1:80, 1:170, 1:1115,1118:2232,...,44430:44438
 
 
-        IF (mp==NMP0)  CALL Get_Pvalue_Dipole ( r_meter2D(IN), plasma_grid_GL(IN), Pvalue(lp) )
+        IF (mp==1)  CALL Get_Pvalue_Dipole ( r_meter2D(IN), plasma_grid_GL(IN), Pvalue(lp) )
 
 !debug write
 IF ( sw_debug.AND. & !) THEN
@@ -202,16 +206,17 @@ endif !(mp==1) then
          NULLIFY (IN,IS)
 
        END DO apex_latitude_height_loop   !: DO lp = 1,NLP
-     END DO apex_longitude_loop         !: DO mp = NMP0,NMP1 
+     END DO apex_longitude_loop         !: DO mp = 1,NMP 
+!SMS$PARALLEL END
 
      mlon_rad(:) = zero
-     DO mp = 1,NMP_all+1 
+     DO mp = 1,NMP+1 
        mlon_rad(mp) = REAL( (mp-1),real_prec ) * dlonm90km *pi/180.00
      END DO
 if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
 
 !dbg20120313
-!     DO mp = 1,NMP_all 
+!     DO mp = 1,NMP 
 !       DO i = 1,NPTS2D 
 !         plasma_grid_3d(i,mp,IBM) = plasma_grid_3d(i,mp,IBM) * fac_BM
 !       END DO
@@ -224,7 +229,7 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
 ! magnetic longitude used for the grid. from 0 to 355.5 with 4.5 degree interval
 
       SUBROUTINE read_plasma_grid_global ( r_meter2D )
-        USE module_IPE_dimension,ONLY: NPTS2D,NMP_all,NLP_all
+        USE module_IPE_dimension,ONLY: NPTS2D,NMP,NLP
         USE module_physical_constants,ONLY: earth_radius,pi,zero
         USE module_input_parameters,ONLY:read_input_parameters,sw_debug,lpstrt
         USE module_IO,ONLY: filename,LUN_pgrid
@@ -250,24 +255,24 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
 
 !-------------
 !... read in parameters
-      INTEGER(KIND=int_prec), DIMENSION(NMP_all,NLP_all) :: JMIN_IN_all,JMAX_IS_all  !.. first and last indices on field line grid
+      INTEGER(KIND=int_prec), DIMENSION(NMP,NLP) :: JMIN_IN_all,JMAX_IS_all  !.. first and last indices on field line grid
 
 !SMS$DISTRIBUTE(dh,NPTS2D) BEGIN
-      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP_all) ::  dum0     !.. distance from the center of the Earth[meter]
-      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP_all) ::  dum1  !.. geographic co-latitude [rad]
-      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP_all) ::  dum2    !.. geographic longitude [rad]
-      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP_all) ::  dum3
-!dbg20110927      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP_all) ::  GL_rad_all      !.. magnetic co-latitude Eq(6.1) [rad]
-!dbg20110927      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP_all) ::  SL_meter_all  !.. distance of point from northern hemisphere foot point [meter]
-!dbg20110927      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP_all) ::  BM_T_all      !.. magnetic field strength [T]
+      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  dum0     !.. distance from the center of the Earth[meter]
+      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  dum1  !.. geographic co-latitude [rad]
+      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  dum2    !.. geographic longitude [rad]
+      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  dum3
+!dbg20110927      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  GL_rad_all      !.. magnetic co-latitude Eq(6.1) [rad]
+!dbg20110927      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  SL_meter_all  !.. distance of point from northern hemisphere foot point [meter]
+!dbg20110927      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  BM_T_all      !.. magnetic field strength [T]
 ! components (east, north, up) of base vectors
-      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP_all) ::  dum4    !.. Eq(3.8) Richmond 1995
-      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP_all) ::  dum5    !.. Eq(3.9) Richmond 1995
-      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP_all) ::  dum6    !.. Eq(3.10) Richmond 1995
-!dbg20110927      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP_all) ::  E1_all    !.. Eq(3.11) Richmond 1995
-!dbg20110927      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP_all) ::  E2_all    !.. Eq(3.12) Richmond 1995
-!JFM  REAL(KIND=real_prec), DIMENSION(2,NMP_all,NLP_all) ::  Be3_all         ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]
-      REAL(KIND=real_prec), DIMENSION(NMP_all,NLP_all) ::  Be3_all1,Be3_all2 ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]
+      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP) ::  dum4    !.. Eq(3.8) Richmond 1995
+      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP) ::  dum5    !.. Eq(3.9) Richmond 1995
+      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP) ::  dum6    !.. Eq(3.10) Richmond 1995
+!dbg20110927      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP) ::  E1_all    !.. Eq(3.11) Richmond 1995
+!dbg20110927      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP) ::  E2_all    !.. Eq(3.12) Richmond 1995
+!JFM  REAL(KIND=real_prec), DIMENSION(2,NMP,NLP) ::  Be3_all         ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]
+      REAL(KIND=real_prec), DIMENSION(NMP,NLP) ::  Be3_all1,Be3_all2 ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]
 
 !-------------local
         CHARACTER (LEN=11) :: FORM_dum
@@ -304,6 +309,7 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
 
 
 
+!SMS$SERIAL BEGIN
       filename =filepath_pgrid//filename_pgrid
       FORM_dum ='formatted' 
       STATUS_dum ='old'
@@ -314,11 +320,13 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
 JMIN_IN(          1:NLP)=JMIN_IN_all(            1,1:NLP)
 JMAX_IS(          1:NLP)=JMAX_IS_all(            1,1:NLP)
       print *,"reading JMIN_IN etc completed"
+!SMS$SERIAL END
+!SMS$SERIAL(<dum0,dum1,dum2,dum3,r_meter2D,plasma_grid_3d,plasma_grid_GL,OUT>) BEGIN
       READ (UNIT=LUN_pgrid, FMT=*) dum0, dum1, dum2, dum3 !gr_2d, gcol_2d, glon_2d, q_coordinate_2d
-r_meter2D(     1:NPTS2D                 ) = dum0(1:NPTS2D,1        ) !r_meter
-plasma_grid_3d(1:NPTS2D,NMP0:NMP1,IGCOLAT) = dum1(1:NPTS2D,NMP0:NMP1) !GCOLAT
-plasma_grid_3d(1:NPTS2D,NMP0:NMP1,IGLON)   = dum2(1:NPTS2D,NMP0:NMP1) !GLON
-plasma_grid_3d(1:NPTS2D,NMP0:NMP1,IQ)     = dum3(1:NPTS2D,NMP0:NMP1) !Q
+r_meter2D(     1:NPTS2D                  ) = dum0(1:NPTS2D,1        ) !r_meter
+plasma_grid_3d(1:NPTS2D,1:NMP,IGCOLAT) = dum1(1:NPTS2D,1:NMP) !GCOLAT
+plasma_grid_3d(1:NPTS2D,1:NMP,IGLON  ) = dum2(1:NPTS2D,1:NMP) !GLON
+plasma_grid_3d(1:NPTS2D,1:NMP,IQ     ) = dum3(1:NPTS2D,1:NMP) !Q
 
       print *,"reading r_meter etc completed"
       READ (UNIT=LUN_pgrid, FMT=*) dum0          !bcol_2d
@@ -326,42 +334,49 @@ plasma_grid_GL(1:NPTS2D)     =  dum0(1:NPTS2D,1) !GL
 
       print *,"reading GL_rad etc completed"
       READ (UNIT=LUN_pgrid, FMT=*) dum0, dum1 !integral_ds_2d, apex_BMAG_2d
-plasma_grid_3d(1:NPTS2D,NMP0:NMP1,ISL)     =dum0(1:NPTS2D,NMP0:NMP1) !SL
-plasma_grid_3d(1:NPTS2D,NMP0:NMP1,IBM)     =dum1(1:NPTS2D,NMP0:NMP1) !BM
+plasma_grid_3d(1:NPTS2D,1:NMP,ISL)     =dum0(1:NPTS2D,1:NMP) !SL
+plasma_grid_3d(1:NPTS2D,1:NMP,IBM)     =dum1(1:NPTS2D,1:NMP) !BM
       print *,"reading SL_meter etc completed"
+!SMS$SERIAL END
+!SMS$SERIAL(<dum4,dum5,dum6,apexD,OUT>) BEGIN
       READ (UNIT=LUN_pgrid, FMT=*) dum4, dum5, dum6      !Apex_D1_2d
 !D2
-!dbg20110923  apexD(1,1:NPTS2D,NMP0:NMP1)%east  =  dum4(1,1:NPTS2D,NMP0:NMP1) !D1
-!dbg20110923  apexD(1,1:NPTS2D,NMP0:NMP1)%north =  dum4(2,1:NPTS2D,NMP0:NMP1)
-!dbg20110923  apexD(1,1:NPTS2D,NMP0:NMP1)%up    =  dum4(3,1:NPTS2D,NMP0:NMP1)
+!dbg20110923  apexD(1,1:NPTS2D,1:NMP)%east  =  dum4(1,1:NPTS2D,1:NMP) !D1
+!dbg20110923  apexD(1,1:NPTS2D,1:NMP)%north =  dum4(2,1:NPTS2D,1:NMP)
+!dbg20110923  apexD(1,1:NPTS2D,1:NMP)%up    =  dum4(3,1:NPTS2D,1:NMP)
 !D2
-!dbg20110923  apexD(2,1:NPTS2D,NMP0:NMP1)%east  =  dum5(1,1:NPTS2D,NMP0:NMP1) !D2
-!dbg20110923  apexD(2,1:NPTS2D,NMP0:NMP1)%north =  dum5(2,1:NPTS2D,NMP0:NMP1)
-!dbg20110923  apexD(2,1:NPTS2D,NMP0:NMP1)%up    =  dum5(3,1:NPTS2D,NMP0:NMP1)
+!dbg20110923  apexD(2,1:NPTS2D,1:NMP)%east  =  dum5(1,1:NPTS2D,1:NMP) !D2
+!dbg20110923  apexD(2,1:NPTS2D,1:NMP)%north =  dum5(2,1:NPTS2D,1:NMP)
+!dbg20110923  apexD(2,1:NPTS2D,1:NMP)%up    =  dum5(3,1:NPTS2D,1:NMP)
 !D3
-  apexD(3,1:NPTS2D,NMP0:NMP1,east ) =  dum6(1,1:NPTS2D,NMP0:NMP1) !D3
-  apexD(3,1:NPTS2D,NMP0:NMP1,north) =  dum6(2,1:NPTS2D,NMP0:NMP1)
-  apexD(3,1:NPTS2D,NMP0:NMP1,up   ) =  dum6(3,1:NPTS2D,NMP0:NMP1)
+  apexD(3,1:NPTS2D,1:NMP,east ) =  dum6(1,1:NPTS2D,1:NMP) !D3
+  apexD(3,1:NPTS2D,1:NMP,north) =  dum6(2,1:NPTS2D,1:NMP)
+  apexD(3,1:NPTS2D,1:NMP,up   ) =  dum6(3,1:NPTS2D,1:NMP)
       print *,"reading D1-3 etc completed"
+!SMS$SERIAL END
+!SMS$SERIAL(<dum4,dum5,apexE,OUT>) BEGIN
       READ (UNIT=LUN_pgrid, FMT=*) dum4, dum5          !Apex_E1_2d
 !E1
-  apexE(1,1:NPTS2D,NMP0:NMP1,east ) =  dum4(1,1:NPTS2D,NMP0:NMP1) !E1
-  apexE(1,1:NPTS2D,NMP0:NMP1,north) =  dum4(2,1:NPTS2D,NMP0:NMP1)
-  apexE(1,1:NPTS2D,NMP0:NMP1,up   ) =  dum4(3,1:NPTS2D,NMP0:NMP1)
+  apexE(1,1:NPTS2D,1:NMP,east ) =  dum4(1,1:NPTS2D,1:NMP) !E1
+  apexE(1,1:NPTS2D,1:NMP,north) =  dum4(2,1:NPTS2D,1:NMP)
+  apexE(1,1:NPTS2D,1:NMP,up   ) =  dum4(3,1:NPTS2D,1:NMP)
 !E2
-  apexE(2,1:NPTS2D,NMP0:NMP1,east ) =  dum5(1,1:NPTS2D,NMP0:NMP1) !E2
-  apexE(2,1:NPTS2D,NMP0:NMP1,north) =  dum5(2,1:NPTS2D,NMP0:NMP1)
-  apexE(2,1:NPTS2D,NMP0:NMP1,up   ) =  dum5(3,1:NPTS2D,NMP0:NMP1)
+  apexE(2,1:NPTS2D,1:NMP,east ) =  dum5(1,1:NPTS2D,1:NMP) !E2
+  apexE(2,1:NPTS2D,1:NMP,north) =  dum5(2,1:NPTS2D,1:NMP)
+  apexE(2,1:NPTS2D,1:NMP,up   ) =  dum5(3,1:NPTS2D,1:NMP)
       print *,"reading E1/2 etc completed"
-!JFM  READ (UNIT=LUN_pgrid, FMT=*) Be3_all(1,1:NMP_all,1:NLP_all),Be3_all(2,1:NMP_all,1:NLP_all) !Apex_BE3_N
+!SMS$SERIAL END
+!SMS$SERIAL(<Be3,OUT>) BEGIN
+!JFM  READ (UNIT=LUN_pgrid, FMT=*) Be3_all(1,1:NMP,1:NLP),Be3_all(2,1:NMP,1:NLP) !Apex_BE3_N
 !JFM  READ (UNIT=LUN_pgrid, FMT=*) Be3_all(1,:,:),Be3_all(2,:,:) !Apex_BE3_N
       READ (UNIT=LUN_pgrid, FMT=*) Be3_all1,Be3_all2 !Apex_BE3_N
-!JFM  Be3(1:2,NMP0:NMP1,1:NLP)=    Be3_all(1:2,NMP0:NMP1,1:NLP)
-Be3(1,NMP0:NMP1,1:NLP)=    Be3_all1(NMP0:NMP1,1:NLP)
-Be3(2,NMP0:NMP1,1:NLP)=    Be3_all2(NMP0:NMP1,1:NLP)
+!JFM  Be3(1:2,1:NMP,1:NLP)=    Be3_all(1:2,1:NMP,1:NLP)
+Be3(1,1:NMP,1:NLP)=    Be3_all1(1:NMP,1:NLP)
+Be3(2,1:NMP,1:NLP)=    Be3_all2(1:NMP,1:NLP)
       print *,"reading Be3 etc completed"
       CLOSE(UNIT=LUN_pgrid)
       print *,"global grid reading finished, file closed..."
+!SMS$SERIAL END
 
 
 !dbg20110811:

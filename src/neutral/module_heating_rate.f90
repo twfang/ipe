@@ -13,17 +13,17 @@
 !--------------------------------------------  
 MODULE module_heating_rate
       USE module_precision
-      USE module_IPE_dimension,ONLY: NPTS2D,NMP0,NMP1
+      USE module_IPE_dimension,ONLY: NPTS2D,NMP
       IMPLICIT NONE
 !
       !.. EHT_cgs(3,J) = e heating rate, EHT_cgs(1,J) = ion heating rate, EHT_cgs(2,J) unused (eV cm-3 s-1)
 !20110516: temporary moved to module plasma for the new structure for mpi test
 !      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP), PUBLIC :: EHT_cgs
       !.. TE_TI_k(3,J) = Te, TE_TI_k(2,J) = Ti = TE_TI_k(2,J) [kelvin]
-!dbg20110927      REAL(KIND=real_prec), DIMENSION(NPTS2D, NMP0:NMP1), PUBLIC :: NHEAT_cgs !.. Neutral heating rate (eV/cm^3/s) 
+!dbg20110927      REAL(KIND=real_prec), DIMENSION(NPTS2D, NMP), PUBLIC :: NHEAT_cgs !.. Neutral heating rate (eV/cm^3/s) 
 !tmp20110404: neutral heating rate in eV kg-1 s-1
 !t      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP), PUBLIC :: NHEAT_mks !.. Neutral heating rate (eV/kg/s) 
-      REAL(KIND=real_prec), DIMENSION(:,:),ALLOCATABLE,PUBLIC :: hrate_cgs_save !.. each component of the Neutral heating rate (eV/cm^3/s) DIM(7,NPTS2D,NMP0:NMP1)
+      REAL(KIND=real_prec), DIMENSION(:,:),ALLOCATABLE,PUBLIC :: hrate_cgs_save !.. each component of the Neutral heating rate (eV/cm^3/s) DIM(7,NPTS2D,NMP)
 !nm20111118: moved to module_FIELD_LINE_GRID_MKS
 !nm20111118:      INTEGER,PUBLIC :: mp_save,lp_save !mp,lp values to be referred to from outside of subroutine plasma
 
@@ -58,7 +58,7 @@ MODULE module_heating_rate
               & ) * M3_to_CM3 * AMU
 
 ! convert unit: eV/cm3/s --> J/cm3/s --> J/kg/s
- !t     NHEAT_mks(1:NPTS2D,NMP0:NMP1) = NHEAT_cgs(1:NPTS2D,NMP0:NMP1) * eV2J / total_rho(1:NPTS2D,NMP0:NMP1) 
+ !t     NHEAT_mks(1:NPTS2D,NMP) = NHEAT_cgs(1:NPTS2D,NMP) * eV2J / total_rho(1:NPTS2D,NMP) 
 ! each component of the heating rate
           IF ( total_rho>0.0 ) THEN
             hrate_mks(1:7,i) = hrate_cgs_save(1:7,i) * eV2J / total_rho

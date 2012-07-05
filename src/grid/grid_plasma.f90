@@ -4,18 +4,16 @@
 !          3D version of module_field_line_grid.f90
 MODULE module_FIELD_LINE_GRID_MKS
       USE module_precision
-!nm20120112:       USE module_IPE_dimension,ONLY: NPTS2D,NMP,NMP_all,NLP,NLP_all
+!nm20120112:       USE module_IPE_dimension,ONLY: NPTS2D,NMP,NLP
       IMPLICIT NONE
 
 !nm20120112:
 INTEGER(KIND=int_prec), PARAMETER :: sw_newQ=1
 
 !---IPE_dimension---got rid of the dependance on the module IPE_dimension...
-INTEGER(KIND=int_prec), PARAMETER :: NPTS2D =44438
-INTEGER(KIND=int_prec), PARAMETER :: NMP_all =80
-INTEGER(KIND=int_prec), PARAMETER :: NMP =NMP_all
-INTEGER(KIND=int_prec), PARAMETER :: NLP_all =170 
-INTEGER(KIND=int_prec), PARAMETER :: NLP =NLP_all
+INTEGER(KIND=int_prec), PARAMETER :: NPTS2D = 44438
+INTEGER(KIND=int_prec), PARAMETER :: NMP    =    80
+INTEGER(KIND=int_prec), PARAMETER :: NLP    =   170 
 !nm20120112:for module_IO
       CHARACTER (LEN=150) :: filename
       INTEGER (KIND=int_prec), PARAMETER :: LUN_pgrid=7
@@ -67,7 +65,7 @@ INTEGER(KIND=int_prec), PARAMETER :: NLP =NLP_all
         REAL (KIND=real_prec) :: sinI
         INTEGER (KIND=int_prec), parameter :: sw_sinI=0  !0:flip; 1:APEX
         INTEGER (KIND=int_prec), POINTER :: in,is
-        REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP_all) ::  r_meter_all     !.. distance from the center of the Earth[meter]
+        REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP) ::  r_meter_all     !.. distance from the center of the Earth[meter]
 !---
 
 !if the new GLOBAL 3D version
@@ -151,7 +149,7 @@ END IF !( sw_debug ) THEN
 ! magnetic longitude used for the grid. from 0 to 355.5 with 4.5 degree interval
 
       SUBROUTINE read_plasma_grid_global ( r_meter_all )
-!nm20120112:        USE module_IPE_dimension,ONLY: NPTS2D,NMP_all,NLP_all
+!nm20120112:        USE module_IPE_dimension,ONLY: NPTS2D,NMP,NLP
 !nm20120112:        USE module_physical_constants,ONLY: earth_radius,pi
 !nm20120112:        USE module_input_parameters,ONLY:read_input_parameters,sw_debug,lpstrt
 !nm20120112:        USE module_IO,ONLY: filename,LUN_pgrid
@@ -179,25 +177,25 @@ END IF !( sw_debug ) THEN
 
 !-------------
 !... read in parameters
-      INTEGER(KIND=int_prec), DIMENSION(NMP_all,NLP_all) :: JMIN_IN_all,JMAX_IS_all  !.. first and last indices on field line grid
-      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP_all) ::  GCOLAT_all  !.. geographic co-latitude [rad]
-      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP_all) ::  GLON_all    !.. geographic longitude [rad]
-      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP_all) ::  Qvalue_all
-      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP_all) ::  GL_rad_all      !.. magnetic co-latitude Eq(6.1) [rad]
-      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP_all) ::  SL_meter_all  !.. distance of point from northern hemisphere foot point [meter]
-      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP_all) ::  BM_nT_all      !.. magnetic field strength [nT]
+      INTEGER(KIND=int_prec), DIMENSION(NMP,NLP) :: JMIN_IN_all,JMAX_IS_all  !.. first and last indices on field line grid
+      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP) ::  GCOLAT_all  !.. geographic co-latitude [rad]
+      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP) ::  GLON_all    !.. geographic longitude [rad]
+      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP) ::  Qvalue_all
+      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP) ::  GL_rad_all      !.. magnetic co-latitude Eq(6.1) [rad]
+      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP) ::  SL_meter_all  !.. distance of point from northern hemisphere foot point [meter]
+      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP) ::  BM_nT_all      !.. magnetic field strength [nT]
 ! components (east, north, up) of base vectors
-      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP_all) ::  D1_all    !.. Eq(3.8) Richmond 1995
-      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP_all) ::  D2_all    !.. Eq(3.9) Richmond 1995
-      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP_all) ::  D3_all    !.. Eq(3.10) Richmond 1995
-      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP_all) ::  E1_all    !.. Eq(3.11) Richmond 1995
-      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP_all) ::  E2_all    !.. Eq(3.12) Richmond 1995
-      REAL(KIND=real_prec8), DIMENSION(2,NMP_all,NLP_all) ::  Be3_all         ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [nT]
+      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP) ::  D1_all    !.. Eq(3.8) Richmond 1995
+      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP) ::  D2_all    !.. Eq(3.9) Richmond 1995
+      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP) ::  D3_all    !.. Eq(3.10) Richmond 1995
+      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP) ::  E1_all    !.. Eq(3.11) Richmond 1995
+      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP) ::  E2_all    !.. Eq(3.12) Richmond 1995
+      REAL(KIND=real_prec8), DIMENSION(2,NMP,NLP) ::  Be3_all         ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [nT]
 
 !-------------local
         CHARACTER (LEN=11) :: FORM_dum
         CHARACTER (LEN=7)  :: STATUS_dum
-        REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP_all), INTENT(OUT) ::  r_meter_all     !.. distance from the center of the Earth[meter]
+        REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP), INTENT(OUT) ::  r_meter_all     !.. distance from the center of the Earth[meter]
         CHARACTER(LEN=*), PARAMETER :: filepath_pgrid= &
 !     & '/mnt/lfs0/projects/idea/maruyama/sandbox/ipe/field_line_grid/20110419lowres_global/'!low res global grid: APEX
      & '/mnt/lfs0/projects/idea/maruyama/sandbox/ipe/field_line_grid/20111025dipole/'       !low res global grid: tilted dipole
@@ -228,7 +226,7 @@ END IF !( sw_debug ) THEN
       print *,"reading D1-3 etc completed"
       READ (UNIT=LUN_pgrid, FMT=*) E1_all, E2_all          !Apex_E1_2d
       print *,"reading E1/2 etc completed"
-      READ (UNIT=LUN_pgrid, FMT=*) Be3_all(1,1:NMP_all,1:NLP_all),Be3_all(2,1:NMP_all,1:NLP_all) !Apex_BE3_N
+      READ (UNIT=LUN_pgrid, FMT=*) Be3_all(1,1:NMP,1:NLP),Be3_all(2,1:NMP,1:NLP) !Apex_BE3_N
       print *,"reading Be3 etc completed"
       CLOSE (UNIT=LUN_pgrid)
       print *,"global grid reading finished, file closed..."
@@ -285,21 +283,21 @@ SUBROUTINE test_grid_output ( JMIN_IN_all,JMAX_IS_all,r_meter_all,SL_meter_all,B
 
 
 
-      INTEGER(KIND=int_prec), DIMENSION(NMP_all,NLP_all),INTENT(INOUT) :: JMIN_IN_all,JMAX_IS_all  !.. first and last indices on field line grid
-      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP_all), INTENT(INOUT) ::  r_meter_all     !.. distance from the center of the Earth[meter]
-      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP_all), INTENT(INOUT) ::  SL_meter_all  !.. distance of point from northern hemisphere foot point [meter]
-      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP_all), INTENT(INOUT) ::  BM_nT_all      !.. magnetic field strength [nT]
-      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP_all), INTENT(INOUT) ::  GL_rad_all      !.. magnetic co-latitude Eq(6.1) [rad]
-      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP_all), INTENT(INOUT) ::  GCOLAT_all  !.. geographic co-latitude [rad]
-      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP_all), INTENT(INOUT) ::  GLON_all    !.. geographic longitude [rad]
-      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP_all), INTENT(INOUT) ::  Qvalue_all
+      INTEGER(KIND=int_prec), DIMENSION(NMP,NLP),INTENT(INOUT) :: JMIN_IN_all,JMAX_IS_all  !.. first and last indices on field line grid
+      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP), INTENT(INOUT) ::  r_meter_all     !.. distance from the center of the Earth[meter]
+      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP), INTENT(INOUT) ::  SL_meter_all  !.. distance of point from northern hemisphere foot point [meter]
+      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP), INTENT(INOUT) ::  BM_nT_all      !.. magnetic field strength [nT]
+      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP), INTENT(INOUT) ::  GL_rad_all      !.. magnetic co-latitude Eq(6.1) [rad]
+      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP), INTENT(INOUT) ::  GCOLAT_all  !.. geographic co-latitude [rad]
+      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP), INTENT(INOUT) ::  GLON_all    !.. geographic longitude [rad]
+      REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP), INTENT(INOUT) ::  Qvalue_all
 !
-      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP_all), INTENT(INOUT) ::  D1_all    !.. Eq(3.8) Richmond 1995
-      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP_all), INTENT(INOUT) ::  D2_all    !.. Eq(3.9) Richmond 1995
-      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP_all), INTENT(INOUT) ::  D3_all    !.. Eq(3.10) Richmond 1995
-      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP_all), INTENT(INOUT) ::  E1_all    !.. Eq(3.11) Richmond 1995
-      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP_all), INTENT(INOUT) ::  E2_all    !.. Eq(3.12) Richmond 1995
-      REAL(KIND=real_prec8), DIMENSION(2,NMP_all,NLP_all), INTENT(INOUT) ::  Be3_all 
+      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP), INTENT(INOUT) ::  D1_all    !.. Eq(3.8) Richmond 1995
+      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP), INTENT(INOUT) ::  D2_all    !.. Eq(3.9) Richmond 1995
+      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP), INTENT(INOUT) ::  D3_all    !.. Eq(3.10) Richmond 1995
+      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP), INTENT(INOUT) ::  E1_all    !.. Eq(3.11) Richmond 1995
+      REAL(KIND=real_prec8), DIMENSION(3,NPTS2D,NMP), INTENT(INOUT) ::  E2_all    !.. Eq(3.12) Richmond 1995
+      REAL(KIND=real_prec8), DIMENSION(2,NMP,NLP), INTENT(INOUT) ::  Be3_all 
 
 
 
@@ -393,7 +391,7 @@ if ( sw_test_grid_correct==1 ) then
 
 lp0=7
 IPDIM5 = IS0(lp0) - IN0(lp0) +1 
-do mp=1,NMP_all
+do mp=1,NMP
 do lp=1,6
 
  CTIPDIM  = IS0(lp) - JMIN_IN_all(mp,lp) + 1
@@ -527,7 +525,7 @@ print *,'sw_newQ',sw_newQ,filename
       print *,"WRITEing D1-3 etc completed"
       WRITE (UNIT=LUN_pgrid, FMT=*) E1_all, E2_all          !Apex_E1_2d
       print *,"WRITEing E1/2 etc completed"
-      WRITE (UNIT=LUN_pgrid, FMT=*) Be3_all(1,1:NMP_all,1:NLP_all),Be3_all(2,1:NMP_all,1:NLP_all) !Apex_BE3_N
+      WRITE (UNIT=LUN_pgrid, FMT=*) Be3_all(1,1:NMP,1:NLP),Be3_all(2,1:NMP,1:NLP) !Apex_BE3_N
       print *,"WRITEing Be3 etc completed"
       CLOSE(UNIT=LUN_pgrid)
       print *,"MODIFIED global grid WRITEing finished, file closed..."
