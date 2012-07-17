@@ -27,5 +27,5 @@
 		iout(1)=1            ,
 		iout(2)=265          ,
 		lpstrt= 1           ,
-		lpstop= 4         ,
+		lpstop= 3         ,
 		sw_neutral='GT'   /
