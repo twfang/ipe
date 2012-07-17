@@ -84,7 +84,7 @@ SUBROUTINE INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
   INTEGER, intent(in) :: NLP  !# of field line grids in one longitude sector
 
 
-  INTEGER, intent(in)  :: nHeights ! don't need this?
+  INTEGER, intent(in) :: nHeights ! don't need this?
   integer, intent(in) :: mLats 
   integer, intent(in) :: lLons 
 
@@ -110,6 +110,9 @@ SUBROUTINE INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
   REAL(kind=8),Dimension(3) :: ionoVar_interpolated
 
 !=======================================================================================
+
+!nm20120607dbg
+!write(9998,*) ionoVar
 
   !print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : giptogeoFileName = ', &
   !         giptogeoFileName
@@ -152,6 +155,7 @@ ionoVar_high_res_fixed = 0.0
                   in2 = ii3_interface(i,iheight,m,l)
                   in1 = ii4_interface(i,iheight,m,l)
 
+
                   ionoVar_interpolated(i) = ((ionoVar(in2,mp)-ionoVar(in1,mp))*factor) &
                                             + ionoVar(in1,mp)
 
@@ -170,9 +174,14 @@ ionoVar_high_res_fixed = 0.0
           
               ionoVar_high_res_fixed(iheight,m,l) = ionoVar_high_res_fixed(iheight,m,l)/dtotinv
 
-              !if (ionoVar_high_res_fixed(iheight,m,l) == 0) then
-              !    print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : ionoVar_high_res_fixed(iheight,m,l) == 0', iheight, m, l
-              !endif
+              if (ionoVar_high_res_fixed(iheight,m,l) == 0 .and. iheight == 1) then
+                  print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : ionoVar_high_res_fixed(iheight,m,l) == 0', iheight, m, l
+                  print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : factor, mp, lp, in2, in1 = ', &
+                           factor, mp, lp, in2, in1
+                  print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : ionoVar(in1,mp) = ',ionoVar(in1,mp)
+                  !print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : ARTIFICIALLY SETTTING TO .1 ****'
+                  !ionoVar_high_res_fixed(iheight,m,l) = 0.1
+              endif
 
           ENDDO ! lats  m
 
@@ -189,10 +198,29 @@ ionoVar_high_res_fixed = 0.0
       ENDDO  ! lons   l
   ENDDO  ! iheight
 
+  !print *,'ionoVar_high_res_fixed(1,8,:) = ', ionoVar_high_res_fixed(1,8,:)
+  !print *,'ionoVar_high_res_fixed(2,8,:) = ', ionoVar_high_res_fixed(2,8,:)
+
+  !-----------------------------------------------------
+  ! Add fix for when values at iheight = 1 are 0
+  ! MUST CHECK THIS *********************************
+  !-----------------------------------------------------
+  print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : SETTING ionoVar_high_res_fixed(1,m,l) == 0.0 TO LEVEL ABOVE ***'
+  WHERE (ionoVar_high_res_fixed(1,:,:) == 0.0 ) 
+         ionoVar_high_res_fixed(1,:,:) = ionoVar_high_res_fixed(2,:,:)
+  END WHERE
+
 
   print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : MINVAL(ionoVar) = ',MINVAL(ionoVar)
   print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : MINVAL(ionoVar_high_res_fixed) = ', MINVAL(ionoVar_high_res_fixed)
 
+!  print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : mlow_interface = ',mlow_interface
+!  print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : mhigh_interface = ',mhigh_interface
+
+ ! print *,'AFTER FIXING :  '
+ ! print *,'ionoVar_high_res_fixed(1,8,:) = ', ionoVar_high_res_fixed(1,8,:)
+
+!  STOP
 
 
   return

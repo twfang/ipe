@@ -97,13 +97,23 @@ LOGICAL, parameter :: debugThermo = .FALSE.
 CHARACTER(LEN=*), PARAMETER :: debugThermoFileName = 'CheckGTGIP.dat'
 
 
-!------------------------------------------------------
-! File unit number for checking interpolation values :
-!------------------------------------------------------
-INTEGER, parameter :: unitCheckInterp = 14
+!--------------------------------------------------------------------
+! File unit number for checking Thermospheric interpolation values :
+!--------------------------------------------------------------------
+INTEGER, parameter :: unitCheckThermoInterp = 14
 ! Write out the interpolated values??
-LOGICAL, parameter :: debugInterp = .FALSE.
-CHARACTER(LEN=*), PARAMETER :: debugInterpFileName = 'interpOut.dat'
+LOGICAL, parameter :: debugThermoInterp = .FALSE.
+CHARACTER(LEN=*), PARAMETER :: debugThermoInterpFileName = 'interpOut.dat'
+
+
+!-----------------------------------------------------------------
+! File unit number for checking Ionospheric interpolation values :
+!-----------------------------------------------------------------
+INTEGER, parameter :: unitCheckIonoInterp = 18
+! Write out the interpolated values??
+LOGICAL, parameter :: debugIonoInterp = .TRUE.
+CHARACTER(LEN=*), PARAMETER :: debugIonoInterpFileName = 'interpIonoOut.dat'
+
 
 !----------------------------------------
 ! File unit number for IPE startup files
@@ -285,8 +295,11 @@ REAL(kind=8) :: ely_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
 INTEGER :: fileNPTS, fileNMP, fileNLP  ! read from IPE grid file, but not used
 REAL (KIND=8), DIMENSION(1:NMP+1) :: mlon_rad
 REAL (KIND=8), DIMENSION(NPTS) :: ipeGL  ! read from IPE grid file, but not used
+
 INTEGER :: inGIP1d(NLP), isGIP1d(NLP)   ! 1d in, read from the IPE grid file
-INTEGER :: inGIP(NMP, NLP), isGIP(NMP, NLP)  ! 2d in, is grids to match up w/ old GIP subroutine call
+! in - n means northpole, is - s means southpole
+INTEGER :: inGIP(NMP, NLP), isGIP(NMP, NLP)  ! 2d inGIP, isGIP grids to match up w/ old GIP subroutine call
+
 REAL(kind=8) :: pz_plasma_1d(NPTS)  ! 1d in, read from the IPE grid file
 REAL(kind=8) :: glat_plasma_3d(npts,nmp), glond_plasma_3d(npts,nmp), pz_plasma_3d(npts,nmp)
 
@@ -700,7 +713,7 @@ IF ( sw_neutral == 'GT' ) then
                  Universal_Time_seconds, &                                         ! INPUT
                  solar_declination_angle_radians, &                                ! OUTPUT
                  hough11 , hough22 , hough23 , hough24 , hough25, &                ! OUTPUT
-                 amplitude, &                                                     ! INPUT
+                 amplitude, &                                                      ! INPUT
                  tidalPhase, &
                  wind_southwards_ms1_FROM_GT, &  ! read from startup file             ! OUTPUT
                  wind_eastwards_ms1_FROM_GT, & ! read from startup file               ! OUTPUT
@@ -840,139 +853,148 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
   
   If (debugStartupIPE) then 
 
-     print *,'driver_ipe_gt.3d : Oplus_density_from_IPE(1:5,1) = ', Oplus_density_from_IPE(1:5,1)
-     print *,'driver_ipe_gt.3d : Hplus_density_from_IPE(1:5,1) = ', Hplus_density_from_IPE(1:5,1)
-  print *,'driver_ipe_gt.3d : Heplus_density_from_IPE(1:5,1) = ', Heplus_density_from_IPE(1:5,1)
-  print *,'driver_ipe_gt.3d : Nplus_density_from_IPE(1:5,1) = ', Nplus_density_from_IPE(1:5,1)
-  print *,'driver_ipe_gt.3d : NOplus_density_from_IPE(1:5,1) = ', NOplus_density_from_IPE(1:5,1)
-  print *,'driver_ipe_gt.3d : O2plus_density_from_IPE(1:5,1) = ', O2plus_density_from_IPE(1:5,1)
-  print *,'driver_ipe_gt.3d : N2plus_density_from_IPE(1:5,1) = ', N2plus_density_from_IPE(1:5,1)
-  print *,'driver_ipe_gt.3d : Oplus2D_density_from_IPE(1:5,1) = ', Oplus2D_density_from_IPE(1:5,1)
-  print *,'driver_ipe_gt.3d : Oplus2P_density_from_IPE(1:5,1) = ', Oplus2P_density_from_IPE(1:5,1)
-  print *,'driver_ipe_gt.3d : Te_from_IPE(1:5,1) = ', Te_from_IPE(1:5,1)
-  print *,'driver_ipe_gt.3d : Ti_from_IPE(1:5,1) = ', Ti_from_IPE(1:5,1)
-  print *,'driver_ipe_gt.3d : Ne_density_from_IPE(1:5,1) = ', Ne_density_from_IPE(1:5,1)
-  print *,'driver_ipe_gt.3d '
+      print *,'driver_ipe_gt.3d : Oplus_density_from_IPE(1:5,1) = ', Oplus_density_from_IPE(1:5,1)
+      print *,'driver_ipe_gt.3d : Hplus_density_from_IPE(1:5,1) = ', Hplus_density_from_IPE(1:5,1)
+       print *,'driver_ipe_gt.3d : Heplus_density_from_IPE(1:5,1) = ', Heplus_density_from_IPE(1:5,1)
+       print *,'driver_ipe_gt.3d : Nplus_density_from_IPE(1:5,1) = ', Nplus_density_from_IPE(1:5,1)
+       print *,'driver_ipe_gt.3d : NOplus_density_from_IPE(1:5,1) = ', NOplus_density_from_IPE(1:5,1)
+       print *,'driver_ipe_gt.3d : O2plus_density_from_IPE(1:5,1) = ', O2plus_density_from_IPE(1:5,1)
+       print *,'driver_ipe_gt.3d : N2plus_density_from_IPE(1:5,1) = ', N2plus_density_from_IPE(1:5,1)
+       print *,'driver_ipe_gt.3d : Oplus2D_density_from_IPE(1:5,1) = ', Oplus2D_density_from_IPE(1:5,1)
+       print *,'driver_ipe_gt.3d : Oplus2P_density_from_IPE(1:5,1) = ', Oplus2P_density_from_IPE(1:5,1)
+       print *,'driver_ipe_gt.3d : Te_from_IPE(1:5,1) = ', Te_from_IPE(1:5,1)
+       print *,'driver_ipe_gt.3d : Ti_from_IPE(1:5,1) = ', Ti_from_IPE(1:5,1)
+       print *,'driver_ipe_gt.3d : Ne_density_from_IPE(1:5,1) = ', Ne_density_from_IPE(1:5,1)
+       print *,'driver_ipe_gt.3d '
 
-  print *,'driver_ipe_gt.3d : inGIP1d(1:NLP) = ', inGIP1d(1:NLP)
-  print *,'driver_ipe_gt.3d : isGIP1d(1:NLP) = ', isGIP1d(1:NLP)
-
-! Note :
-!JMIN_IN(lp) <=== inGIP1d(1:NLP)
-!JMAX_IS(lp) <=== isGIP1d(1:NLP)
+       print *,'driver_ipe_gt.3d : inGIP1d(1:NLP) = ', inGIP1d(1:NLP)
+       print *,'driver_ipe_gt.3d : isGIP1d(1:NLP) = ', isGIP1d(1:NLP)
 
 
-! For checking ...........
-do mm = 1, NMP
-
-    do ll = 1,6
-       jj = inGIP1d(ll)  
-       kk = isGIP1d(ll)  
-
-       print *, jj, kk
-
-       do ii = kk, kk+3
-           print *, ii, ll, mm, Oplus_density_from_IPE(ii,mm)
-       end do !ii
-    end do !ll
-
-end do !mm
+     ! Note :
+     !JMIN_IN(lp) <=== inGIP1d(1:NLP)
+     !JMAX_IS(lp) <=== isGIP1d(1:NLP)
 
 
+     ! For checking ...........
+     do mm = 1, NMP
 
+        do ll = 1,6
+            jj = inGIP1d(ll)  
+            kk = isGIP1d(ll)  
 
-  print *,'driver_ipe_gt.3d : MINVAL(Oplus_density_from_IPE) = ', MINVAL(Oplus_density_from_IPE)
-  print *,'driver_ipe_gt.3d : MAXVAL(Oplus_density_from_IPE) = ', MAXVAL(Oplus_density_from_IPE)
+            print *, jj, kk
 
-  print *,'driver_ipe_gt.3d : MINVAL(Hplus_density_from_IPE) = ', MINVAL(Hplus_density_from_IPE)
-  print *,'driver_ipe_gt.3d : MAXVAL(Hplus_density_from_IPE) = ', MAXVAL(Hplus_density_from_IPE)
+            do ii = kk, kk+3
+               print *, ii, ll, mm, Oplus_density_from_IPE(ii,mm)
+            end do !ii
+        end do !ll
 
-  print *,'driver_ipe_gt.3d : MINVAL(Heplus_density_from_IPE) = ', MINVAL(Heplus_density_from_IPE)
-  print *,'driver_ipe_gt.3d : MAXVAL(Heplus_density_from_IPE) = ', MAXVAL(Heplus_density_from_IPE)
-
-  print *,'driver_ipe_gt.3d : MINVAL(Nplus_density_from_IPE) = ', MINVAL(Nplus_density_from_IPE)
-  print *,'driver_ipe_gt.3d : MAXVAL(Nplus_density_from_IPE) = ', MAXVAL(Nplus_density_from_IPE)
-
-  print *,'driver_ipe_gt.3d : MINVAL(NOplus_density_from_IPE) = ', MINVAL(NOplus_density_from_IPE)
-  print *,'driver_ipe_gt.3d : MAXVAL(NOplus_density_from_IPE) = ', MAXVAL(NOplus_density_from_IPE)
-
-  print *,'driver_ipe_gt.3d : MINVAL(O2plus_density_from_IPE) = ', MINVAL(O2plus_density_from_IPE)
-  print *,'driver_ipe_gt.3d : MAXVAL(O2plus_density_from_IPE) = ', MAXVAL(O2plus_density_from_IPE)
-
-  print *,'driver_ipe_gt.3d : MINVAL(N2plus_density_from_IPE) = ', MINVAL(N2plus_density_from_IPE)
-  print *,'driver_ipe_gt.3d : MAXVAL(N2plus_density_from_IPE) = ', MAXVAL(N2plus_density_from_IPE)
-
-  print *,'driver_ipe_gt.3d : MINVAL(Oplus2D_density_from_IPE) = ', MINVAL(Oplus2D_density_from_IPE)
-  print *,'driver_ipe_gt.3d : MAXVAL(Oplus2D_density_from_IPE) = ', MAXVAL(Oplus2D_density_from_IPE)
-
-  print *,'driver_ipe_gt.3d : MINVAL(Oplus2P_density_from_IPE) = ', MINVAL(Oplus2P_density_from_IPE)
-  print *,'driver_ipe_gt.3d : MAXVAL(Oplus2P_density_from_IPE) = ', MAXVAL(Oplus2P_density_from_IPE)
-
-  print *,'driver_ipe_gt.3d : MINVAL(Te_from_IPE) = ', MINVAL(Te_from_IPE)
-  print *,'driver_ipe_gt.3d : MAXVAL(Te_from_IPE) = ', MAXVAL(Te_from_IPE)
-
-  print *,'driver_ipe_gt.3d : MINVAL(Ti_from_IPE) = ', MINVAL(Ti_from_IPE)
-  print *,'driver_ipe_gt.3d : MAXVAL(Ti_from_IPE) = ', MAXVAL(Ti_from_IPE)
-
-
-  print *,'driver_ipe_gt.3d : MINVAL(Ne_density_from_IPE) = ', MINVAL(Ne_density_from_IPE)
-  print *,'driver_ipe_gt.3d : MAXVAL(Ne_density_from_IPE) = ', MAXVAL(Ne_density_from_IPE)
+     end do !mm
 
 
 
-  !print *,'driver_ipe_gt.3d : STOPPING ..............................'
-  !STOP
+     print *,'driver_ipe_gt.3d : MINVAL(Oplus_density_from_IPE) = ', MINVAL(Oplus_density_from_IPE)
+     print *,'driver_ipe_gt.3d : MAXVAL(Oplus_density_from_IPE) = ', MAXVAL(Oplus_density_from_IPE)
 
-  ! FOR TESTING PURPOSES ..........
-  !WHERE ( Oplus_density_from_IPE == 0.0 ) 
-  !        Oplus_density_from_IPE = 0.01
-  !END WHERE
+     print *,'driver_ipe_gt.3d : MINVAL(Hplus_density_from_IPE) = ', MINVAL(Hplus_density_from_IPE)
+     print *,'driver_ipe_gt.3d : MAXVAL(Hplus_density_from_IPE) = ', MAXVAL(Hplus_density_from_IPE)
 
-  !WHERE ( Hplus_density_from_IPE == 0.0 ) 
-  !        Hplus_density_from_IPE = 0.01
-  !END WHERE
+     print *,'driver_ipe_gt.3d : MINVAL(Heplus_density_from_IPE) = ', MINVAL(Heplus_density_from_IPE)
+     print *,'driver_ipe_gt.3d : MAXVAL(Heplus_density_from_IPE) = ', MAXVAL(Heplus_density_from_IPE)
 
-  !WHERE ( Heplus_density_from_IPE == 0.0 ) 
-  !        Heplus_density_from_IPE = 0.01
-  !END WHERE
+     print *,'driver_ipe_gt.3d : MINVAL(Nplus_density_from_IPE) = ', MINVAL(Nplus_density_from_IPE)
+     print *,'driver_ipe_gt.3d : MAXVAL(Nplus_density_from_IPE) = ', MAXVAL(Nplus_density_from_IPE)
 
-  !WHERE ( Nplus_density_from_IPE == 0.0 ) 
-  !        Nplus_density_from_IPE = 0.01
-  !END WHERE
+     print *,'driver_ipe_gt.3d : MINVAL(NOplus_density_from_IPE) = ', MINVAL(NOplus_density_from_IPE)
+     print *,'driver_ipe_gt.3d : MAXVAL(NOplus_density_from_IPE) = ', MAXVAL(NOplus_density_from_IPE)
 
-  !WHERE ( NOplus_density_from_IPE == 0.0 ) 
-  !        NOplus_density_from_IPE = 0.01
-  !END WHERE
+     print *,'driver_ipe_gt.3d : MINVAL(O2plus_density_from_IPE) = ', MINVAL(O2plus_density_from_IPE)
+     print *,'driver_ipe_gt.3d : MAXVAL(O2plus_density_from_IPE) = ', MAXVAL(O2plus_density_from_IPE)
 
-  !WHERE ( O2plus_density_from_IPE == 0.0 ) 
-  !        O2plus_density_from_IPE = 0.01
-  !END WHERE
+     print *,'driver_ipe_gt.3d : MINVAL(N2plus_density_from_IPE) = ', MINVAL(N2plus_density_from_IPE)
+     print *,'driver_ipe_gt.3d : MAXVAL(N2plus_density_from_IPE) = ', MAXVAL(N2plus_density_from_IPE)
 
-  !WHERE ( N2plus_density_from_IPE == 0.0 ) 
-  !        N2plus_density_from_IPE = 0.01
-  !END WHERE
+     print *,'driver_ipe_gt.3d : MINVAL(Oplus2D_density_from_IPE) = ', MINVAL(Oplus2D_density_from_IPE)
+     print *,'driver_ipe_gt.3d : MAXVAL(Oplus2D_density_from_IPE) = ', MAXVAL(Oplus2D_density_from_IPE)
 
-  !WHERE ( Oplus2D_density_from_IPE == 0.0 ) 
-  !        Oplus2D_density_from_IPE = 0.01
-  !END WHERE
+     print *,'driver_ipe_gt.3d : MINVAL(Oplus2P_density_from_IPE) = ', MINVAL(Oplus2P_density_from_IPE)
+     print *,'driver_ipe_gt.3d : MAXVAL(Oplus2P_density_from_IPE) = ', MAXVAL(Oplus2P_density_from_IPE)
 
-  !WHERE ( Oplus2P_density_from_IPE == 0.0 ) 
-  !        Oplus2P_density_from_IPE = 0.01
-  !END WHERE
+     print *,'driver_ipe_gt.3d : MINVAL(Te_from_IPE) = ', MINVAL(Te_from_IPE)
+     print *,'driver_ipe_gt.3d : MAXVAL(Te_from_IPE) = ', MAXVAL(Te_from_IPE)
 
-  !WHERE ( Te_from_IPE == 0.0 ) 
-  !        Te_from_IPE = 0.01
-  !END WHERE
+     print *,'driver_ipe_gt.3d : MINVAL(Ti_from_IPE) = ', MINVAL(Ti_from_IPE)
+     print *,'driver_ipe_gt.3d : MAXVAL(Ti_from_IPE) = ', MAXVAL(Ti_from_IPE)
 
-  !WHERE ( Ti_from_IPE == 0.0 ) 
-  !        Ti_from_IPE = 0.01
-  !END WHERE
 
-  !WHERE ( Ne_density_from_IPE == 0.0 ) 
-  !        Ne_density_from_IPE = 0.01
-  !END WHERE
+     print *,'driver_ipe_gt.3d : MINVAL(Ne_density_from_IPE) = ', MINVAL(Ne_density_from_IPE)
+     print *,'driver_ipe_gt.3d : MAXVAL(Ne_density_from_IPE) = ', MAXVAL(Ne_density_from_IPE)
+
+
+
+     !print *,'driver_ipe_gt.3d : STOPPING ..............................'
+     !STOP
+
+     ! FOR TESTING PURPOSES ..........
+     !WHERE ( Oplus_density_from_IPE == 0.0 ) 
+     !        Oplus_density_from_IPE = 0.01
+     !END WHERE
+   
+     !WHERE ( Hplus_density_from_IPE == 0.0 ) 
+     !        Hplus_density_from_IPE = 0.01
+     !END WHERE
+
+     !WHERE ( Heplus_density_from_IPE == 0.0 ) 
+     !        Heplus_density_from_IPE = 0.01
+     !END WHERE
+
+     !WHERE ( Nplus_density_from_IPE == 0.0 ) 
+     !        Nplus_density_from_IPE = 0.01
+     !END WHERE
+
+     !WHERE ( NOplus_density_from_IPE == 0.0 ) 
+     !        NOplus_density_from_IPE = 0.01
+     !END WHERE
+
+     !WHERE ( O2plus_density_from_IPE == 0.0 ) 
+     !        O2plus_density_from_IPE = 0.01
+     !END WHERE
+
+     !WHERE ( N2plus_density_from_IPE == 0.0 ) 
+     !        N2plus_density_from_IPE = 0.01
+     !END WHERE
+
+     !WHERE ( Oplus2D_density_from_IPE == 0.0 ) 
+     !        Oplus2D_density_from_IPE = 0.01
+     !END WHERE
+
+     !WHERE ( Oplus2P_density_from_IPE == 0.0 ) 
+     !        Oplus2P_density_from_IPE = 0.01
+     !END WHERE
+
+     !WHERE ( Te_from_IPE == 0.0 ) 
+     !        Te_from_IPE = 0.01
+     !END WHERE
+
+     !WHERE ( Ti_from_IPE == 0.0 ) 
+     !        Ti_from_IPE = 0.01
+     !END WHERE
+
+     !WHERE ( Ne_density_from_IPE == 0.0 ) 
+     !        Ne_density_from_IPE = 0.01
+     !END WHERE
 
   endif ! debugStartupIPE
+
+  If (debugIonoInterp) then 
+      print *,'driver_ipe_gt.3d : MINVAL(Oplus_high_res_fixed) = ', MINVAL(Oplus_high_res_fixed)
+      !nm20120607dbg
+      write(9998,*) Oplus_density_from_IPE
+  end if
+
+
+  print *,'driver_ipe_gt.3d :  Oplus ---------------------------------------------------------'
 
   !-------------------------------------------------
   ! Interpolate to fixed grid for all IPE species
@@ -983,14 +1005,22 @@ end do !mm
                                    Oplus_density_from_IPE, &      ! inputs
                                    Oplus_high_res_fixed)   ! output
 
-  print *,'driver_ipe_gt.3d : MINVAL(Oplus_high_res_fixed) = ', MINVAL(Oplus_high_res_fixed)
+  If (debugIonoInterp) then 
+      print *,'driver_ipe_gt.3d : MINVAL(Oplus_high_res_fixed) = ', MINVAL(Oplus_high_res_fixed)
+      !nm20120607dbg
+      write(9999,*) Oplus_high_res_fixed   ! output
+  end if
 
+  print *,'driver_ipe_gt.3d :  Hplus ---------------------------------------------------------'
 
   CALL INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
                                    NPTS, NMP, NLP, &     ! inputs
                                    nFixedGridIonoHeights, nFixedGridIonoLats, nFixedGridIonoLons, & ! inputs
                                    Hplus_density_from_IPE, &      ! inputs
                                    Hplus_high_res_fixed)   ! output
+  
+  print *,'driver_ipe_gt.3d :  Nplus ---------------------------------------------------------'
+
 
   CALL INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
                                    NPTS, NMP, NLP, &     ! inputs
@@ -998,11 +1028,15 @@ end do !mm
                                    Nplus_density_from_IPE, &      ! inputs
                                    Nplus_high_res_fixed)   ! output
 
+  print *,'driver_ipe_gt.3d :  NOplus ---------------------------------------------------------'
+
   CALL INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
                                    NPTS, NMP, NLP, &     ! inputs
                                    nFixedGridIonoHeights, nFixedGridIonoLats, nFixedGridIonoLons, & ! inputs
                                    NOplus_density_from_IPE, &      ! inputs
                                    NOplus_high_res_fixed)   ! output
+
+  print *,'driver_ipe_gt.3d :  O2plus ---------------------------------------------------------'
 
   CALL INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
                                    NPTS, NMP, NLP, &     ! inputs
@@ -1010,11 +1044,15 @@ end do !mm
                                    O2plus_density_from_IPE, &      ! inputs
                                    O2plus_high_res_fixed)   ! output
 
+  print *,'driver_ipe_gt.3d :  N2plus ---------------------------------------------------------'
+
   CALL INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
                                    NPTS, NMP, NLP, &     ! inputs
                                    nFixedGridIonoHeights, nFixedGridIonoLats, nFixedGridIonoLons, & ! inputs
                                    N2plus_density_from_IPE, &      ! inputs
                                    N2plus_high_res_fixed)   ! output
+
+  print *,'driver_ipe_gt.3d :  Ne density ---------------------------------------------------------'
 				   
   CALL INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
                                    NPTS, NMP, NLP, &     ! inputs
@@ -1022,11 +1060,15 @@ end do !mm
                                    Ne_density_from_IPE, &      ! inputs
                                    Ne_high_res_fixed)   ! output
 
+  print *,'driver_ipe_gt.3d :  Te  ---------------------------------------------------------'
+
   CALL INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
                                    NPTS, NMP, NLP, &     ! inputs
                                    nFixedGridIonoHeights, nFixedGridIonoLats, nFixedGridIonoLons, & ! inputs
                                    Te_from_IPE, &      ! inputs
                                    Te_high_res_fixed)   ! output
+
+  print *,'driver_ipe_gt.3d :  Ti  ---------------------------------------------------------'
 
   CALL INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
                                    NPTS, NMP, NLP, &     ! inputs
@@ -1324,11 +1366,11 @@ print *,'driver : Ne_density_FOR_GT(:,1,1) = ',Ne_density_FOR_GT(:,1,1)
            !-------------------------------------------------------------------------
            ! Write out results of the interpolation to an ascii file for examination
            !-------------------------------------------------------------------------
-           if (debugInterp) then
+           if (debugThermoInterp) then
 
               print *,'driver_ipe_gt.3d : Writing out the interpolated values to a file..........'
 
-              CALL checkInterp(debugDir, debugInterpFileName, unitCheckInterp, &
+              CALL checkInterp(debugDir, debugThermoInterpFileName, unitCheckThermoInterp, &
                        nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim, &
                        O_density_fixed_ht, O2_density_fixed_ht, N2_density_fixed_ht, &
                        Vx_fixed_ht, Vy_fixed_ht, wvz_fixed_ht, &
@@ -1444,7 +1486,7 @@ enddo ! ii
 !-------------------------------------------------------
 if (debugThermo) CLOSE (unitCheckThermo)
 
-if (debugInterp) CLOSE (unitCheckInterp)
+if (debugThermoInterp) CLOSE (unitCheckThermoInterp)
 
 if (debugFixedGeo) CLOSE (unitFixedGeo)
 

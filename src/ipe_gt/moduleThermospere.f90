@@ -4099,6 +4099,8 @@ SUBROUTINE SOLAR_EUV(f107, RMT, SCHt, DEN, SZA, QEUv)
            0.01100 , 0.004809 , 0.001963/
   
       DATA EUV_eff/6*0.3, 0.26, 0.45, 0.54, 0.37, 0.09, 0.11, 0.13, 0.16, 0.16/
+
+      !===============================================================================
   
       if (f107 > 175.) then 
          EUV_factor = 0.00572*f107 + 1.376
@@ -4159,7 +4161,7 @@ SUBROUTINE SOLAR_EUV(f107, RMT, SCHt, DEN, SZA, QEUv)
                F1(n) = 0.0
             ELSE
                i = INT(5.0*cdrho+92.0)
-               print *,'SOLAR_EUV : i, qion(i) = ', i, qion(i)
+               !print *,'SOLAR_EUV : i, qion(i) = ', i, qion(i)
                sion = qion(i) + 5.0*(qion(i+1)-qion(i))*(cdrho-crho(i))
                F1(n) = EXP(sion)
             ENDIF
@@ -4277,17 +4279,20 @@ SUBROUTINE IONNEUT(P1, P2, P3, PI1, PI2, PI3, T, VIN, AMIn)
       DATA a/3.42E-11 , 6.66E-10 , 6.82E-10/
       DATA b/2.44E-10 , 4.28E-10 , 4.34E-10/
 
+      !==========================================================================
+
       amu = 1.66E-27
 
       factor = 1.0
 
+      ! For debugging :
       !print *,'IONNEUT : amu, factor = ',amu, factor
       !print *,'IONNEUT : p1 = ',p1
       !print *,'IONNEUT : p2 = ',p2
       !print *,'IONNEUT : p3 = ',p3
-      print *,'IONNEUT : pi1 = ',pi1
-      print *,'IONNEUT : pi2 = ',pi2
-      print *,'IONNEUT : pi3 = ',pi3
+      !print *,'IONNEUT : pi1 = ',pi1
+      !print *,'IONNEUT : pi2 = ',pi2
+      !print *,'IONNEUT : pi3 = ',pi3
       !print *,'IONNEUT : t = ',t
       !print *,'IONNEUT :  '
  
