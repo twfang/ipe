@@ -24,14 +24,14 @@
       REAL(KIND=real_prec),PARAMETER,PUBLIC :: ht90  = 90.0E+03  !reference height in meter
 !... read in parameters
       INTEGER(KIND=int_prec), PUBLIC,DIMENSION(NMP,NLP) :: JMIN_IN_all,JMAX_IS_all  !.. first and last indices on field line grid
-      INTEGER(KIND=int_prec), ALLOCATABLE,TARGET,PUBLIC :: JMIN_IN(:),JMAX_IS(:)  !.. first and last indices on field line grid
+      INTEGER(KIND=int_prec), ALLOCATABLE,TARGET,PUBLIC :: JMIN_IN(:),JMAX_IS(:)    !.. first and last indices on field line grid
       TYPE :: plasma_grid
 !dbg20110927         REAL(KIND=real_prec) :: Z  !.. altitude [meter]
          REAL(KIND=real_prec) :: SL !.. distance of point from northern hemisphere foot point [meter]
          REAL(KIND=real_prec) :: BM !.. magnetic field strength [T]
          REAL(KIND=real_prec) :: GR !.. Gravity [m2 s-1]
 !dbg20110927         REAL(KIND=real_prec) :: GL !.. magnetic co-latitude Eq(6.1) [rad]
-         REAL(KIND=real_prec) :: Q  !
+         REAL(KIND=real_prec) :: Q  
          REAL(KIND=real_prec) :: GCOLAT !.. geographic co-latitude [rad]
          REAL(KIND=real_prec) :: GLON   !.. geographic longitude [rad]
       END TYPE plasma_grid
@@ -44,12 +44,12 @@
       REAL(KIND=real_prec), DIMENSION(:,:),ALLOCATABLE, PUBLIC :: VEXBup !DIMENSION(NMP,NLP)
 
 !SMS$DISTRIBUTE(dh,1) BEGIN
-      REAL(KIND=real_prec),ALLOCATABLE,TARGET,PUBLIC :: plasma_3d(:,:,:,:)  !ISTOT,MaxFluxTube,NLP,NMP
-      REAL(KIND=real_prec),ALLOCATABLE,TARGET,PUBLIC :: plasma_grid_Z (:,:) !.. altitude [meter] (MaxFluxTube,NLP)
-      REAL(KIND=real_prec),ALLOCATABLE,TARGET,PUBLIC :: plasma_grid_GL(:,:) !.. magnetic co-latitude Eq(6.1) [rad]
-      REAL(KIND=real_prec),ALLOCATABLE               :: r_meter2D     (:,:) !.. distance from the center of the Earth[meter]
-      REAL(KIND=real_prec),ALLOCATABLE,TARGET,PUBLIC :: mlon_rad(:) !mag longitude in [rad]
-      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: hrate_cgs_save(:,:,:) !.. each component of the Neutral heating rate (eV/cm^3/s) DIM(7,NPTS2D,NMP)
+      REAL(KIND=real_prec),ALLOCATABLE,TARGET,PUBLIC :: plasma_3d(:,:,:,:)   !ISTOT,MaxFluxTube,NLP,NMP
+      REAL(KIND=real_prec),ALLOCATABLE,TARGET,PUBLIC :: plasma_grid_Z (:,:)  !.. altitude [meter] (MaxFluxTube,NLP)
+      REAL(KIND=real_prec),ALLOCATABLE,TARGET,PUBLIC :: plasma_grid_GL(:,:)  !.. magnetic co-latitude Eq(6.1) [rad]
+      REAL(KIND=real_prec),ALLOCATABLE               :: r_meter2D     (:,:)  !.. distance from the center of the Earth[meter]
+      REAL(KIND=real_prec),ALLOCATABLE,TARGET,PUBLIC :: mlon_rad(:)          !mag longitude in [rad]
+      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: hrate_cgs_save(:,:,:)!.. each component of the Neutral heating rate (eV/cm^3/s) DIM(7,NPTS2D,NMP)
 !SMS$DISTRIBUTE END
       REAL(KIND=real_prec),allocatable,dimension(:,:,:),PUBLIC:: ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k
       REAL(KIND=real_prec),allocatable,dimension(:,:,:,:),PUBLIC  :: Un_ms1  !Ue1 Eq(5.6) in magnetic frame !1st dim: corresponds to apexD1-3
@@ -60,7 +60,7 @@
 !      REAL(KIND=real_prec), ALLOCATABLE, PUBLIC ::  Qvalue(:,:)
 !      REAL(KIND=real_prec), ALLOCATABLE, PUBLIC ::  GL_rad(:,:)    !.. magnetic co-latitude Eq(6.1) [rad]
 !      REAL(KIND=real_prec), ALLOCATABLE, PUBLIC ::  SL_meter(:,:)  !.. distance of point from northern hemisphere foot point [meter]
-!      REAL(KIND=real_prec), ALLOCATABLE, PUBLIC ::  BM_T(:,:)     !.. magnetic field strength [T]
+!      REAL(KIND=real_prec), ALLOCATABLE, PUBLIC ::  BM_T(:,:)      !.. magnetic field strength [T]
 
 !SMS$DISTRIBUTE(dh,2,3) BEGIN
       REAL(KIND=real_prec), ALLOCATABLE, PUBLIC ::  Be3(:,:,:)     ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]
@@ -118,7 +118,7 @@
 
       Pvalue(:) = zero
 !SMS$PARALLEL(dh, mp, lp) BEGIN
-      apex_longitude_loop: DO mp = 1,NMP !JFM 1,80
+      apex_longitude_loop: DO mp = 1,NMP
       IF ( sw_debug.AND.mpstrt<=mp.AND.mp<=mpstop ) & 
      &  print *,"sub-init_plasma_grid: mp=",mp
 
@@ -127,12 +127,10 @@
 !NOTE: in FLIP, PCO is only used in setting up the rough plasmasphere H+ initial profiles (See PROFIN). It does not have to be accurate.
 
 !dbg20120112:      Pvalue(:) = zero
-      apex_latitude_height_loop:   DO lp = 1,NLP !JFM 1,170
+      apex_latitude_height_loop:   DO lp = 1,NLP
 
         IN = JMIN_IN(lp)
         IS = JMAX_IS(lp)
-!write(88,*) mp,lp,IN,IS ! JFM 1:80, 1:170, 1:1115,1118:2232,...,44430:44438
-
 
         IF (mp==1)  CALL Get_Pvalue_Dipole ( r_meter2D(IN,lp), plasma_grid_GL(IN,lp), Pvalue(lp) )
 
@@ -257,13 +255,13 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
 
 !-------------
 !... read in parameters
-      INTEGER(KIND=int_prec) MaxFluxTube,lp,mp,stat_alloc
+      INTEGER(KIND=int_prec) lp,mp,stat_alloc
 
-      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  dum0     !.. distance from the center of the Earth[meter]
-      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  dum1  !.. geographic co-latitude [rad]
+      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  dum0    !.. distance from the center of the Earth[meter]
+      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  dum1    !.. geographic co-latitude [rad]
       REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  dum2    !.. geographic longitude [rad]
       REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  dum3
-!dbg20110927      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  GL_rad_all      !.. magnetic co-latitude Eq(6.1) [rad]
+!dbg20110927      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  GL_rad_all    !.. magnetic co-latitude Eq(6.1) [rad]
 !dbg20110927      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  SL_meter_all  !.. distance of point from northern hemisphere foot point [meter]
 !dbg20110927      REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  BM_T_all      !.. magnetic field strength [T]
 ! components (east, north, up) of base vectors
@@ -303,42 +301,15 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
  
       print *,"open file completed"
       READ (UNIT=LUN_pgrid, FMT=*) JMIN_IN_all, JMAX_IS_all  !IN_2d_3d , IS_2d_3d
-JMIN_IN = 1
-JMAX_IS = JMAX_IS_all(1,:) - JMIN_IN_all(1,:) + 1
       print *,"reading JMIN_IN etc completed"
 !SMS$SERIAL END
 
-MaxFluxTube = maxval(JMAX_IS-JMIN_IN+1)
-!print*,'JFM MaxFluxTube',MaxFluxTube  ! 1115
-      allocate( plasma_grid_3d(      MaxFluxTube,NLP,NMP,6) &
-     &,         plasma_grid_Z (      MaxFluxTube,NLP      ) &
-     &,         plasma_grid_GL(      MaxFluxTube,NLP      ) &
-     &,         r_meter2D     (      MaxFluxTube,NLP      ) &
-     &,         plasma_3d     (ISTOT,MaxFluxTube,NLP,NMP  ) &
-     &,         apexD         (3:3  ,MaxFluxTube,NLP,NMP,3) &
-     &,         apexE         (2    ,MaxFluxTube,NLP,NMP,3) )
+      MaxFluxTube = maxval(JMAX_IS_all(1,:)-JMIN_IN_all(1,:)+1)
 
-!---neutral
+      CALL allocate_arrays ( 0 )
 
-      allocate( ON_m3 (    MaxFluxTube,NLP,NMP) &
-     &,         HN_m3 (    MaxFluxTube,NLP,NMP) &
-     &,         N2N_m3(    MaxFluxTube,NLP,NMP) &
-     &,         O2N_m3(    MaxFluxTube,NLP,NMP) &
-     &,         HE_m3 (    MaxFluxTube,NLP,NMP) &
-     &,         N4S_m3(    MaxFluxTube,NLP,NMP) &
-     &,         TN_k  (    MaxFluxTube,NLP,NMP) &
-     &,         TINF_K(    MaxFluxTube,NLP,NMP) &
-     &,         Un_ms1(3:3,MaxFluxTube,NLP,NMP) )
-
-      IF ( sw_neutral_heating_flip==1 ) THEN
-        ALLOCATE(hrate_cgs_save(7,MaxFluxTube,NLP),STAT=stat_alloc)
-        IF ( stat_alloc==0 ) THEN
-          print *,' hrate_cgs_save ALLOCATION SUCCESSFUL!!!'
-        ELSE !stat_alloc/=0
-          print *,"!STOP hrate_cgs_save ALLOCATION FAILD!:NHEAT",stat_alloc
-          STOP
-        END IF
-      END IF !( sw_neutral_heating_flip==1 )
+      JMIN_IN = 1
+      JMAX_IS = JMAX_IS_all(1,:) - JMIN_IN_all(1,:) + 1
 
       plasma_grid_3d = zero
       plasma_grid_Z  = zero

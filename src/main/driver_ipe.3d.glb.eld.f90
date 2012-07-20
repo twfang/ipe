@@ -59,11 +59,6 @@
       CALL open_output_files ( )
       ret = gptlstop  ('open_output_files')
 
-! create allocatable arrays
-      ret = gptlstart ('allocate_arrays0')
-      CALL allocate_arrays ( 0 )
-      ret = gptlstop ('allocate_arrays0')
-
 ! set up plasma grids by reading file
       ret = gptlstart ('init_plasma_grid')
       CALL init_plasma_grid ( )

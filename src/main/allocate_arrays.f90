@@ -15,8 +15,8 @@
       USE module_precision
       USE module_IPE_dimension,ONLY: NMP,NLP,ISTOT
       USE module_FIELD_LINE_GRID_MKS,ONLY: &
-     & plasma_grid_3d,plasma_3d &
-     &,apexD ,apexE, VEXBup &
+     & plasma_grid_3d,plasma_3d,r_meter2D,ON_m3,HN_m3,N2N_m3,O2N_m3&
+     &,apexD,apexE,VEXBup,MaxFluxTube,HE_m3,N4S_m3,TN_k,TINF_K,Un_ms1 &
      &,Be3, Pvalue, JMIN_IN, JMAX_IS,hrate_cgs_save &
      &,mlon_rad, plasma_grid_Z, plasma_grid_GL
   
@@ -26,29 +26,45 @@
       INTEGER (KIND=int_prec) :: stat_alloc
 
 ! (0) ALLOCATE arrays
-IF ( switch==0 ) THEN
-print *,'ALLOCATing ARRAYS'
-      ALLOCATE ( &
-!---field line grid
-!    &    plasma_grid_3d(NPTS2D, 1:NMP,6) &
-!    &    plasma_grid_Z( NPTS2D             ) &
-!    &,   plasma_grid_GL(NPTS2D             ) &
-!---
-!    &,        apexD(3:3,NPTS2D, 1:NMP,3) &
-!    &,        apexE(2,NPTS2D,NMP,3) &
-!---
-     &           Be3(2,1:NMP,NLP) &
-     &,       Pvalue(        NLP) &
-     &,      JMIN_IN(        NLP) &
-     &,      JMAX_IS(        NLP) &
-!---
-     &,     mlon_rad(  NMP+1    ) &
-!---plasma
-!    &,    plasma_3d(ISTOT,NPTS2D,1:NMP) &
-!dbg20120501     &,    plasma_3d(   1:NMP,NLP) &
-!dbg20120501     &,    plasma_3d4n( NPTS2D, 1:NMP) &
-     &,    VEXBup(      1:NMP,NLP) &
-     &,STAT=stat_alloc         )
+      IF ( switch==0 ) THEN
+        print *,'ALLOCATing ARRAYS',ISTOT,MaxFluxTube,NLP,NMP
+        allocate( plasma_grid_3d(      MaxFluxTube,NLP,NMP,6) &
+     &,           plasma_grid_Z (      MaxFluxTube,NLP      ) &
+     &,           plasma_grid_GL(      MaxFluxTube,NLP      ) &
+     &,           r_meter2D     (      MaxFluxTube,NLP      ) &
+     &,           plasma_3d     (ISTOT,MaxFluxTube,NLP,NMP  ) &
+     &,           apexD         (3:3  ,MaxFluxTube,NLP,NMP,3) &
+     &,           apexE         (2    ,MaxFluxTube,NLP,NMP,3) )
+
+!---neutral
+
+        allocate( ON_m3 (    MaxFluxTube,NLP,NMP) &
+     &,           HN_m3 (    MaxFluxTube,NLP,NMP) &
+     &,           N2N_m3(    MaxFluxTube,NLP,NMP) &
+     &,           O2N_m3(    MaxFluxTube,NLP,NMP) &
+     &,           HE_m3 (    MaxFluxTube,NLP,NMP) &
+     &,           N4S_m3(    MaxFluxTube,NLP,NMP) &
+     &,           TN_k  (    MaxFluxTube,NLP,NMP) &
+     &,           TINF_K(    MaxFluxTube,NLP,NMP) &
+     &,           Un_ms1(3:3,MaxFluxTube,NLP,NMP) )
+
+        IF ( sw_neutral_heating_flip==1 ) THEN
+          ALLOCATE(hrate_cgs_save(7,MaxFluxTube,NLP),STAT=stat_alloc)
+          IF ( stat_alloc==0 ) THEN
+            print *,' hrate_cgs_save ALLOCATION SUCCESSFUL!!!'
+          ELSE !stat_alloc/=0
+            print *,"!STOP hrate_cgs_save ALLOCATION FAILD!:NHEAT",stat_alloc
+            STOP
+          END IF
+        END IF !( sw_neutral_heating_flip==1 )
+
+        ALLOCATE ( Be3     (2,1:NMP,NLP) &
+     &,            VEXBup  (  1:NMP,NLP) &
+     &,            Pvalue  (        NLP) &
+     &,            JMIN_IN (        NLP) &
+     &,            JMAX_IS (        NLP) &
+     &,            mlon_rad(  NMP+1    ) &
+     &,            STAT=stat_alloc       )
  
       IF ( stat_alloc==0 ) THEN
         print *,'ALLOCATion SUCCESSFUL!!!'
