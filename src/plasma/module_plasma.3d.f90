@@ -15,6 +15,7 @@
       MODULE module_PLASMA
       USE module_precision
       USE module_IPE_dimension,ONLY: ISPEC,ISPET,ISPEV,IPDIM, NPTS2D,NLP,ISTOT
+      USE module_FIELD_LINE_GRID_MKS,ONLY: plasma_3d,VEXBup
       IMPLICIT NONE
       include "gptl.inc"
 ! --- PRIVATE ---
@@ -42,7 +43,7 @@
 
 !dbg20120501      TYPE(plasma_data_1d), PUBLIC :: n0_1d !N&T after perpendicular transport
 !dbg20120501
-      REAL(KIND=real_prec),ALLOCATABLE,TARGET,PUBLIC :: plasma_3d(:,:,:)!ISTOT,NPTS2D,NMP
+!     REAL(KIND=real_prec),ALLOCATABLE,TARGET,PUBLIC :: plasma_3d(:,:,:,:)!ISTOT,NPTS2D,NLP,NMP
       REAL(KIND=real_prec),DIMENSION(ISTOT,IPDIM),PUBLIC :: plasma_1d
 !1:9:den:o+,h+,he+,n+
 !10 :te
@@ -56,9 +57,6 @@
 !      REAL(KIND=real_prec), DIMENSION(ISPEC,NPTS2D,NMP), PUBLIC :: XIONN_m3
 !      REAL(KIND=real_prec), DIMENSION(ISPEC,NPTS2D,NMP), PUBLIC :: XIONV_ms1
 
-!V_ExB m/s at the apex height
-      REAL(KIND=real_prec), DIMENSION(:,:),ALLOCATABLE, PUBLIC :: VEXBup !DIMENSION(NMP,NLP)
-
 ! save ut so that other subroutines can refer to it
       INTEGER (KIND=int_prec),PUBLIC:: utime_save
 
@@ -70,11 +68,9 @@
 !---------------------------
       SUBROUTINE plasma ( utime )
       USE module_input_parameters,ONLY:lpstrt,lpstop,lpstep,mpstrt,mpstop,mpstep,ip_freq_output,start_time,stop_time,sw_neutral_heating_flip,sw_perp_transport,lpmin_perp_trans,lpmax_perp_trans,sw_para_transport,sw_debug &
-&, sw_rw_sw_perp_trans,sw_dbg_perp_trans &
-&, sw_exb_up
-      USE module_heating_rate,ONLY: hrate_cgs_save
+&, sw_dbg_perp_trans , sw_exb_up
       USE module_physical_constants,ONLY:rtd,zero
-      USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,plasma_grid_3d,plasma_grid_GL,mp_save,lp_save,plasma_grid_Z,JMAX_IS
+      USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,plasma_grid_3d,plasma_grid_GL,mp_save,lp_save,plasma_grid_Z,JMAX_IS,hrate_cgs_save
       IMPLICIT NONE
 !------------------------
       INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]
@@ -103,7 +99,7 @@ end if
 !     print*,'JFM mpstrt,mpstop,mpstep', mpstrt,mpstop,mpstep !1,80,1
       apex_longitude_loop: DO mp = mpstrt,mpstop,mpstep !1,NMP
         mp_save=mp
-        IF ( sw_neutral_heating_flip==1 ) hrate_cgs_save(:,:)=zero
+        IF ( sw_neutral_heating_flip==1 ) hrate_cgs_save=zero
         if ( sw_debug )  WRITE (0,"('sub-p: mp=',I4)")mp
 !d        n0_2dbg(:)=zero
 
@@ -127,7 +123,7 @@ if(sw_dbg_perp_trans.and.utime==start_time.and.lp==lpstrt)then
 DO j=1,NLP
    DO i=JMIN_IN(j),JMAX_IS(j)
       DO jth=1,ISTOT
-         plasma_3d(jth,i,mp)=100.0
+         plasma_3d(jth,i,lp,mp)=100.0
 !dbg20120501      plasma_3d(mp,j)%N_m3( 1:ISPEC,i)=100.0
 !dbg20120501      plasma_3d(mp,j)%Te_k(         i)=100.0
 !dbg20120501      plasma_3d(mp,j)%Ti_k( 1:ISPET,i)=100.0
@@ -149,7 +145,7 @@ end if
           DO i=JMIN_IN(lp),JMAX_IS(lp)
              i1d=i-JMIN_IN(lp)+1
              DO jth=1,ISTOT
-                plasma_1d(jth,i1d) = plasma_3d(jth,i,mp)
+                plasma_1d(jth,i1d) = plasma_3d(jth,i,lp,mp)
 !dbg20120501          DO i=1,IPDIM
 !dbg20120501            n0_1d%N_m3( 1:ISPEC,i) = plasma_3d(mp,lp)%N_m3( 1:ISPEC,i)
 !dbg20120501            n0_1d%Te_k(         i) = plasma_3d(mp,lp)%Te_k(         i)
@@ -185,8 +181,8 @@ end if
             ELSE  !IF ( lp>lpmin_perp_trans ) THEN
 if(utime==start_time) then
 midpoint=JMIN_IN(lp) + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
-print "('NO PERP. TRANS: mp=',I3,' lp=',I4,' mlatNd',F8.3,' apht',F8.2)", mp,lp,(90.-plasma_grid_GL(JMIN_IN(lp))*rtd) &
-& ,plasma_grid_Z(midpoint)*1.0e-3
+print "('NO PERP. TRANS: mp=',I3,' lp=',I4,' mlatNd',F8.3,' apht',F8.2)", mp,lp,(90.-plasma_grid_GL(JMIN_IN(lp),lp)*rtd) &
+& ,plasma_grid_Z(midpoint,lp)*1.0e-3
 endif
             END IF
           END IF !( sw_perp_transport>=1 ) THEN
@@ -211,7 +207,7 @@ endif
             DO i=JMIN_IN(lp),JMAX_IS(lp)
              i1d=i-JMIN_IN(lp)+1
               DO jth=1,ISTOT
-                 plasma_3d(jth,i,mp) = plasma_1d(jth,i1d)
+                 plasma_3d(jth,i,lp,mp) = plasma_1d(jth,i1d)
 !dbg20120501            DO i=1,IPDIM
 !dbg20120501              plasma_3d(mp,lp)%N_m3( 1:ISPEC,i)=            n0_1d%N_m3( 1:ISPEC,i)
 !dbg20120501              plasma_3d(mp,lp)%Te_k(         i)=            n0_1d%Te_k(         i)

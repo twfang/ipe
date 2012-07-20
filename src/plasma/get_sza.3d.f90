@@ -32,14 +32,14 @@
         REAL (KIND=real_prec) :: ssa   !.. sub solar angle [deg]
         REAL (KIND=real_prec) :: rlt   !.. =ssa+180 [deg]
         REAL (KIND=real_prec) :: rlt_r !.. =ssa+180 [rad]
-        INTEGER (KIND=int_prec), POINTER :: IN,IS
+        INTEGER (KIND=int_prec) :: IN,IS
         REAL (KIND=real_prec) :: cos_sza !.. COS(SZA_rad)
 !        INTEGER (KIND=int_prec) :: stat_alloc
 
 !
         SZA_rad(:) = zero
-        IN => JMIN_IN(lp)
-        IS => JMAX_IS(lp)
+        IN = JMIN_IN(lp)
+        IS = JMAX_IS(lp)
 !        IF (.NOT. ALLOCATED(SZA_rad) )  ALLOCATE ( SZA_rad(IN:IS) ,STAT=stat_alloc)
 !if ( stat_alloc/=0 ) then
 !  print *, ALLOCATED( sza_rad )
@@ -50,7 +50,7 @@
         field_line_loop: DO i=IN,IS
           ii = i-IN+1 !make sure SZA_rad(1:~)
 !!        theta = aa - (m-1.0)*bb/2.0  !geographic CO-latitude [deg]
-          rlat = pi/2.0 - plasma_grid_3d(i,mp,IGCOLAT)  ![radian]
+          rlat = pi/2.0 - plasma_grid_3d(i,lp,mp,IGCOLAT)  ![radian]
           ty = (NDAY+15.5)*12.0/365.0
           IF ( ty>12.0 ) ty = ty - 12.0
 !.. declination angle [radian]
@@ -66,7 +66,7 @@
              utime12 = REAL(utime) +12.0*3600.0
           ENDIF
 ! Sub Solar Angle: the angle at some point on the Earth to the east from a line running north/south through the sub-solar point...
-          ssa = plasma_grid_3d(i,mp,IGLON)*180.0/pi + utime12/240.0  
+          ssa = plasma_grid_3d(i,lp,mp,IGLON)*180.0/pi + utime12/240.0  
           rlt = 180.0 + ssa
           IF ( rlt>360.0 ) rlt = rlt - 360.0
           rlt_r = rlt*pi/180.0  !convert from [deg] to [rad]
@@ -88,7 +88,4 @@ IF ( sw_debug )  write(unit=1005,FMT=*) i,ii,'sza_rad',sza_rad(ii),rlat,sda,rlt_
 IF ( sw_debug ) & 
       print "('Get_SZA [deg]    =',2F10.4)",SZA_rad(IN-IN+1)*180./pi,SZA_rad(IS-IN+1)*180./pi
  
-! explicitly disassociate the pointer
-       NULLIFY (IN,IS)
-
       END SUBROUTINE Get_SZA

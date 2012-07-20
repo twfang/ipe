@@ -13,12 +13,10 @@
       SUBROUTINE flux_tube_solver ( utime,mp,lp )
       USE module_precision
       USE module_IPE_dimension,ONLY: ISPEC,ISPEV,IPDIM
-      USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,Pvalue,ISL,IBM,IGR,IQ,IGCOLAT,IGLON
+      USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,Pvalue,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,plasma_3d,ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k,un_ms1
       USE module_input_parameters,ONLY: time_step,F107D,F107AV,DTMIN_flip  &
      &, sw_INNO,FPAS_flip,HPEQ_flip,HEPRAT_flip,COLFAC_flip,sw_IHEPLS,sw_INPLS,sw_debug,iout, start_time, sw_wind_flip, sw_depleted_flip, start_time_depleted, sw_output_fort167
-      USE module_NEUTRAL_MKS,ONLY: ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3 &
-     &, TN_k,TINF_k,un_ms1
-      USE module_PLASMA,ONLY: plasma_3d, plasma_1d !dbg20120501
+      USE module_PLASMA,ONLY: plasma_1d !dbg20120501
 !dbg20110927      USE module_heating_rate,ONLY: NHEAT_cgs
       USE module_physical_constants,ONLY: pi,zero
       USE module_IO,ONLY: PRUNIT,LUN_FLIP1,LUN_FLIP2,LUN_FLIP3,LUN_FLIP4
@@ -33,7 +31,7 @@
       REAL (KIND=real_prec) :: ltime !local time [hour]
 
 !--- for CTIPINT
-      INTEGER, POINTER :: IN,IS !.. lcv + spatial grid indices
+      INTEGER :: IN,IS !.. lcv + spatial grid indices
       INTEGER JMINX,JMAXX !.. lcv + spatial grid indices
       INTEGER CTIPDIM         !.. CTIPe array dimension, must equal to FLDIM
       DOUBLE PRECISION ::  PCO
@@ -80,8 +78,8 @@
 !d        sw_output_fort167=.FALSE.
 !d      END IF
  
-      IN => JMIN_IN(lp)
-      IS => JMAX_IS(lp)
+      IN = JMIN_IN(lp)
+      IS = JMAX_IS(lp)
 
 ! make sure that JMINX equals to 1
       JMINX   = IN - IN + 1
@@ -103,29 +101,29 @@
 
 
       
-      ZX(1:CTIPDIM)  = plasma_grid_Z(IN:IS) * M_TO_KM !convert from m to km 
+      ZX(1:CTIPDIM)  = plasma_grid_Z(IN:IS,lp) * M_TO_KM !convert from m to km 
       PCO = Pvalue(lp)  !Pvalue is a single value
-      SLX(1:CTIPDIM) = plasma_grid_3d(IN:IS,mp,ISL)
-      GLX(1:CTIPDIM) = pi/2. - plasma_grid_GL(IN:IS)  ! magnetic latitude [radians]
-      BMX(1:CTIPDIM) = plasma_grid_3d(IN:IS,mp,IBM)   !Tesla
-      GRX(1:CTIPDIM) = plasma_grid_3d(IN:IS,mp,IGR)
+      SLX(1:CTIPDIM) = plasma_grid_3d(IN:IS,lp,mp,ISL)
+      GLX(1:CTIPDIM) = pi/2. - plasma_grid_GL(IN:IS,lp)  ! magnetic latitude [radians]
+      BMX(1:CTIPDIM) = plasma_grid_3d(IN:IS,lp,mp,IBM)   !Tesla
+      GRX(1:CTIPDIM) = plasma_grid_3d(IN:IS,lp,mp,IGR)
 
-      OX(1:CTIPDIM) = ON_m3(IN:IS,mp) !(m-3)
-      HX(1:CTIPDIM) = HN_m3(IN:IS,mp)
-      N2X(1:CTIPDIM) = N2N_m3(IN:IS,mp)
-      O2X(1:CTIPDIM) = O2N_m3(IN:IS,mp)
-      HEX(1:CTIPDIM) = HE_m3(IN:IS,mp)
-      N4SX(1:CTIPDIM) = N4S_m3(IN:IS,mp)
+      OX(1:CTIPDIM) = ON_m3(IN:IS,lp,mp) !(m-3)
+      HX(1:CTIPDIM) = HN_m3(IN:IS,lp,mp)
+      N2X(1:CTIPDIM) = N2N_m3(IN:IS,lp,mp)
+      O2X(1:CTIPDIM) = O2N_m3(IN:IS,lp,mp)
+      HEX(1:CTIPDIM) = HE_m3(IN:IS,lp,mp)
+      N4SX(1:CTIPDIM) = N4S_m3(IN:IS,lp,mp)
       
       INNO = sw_INNO
 
-      TNX(1:CTIPDIM) = TN_k(IN:IS,mp)
-      TINFX(1:CTIPDIM) = TINF_k(IN:IS,mp)
+      TNX(1:CTIPDIM) = TN_k(IN:IS,lp,mp)
+      TINFX(1:CTIPDIM) = TINF_k(IN:IS,lp,mp)
 
 
 ! FLIP assumes positive SOUTHWARD along a field line
       IF ( sw_wind_flip == 1 ) THEN
-        UNX(1:CTIPDIM)  = (-1.) * Un_ms1(3,IN:IS,mp) 
+        UNX(1:CTIPDIM)  = (-1.) * Un_ms1(3,IN:IS,lp,mp) 
       ELSE IF ( sw_wind_flip == 0 ) THEN
         UNX(1:CTIPDIM)  = 0.0
       END IF
@@ -228,7 +226,7 @@ IF( sw_output_fort167 ) then
       midpoint = IN + (IS-IN)/2
       IF ( lp>=1 .AND. lp<=6 )  midpoint = midpoint - 1
 !nm20110909: calculating LT should be made FUNCTION!!!
-      ltime = REAL(utime)/3600.0 + (plasma_grid_3d(midpoint,mp,IGLON)*180.0/pi)/15.0
+      ltime = REAL(utime)/3600.0 + (plasma_grid_3d(midpoint,lp,mp,IGLON)*180.0/pi)/15.0
       IF ( ltime > 24.0 )  ltime = MOD(ltime, 24.0)
 
       WRITE(UNIT=LUN_FLIP1,FMT="('mp=',i3,' lp=',i3,' U',i3,' North, UT=',2F10.3)") mp,lp,LUN_FLIP1,REAL(UTIME)/3600., ltime
@@ -352,18 +350,18 @@ END IF
       DO ipts=1,CTIPDIM
 !dbg20120501
          DO jth=1,ISPEC
-            plasma_3d(jth,ipts+IN-1,mp) = XIONNX(jth,ipts)
+            plasma_3d(jth,ipts+IN-1,lp,mp) = XIONNX(jth,ipts)
          END DO !jth
 
 !te
-         plasma_3d(ISPEC+1,ipts+IN-1,mp) = TE_TIX(3,ipts)
+         plasma_3d(ISPEC+1,ipts+IN-1,lp,mp) = TE_TIX(3,ipts)
 !ti
          DO jth=1,2
-            plasma_3d(jth+ISPEC+1,ipts+IN-1,mp) = TE_TIX(jth,ipts)
+            plasma_3d(jth+ISPEC+1,ipts+IN-1,lp,mp) = TE_TIX(jth,ipts)
          END DO !jth
 !vi
          DO jth=1,ISPEV
-           plasma_3d(jth+ISPEC+3,ipts+IN-1,mp) = XIONVX(jth,ipts)
+           plasma_3d(jth+ISPEC+3,ipts+IN-1,lp,mp) = XIONVX(jth,ipts)
          END DO !jth
 !dbg20120501         plasma_3d(mp,lp)%N_m3( 1:ISPEC,ipts) = XIONNX(1:ISPEC,ipts)
 !dbg20120501         plasma_3d(mp,lp)%Te_k(         ipts) = TE_TIX(3      ,ipts)
@@ -379,7 +377,7 @@ END IF
 !dbg20110923        &  plasma_3d(mp,lp)%NO_m3(      ipts) =   NNOX(        ipts)
       END DO       !DO ipts=1,CTIPDIM
       ret = gptlstop  ('flux_tube_solver_loop2')
-!dbg20110927      NHEAT_cgs(IN:IS,mp) =  NHEAT(        1:CTIPDIM) 
+!dbg20110927      NHEAT_cgs(IN:IS,lp,mp) =  NHEAT(        1:CTIPDIM) 
 
       ret = gptlstart ('WRITE_EFLAG')
       PRUNIT_dum = PRUNIT
@@ -417,5 +415,4 @@ END IF
 !  STOP
 !endif
 
-      NULLIFY(IN,IS)
       END SUBROUTINE flux_tube_solver

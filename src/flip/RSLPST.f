@@ -235,7 +235,7 @@ C.... Consult file RSLPST-Algorithm.doc for detailed explanation
       INTEGER KZS,JZS,JF,J1,J2,IV,JV,L,M,KRV,JVC,JFC,IS !.. Loop control variables
       DOUBLE PRECISION F(20)   !.. Function values at time t + delt
       DOUBLE PRECISION RHS(INEQ),S(INEQ,8),N(4,FLDIM),TI(3,FLDIM)
-      DOUBLE PRECISION TISAV(2,FLDIM),DT,H
+      DOUBLE PRECISION TISAV(3,FLDIM),DT,H
 
       DO JZS=1,INEQ        !.. loop over # of equations
       DO KZS=1,4*NSPC-1    !.. loop over band width

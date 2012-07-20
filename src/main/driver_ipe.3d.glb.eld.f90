@@ -14,7 +14,7 @@
 !
       PROGRAM  test_plasma
       USE module_precision
-      USE module_input_parameters,ONLY: read_input_parameters,start_time,stop_time,time_step,HPEQ_flip,ip_freq_msis,sw_output_plasma_grid ,sw_debug, sw_perp_transport, sw_rw_sw_perp_trans
+      USE module_input_parameters,ONLY: read_input_parameters,start_time,stop_time,time_step,HPEQ_flip,ip_freq_msis,sw_output_plasma_grid ,sw_debug, sw_perp_transport
       USE module_FIELD_LINE_GRID_MKS,ONLY: init_plasma_grid
       USE module_NEUTRAL_MKS,ONLY: neutral 
       USE module_PLASMA,ONLY: plasma
@@ -68,7 +68,6 @@
       ret = gptlstart ('init_plasma_grid')
       CALL init_plasma_grid ( )
       ret = gptlstop  ('init_plasma_grid')
-
 
 IF ( sw_output_plasma_grid ) THEN
   ret = gptlstart ('output_plasma_grid')

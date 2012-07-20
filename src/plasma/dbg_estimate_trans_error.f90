@@ -14,7 +14,7 @@
       subroutine dbg_estimate_trans_error ( utime )
         USE module_precision
         USE module_IPE_dimension,ONLY:NMP,NLP,IPDIM
-        USE module_PLASMA,ONLY:plasma_3d
+        USE module_FIELD_LINE_GRID_MKS,ONLY: plasma_3d
         IMPLICIT NONE
         INTEGER (KIND=int_prec),  INTENT(IN)  :: utime    !universal time [sec]
 

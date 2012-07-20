@@ -34,7 +34,7 @@
       REAL(KIND=real_prec) :: theta130_rad
       REAL(KIND=real_prec),PARAMETER :: ht130 = 130.0E+03     !height in meter
       INTEGER (KIND=int_prec) :: j,i,mp,lp
-      INTEGER (KIND=int_prec),POINTER :: IN,IS
+      INTEGER (KIND=int_prec) :: IN,IS
 !      REAL(KIND=real_prec) :: potent_i0,potent_i1
 !      REAL(KIND=real_prec) :: LINEAR_INTERPOLATION !the intepolated value YY at (XX)
       REAL(KIND=real_prec) :: mlon90_deg !deg
@@ -83,33 +83,33 @@
 
 ! NH
 !memo: mlat90_deg=(90.-plasma_grid_3d(IN,mp)%GL*rtd)
-          IN => JMIN_IN(lp)
+          IN = JMIN_IN(lp)
           lpconj(lp) = NLP - lp + NLP + 1
       write(unit=2006,FMT='(i4,f10.4)')lpconj(lp)
-     &,(90.-plasma_grid_GL(IN)*rtd)
-          coslam_m(lpconj(lp))=COS(pi*0.5-plasma_grid_GL(IN))
+     &,(90.-plasma_grid_GL(IN,lp)*rtd)
+          coslam_m(lpconj(lp))=COS(pi*0.5-plasma_grid_GL(IN,lp))
 
       if(coslam_m(lpconj(lp))<=0.or.coslam_m(lpconj(lp))>=1.)then
         print *,'sub-get_e:NH!STOP! INVALID coslam!',mp,lp
-     &,coslam_m(lpconj(lp)),(90.-plasma_grid_GL(IN)*rtd)
+     &,coslam_m(lpconj(lp)),(90.-plasma_grid_GL(IN,lp)*rtd)
         STOP
       end if
 
-          IS => JMAX_IS(lp)
+          IS = JMAX_IS(lp)
       write(unit=2006,FMT='(i4,f10.4)') lp
-     &,(90.-plasma_grid_GL(IS)*rtd)
-          coslam_m(lp) = COS( pi*0.5-plasma_grid_GL(IS) )
+     &,(90.-plasma_grid_GL(IS,lp)*rtd)
+          coslam_m(lp) = COS( pi*0.5-plasma_grid_GL(IS,lp) )
 
       if(coslam_m(lpconj(lp))<=0.or.coslam_m(lpconj(lp))>=1.)then
         print *,'sub-get_e:SH!STOP! INVALID coslam!',mp,lp
-     &,coslam_m(lp),(90.-plasma_grid_GL(IS)*rtd)
+     &,coslam_m(lp),(90.-plasma_grid_GL(IS,lp)*rtd)
         STOP
       end if
 
 !EQ: potential difference is constant below 4.4988 < APEX=130km
-        IF ( plasma_grid_GL(IN)>theta90_rad(nmlat/2) ) THEN
+        IF ( plasma_grid_GL(IN,lp)>theta90_rad(nmlat/2) ) THEN
       if(sw_debug) print *,'check EQ',mp,lp
-     &,(90.-plasma_grid_GL(IN)*rtd)
+     &,(90.-plasma_grid_GL(IN,lp)*rtd)
      &,(90.-theta90_rad(nmlat/2)*rtd)
 
           j0(1,lp)=nmlat/2+1   !1:NH
@@ -124,11 +124,11 @@
 !d     &,theta90_rad(j-1)
 
 
-            IF (theta90_rad(j)<=plasma_grid_GL(IN).AND.
-     & plasma_grid_GL(IN)<=theta90_rad(j-1) ) THEN
+            IF (theta90_rad(j)<=plasma_grid_GL(IN,lp).AND.
+     & plasma_grid_GL(IN,lp)<=theta90_rad(j-1) ) THEN
 !dbg
        if(sw_debug)print *,'AFTER',lp,j,theta90_rad(j)
-     &,plasma_grid_GL(IN),theta90_rad(j-1)
+     &,plasma_grid_GL(IN,lp),theta90_rad(j-1)
               j0(1,lp)=j  !1:NH
               j1(1,lp)=j-1
               j0(2,lp)=nmlat-(j-1)  !2:SH
@@ -137,7 +137,7 @@
             ELSE
               IF ( j==nmlat/2 ) THEN
               print *,'sub-get_e:!STOP! could not find j!',mp,IN,j
-     &,plasma_grid_GL(IN),theta90_rad(j)
+     &,plasma_grid_GL(IN,lp),theta90_rad(j)
               STOP
               END IF 
             END IF
@@ -147,16 +147,14 @@
 !dbg20110919
       if(sw_debug)then
           print *,lp,' NH',(90.-theta90_rad(j0(1,lp))*rtd)
-     &,(90.-plasma_grid_GL(IN)*rtd)
+     &,(90.-plasma_grid_GL(IN,lp)*rtd)
      &,(90.-theta90_rad(j1(1,lp))*rtd)
           print *,lp,' SH',(90.-theta90_rad(j0(2,lp))*rtd)
-     &,(90.-plasma_grid_GL(IS)*rtd)
+     &,(90.-plasma_grid_GL(IS,lp)*rtd)
      &,(90.-theta90_rad(j1(2,lp))*rtd)
       end if !(sw_debug)then
        END IF                   ! ( plasma_grid_3d(IN,mp)%GL>theta90_rad(nmlat/2) ) THEN
 
-          !explicitly disassociate the pointers
-          NULLIFY (IN,IS)
         END DO mlat_loop90km0!: DO lp=1,NLP
 
       END IF !( j0(1,1)>0 ) THEN
@@ -223,13 +221,13 @@
 
 
         mlat_loop90km1: DO lp=1,NLP
-          IN => JMIN_IN(lp)
-          IS => JMAX_IS(lp)
+          IN = JMIN_IN(lp)
+          IS = JMAX_IS(lp)
       if(mp==1.and.lp>150.and.lp<158)
      & print"('mp',i3,' lp',i3,' IN=',i5,' latN',F6.2
      &,' IS=',i5,' latS',F6.2)",mp,lp
-     &,IN,(90.-plasma_grid_GL(IN)*rtd)
-     &,IS,(90.-plasma_grid_GL(IS)*rtd)
+     &,IN,(90.-plasma_grid_GL(IN,lp)*rtd)
+     &,IS,(90.-plasma_grid_GL(IS,lp)*rtd)
 ! computing ed1_90(mp,lp)
 !FUNC-linearinterpolation does not work! need more debugging. temporary use the average of the two potentials.
 ! linear interpolation of the potent at plasma_grid_3d(IN,mp) in mlat
@@ -315,8 +313,6 @@
      &*(pot_j1-pot_j0) /d_lam_m
 !dbg20111108     &*(-1.)*sinI_m(ihem)  !E_m_lambda (5.10)
 
-          !explicitly disassociate the pointers
-          NULLIFY (IN,IS)
         END DO mlat_loop90km1 !: DO lp=1,NLP
       END DO mlon_loop90km0     !: DO mp=1,nmp
 

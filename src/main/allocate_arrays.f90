@@ -13,17 +13,13 @@
 !
       SUBROUTINE allocate_arrays ( switch )
       USE module_precision
-      USE module_IPE_dimension,ONLY: NPTS2D,NMP,NLP,ISTOT
+      USE module_IPE_dimension,ONLY: NMP,NLP,ISTOT
       USE module_FIELD_LINE_GRID_MKS,ONLY: &
-     & plasma_grid_3d &
-     &,apexD ,apexE &
-     &,Be3, Pvalue, JMIN_IN, JMAX_IS &
+     & plasma_grid_3d,plasma_3d &
+     &,apexD ,apexE, VEXBup &
+     &,Be3, Pvalue, JMIN_IN, JMAX_IS,hrate_cgs_save &
      &,mlon_rad, plasma_grid_Z, plasma_grid_GL
   
-!t      USE module_NEUTRAL_MKS,ONLY: 
-!dbg20120501      USE module_PLASMA,ONLY: plasma_3d, plasma_3d4n,VEXBup
-      USE module_PLASMA,ONLY: plasma_3d, VEXBup
-      USE module_heating_rate,ONLY: hrate_cgs_save
       USE module_input_parameters,ONLY: sw_neutral_heating_flip
       IMPLICIT NONE
       INTEGER (KIND=int_prec),INTENT(IN) :: switch
@@ -34,21 +30,21 @@ IF ( switch==0 ) THEN
 print *,'ALLOCATing ARRAYS'
       ALLOCATE ( &
 !---field line grid
-     &    plasma_grid_3d(NPTS2D, 1:NMP,6) &
-     &,   plasma_grid_Z( NPTS2D             ) &
-     &,   plasma_grid_GL(NPTS2D             ) &
+!    &    plasma_grid_3d(NPTS2D, 1:NMP,6) &
+!    &    plasma_grid_Z( NPTS2D             ) &
+!    &,   plasma_grid_GL(NPTS2D             ) &
 !---
-     &,        apexD(3:3,NPTS2D, 1:NMP,3) &
-     &,        apexE(2,NPTS2D,NMP,3) &
+!    &,        apexD(3:3,NPTS2D, 1:NMP,3) &
+!    &,        apexE(2,NPTS2D,NMP,3) &
 !---
-     &,          Be3(2, 1:NMP,NLP) &
-     &,       Pvalue(             NLP) &
-     &,      JMIN_IN(             NLP) &
-     &,      JMAX_IS(             NLP) &
+     &           Be3(2,1:NMP,NLP) &
+     &,       Pvalue(        NLP) &
+     &,      JMIN_IN(        NLP) &
+     &,      JMAX_IS(        NLP) &
 !---
      &,     mlon_rad(  NMP+1    ) &
 !---plasma
-     &,    plasma_3d(ISTOT,NPTS2D,1:NMP) &
+!    &,    plasma_3d(ISTOT,NPTS2D,1:NMP) &
 !dbg20120501     &,    plasma_3d(   1:NMP,NLP) &
 !dbg20120501     &,    plasma_3d4n( NPTS2D, 1:NMP) &
      &,    VEXBup(      1:NMP,NLP) &
@@ -57,26 +53,9 @@ print *,'ALLOCATing ARRAYS'
       IF ( stat_alloc==0 ) THEN
         print *,'ALLOCATion SUCCESSFUL!!!'
       ELSE !stat_alloc/=0
-        print *, ALLOCATED( plasma_grid_3d )
         print *,switch,"!STOP! ALLOCATION FAILD!:",stat_alloc
         STOP
       END IF
-
-
-!---neutral
-      IF ( sw_neutral_heating_flip==1 ) THEN
-        ALLOCATE ( & 
-     &   hrate_cgs_save(7,NPTS2D) &
-     &,  STAT=stat_alloc         )
-        IF ( stat_alloc==0 ) THEN
-          print *,'ALLOCATion SUCCESSFUL!!! NHEAT'
-        ELSE !stat_alloc/=0
-          print *, ALLOCATED( hrate_cgs_save )
-          print *,switch,"!STOP! ALLOCATION FAILD!:NHEAT",stat_alloc
-          STOP
-        END IF
-      END IF !( sw_neutral_heating_flip==1 )
-
 
 ! (1) DEALLOCATE arrays
 ELSE IF ( switch==1 ) THEN

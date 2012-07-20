@@ -1,6 +1,6 @@
 #SHELL=/bin/bash
 all: $(OBJ)
-	$(FC) -c $(FFLAGS) $(OBJ)  $(LFLAGS)
+
 # Optimized compilations
 xyz.o: xyz.f
 	$(FC) -c $(FFLAGS) xyz.f

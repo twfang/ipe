@@ -25,7 +25,7 @@
       INTEGER (KIND=int_prec), INTENT(IN) :: mp  !mag-lon index
       INTEGER (KIND=int_prec), INTENT(IN) :: lp  !mag-lat index
 !      REAL(KIND=real_prec), INTENT(IN) :: DT  ! time step [second]      
-      REAL(KIND=real_prec),POINTER  :: phi_t1  !magnetic longitude,phi at T1
+      REAL(KIND=real_prec) :: phi_t1  !magnetic longitude,phi at T1
       REAL(KIND=real_prec) :: theta_t1(2)!magnetic latitude,theta at T1
 ! OUTPUT
       REAL(KIND=real_prec), INTENT(OUT) :: phi_t0(2)!magnetic longitude,phi[rad] at T0
@@ -45,9 +45,9 @@
       INTEGER (KIND=int_prec) :: midpoint
 !---------------
 !dbg
-phi_t1 => mlon_rad(mp)
-theta_t1(1) = plasma_grid_GL( JMIN_IN(lp) ) !NH
-theta_t1(2) = plasma_grid_GL( JMAX_IS(lp) ) !SH
+phi_t1 = mlon_rad(mp)
+theta_t1(1) = plasma_grid_GL( JMIN_IN(lp),lp ) !NH
+theta_t1(2) = plasma_grid_GL( JMAX_IS(lp),lp ) !SH
 
 
 !NOTE: electric fields do not have to be equal at both ends of the flux tubes
@@ -122,7 +122,7 @@ if(lp==130) then
 ihem=1 !only
 if(sw_debug) print *,mlon_rad(mp)
 midpoint = JMIN_IN(lp) + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
-r_apex = earth_radius + plasma_grid_Z(midpoint) ![m]
+r_apex = earth_radius + plasma_grid_Z(midpoint,lp) ![m]
 
 sintheta=SIN( theta_t1(ihem) )
 sin2theta = sintheta*sintheta 
@@ -136,17 +136,15 @@ if(sw_debug) print "('sub-St:T0: phi=',F12.6,' theta=',F12.6,' r=',E13.5)",phi_t
 if(sw_debug) print "(4E12.4)", (theta_t1(ihem)-theta_t0(ihem))*rtd, (r_apex_dipole-r0_apex), (( v_e2magsouth * time_step) / r) , ( v_e2magsouth * time_step)
 end if
 
-NULLIFY(phi_t1)
       END SUBROUTINE stepback_mag
 
       SUBROUTINE stepback_mag_R (utime,mp,lp &
      &, phi_t0 , theta_t0, r0_apex )
       USE module_precision
       USE module_eldyn,ONLY: Ed1_90,Ed2_90,lpconj
-      USE module_FIELD_LINE_GRID_MKS,ONLY: Be3,mlon_rad,plasma_grid_Z,JMIN_IN,JMAX_IS,ht90,apexE,plasma_grid_GL,plasma_grid_3d,east,north,up,ISL,IBM,IGR,IQ,IGCOLAT,IGLON
+      USE module_FIELD_LINE_GRID_MKS,ONLY: Be3,mlon_rad,plasma_grid_Z,JMIN_IN,JMAX_IS,ht90,apexE,plasma_grid_GL,plasma_grid_3d,east,north,up,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,VEXBup
       USE module_physical_constants,ONLY: earth_radius,rtd,pi
       USE module_input_parameters,ONLY: time_step,sw_exb_up,sw_debug,lpstrt,lpstop,mpstrt,mpstop,start_time,lpmin_perp_trans
-      USE module_plasma,ONLY: VEXBup
       IMPLICIT NONE
 ! INPUT
       INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]
@@ -157,7 +155,7 @@ NULLIFY(phi_t1)
       REAL(KIND=real_prec), INTENT(OUT) :: theta_t0(2) !magnetic latitude,theta[rad] at T0
       REAL(KIND=real_prec), INTENT(OUT) :: r0_apex ![meter]
 ! local
-      REAL(KIND=real_prec),POINTER  :: phi_t1  !magnetic longitude,phi at T1
+      REAL(KIND=real_prec) :: phi_t1  !magnetic longitude,phi at T1
       REAL(KIND=real_prec) :: theta_t1(2)!magnetic latitude,theta at T1
       INTEGER (KIND=int_prec) :: midpoint, midpoint_min,midpoint_max
       REAL(KIND=real_prec) :: v_e(2)   !1:ed2/be3 (4.18) ;2: -ed1/be3 (4.19)
@@ -166,15 +164,15 @@ NULLIFY(phi_t1)
       INTEGER (KIND=int_prec) :: lp0,ift
       REAL(KIND=real_prec) :: GLON_deg, LT_SEC
 !
-      phi_t1 => mlon_rad(mp)
-      theta_t1(1) = plasma_grid_GL( JMIN_IN(lp) ) !NH
-      theta_t1(2) = plasma_grid_GL( JMAX_IS(lp) ) !SH
+      phi_t1 = mlon_rad(mp)
+      theta_t1(1) = plasma_grid_GL( JMIN_IN(lp),lp ) !NH
+      theta_t1(2) = plasma_grid_GL( JMAX_IS(lp),lp ) !SH
 
 
       r = earth_radius + ht90 ![m]
       midpoint = JMIN_IN(lp) + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
-      r_apex = earth_radius + plasma_grid_Z(midpoint) ![m]
-if(sw_debug) print *,'sub-StR:',mp,lp,r,r_apex,plasma_grid_Z(midpoint)
+      r_apex = earth_radius + plasma_grid_Z(midpoint,lp) ![m]
+if(sw_debug) print *,'sub-StR:',mp,lp,r,r_apex,plasma_grid_Z(midpoint,lp)
 
 !note: for the moment, Ed1/B is calculated only in NH, assuming that the flux tube is moving with the same velocity between N/SH.
       which_hemisphere: DO ihem=1,1 !ihem_max
@@ -199,7 +197,7 @@ if(sw_debug) print *,'sub-StR:',mp,lp,r,r_apex,plasma_grid_Z(midpoint)
 if(sw_debug)&
 & print *,'sub-StR:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]', Ed1_90(mp,lp0)*1.0E+3,' be3[tesla]',Be3(ihem,mp,lp) 
 
-        VEXBup(mp,lp) = (v_e(1) * apexE(1,midpoint,mp,up))    + (v_e(2) * apexE(2,midpoint,mp,up))
+        VEXBup(mp,lp) = (v_e(1) * apexE(1,midpoint,lp,mp,up))    + (v_e(2) * apexE(2,midpoint,lp,mp,up))
 
 !dbg20120301:temp solution: make sure flux tube does not go beyond the sim region...
 if ( lp==lpstrt.or.lp==lpstop ) then
@@ -208,7 +206,7 @@ endif
 
 if(sw_debug)&
 & print *,'sub-StR:' &
-&, v_e(1),apexE(1,midpoint,mp,up),v_e(2),apexE(2,midpoint,mp,up)
+&, v_e(1),apexE(1,midpoint,lp,mp,up),v_e(2),apexE(2,midpoint,lp,mp,up)
 
         ELSE IF ( sw_exb_up==2 ) THEN 
 
@@ -219,7 +217,7 @@ if(sw_debug)&
 !(3)  SUPIM empirical model: 
 !note: becomes zero at R=4000km
 
-          GLON_deg = plasma_grid_3d(midpoint,mp,IGLON)*180./pi
+          GLON_deg = plasma_grid_3d(midpoint,lp,mp,IGLON)*180./pi
           LT_SEC = utime + GLON_deg/15.*3600.
           IF ( LT_SEC>=86400.)  LT_SEC=LT_SEC-86400.
           IF ( LT_SEC<     0.)  LT_SEC=LT_SEC+86400.
@@ -247,12 +245,12 @@ if(sw_debug)&
 !dbbg20120301: temporary solution to keep flux tube within the sim region, instead of stopping
 midpoint_min = JMIN_IN(lpstop) + ( JMAX_IS(lpstop) - JMIN_IN(lpstop) )/2
 midpoint_max = JMIN_IN(lpstrt)  + ( JMAX_IS(lpstrt)  - JMIN_IN(lpstrt) )/2
-if ( r0_apex<(plasma_grid_Z(midpoint_min)+earth_radius) ) then
-   print *,'!r0_apex too small!',r0_apex,VEXBup(mp,lp),mp,lp, (plasma_grid_Z(midpoint_min)+earth_radius)
-   r0_apex = plasma_grid_Z(midpoint_min)+earth_radius
-else if ( r0_apex>(plasma_grid_Z(midpoint_max)+earth_radius) ) then
-   print *,'!r0_apex too big!',r0_apex, VEXBup(mp,lp),mp,lp, (plasma_grid_Z(midpoint_max)+earth_radius)
-   r0_apex = plasma_grid_Z(midpoint_max)+earth_radius
+if ( r0_apex<(plasma_grid_Z(midpoint_min,lpstop)+earth_radius) ) then
+   print *,'!r0_apex too small!',r0_apex,VEXBup(mp,lp),mp,lp, (plasma_grid_Z(midpoint_min,lpstop)+earth_radius)
+   r0_apex = plasma_grid_Z(midpoint_min,lpstop)+earth_radius
+else if ( r0_apex>(plasma_grid_Z(midpoint_max,lpstrt)+earth_radius) ) then
+   print *,'!r0_apex too big!',r0_apex, VEXBup(mp,lp),mp,lp, (plasma_grid_Z(midpoint_max,lpstrt)+earth_radius)
+   r0_apex = plasma_grid_Z(midpoint_max,lpstrt)+earth_radius
 end if
 !dbg20120301:
         sin2theta = r/r0_apex
@@ -273,9 +271,9 @@ END DO      which_hemisphere !: DO ihem=1,ihem_max
 
 
 ihem=1 !only
-if(sw_debug) print *,mp,lp, 'Z(mp,lp)',plasma_grid_Z(midpoint), (plasma_grid_Z(midpoint)+earth_radius)
-if(sw_debug) print *, 'mlatN(mp,lp)',90.-plasma_grid_GL( JMIN_IN(lp) )*180./pi !NH
-sin2theta = r/( earth_radius+plasma_grid_Z(midpoint) )
+if(sw_debug) print *,mp,lp, 'Z(mp,lp)',plasma_grid_Z(midpoint,lp), (plasma_grid_Z(midpoint,lp)+earth_radius)
+if(sw_debug) print *, 'mlatN(mp,lp)',90.-plasma_grid_GL( JMIN_IN(lp),lp )*180./pi !NH
+sin2theta = r/( earth_radius+plasma_grid_Z(midpoint,lp) )
 sintheta = SQRT( sin2theta )
 theta_t1(ihem)    = ASIN ( sintheta )
 if(sw_debug) print *,'DIPOLE',sin2theta,sintheta,theta_t1(ihem),' mlat NH[deg]', (90.-  theta_t1(ihem)*180./pi)

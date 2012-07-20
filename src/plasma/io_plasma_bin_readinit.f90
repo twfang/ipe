@@ -15,8 +15,8 @@
       SUBROUTINE io_plasma_bin_readinit ( utime )
       USE module_precision
       USE module_IO,ONLY: LUN_PLASMA1,LUN_PLASMA2,lun_min1,lun_min2,lun_ut,lun_ut2,record_number_plasma,lun_max1
-      USE module_PLASMA,ONLY: plasma_3d,plasma_3d4n,VEXBup
-      USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS, plasma_grid_3d,ISL,IBM,IGR,IQ,IGCOLAT,IGLON
+      USE module_PLASMA,ONLY: plasma_3d4n
+      USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS, plasma_grid_3d,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,plasma_3d
       USE module_IPE_dimension,ONLY: NPTS2D,ISPEC,ISPEV,NLP,IPDIM,ISPET,NMP
       USE module_input_parameters,ONLY:sw_debug,record_number_plasma_start
       USE module_physical_constants,ONLY:zero,pi
@@ -27,7 +27,7 @@
       REAL (KIND=real_prec),DIMENSION(:,:), ALLOCATABLE :: dumm  !(NPTS2D,NMP)
       INTEGER (KIND=int_prec) :: stat_alloc
       INTEGER (KIND=int_prec) :: jth,mp,lp,npts
-      INTEGER (KIND=int_prec),pointer :: lun,in,is
+      INTEGER (KIND=int_prec) :: lun,in,is
       INTEGER (KIND=int_prec) :: n_read,n_read_min, utime_dum,record_number_plasma_dum
       INTEGER (KIND=int_prec),PARAMETER :: n_max=10000
 !20120215
@@ -88,9 +88,9 @@ print *,'start_time=',utime
   midpoint = JMIN_IN(lpj) + ( JMAX_IS(lpj) - JMIN_IN(lpj) )/2
 !calculate LT(mp) [hr] for utime @ midpoint
   do  mp=1,NMP
-     ltime(mp)=REAL(utime)/3600. + plasma_grid_3d(midpoint,mp,IGLON)*180.0/pi/15.0
+     ltime(mp)=REAL(utime)/3600. + plasma_grid_3d(midpoint,lpj,mp,IGLON)*180.0/pi/15.0
      IF ( ltime(mp) > 24.0 )  ltime(mp) = MOD(ltime(mp), 24.0)
-print *,mp,'ltime',ltime(mp),' glon',(plasma_grid_3d(midpoint,mp,IGLON)*180.0/pi)
+print *,mp,'ltime',ltime(mp),' glon',(plasma_grid_3d(midpoint,lpj,mp,IGLON)*180.0/pi)
   end do
 
 !UT
@@ -110,7 +110,7 @@ print *,mp,'ltime',ltime(mp),' glon',(plasma_grid_3d(midpoint,mp,IGLON)*180.0/pi
 
 !print *,'goto the next part! utime_dum=',utime_dum,' utime_min=', utime_min
 !utime_dum
-     ltime_mp1=REAL(utime_dum)/3600. + plasma_grid_3d(midpoint,mp1,IGLON)*180.0/pi/15.0
+     ltime_mp1=REAL(utime_dum)/3600. + plasma_grid_3d(midpoint,lpj,mp1,IGLON)*180.0/pi/15.0
      IF ( ltime_mp1 > 24.0 )  ltime_mp1 = MOD(ltime_mp1, 24.0)
 !print *, 'ltime_mp1', ltime_mp1
 
@@ -120,7 +120,7 @@ print *,mp,'ltime',ltime(mp),' glon',(plasma_grid_3d(midpoint,mp,IGLON)*180.0/pi
 print *,'ltmp1-dlt',(ltime_mp1-dlt),' lt_mp',ltime(mp),' ltmp1+dlt',(ltime_mp1+dlt) 
          if ( record_number(mp)==0 ) then
            record_number(mp)=record_number_plasma_dum
-           print *,' mp',mp,' glon=',plasma_grid_3d(midpoint,1,IGLON)*180.0/pi
+           print *,' mp',mp,' glon=',plasma_grid_3d(midpoint,lpj,1,IGLON)*180.0/pi
            flag(mp)=1
            CYCLE read_loop0
 !note: i hope that more than one record_number is matching,,,but error check just in case,,, 
@@ -150,7 +150,7 @@ print *,'record_number_min',record_number_min
 flag2d(1:ISPEC+3 , 1:NMP)=0
 j_loop2: DO jth=1,(ISPEC+3)  !t  +ISPEV)
 
-LUN => LUN_PLASMA2(jth-1+lun_min2)
+LUN = LUN_PLASMA2(jth-1+lun_min2)
 if(sw_debug) print *,'jth=',jth,' LUN2=',LUN
 
 read_loop: DO n_read=n_read_min1, n_read_max
@@ -195,8 +195,8 @@ if (jth==ISPEC+3) print *,'!dbg! read dummy finished jth',jth
       flag2d(jth,mp)=1
       print *,'assigning mp1 values at mp=',mp
       lp_loop2:do lp=1,NLP
-         IN=>JMIN_IN(lp)
-         IS=>JMAX_IS(lp)
+         IN=JMIN_IN(lp)
+         IS=JMAX_IS(lp)
          npts = IS-IN+1 
 
          IF ( jth<=ISPEC ) THEN
@@ -210,7 +210,6 @@ if (jth==ISPEC+3) print *,'!dbg! read dummy finished jth',jth
          END IF
 
 !print *,'IN'
-         IF ( ASSOCIATED(IN) ) NULLIFY(in,is)
       end do lp_loop2!lp
 !end do mp_loop2!mp
 
@@ -218,7 +217,6 @@ if (jth==ISPEC+3) print *,'!dbg! read dummy finished jth',jth
 
 print *,'closing lun',LUN
 CLOSE(LUN)
-IF ( ASSOCIATED(lun) ) NULLIFY(lun)
 END DO j_loop2!jth
 
 !END IF !( switch==1 ) THEN

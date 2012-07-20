@@ -64,7 +64,7 @@ INTEGER(KIND=int_prec), PARAMETER :: NLP    =   170
         INTEGER (KIND=int_prec) :: i, mp,lp
         REAL (KIND=real_prec) :: sinI
         INTEGER (KIND=int_prec), parameter :: sw_sinI=0  !0:flip; 1:APEX
-        INTEGER (KIND=int_prec), POINTER :: in,is
+        INTEGER (KIND=int_prec) :: in,is
         REAL(KIND=real_prec8), DIMENSION(NPTS2D,NMP) ::  r_meter_all     !.. distance from the center of the Earth[meter]
 !---
 
@@ -84,8 +84,8 @@ print *,"Z_meter calculation completed"
 !NOTE: in FLIP, PCO is only used in setting up the rough plasmasphere H+ initial profiles (See PROFIN). It does not have to be accurate.
           apex_latitude_height_loop:   DO lp = 1,NLP
 
-            IN => JMIN_IN(mp,lp)
-            IS => JMAX_IS(mp,lp)
+            IN = JMIN_IN(mp,lp)
+            IS = JMAX_IS(mp,lp)
 
 !nm20120112:            CALL Get_Pvalue_Dipole ( r_meter_all(IN,mp), GL_rad(IN,mp), Pvalue(mp,lp) )
 
@@ -135,9 +135,6 @@ END IF !( sw_debug ) THEN
 !if( sw_debug .and. mp==1 .and. lp>=lpstrt .and. lp<=lpstop ) then
 !print *,'lp=',lp,' in=',in,' is=',is,(is-in+1),(90.-gl_rad(in,mp)*180./pi)
 !endif !(mp==1) then
-
-!explicitly disassociate the pointers
-         NULLIFY (IN,IS)
 
        END DO apex_latitude_height_loop   !: DO lp = 1,NLP
      END DO apex_longitude_loop         !: DO mp = 1,NMP 

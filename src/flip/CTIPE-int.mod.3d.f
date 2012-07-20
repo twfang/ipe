@@ -675,14 +675,14 @@ c      ENDIF
 
       !---------------------- DEBUG WRITE -----------------------------------
       !.. Debug write if DEBUG=1
-      IF ( sw_DEBUG_flip==1 ) WRITE(172,88)    !nm20110923
+      IF ( sw_DEBUG_flip==1 ) WRITE(172,88)    !nm20110923
  88   FORMAT('  J     ALT    TE     TI       O+        H+       He+'
      >  ,8X,'N+        NO+       O2+       NE      UVOX+    PEOX+'
      >  ,6X,'UVN2+      PEN2+     EHT       VO+       VH+      VHe+'
      >  ,7X,'VN+        NO       N2D       N4S      O1D       O1S'
      >  ,6X,'NHEAT')
       DO J=JMIN,JMAX
-        IF(sw_DEBUG_flip.EQ.1)    !nm20110923
+        IF(sw_DEBUG_flip.EQ.1)    !nm20110923
      >   WRITE(172,'(I5,I7,2F7.1,1P,29E10.2)') 
      >   J,NINT(Z(J)),TI(3,J),TI(2,J),XIONN(1,J),XIONN(2,J),XIONN(3,J),
      >   XIONN(4,J),XIONN(5,J),XIONN(6,J),EDEN(J),EUVION(1,1,J),
@@ -694,11 +694,10 @@ c      ENDIF
 !nm20110715: for diagnostics only
 !.. 2-stream photoelectron routine called to print fluxes
       ret = gptlstart ('CTIPINT PE2S')
-      IF(sw_DEBUG_flip.EQ.1)  !nm20110923
+      IF(sw_DEBUG_flip.EQ.1)  !nm20110923
      &  CALL PE2S(F107,F107A,N,TI,FPAS,300.0,EDEN,UVFAC,COLUM
      &    ,IHEPLS,INPLS,INNO)
       ret = gptlstop  ('CTIPINT PE2S')
-
 
       RETURN
       END

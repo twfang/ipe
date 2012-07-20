@@ -10,12 +10,12 @@
 ! PHONE  : 303-497-4857
 ! ADDRESS: 325 Broadway, Boulder, CO 80305
 !--------------------------------------------  
-      SUBROUTINE Get_sinI ( sw_sinI, sinI, GL_radi, D3 )
+      SUBROUTINE Get_sinI ( sw_sinI, sinI, GL_radi, D31,D32,D33 )
         USE module_precision
         IMPLICIT NONE
         INTEGER (KIND=int_prec),INTENT(IN)  :: sw_sinI
         REAL (KIND=real_prec),INTENT(IN)   :: GL_radi
-        REAL (KIND=real_prec),INTENT(IN)   :: D3(3)
+        REAL (KIND=real_prec),INTENT(IN)   :: D31,D32,D33
         REAL (KIND=real_prec),INTENT(OUT)  :: sinI
 !---local variables---
         REAL (KIND=real_prec) :: CHX
@@ -42,10 +42,9 @@ ELSE IF ( sw_sinI == 1 ) THEN
 !!!DOT_PRODUCT( D3(1:3,i,mp), Vn_ms1(1:3,i) ) / SQRT(  DOT_PRODUCT( D3(1:3,i,mp), D3(1:3,i,mp) )  )
 !---
 
-        dotprod = D3(1)*D3(1) + D3(2)*D3(2) + D3(3)*D3(3)  !DOT_PRODUCT( D3,D3 )
+        dotprod = D31*D31 + D32*D32 + D33*D33  !DOT_PRODUCT( D3,D3 )
         IF ( dotprod > 0.0 ) THEN
-        sinI = D3(3) / &
-     & SQRT(  dotprod   )
+          sinI = D33 / SQRT( dotprod )
         ELSE
           sinI = 0.0
         END IF

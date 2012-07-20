@@ -14,7 +14,7 @@
       subroutine read_vexb ( utime,lp,mp )
         USE module_precision
         USE module_IPE_dimension,ONLY:NMP,NLP,IPDIM
-        USE module_PLASMA,ONLY:VEXBup
+        USE module_FIELD_LINE_GRID_MKS,ONLY: VEXBup
         USE module_input_parameters,ONLY:start_time,stop_time
         USE module_IO, ONLY:filename,FORM_dum,STATUS_dum,luntmp1,luntmp2
         IMPLICIT NONE

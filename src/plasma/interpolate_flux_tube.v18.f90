@@ -20,9 +20,9 @@
 &, r0_apex &
 &,mp_t0,lp_t0 )
       USE module_precision
-      USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,ht90,ISL,IBM,IGR,IQ,IGCOLAT,IGLON
+      USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,ht90,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,plasma_3d
       USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,sw_ksi
-      USE module_plasma,ONLY:plasma_3d,plasma_1d !dbg20120501 n0_1d   !d, n0_2dbg
+      USE module_plasma,ONLY:plasma_1d !dbg20120501 n0_1d   !d, n0_2dbg
       USE module_IPE_dimension,ONLY: ISPEC,ISPET,IPDIM
       USE module_physical_constants,ONLY: earth_radius,pi,zero
       IMPLICIT NONE
@@ -111,8 +111,8 @@ if(sw_debug)  print *,'ip=',ip,' ip1d=',ip1d
 !check the foot point values
 !ispecial=2: interpolation at/below IN
 
-
-      IF ( plasma_grid_3d( JMIN_IN(lp0) , mp0 ,IQ) < plasma_grid_3d(ip ,mp,IQ) ) THEN
+! Will this be in the halo? JFM
+      IF ( plasma_grid_3d( JMIN_IN(lp0) , lp0,mp0,IQ) < plasma_grid_3d(ip ,lp,mp,IQ) ) THEN
        ispecial=2
        isouth=JMIN_IN(lp0)+1  !not used!!!
        inorth=JMIN_IN(lp0)
@@ -120,12 +120,12 @@ if(sw_debug)  print *,'ip=',ip,' ip1d=',ip1d
 
 
 if ( sw_debug.and.lp0==149 .and. ip1d>=63 ) then 
-print *,'!dbg20120508! ispecial=',ispecial,ip,i,JMAX_IS(lp0),mp0,lp0, plasma_grid_3d(i,mp0,IQ) ,plasma_grid_3d(ip,mp,IQ),mp,lp
+print *,'!dbg20120508! ispecial=',ispecial,ip,i,JMAX_IS(lp0),lp0,mp0, plasma_grid_3d(i,lp0,mp0,IQ) ,plasma_grid_3d(ip,lp,mp,IQ),lp,mp
 endif
 
 
 !ispecial=1: interpolation at/below IS
-      ELSE IF ( plasma_grid_3d( JMAX_IS(lp0) , mp0 ,IQ) >= plasma_grid_3d(ip,mp,IQ) ) THEN
+      ELSE IF ( plasma_grid_3d( JMAX_IS(lp0) , lp0,mp0,IQ) >= plasma_grid_3d(ip,lp,mp,IQ) ) THEN
        ispecial=1
        isouth=JMAX_IS(lp0)   !not used!!!
        inorth=JMAX_IS(lp0)-1
@@ -134,14 +134,14 @@ endif
 
 
 if ( sw_debug.and.lp0==149 .and. ip1d>=63 ) then 
-print *,'!dbg20120508! ispecial=',ispecial,ip,i,JMAX_IS(lp0),mp0,lp0, plasma_grid_3d(i,mp0,IQ) ,plasma_grid_3d(ip,mp,IQ),mp,lp
+print *,'!dbg20120508! ispecial=',ispecial,ip,i,JMAX_IS(lp0),lp0,mp0, plasma_grid_3d(i,lp0,mp0,IQ) ,plasma_grid_3d(ip,lp,mp,IQ),lp,mp
 endif
 
 
 !dbg20120504!!???why this output never appear on ipeXXX.log??? 
 !???why there is never ispecial=1???
 if(sw_debug.and.lp==149)then
-print *,'!dbg20120504 Q=',plasma_grid_3d( JMAX_IS(lp0) , mp0 ,IQ) , plasma_grid_3d(ip,mp,IQ) ,JMAX_IS(lp0) , lp0,mp0, ip,ip1d,lp,mp,isouth,inorth,i1d
+print *,'!dbg20120504 Q=',plasma_grid_3d( JMAX_IS(lp0) , lp0,mp0,IQ) , plasma_grid_3d(ip,lp,mp,IQ) ,JMAX_IS(lp0) , lp0,mp0, ip,ip1d,lp,mp,isouth,inorth,i1d
 endif
 
       ELSE
@@ -149,7 +149,7 @@ endif
 !search for north & south grid point of i1
         flux_tube_loopT0: DO i=JMIN_IN(lp0),JMAX_IS(lp0)
 
-         IF ( plasma_grid_3d(i,mp0,IQ) < plasma_grid_3d(ip,mp,IQ) ) THEN
+         IF ( plasma_grid_3d(i,lp0,mp0,IQ) < plasma_grid_3d(ip,lp,mp,IQ) ) THEN
 ! ispecial=0: normal interpolation
            ispecial = 0
            inorth = i-1
@@ -157,16 +157,16 @@ endif
            i1d   = i-JMIN_IN(lp0)+1
          
 ! factor2 IS NOT equal for all mp
-           factor2=(plasma_grid_3d(ip,mp,IQ)-plasma_grid_3d(isouth,mp0,IQ))/(plasma_grid_3d(inorth,mp0,IQ)-plasma_grid_3d(isouth,mp0,IQ))
+           factor2=(plasma_grid_3d(ip,lp,mp,IQ)-plasma_grid_3d(isouth,lp0,mp0,IQ))/(plasma_grid_3d(inorth,lp0,mp0,IQ)-plasma_grid_3d(isouth,lp0,mp0,IQ))
 if ( factor2<0.0.or.factor2>1.0) then
-WRITE(6,*) 'sub-Intrp:!STOP! invalid factor2',factor2 ,ip,mp,lp,isouth,mp0,lp0
+WRITE(6,*) 'sub-Intrp:!STOP! invalid factor2',factor2 ,ip,lp,mp,isouth,lp0,mp0
 STOP
 endif       
 
 
 
 if ( sw_debug.and.lp0==149 .and. ip1d>=63 ) then 
-print *,'!dbg20120508!',ip,factor2,i,JMAX_IS(lp0),mp0,lp0, plasma_grid_3d(i,mp0,IQ) ,plasma_grid_3d(ip,mp,IQ),mp,lp
+print *,'!dbg20120508!',ip,factor2,i,JMAX_IS(lp0),lp0,mp0, plasma_grid_3d(i,lp0,mp0,IQ) ,plasma_grid_3d(ip,lp,mp,IQ),lp,mp
 endif
 
            EXIT flux_tube_loopT0
@@ -192,7 +192,7 @@ jth_loop0:         DO jth=1,iT !=TSP+3
 
 IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop0
 !dbg20120501            IF(jth<=TSP) THEN
-               Qint(jth, ip1d,imp,ilp) = (factor2*(plasma_3d(jth,inorth,mp0) - plasma_3d(jth,isouth,mp0))) + plasma_3d(jth,isouth,mp0)
+               Qint(jth, ip1d,imp,ilp) = (factor2*(plasma_3d(jth,inorth,lp0,mp0) - plasma_3d(jth,isouth,lp0,mp0))) + plasma_3d(jth,isouth,lp0,mp0)
 
 !T TSP+1:TSP+3=iT
 !dbg20120501            ELSE IF(jth==TSP+1) THEN
@@ -211,26 +211,26 @@ IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop0
 
 
                WRITE(6,*)'sub-Intrp:!STOP! INVALID density',Qint(jth, ip1d,imp,ilp),factor2 &
-                    &,plasma_3d(jth,inorth,mp0)   & !dbg20120501
-                    &,plasma_3d(jth,isouth,mp0)   & !dbg20120501
+                    &,plasma_3d(jth,inorth,lp0,mp0)   & !dbg20120501
+                    &,plasma_3d(jth,isouth,lp0,mp0)   & !dbg20120501
                     &,jth, ip1d,imp,ilp,mp0,lp0,i1d,inorth,isouth
                STOP
             endif
          END DO jth_loop0 !jth=1,iT !=TSP+3
 
 !B iT+1=iB: B magnetic field intensity
-         Qint(iB, ip1d,imp,ilp) = (factor2*(plasma_grid_3d(inorth,mp0,IBM) - plasma_grid_3d(isouth,mp0,IBM))) + plasma_grid_3d(isouth,mp0,IBM)
+         Qint(iB, ip1d,imp,ilp) = (factor2*(plasma_grid_3d(inorth,lp0,mp0,IBM) - plasma_grid_3d(isouth,lp0,mp0,IBM))) + plasma_grid_3d(isouth,lp0,mp0,IBM)
 
 !NOTE: R should be the same for all mp!!!
 !R iB+1=iR: R = RE + Z
-         Qint(iR, ip1d,imp,ilp) =( (factor2*(plasma_grid_Z(inorth) - plasma_grid_Z(isouth))) + plasma_grid_Z(isouth) ) +earth_radius
+         Qint(iR, ip1d,imp,ilp) =( (factor2*(plasma_grid_Z(inorth,lp0) - plasma_grid_Z(isouth,lp0))) + plasma_grid_Z(isouth,lp0) ) +earth_radius
 
 if ( sw_debug.and.lp0==149.and.ip1d>=63) then
 print *,'!dbg20120504 R=' &
 , Qint(iR, ip1d,imp,ilp) &
-, (factor2*(plasma_grid_Z(inorth) - plasma_grid_Z(isouth))) &
-&, plasma_grid_Z(inorth) &
-&, plasma_grid_Z(isouth) &
+, (factor2*(plasma_grid_Z(inorth,lp0) - plasma_grid_Z(isouth,lp0))) &
+&, plasma_grid_Z(inorth,lp0) &
+&, plasma_grid_Z(isouth,lp0) &
 &, factor2 &
 &,lp0,ip1d,inorth,isouth
 
@@ -246,7 +246,7 @@ endif
 
         jth_loop1: DO jth=1,iT
 IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop1
-          Qint(jth   ,ip1d,imp,ilp) = plasma_3d(jth,isouth,mp0)
+          Qint(jth   ,ip1d,imp,ilp) = plasma_3d(jth,isouth,lp0,mp0)
         END DO jth_loop1 !jth
          !N:        ni1_in(ip)=ni(IS_t0,mp0,1)
 !dbg20120501        Qint(1:TSP   ,ip1d,imp,ilp) = plasma_3d(mp0,lp0)%N_m3( 1:TSP,i1d)
@@ -255,20 +255,20 @@ IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop1
         !Ti:
 !dbg20120501         Qint(TSP+2:iT,ip1d,imp,ilp) = plasma_3d(mp0,lp0)%Ti_k(1:ISPET,i1d)
         !B:
-        Qint(iB      ,ip1d,imp,ilp) = plasma_grid_3d(isouth,mp0,IBM)
+        Qint(iB      ,ip1d,imp,ilp) = plasma_grid_3d(isouth,lp0,mp0,IBM)
         !R:
-        Qint(iR      ,ip1d,imp,ilp) = plasma_grid_Z(isouth) +earth_radius
+        Qint(iR      ,ip1d,imp,ilp) = plasma_grid_Z(isouth,lp0) +earth_radius
 
 !dbg20120504!!???why this output never appear on ipeXXX.log??? 
 if(sw_debug.and.lp==149) then
-print *,'!dbg20120504',        Qint(iR      ,ip1d,imp,ilp),plasma_grid_Z(isouth) ,isouth,JMIN_IN(lp0),JMAX_IS(lp0),mp0,lp0,iR,ip1d,imp,ilp
+print *,'!dbg20120504',        Qint(iR      ,ip1d,imp,ilp),plasma_grid_Z(isouth,lp0) ,isouth,JMIN_IN(lp0),JMAX_IS(lp0),lp0,mp0,iR,ip1d,imp,ilp
 endif
 
 !ispecial=2: interpolation at/below IN_t0
      ELSE if(ispecial == 2) then
        jth_loop2: DO jth=1,iT
 IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop2
-          Qint(jth   ,ip1d,imp,ilp) = plasma_3d(jth,inorth,mp0)
+          Qint(jth   ,ip1d,imp,ilp) = plasma_3d(jth,inorth,lp0,mp0)
        END DO jth_loop2!jth
         !N        ni1_in(ip)=ni(IN_t0,mp0,1) 
 !dbg20120501        Qint(1:TSP   ,ip1d,imp,ilp) = plasma_3d(mp0,lp0)%N_m3(1:TSP,i1d)
@@ -277,9 +277,9 @@ IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop2
          !Ti
 !dbg20120501        Qint(TSP+2:iT,ip1d,imp,ilp) = plasma_3d(mp0,lp0)%Ti_k(1:ISPET,i1d)
          !B
-        Qint(iB      ,ip1d,imp,ilp) = plasma_grid_3d(inorth,mp0,IBM)
+        Qint(iB      ,ip1d,imp,ilp) = plasma_grid_3d(inorth,lp0,mp0,IBM)
          !R
-        Qint(iR      ,ip1d,imp,ilp) = plasma_grid_Z(inorth) +earth_radius
+        Qint(iR      ,ip1d,imp,ilp) = plasma_grid_Z(inorth,lp0) +earth_radius
 
       END IF !(ispecial == 1) then
     END DO flux_tube_loopT1_Q !: DO ip=IN,IS
@@ -309,7 +309,7 @@ if(sw_debug) print *,'!dbg20120503 lp=',lp_t0(ihem,ilp),ilp,ihem
 
   lp0 = lp_t0(ihem,ilp)
   midpoint = JMIN_IN(lp0) + ( JMAX_IS(lp0) - JMIN_IN(lp0) )/2
-  rapex(ilp)=plasma_grid_Z(midpoint) + earth_radius
+  rapex(ilp)=plasma_grid_Z(midpoint,lp0) + earth_radius
 
 if(sw_debug) print *,'!dbg20120503! rapex',rapex(ilp),midpoint
   
@@ -319,7 +319,7 @@ if(sw_debug) print *,'!dbg20120503! rapex',rapex(ilp),midpoint
   ELSE
   !note: this factor cannot work when lp<=6!!!
   !because rapex does not mean anything for lp<=6
-    lambda_m(ilp)  = pi*0.5 - plasma_grid_GL( JMIN_IN(lp0) )
+    lambda_m(ilp)  = pi*0.5 - plasma_grid_GL( JMIN_IN(lp0),lp0 )
   END IF
 END DO  !DO ilp=1,2
   
@@ -364,7 +364,7 @@ if(sw_debug) print "('r0=',4E12.4)",factor,r(0:2)
 !dbg20120503:
 if ( sw_debug.and.lp==149 ) then
 write(unit=7000,fmt="(i6,i3,3E13.5)") i,i1d,  Qint(iR,i1d,imp,1), r(0),Qint(iR,i1d,imp,2)
-write(unit=7001,fmt="(i6,i3,5F11.5)") i,i1d, (Qint(iR,i1d,imp,1)-earth_radius)*1.0E-3, (r(0)-earth_radius)*1.0e-3,(Qint(iR,i1d,imp,2)-earth_radius)*1.0e-3, plasma_grid_z(i)*1.0e-3, plasma_grid_3d(i,mp,IQ) 
+write(unit=7001,fmt="(i6,i3,5F11.5)") i,i1d, (Qint(iR,i1d,imp,1)-earth_radius)*1.0E-3, (r(0)-earth_radius)*1.0e-3,(Qint(iR,i1d,imp,2)-earth_radius)*1.0e-3, plasma_grid_z(i,lp)*1.0e-3, plasma_grid_3d(i,lp,mp,IQ) 
 endif
 
 
@@ -402,7 +402,7 @@ if(sw_debug) print "('v14:B=',3E12.4)",B0(0) !,B0(1),B0(2)
 
 !dbg20120503:
 if (sw_debug.and. lp==149 ) then
-write(unit=7002,fmt="(i6,i3,4E13.5)") i,i1d, Qint(iB,i1d,imp,1), B0(0),Qint(iB,i1d,imp,2),plasma_grid_3d(i,mp,IBM)
+write(unit=7002,fmt="(i6,i3,4E13.5)") i,i1d, Qint(iB,i1d,imp,1), B0(0),Qint(iB,i1d,imp,2),plasma_grid_3d(i,lp,mp,IBM)
 endif
 
 
@@ -418,7 +418,7 @@ STOP
 
 !dbg20120330: new and CORRECT method to apply the ksi factor!
     else if ( sw_ksi==2 ) then
-      ksi_fac(1) = plasma_grid_3d(i,mp,IBM) / B0(0) 
+      ksi_fac(1) = plasma_grid_3d(i,lp,mp,IBM) / B0(0) 
     end if
 if(sw_debug) print "('ksi=',2E12.4)", ksi_fac(1:2)*ksi_fac(1:2)
 

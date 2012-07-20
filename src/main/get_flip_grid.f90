@@ -38,7 +38,7 @@ IMPLICIT NONE
       DOUBLE PRECISION Z(FLDIM0),SL(FLDIM0),BM(FLDIM0),GR(FLDIM0),R(FLDIM0)
       DOUBLE PRECISION SINDIP(FLDIM0)
       INTEGER (KIND=int_prec) :: midpoint,istp,i
-      INTEGER (KIND=int_prec), POINTER :: IN,IS
+      INTEGER (KIND=int_prec) :: IN,IS
       REAL (KIND=real_prec) :: dotprod
 
       JMAX=-300
@@ -67,64 +67,61 @@ BLON=mlon_rad(mp)*180.0/pi
      JMAX_IS(lp) = JMIN_IN(lp) + JMAX -1
      print *,'JMAX=',JMAX,' new JMAX_IS=',JMAX_IS(lp)
 
-     IN => JMIN_IN(lp)
-     IS => JMAX_IS(lp)
+     IN = JMIN_IN(lp)
+     IS = JMAX_IS(lp)
 
 
 !      midpoint = 1 + (JMAX_IS/2)+1 -1 
       midpoint = IN + ( IS - IN )/2
-print *,'midpoint',midpoint,plasma_grid_Z(midpoint)
+print *,'midpoint',midpoint,plasma_grid_Z(midpoint,lp)
 
 ! make sure to use the RIGHT SI UNIT!!!
-plasma_grid_Z(in:is)  =  Z(1:JMAX)* 1.0E+3    !convert from km to m
-      plasma_grid_3d(IN:IS,mp,IGLON) =  GLOND(1:JMAX)*pi/180.0 !convert from [deg] to [rad]
-plasma_grid_3d(in:is,mp,IQ)  =  Q(1:JMAX)
-plasma_grid_3d(in:is,mp,ISL) = SL(1:JMAX)/M_to_CM  !cm-->m
+plasma_grid_Z (in:is,lp)  =  Z(1:JMAX)* 1.0E+3    !convert from km to m
+plasma_grid_3d(IN:IS,lp,mp,IGLON) =  GLOND(1:JMAX)*pi/180.0 !convert from [deg] to [rad]
+plasma_grid_3d(in:is,lp,mp,IQ)  =  Q(1:JMAX)
+plasma_grid_3d(in:is,lp,mp,ISL) = SL(1:JMAX)/M_to_CM  !cm-->m
 
-      print "('SL_meter NH',3E12.4)",plasma_grid_3d(in:in+2,mp,ISL)
-      print "('SL_meter SH',3E12.4)",plasma_grid_3d(is-2:is,mp,ISL)
+      print "('SL_meter NH',3E12.4)",plasma_grid_3d(in:in+2,lp,mp,ISL)
+      print "('SL_meter SH',3E12.4)",plasma_grid_3d(is-2:is,lp,mp,ISL)
 
-plasma_grid_3d(in:is,mp,IBM)  =  BM(1:JMAX)*1.0E-4    !from gauss to tesla
-plasma_grid_GL(in:is) = pi*0.5 - GL(1:JMAX)   ![rad]
+plasma_grid_3d(in:is,lp,mp,IBM)  =  BM(1:JMAX)*1.0E-4    !from gauss to tesla
+plasma_grid_GL(in:is,lp) = pi*0.5 - GL(1:JMAX)   ![rad]
 
 
-plasma_grid_3d(in:is,mp,IGCOLAT)  =  (90.0-GLATD(1:JMAX))*pi/180.0 !convert from lat[deg] to CO-LAT[rad]
-plasma_grid_3d(in:is,mp,IGR)  =  GR(1:JMAX)/M_to_CM  !cm2 --> m2
+plasma_grid_3d(in:is,lp,mp,IGCOLAT)  =  (90.0-GLATD(1:JMAX))*pi/180.0 !convert from lat[deg] to CO-LAT[rad]
+plasma_grid_3d(in:is,lp,mp,IGR)  =  GR(1:JMAX)/M_to_CM  !cm2 --> m2
 
 !debug write
 !IF ( sw_debug ) THEN
 print *,'FLIP GRID',iout(1),iout(2),pco,blon
 print "('JMIN(IN)=',i6,'  JMAX(IS)=',i6,'  midpoint=',i5)", IN,IS, midpoint
 
-print "('G-LAT [deg]=NH',21f10.4)",(90.-plasma_grid_3d(in:in+20,mp,IGCOLAT)*180./pi)
-print "('G-LAT [deg]=SH',21f10.4)",(90.-plasma_grid_3d(is-20:is,mp,IGCOLAT)*180./pi)
+print "('G-LAT [deg]=NH',21f10.4)",(90.-plasma_grid_3d(in:in+20,lp,mp,IGCOLAT)*180./pi)
+print "('G-LAT [deg]=SH',21f10.4)",(90.-plasma_grid_3d(is-20:is,lp,mp,IGCOLAT)*180./pi)
 
-print "('M-LAT [deg]=',2f10.4)",(90.-plasma_grid_GL(in)*180./pi),(90.-plasma_grid_GL(is)*180./pi)
-print "('GLON  [deg]=',2f10.4)",( plasma_grid_3d(IN,mp,IGLON)*180./pi),( plasma_grid_3d(IS,mp,IGLON)*180./pi)
-print "('Qvalue     =',2E12.4)", plasma_grid_3d(in,mp,IQ) , plasma_grid_3d(is,mp,IQ) 
-print "('BM [nT]    =',2E12.4)", plasma_grid_3d(in,mp,IBM) , plasma_grid_3d(is,mp,IBM)
+print "('M-LAT [deg]=',2f10.4)",(90.-plasma_grid_GL(in,lp)*180./pi),(90.-plasma_grid_GL(is,lp)*180./pi)
+print "('GLON  [deg]=',2f10.4)",(plasma_grid_3d(IN,lp,mp,IGLON)*180./pi),( plasma_grid_3d(IS,lp,mp,IGLON)*180./pi)
+print "('Qvalue     =',2E12.4)", plasma_grid_3d(in,lp,mp,IQ ) , plasma_grid_3d(is,lp,mp,IQ )
+print "('BM [nT]    =',2E12.4)", plasma_grid_3d(in,lp,mp,IBM) , plasma_grid_3d(is,lp,mp,IBM)
 
-print "('SL [m]     =',4E13.5)", plasma_grid_3d(in:in+1,mp,ISL), plasma_grid_3d(is-1:is,mp,ISL)
+print "('SL [m]     =',4E13.5)", plasma_grid_3d(in:in+1,lp,mp,ISL), plasma_grid_3d(is-1:is,lp,mp,ISL)
 
-print "('Z  [m]     =',4E13.5)",  plasma_grid_Z(in:in+1),  plasma_grid_Z(is-1:is)
+print "('Z  [m]     =',4E13.5)",  plasma_grid_Z(in:in+1,lp),  plasma_grid_Z(is-1:is,lp)
 
 !END IF !( sw_debug ) THEN
 
 
-print "('SL [m]     =',4E13.5)", plasma_grid_Z(in), plasma_grid_Z(is)
+print "('SL [m]     =',4E13.5)", plasma_grid_Z(in,lp), plasma_grid_Z(is,lp)
 
 
 
 !do i=1,jmax
 !   istp=JMIN_IN(lp)+i-1
 
-   apexD(3,in:is,mp,north) = COSDIP(1:JMAX)
-   apexD(3,in:is,mp,up   ) = SINDIP(1:JMAX)
+   apexD(3,in:is,lp,mp,north) = COSDIP(1:JMAX)
+   apexD(3,in:is,lp,mp,up   ) = SINDIP(1:JMAX)
 
 !end do !i=1,jmax
-
-!explicitly disassociate the pointers
-         NULLIFY (IN,IS)
 
 print *,'sub-get_FLIP_grid finished'
 END SUBROUTINE get_FLIP_grid

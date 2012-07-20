@@ -26,13 +26,13 @@ C..... The input parameters JMIN, EHT were also added
      >                     O2DISF)  !.. OUTPUT: O2 dissociation frequency
       USE PRODUCTION    !.. EUV, photoelectron, and auroral production, PHION
 ! save each component of heating rate for output
+      USE module_IPE_dimension,ONLY: NLP
       USE module_FIELD_LINE_GRID_MKS,ONLY: mp_save,lp_save,JMIN_IN
+     >,                         JMAX_IS,MaxFluxTube,hrate_cgs_save
       USE module_input_parameters,ONLY: sw_neutral_heating_flip
-     &,lpstop,mpstop,start_time,ip_freq_output
-      USE module_heating_rate,ONLY: hrate_cgs_save
-     &,get_neutral_heating_rate
+     >,lpstop,mpstop,start_time,ip_freq_output
+      USE module_heating_rate,ONLY: get_neutral_heating_rate
       USE module_precision
-      USE module_IPE_dimension,ONLY: NPTS2D
       USE module_PLASMA,ONLY: utime_save
       IMPLICIT NONE
       INTEGER IJ,K          !.. loop control variables
@@ -64,9 +64,9 @@ C..... The input parameters JMIN, EHT were also added
       DOUBLE PRECISION HN2D             !.. Electron heating from N2D
       
 !nm20110404: save each component of the heating rate for output
-      INTEGER :: j2d,jth,lun  !J converted to the 2Dsystem in a meridional plain.
-      REAL(KIND=real_prec), DIMENSION(7,NPTS2D) :: hrate_mks !.. each component of the Neutral heating rate (eV/kg/s) 
-!
+      INTEGER :: j2d,jth,lun,lp  !J converted to the 2Dsystem in a meridional plain.
+      REAL(KIND=real_prec), DIMENSION(7,MaxFluxTube,NLP) :: hrate_mks !.. each component of the Neutral heating rate (eV/kg/s) 
+      REAL(KIND=real_prec) :: min_hrate,max_hrate
 
       PO1DSR=OTHPR1(3,IJ)      !.. Schumann-Runge production of O(1D)
       PEO1D=PEXCIT(1,1,IJ)     !.. Photoelectron production of O(1D)
@@ -173,7 +173,8 @@ C..... The input parameters JMIN, EHT were also added
      >   +8.82E-35*EXP(575/TN)*OXN*O2N*N2N
 
       !.. Make sure rates are greater than zero for logs
-      DO K=1,22
+!JFM  DO K=1,22
+      DO K=1,7
         IF(HRATE(K).LT.1.0E-22) HRATE(K)=1.0E-22
       ENDDO
 
@@ -187,7 +188,7 @@ C..... The input parameters JMIN, EHT were also added
 
         j2d=ij+JMIN_IN(lp_save)-1
         DO jth=1,7
-           hrate_cgs_save(jth,j2d)=hrate(jth) !!(1) PGR neu_neu
+           hrate_cgs_save(jth,j2d,lp_save)=hrate(jth) !!(1) PGR neu_neu
 !      hrate_cgs_save(2,j2d,mp_save)=hrate(2) !!PGR O1D
 !      hrate_cgs_save(3,j2d,mp_save)=hrate(3) !!PGR ion_neu
 !      hrate_cgs_save(4,j2d,mp_save)=hrate(4) !!PGR elec_ion
@@ -204,11 +205,19 @@ C..... The input parameters JMIN, EHT were also added
           CALL get_neutral_heating_rate ( hrate_mks )
           DO jth=1,7
             lun=5000+jth  
-      print *,'hrate',lun,jth,mp_save,lp_save,IJ
-     $,MINVAL( hrate_mks(jth,1:NPTS2D))
-     $,MAXVAL( hrate_mks(jth,1:NPTS2D) )      
+            min_hrate =  huge(min_hrate)
+            max_hrate = -huge(max_hrate)
+            do lp=1,NLP
+              min_hrate=min(min_hrate,MINVAL(
+     >                      hrate_mks(jth,JMIN_IN(lp):JMAX_IS(lp),lp)))
+              max_hrate=max(max_hrate,MAXVAL(
+     >                      hrate_mks(jth,JMIN_IN(lp):JMAX_IS(lp),lp)))
+            enddo
+      print *,'hrate',lun,jth,mp_save,lp_save,IJ,min_hrate,max_hrate
             write(lun,*)mp_save
-            write(lun,*)hrate_mks(jth,1:NPTS2D)
+            do lp=1,NLP
+              write(lun,*)hrate_mks(jth,JMIN_IN(lp):JMAX_IS(lp),lp)
+            enddo
           END DO !jth=1,7
         END IF !( lp_save==lpstop ) THEN
 

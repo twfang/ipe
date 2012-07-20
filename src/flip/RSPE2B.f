@@ -189,6 +189,7 @@ C... ZWR= altitude for printing spectrum.
           IF(Z(J).LT.ZLB.AND.J.LT.IEQ)  M2=J
         ENDIF
       ENDDO
+      DS(1)=DS(2)
       
       IF(ZLB.LE.Z(2)) M2=2
       JMAX1=2*IEQ-M2     !.. lower boundary in south

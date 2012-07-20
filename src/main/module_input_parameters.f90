@@ -90,7 +90,7 @@
 !nm20120304      REAL (KIND=real_prec), PUBLIC :: PCO_flip  
 !nm20120304      REAL (KIND=real_prec), PUBLIC :: BLON_flip 
       LOGICAL, PUBLIC :: sw_output_plasma_grid
-      LOGICAL, PUBLIC :: sw_rw_sw_perp_trans
+!JFM  LOGICAL, PUBLIC :: sw_rw_sw_perp_trans
       LOGICAL, PUBLIC :: sw_dbg_perp_trans
       INTEGER(KIND=int_prec), PUBLIC :: sw_perp_transport 
 !0:WITHOUT perpendicular transport
@@ -158,7 +158,7 @@
            &, sw_pcp         &
            &, sw_grid        &
            &, sw_output_plasma_grid        &
-           &, sw_rw_sw_perp_trans &
+!JFM       &, sw_rw_sw_perp_trans &
            &, sw_dbg_perp_trans &
            &, sw_perp_transport &
            &, lpmin_perp_trans &

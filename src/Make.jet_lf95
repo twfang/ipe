@@ -21,10 +21,9 @@ HOME_dev=$(CURDIR)
 # -pg: profile
 DEBUG1=###-traceback -check all -ftrapuv #####-fpe0
 DEBUG =###-g -pg  $(DEBUG1)
-DEBUG=-g -O0 -ftz -traceback -check bounds -fpe0
-DEBUG=
+DEBUG=--chk -g --trap --trace --info
 OPT_FLAG=-O3
-#OPT_FLAG=
+OPT_FLAG=
 PARALLEL_FLAG=####-openmp
 MEM_FLAG=###########-heap-arrays 10
 
@@ -49,14 +48,14 @@ RM	= rm -f
 PROF	= gprof
 #
 
-MOD_PATH=-
+MOD_PATH=
 INCLUDE_PATH=-I
 
 # Set flag to either use the GPTL timing library, or dummy stubs
 USE_GPTL = yes
 ifeq ($(USE_GPTL),yes)
 # Set include path for GPTL
-  GPTL_CPPFLAGS = -I/home/James.Rosinski/gptl-4.1/intel/include
+  GPTL_CPPFLAGS = -I/home/rosinski/jet/gptl-3.7.1single/lahey/include
 # For auto-profiling of MPI functions, set USE_PMPI=yes. The name of the GPTL
 # library in this case is libgptl_pmpi.a. Otherwise the name is libgptl.a
   USE_PMPI = no
@@ -66,7 +65,7 @@ ifeq ($(USE_GPTL),yes)
 # compiler supports functions iargc and getarg.
     HAVE_IARGCGETARG = no
   else
-    GPTL_LDFLAGS = -L/home/James.Rosinski/gptl-4.1/intel/lib -lgptl
+    GPTL_LDFLAGS = -L/home/rosinski/jet/gptl-3.7.1single/lahey/lib -lgptl -L/opt/papi/4.1.0/lib -lpapi
   endif
 # AUTOINST=yes enables function-level compiler-generated auto-profiling,
   AUTOINST = no
@@ -83,13 +82,15 @@ else
   GPTL_LDFLAGS = -L../../dummygptl -lgptl
 endif
 
+
 # SMS library location
-ifeq ($(USE_GPTL),yes)
+SMS       = /home/hender/SMS/jet-lahey-mvapich_r226_lahey_8.10b_mvapich2_1.4.1
+#ifeq ($(USE_GPTL),yes)
 # If available, use SMS version compiled with auto-profiling flag
-  SMS = /scratch1/portfolios/BMC/fim/SMS/sms308
-else
-  SMS = /scratch1/portfolios/BMC/fim/SMS/sms308
-endif
+#  SMS = /scratch1/portfolios/BMC/fim/SMS/sms308
+#else
+#  SMS = /scratch1/portfolios/BMC/fim/SMS/sms308
+#endif
 
 # SMS
 SMSFLAGS = -I $(SMS)/include
@@ -106,5 +107,5 @@ CPP       = /lib/cpp
 DEFINES   =
 CPP_FLAGS = -traditional -P $(GPTL_CPPFLAGS) $(DEFINES)
 SMS_LDFLAGS = -L$(SMS)/lib -lsms
-FCserial = ifort
+FCserial = lf95
 FCparallel = mpif90

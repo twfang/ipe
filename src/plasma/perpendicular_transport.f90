@@ -110,23 +110,23 @@ if(sw_debug) print *,'dbg20120125! sub-find_neighbor_grid:', mp_t0(ihem,1:2),phi
 IF (ihem==1) THEN
 
 !check pole regions!
-  IF ( theta_t0(ihem) < plasma_grid_GL( JMIN_IN(1) ) ) THEN 
+  IF ( theta_t0(ihem) < plasma_grid_GL( JMIN_IN(1),1 ) ) THEN 
    lp_t0(ihem,1)=-999
    lp_t0(ihem,2)=1
    print *,'sub-Fi: mp',mp,' lp',lp,'needs special pole interpolation'
    RETURN
-  ELSE IF ( plasma_grid_GL( JMIN_IN(lp) ) <= theta_t0(ihem) ) THEN 
+  ELSE IF ( plasma_grid_GL( JMIN_IN(lp),lp ) <= theta_t0(ihem) ) THEN 
     lp_min =lp
   ELSE  !plasma_grid_3d(IN,lp)%GL > theta_t0(ihem) ) THEN 
 
-if(sw_debug) print *,'sub-Fi: check GL NH[deg]',(90.-plasma_grid_GL( JMIN_IN(lp) )*rtd)
+if(sw_debug) print *,'sub-Fi: check GL NH[deg]',(90.-plasma_grid_GL( JMIN_IN(lp),lp )*rtd)
 
     lp_min =lp-5 !not sure if 10 is enough???
     if (lp_min<=0 ) lp_min=1
-    IF ( plasma_grid_GL( JMIN_IN(lp_min) ) > theta_t0(ihem) ) THEN 
+    IF ( plasma_grid_GL( JMIN_IN(lp_min),lp_min ) > theta_t0(ihem) ) THEN 
       lp_min=lp-5
       if (lp_min<=0 ) lp_min=1
-      IF ( plasma_grid_GL( JMIN_IN(lp_min) ) > theta_t0(ihem) ) THEN 
+      IF ( plasma_grid_GL( JMIN_IN(lp_min),lp_min ) > theta_t0(ihem) ) THEN 
         print *,'sub-Fi:NH !STOP! not sure if this is working???'
         STOP
       END IF
@@ -134,13 +134,13 @@ if(sw_debug) print *,'sub-Fi: check GL NH[deg]',(90.-plasma_grid_GL( JMIN_IN(lp)
   END IF! ( plasma_grid_3d(IN,lp)%GL <= theta_t0(ihem) ) THEN 
 
 lp_loop: DO l=lp_min,NLP-1  !nearest point-->EQ
-IF ( plasma_grid_GL( JMIN_IN(l) )<=theta_t0(ihem) .AND. theta_t0(ihem)<plasma_grid_GL( JMIN_IN(l+1) )  ) THEN
+IF ( plasma_grid_GL( JMIN_IN(l),l )<=theta_t0(ihem) .AND. theta_t0(ihem)<plasma_grid_GL( JMIN_IN(l+1),l+1 )  ) THEN
   lp_t0(ihem,1)=l
   lp_t0(ihem,2)=l+1
   EXIT lp_loop
 ELSE
   if (l==NLP-1) then
-  print *,'sub-Fi:NH: !STOP! could not find the lp',plasma_grid_GL( JMIN_IN(l) ),theta_t0(ihem)
+  print *,'sub-Fi:NH: !STOP! could not find the lp',plasma_grid_GL( JMIN_IN(l),l ),theta_t0(ihem)
   STOP
   end if
 END IF
@@ -149,7 +149,7 @@ END DO lp_loop!: DO i=lp_min,NLP  !nearest point-->EQ
 END IF !(ihem==1) THEN
 
 if(sw_debug) print *,'sub-Fi: mlon', mlon_rad(mp_t0(ihem,1))*rtd, phi_t0(ihem)*rtd, mlon_rad(mp_t0(ihem,2))*rtd, mp_t0(ihem,1:2)
-if(sw_debug) print *,'sub-Fi: mlat',plasma_grid_GL( JMIN_IN(lp_t0(ihem,1)) )*rtd, theta_t0(ihem)*rtd, plasma_grid_GL( JMIN_IN(lp_t0(ihem,2)) )*rtd
+if(sw_debug) print *,'sub-Fi: mlat',plasma_grid_GL( JMIN_IN(lp_t0(ihem,1)),lp_t0(ihem,1) )*rtd, theta_t0(ihem)*rtd, plasma_grid_GL( JMIN_IN(lp_t0(ihem,2)),lp_t0(ihem,2) )*rtd
 
 END DO which_hemisphere!:  DO ihem=1,ihem_max
 
@@ -216,31 +216,31 @@ IF (ihem==1) THEN
 
 !check pole regions!
 !not totally sure whether I should use theta_t0 or r0_apex???
-IF ( theta_t0(ihem) < plasma_grid_GL( JMIN_IN(1) ) ) THEN 
+IF ( theta_t0(ihem) < plasma_grid_GL( JMIN_IN(1),1 ) ) THEN 
    lp_t0(ihem,1)=-999
    lp_t0(ihem,2)=1
    print *,'sub-Fi: mp',mp,' lp',lp,'needs special pole interpolation'
    RETURN
-ELSE IF ( theta_t0(ihem) > plasma_grid_GL( JMIN_IN(NLP) ) ) THEN
-   print *,'sub-Fi: !STOP! invalid theta_t0',mp,lp,theta_t0(ihem),plasma_grid_GL( JMIN_IN(NLP) )
+ELSE IF ( theta_t0(ihem) > plasma_grid_GL( JMIN_IN(NLP),NLP ) ) THEN
+   print *,'sub-Fi: !STOP! invalid theta_t0',mp,lp,theta_t0(ihem),plasma_grid_GL( JMIN_IN(NLP),NLP )
    STOP
-ELSE   !IF ( plasma_grid_GL( JMIN_IN(lp) ) <= theta_t0(ihem) ) THEN 
+ELSE   !IF ( plasma_grid_GL( JMIN_IN(lp),lp ) <= theta_t0(ihem) ) THEN 
 
 !!!UNDERCONSTRUCTION!!!
-if(sw_debug) print *,'sub-FiR: check GL NH[deg]',(90.-plasma_grid_GL( JMIN_IN(lp) )*rtd)
+if(sw_debug) print *,'sub-FiR: check GL NH[deg]',(90.-plasma_grid_GL( JMIN_IN(lp),lp )*rtd)
 
 !    lp_min =lp-5 !not sure if 10 is enough???
 !    if (lp_min<=0 ) lp_min=1
-!    IF ( plasma_grid_GL( JMIN_IN(lp_min) ) > theta_t0(ihem) ) THEN 
+!    IF ( plasma_grid_GL( JMIN_IN(lp_min),lp_min ) > theta_t0(ihem) ) THEN 
 !      lp_min=lp-5
 !      if (lp_min<=0 ) lp_min=1
-!      IF ( plasma_grid_GL( JMIN_IN(lp_min) ) > theta_t0(ihem) ) THEN 
+!      IF ( plasma_grid_GL( JMIN_IN(lp_min),lp_min ) > theta_t0(ihem) ) THEN 
 !        print *,'sub-Fi:NH !STOP! not sure if this is working???'
 !        STOP
 !      END IF
 !    END IF
 
-lp_loop0: DO l=1,NLP-1  !longest -->shortest flux tube
+lp_loop0: DO l=1,NLP  !longest -->shortest flux tube
  midpoint(l) = JMIN_IN(l) + ( JMAX_IS(l) - JMIN_IN(l) )/2
 END DO lp_loop0
 
@@ -253,13 +253,13 @@ z_t0 = r0_apex - earth_radius
 
 lp_loop: DO l=1,NLP-1  !longest -->shortest flux tube
  
-  IF ( plasma_grid_Z( midpoint(l+1) )<=Z_t0 .AND. Z_t0<plasma_grid_Z( midpoint(l) )  ) THEN
+  IF ( plasma_grid_Z( midpoint(l+1),l+1 )<=Z_t0 .AND. Z_t0<plasma_grid_Z( midpoint(l),l )  ) THEN
     lp_t0(ihem,1)=l   !1outer flux tube
     lp_t0(ihem,2)=l+1 !2inner flux tube
     EXIT lp_loop
   ELSE
     if (l==NLP-1) then
-      print *,'sub-FiR:NH: !STOP! could not find the lp',plasma_grid_Z( midpoint(l) ),z_t0
+      print *,'sub-FiR:NH: !STOP! could not find the lp',plasma_grid_Z( midpoint(l),l ),z_t0
       STOP
     end if
   END IF
@@ -273,10 +273,10 @@ midpoint1 = midpoint(lp1)
 lp2 = lp_t0(ihem,2) !=l+1
 midpoint2 = midpoint(lp2)
 if(sw_debug) print *,lp1,midpoint1,lp2,midpoint2
-if(sw_debug) print *,'sub=FiR: check R',(earth_radius+plasma_grid_Z(midpoint1)),(earth_radius+Z_t0),(earth_radius+plasma_grid_Z(midpoint2))
+if(sw_debug) print *,'sub=FiR: check R',(earth_radius+plasma_grid_Z(midpoint1,lp1)),(earth_radius+Z_t0),(earth_radius+plasma_grid_Z(midpoint2,lp2))
 
 if(sw_debug) print *,'sub-FiR: mlon',mlon_rad(mp_t0(ihem,1))*rtd, phi_t0(ihem)*rtd, mlon_rad(mp_t0(ihem,2))*rtd, mp_t0(ihem,1:2)
-if(sw_debug) print *,'sub-FiR: mlat',(90.-plasma_grid_GL( JMIN_IN(lp_t0(ihem,1)) )*rtd), (90.-theta_t0(ihem)*rtd),(90.- plasma_grid_GL( JMIN_IN(lp_t0(ihem,2)) )*rtd)
+if(sw_debug) print *,'sub-FiR: mlat',(90.-plasma_grid_GL( JMIN_IN(lp_t0(ihem,1)),lp_t0(ihem,1) )*rtd), (90.-theta_t0(ihem)*rtd),(90.- plasma_grid_GL( JMIN_IN(lp_t0(ihem,2)),lp_t0(ihem,2) )*rtd)
 
 
 END IF! ( plasma_grid_3d(IN,lp)%GL <= theta_t0(ihem) ) THEN 

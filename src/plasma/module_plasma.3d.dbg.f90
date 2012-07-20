@@ -29,7 +29,7 @@
 !dbg20110927        REAL(KIND=real_prec), DIMENSION(ISPET,IPDIM) :: heating_rate_i_cgs  !EHT(1:2)
 !dbg20110923        REAL(KIND=real_prec), DIMENSION(      IPDIM) :: NO_m3 
       END TYPE  plasma_data_1d
-      TYPE(plasma_data_1d),ALLOCATABLE,TARGET,PUBLIC :: plasma_3d(:,:)
+      TYPE(plasma_data_1d),ALLOCATABLE,TARGET,PUBLIC :: plasma_3d(:,:,:)
 
 !neutral needs these parameters from the ionosphere in addition to N&T
       TYPE :: plasma_data_1d4n
@@ -60,8 +60,7 @@
 !---------------------------
       SUBROUTINE plasma ( utime )
       USE module_input_parameters,ONLY:lpstrt,lpstop,lpstep,mpstrt,mpstop,mpstep,ip_freq_output,start_time,stop_time,sw_neutral_heating_flip,sw_perp_transport,lpmin_perp_trans,lpmax_perp_trans,sw_para_transport,sw_debug &
-&, sw_rw_sw_perp_trans,sw_dbg_perp_trans &
-$, sw_exb_up
+&, sw_dbg_perp_trans , sw_exb_up
       USE module_heating_rate,ONLY: hrate_cgs_save
       USE module_physical_constants,ONLY:rtd,zero
       USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,plasma_grid_3d,plasma_grid_GL,mp_save,lp_save,plasma_grid_Z,JMAX_IS
@@ -90,7 +89,7 @@ end if
 
       apex_longitude_loop: DO mp = mpstrt,mpstop,mpstep !1,NMP
         mp_save=mp
-        IF ( sw_neutral_heating_flip==1 ) hrate_cgs_save(:,:)=zero
+        IF ( sw_neutral_heating_flip==1 ) hrate_cgs_save=zero
         if ( sw_debug )  WRITE (0,"('sub-p: mp=',I4)")mp
 !d        n0_2dbg(:)=zero
 
@@ -100,7 +99,7 @@ end if
 
 
 !!!dbg20120125: only temporary used to switch on the transport only during the daytime...
-        IF ( sw_rw_sw_perp_trans.AND.sw_perp_transport(mp)==0 )  CALL activate_perp_transport (utime,mp)
+!JFM    IF ( sw_rw_sw_perp_trans.AND.sw_perp_transport(mp)==0 )  CALL activate_perp_transport (utime,mp)
 !!!dbg20120125:
 
         apex_latitude_height_loop: DO lp = lpstrt,lpstop,lpstep
@@ -149,8 +148,8 @@ end if
             ELSE  !IF ( lp>lpmin_perp_trans ) THEN
 if(utime==start_time) then
 midpoint=JMIN_IN(lp) + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
-print "('NO PERP. TRANS: mp=',I3,' lp=',I4,' mlatNd',F8.3,' apht',F8.2)", mp,lp,(90.-plasma_grid_GL(JMIN_IN(lp))*rtd) &
-& ,plasma_grid_Z(midpoint)*1.0e-3
+print "('NO PERP. TRANS: mp=',I3,' lp=',I4,' mlatNd',F8.3,' apht',F8.2)", mp,lp,(90.-plasma_grid_GL(JMIN_IN(lp),lp)*rtd) &
+& ,plasma_grid_Z(midpoint,lp)*1.0e-3
 endif
             END IF
           END IF !( sw_perp_transport>=1 ) THEN
