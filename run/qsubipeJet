@@ -23,6 +23,7 @@ cat << EOF >! runscript
   pwd
   module switch intel lahey
   module list
+  limit
   set par = "parallel"
   set par = "serial"
   if (\$par == 'parallel') then
@@ -46,7 +47,7 @@ chmod 755 ./runscript
 
 set queue_time=08:00:00
 qsub -N ipe \
-     -A acb \
+     -A acb-gpu \
      -r y \
      -pe tgpu 1 \
      -cwd \

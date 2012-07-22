@@ -286,13 +286,6 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
 !dbg      INTEGER(KIND=int_prec) :: sw_test_grid=0  !1: ON testgrid; 0: OFF 
 !---
 
-! array initialization
-      JMIN_IN   = -999
-      JMAX_IS   = -999
-      Be3       = zero
-
-
-
 !SMS$SERIAL BEGIN
       filename =filepath_pgrid//filename_pgrid
       FORM_dum ='formatted' 
@@ -311,6 +304,8 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
       JMIN_IN = 1
       JMAX_IS = JMAX_IS_all(1,:) - JMIN_IN_all(1,:) + 1
 
+! array initialization
+      Be3            = zero
       plasma_grid_3d = zero
       plasma_grid_Z  = zero
       plasma_grid_GL = zero
