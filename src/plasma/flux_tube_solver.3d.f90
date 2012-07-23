@@ -304,38 +304,38 @@ END IF
      &             JMINX, & !.. index of the first point on the field line
      &             JMAXX, & !.. index of the last point on the field line
      &           CTIPDIM, & !.. CTIPe array dimension, must equal to FLDIM
-     &                ZX(1:CTIPDIM), & !.. array, altitude (km)
+     &                ZX, & !.. array, altitude (km)
      &               PCO, & !.. p coordinate (L-shell)
-     &               SLX(1:CTIPDIM), & !.. array, distance of point from northern hemisphere (meter)
-     &               GLX(1:CTIPDIM), & !.. array, magnetic latitude (radians)
-     &               BMX(1:CTIPDIM), & !.. array, magnetic field strength, (Tesla)
-     &               GRX(1:CTIPDIM), & !.. array, gravity, m2 s-1
-     &                OX(1:CTIPDIM), & !.. array, O density (m-3)
-     &                HX(1:CTIPDIM), & !.. array, H density (m-3)
-     &               N2X(1:CTIPDIM), & !.. array, N2 density (cm-3)
-     &               O2X(1:CTIPDIM), & !.. array, O2 density (cm-3)
-     &               HEX(1:CTIPDIM), & !.. array, He density (cm-3)
-     &              N4SX(1:CTIPDIM), & !.. array, N(4S) density (cm-3)
+     &               SLX, & !.. array, distance of point from northern hemisphere (meter)
+     &               GLX, & !.. array, magnetic latitude (radians)
+     &               BMX, & !.. array, magnetic field strength, (Tesla)
+     &               GRX, & !.. array, gravity, m2 s-1
+     &                OX, & !.. array, O density (m-3)
+     &                HX, & !.. array, H density (m-3)
+     &               N2X, & !.. array, N2 density (cm-3)
+     &               O2X, & !.. array, O2 density (cm-3)
+     &               HEX, & !.. array, He density (cm-3)
+     &              N4SX, & !.. array, N(4S) density (cm-3)
      &              INNO, & !.. switch to turn on FLIP NO calculation if <0
-     &              NNOX(1:CTIPDIM), & !.. array, NO density (cm-3)
-     &               TNX(1:CTIPDIM), & !.. array, Neutral temperature (K)
-     &             TINFX(1:CTIPDIM), & !.. array, Exospheric Neutral temperature (K)
-     &               UNX(1:CTIPDIM), & !.. array, Neutral wind (m/s), positive northward,horizontal component in the magnetic meridian??? or component parallel to a field line???
+     &              NNOX, & !.. array, NO density (cm-3)
+     &               TNX, & !.. array, Neutral temperature (K)
+     &             TINFX, & !.. array, Exospheric Neutral temperature (K)
+     &               UNX, & !.. array, Neutral wind (m/s), positive northward,horizontal component in the magnetic meridian??? or component parallel to a field line???
      &                DT, & !.. CTIPe time step (secs)
      &             DTMIN, & !.. Minimum time step allowed (>=10 secs?)
      &         F107D_dum, & !.. Daily F10.7
      &         F107A_dum, & !.. 81 day average F10.7
-     &           SZA_dum(1:CTIPDIM), & !.. Solar Zenith angle (radians)
+     &           SZA_dum, & !.. Solar Zenith angle (radians)
      &              FPAS, & !.. Pitch angle scattering fraction
      &              HPEQ, & !.. Sets initial equatorial H+ density. See declaration below
      &            HEPRAT, & !.. Intial He+/H+ ratio (.01 to 1.0)
      &           COLFACX, & !.. O+ - O collision frequency Burnside factor (1.0 to 1.7)
      &            IHEPLS, & !.. switches He+ diffusive solution on if > 0
      &             INPLS, & !.. switches N+ diffusive solution on if > 0
-     &              EHTX(1:3,1:CTIPDIM), & !.. IN/OUT 2D array, Electron & ion heating rate (eV cm-3 s-1)
-     &            TE_TIX(1:3,1:CTIPDIM), & !.. IN/OUT: 2D array, Electron and ion temperatures (K) (see below)
-     &     XIONNX(1:ISPEC,1:CTIPDIM),XIONVX(1:ISPEC,1:CTIPDIM), & !.. IN/OUT: 2D array, Storage for ion densities and velocities
-     &             NHEAT(1:CTIPDIM), & !.. OUT: array, Neutral heating rate (eV/cm^3/s) 
+     &              EHTX, & !.. IN/OUT 2D array, Electron & ion heating rate (eV cm-3 s-1)
+     &            TE_TIX, & !.. IN/OUT: 2D array, Electron and ion temperatures (K) (see below)
+     &     XIONNX,XIONVX, & !.. IN/OUT: 2D array, Storage for ion densities and velocities
+     &             NHEAT, & !.. OUT: array, Neutral heating rate (eV/cm^3/s) 
      &             EFLAG)  !.. OUT: 2D array, Error Flags
       ret = gptlstop  ('CTIPINT')
 

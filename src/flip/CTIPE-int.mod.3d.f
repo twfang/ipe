@@ -347,32 +347,32 @@ C.... Written by P. Richards June-September 2010.
       DOUBLE PRECISION M_to_CM,M3_to_CM3  !.. Unit conversion factors
       !.. Dummy variables ending in X for transferring CTIP to FLIP modules, 
       !.. see above for documentation
-      DOUBLE PRECISION N4SX(CTIPDIM),NNOX(CTIPDIM),ZX(CTIPDIM)
-      DOUBLE PRECISION UNX(CTIPDIM),COLFACX,BMX(CTIPDIM)
-      DOUBLE PRECISION GRX(CTIPDIM),SLX(CTIPDIM),GLX(CTIPDIM)
-      DOUBLE PRECISION OX(CTIPDIM),HX(CTIPDIM),N2X(CTIPDIM),O2X(CTIPDIM)
-      DOUBLE PRECISION HEX(CTIPDIM),TNX(CTIPDIM),SZAX(CTIPDIM)
-      DOUBLE PRECISION XIONNX(9,CTIPDIM),XIONVX(9,CTIPDIM)
+      DOUBLE PRECISION N4SX(FLDIM),NNOX(FLDIM),ZX(FLDIM)
+      DOUBLE PRECISION UNX(FLDIM),COLFACX,BMX(FLDIM)
+      DOUBLE PRECISION GRX(FLDIM),SLX(FLDIM),GLX(FLDIM)
+      DOUBLE PRECISION OX(FLDIM),HX(FLDIM),N2X(FLDIM),O2X(FLDIM)
+      DOUBLE PRECISION HEX(FLDIM),TNX(FLDIM),SZAX(FLDIM)
+      DOUBLE PRECISION XIONNX(9,FLDIM),XIONVX(9,FLDIM)
       !.. TE_TI(3,J) = Te, TE_TIX(2,J) = Ti = TE_TIX(2,J)
-      DOUBLE PRECISION TE_TIX(3,CTIPDIM)
+      DOUBLE PRECISION TE_TIX(3,FLDIM)
       !.. EHTX(3,J) = e heating rate, EHTX(1,J) = ion heating rate, EHTX(2,J) unused
-      DOUBLE PRECISION EHTX(3,CTIPDIM)
+      DOUBLE PRECISION EHTX(3,FLDIM)
       !.. TINFX has to be an array for grazing incidence column densities
-      DOUBLE PRECISION TINFX(CTIPDIM)  !.. Exospheric temperature
+      DOUBLE PRECISION TINFX(FLDIM)  !.. Exospheric temperature
       !.. End dummy variable declarations 
       !.. HPEQ is equatorial H+ density = HPEQ * density of a full flux tube.
       !.. If zero the densities from the previous time step are used.
       !.. If positive, initial densities and temperatures are set. 
       !.. If negative, H+ and He+ densities are reset for flux tube depletion
-      DOUBLE PRECISION HPEQ              !.. HPEQ is equatorial H+ density
+      DOUBLE PRECISION HPEQ            !.. HPEQ is equatorial H+ density
       DOUBLE PRECISION DT,DTMIN,FD(9),BCKPRD,FPAS,HEPRAT,PCO
-      DOUBLE PRECISION COLUM(3,CTIPDIM)  !.. Neutral column densities for PEPRIM
-      DOUBLE PRECISION N(4,CTIPDIM)      !.. FLIP variable for O+ H+ & total ions
-      DOUBLE PRECISION TI(3,CTIPDIM)     !.. FLIP variable for Te and Ti
-      DOUBLE PRECISION NHEAT(CTIPDIM)    !.. Neutral heating rate
-      DOUBLE PRECISION RTS(99)           !.. Reaction rates
-      DOUBLE PRECISION EDEN(CTIPDIM)     !.. electron density
-      DOUBLE PRECISION O2DISF(CTIPDIM)   !.. O2 dissociation frequency
+      DOUBLE PRECISION COLUM(3,FLDIM)  !.. Neutral column densities for PEPRIM
+      DOUBLE PRECISION N(4,FLDIM)      !.. FLIP variable for O+ H+ & total ions
+      DOUBLE PRECISION TI(3,FLDIM)     !.. FLIP variable for Te and Ti
+      DOUBLE PRECISION NHEAT(FLDIM)    !.. Neutral heating rate
+      DOUBLE PRECISION RTS(99)         !.. Reaction rates
+      DOUBLE PRECISION EDEN(FLDIM)     !.. electron density
+      DOUBLE PRECISION O2DISF(FLDIM)   !.. O2 dissociation frequency
 
       DATA M_TO_CM,M3_TO_CM3/1.0E+2,1.0E-6/    !.. Unit conversion factors
 !dbg20110120:      DATA DEBUG/1/  !.. turn on debug writes if DEBUG=1
@@ -601,12 +601,12 @@ c      ENDIF
       midpoint = (JMAX/2)+1
       ret = gptlstart ('CTIPINT TLOOPS')
       IF( sw_TEI>0) ! .AND. Z(midpoint)>100.00 )
-     >  CALL TLOOPS(JMIN,JMAX,CTIPDIM,Z,N,TI,DT,DTMIN,EFLAG)   !$$$ 
+     >  CALL TLOOPS(JMIN,JMAX,FLDIM,Z,N,TI,DT,DTMIN,EFLAG)   !$$$ 
       ret = gptlstop  ('CTIPINT TLOOPS')
       !.. O+, H+ solution
       ret = gptlstart ('CTIPINT DLOOPS')
       IF( sw_OHPLS>0) ! .AND. Z(midpoint)>120.00 )
-     >  CALL DLOOPS(JMIN,JMAX,CTIPDIM,Z,N,TI,DT,DTMIN,EFLAG)   !$$$  
+     >  CALL DLOOPS(JMIN,JMAX,FLDIM,Z,N,TI,DT,DTMIN,EFLAG)   !$$$  
       ret = gptlstop  ('CTIPINT DLOOPS')
 
       !.. He+ solution
