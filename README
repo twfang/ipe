@@ -5,8 +5,10 @@ go to the directory where makefile is located
 $ cd src
 
 Depending on your shell, set up the environment by doing one of the following:
-$ source stp_ipe.zeus.bash
-$ source stp_ipe.zeus.csh
+$ source setup_ipe.zeus.tcsh
+$ source setup_ipe.jet.tcsh
+$ source setup_ipe.jet.lahey.tcsh
+$ source setup_ipe.jet.bash
 
 clean before compile 
 $ make cln
