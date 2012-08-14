@@ -18,12 +18,12 @@
       USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_3d,JMIN_IN_all,JMAX_IS_all,VEXBup
       USE module_IPE_dimension,ONLY: NMP,NLP,NPTS2D,ISPEC,ISPEV,IPDIM,ISPET,ISTOT
       USE module_input_parameters,ONLY:sw_debug,record_number_plasma_start &
-&,sw_record_number,stop_time,duration
+&,sw_record_number,stop_time,start_time,duration
       USE module_physical_constants,ONLY:zero
       IMPLICIT NONE
 !------------------------
       INTEGER (KIND=int_prec), INTENT(IN) :: switch !2:read; 1:write
-      INTEGER (KIND=int_prec), INTENT(INOUT) :: utime !universal time [sec]
+      INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]
       REAL (KIND=real_prec),DIMENSION(:,:), ALLOCATABLE :: dumm  !(NPTS2D,NMP)
       INTEGER (KIND=int_prec) :: stat_alloc
       INTEGER (KIND=int_prec) :: jth,mp,lp,npts
@@ -173,12 +173,12 @@ ELSE IF ( sw_record_number==1 ) THEN
       END DO read_loop1!: DO n_read=1,n_max !=10000
 19    CONTINUE
       record_number_plasma_start = record_number_plasma_dum
-      utime = utime_dum
+      start_time = utime_dum
 
       print *,'new record_number_plasma_start=',record_number_plasma_start
-      print *,'new start_time=',utime
+      print *,'new start_time=',start_time
 
-      stop_time = utime + duration
+      stop_time = start_time + duration
       print *,'new stop_time=',stop_time,' duration=', duration
 END IF !( sw_record_number==0 ) THEN        
 

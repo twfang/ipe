@@ -19,7 +19,7 @@ compile parallel
 $ make PAR=sms
 
 go to the run directory
-cd ../../run
+cd ../run
 
 run the executable
 $ ../src/ipe.v18.exe

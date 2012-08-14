@@ -51,7 +51,7 @@
 		lpstop=170 ,
 		lpstep=1  ,
 		mpstrt=1  ,
-		mpstop=80 ,
+		mpstop=2 ,
 		mpstep=1  ,
 		sw_debug=F ,
 		sw_debug_mpi=F ,
