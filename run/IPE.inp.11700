@@ -39,7 +39,6 @@
 		sw_pcp=0     ,
 		sw_grid=0    ,
 		sw_output_plasma_grid=F  ,
-		sw_rw_sw_perp_trans=.false.  ,
 		sw_dbg_perp_trans=.false.  ,
 		sw_perp_transport=1 ,
 		lpmin_perp_trans=15  ,
