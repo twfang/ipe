@@ -37,8 +37,8 @@
       END TYPE plasma_grid
 !     TYPE(plasma_grid), ALLOCATABLE, TARGET,PUBLIC :: plasma_grid_3d(:,:)      
       INTEGER (KIND=int_prec) :: ISL=1,IBM=2,IGR=3,IQ=4,IGCOLAT=5,IGLON=6
-!SMS$DISTRIBUTE(dh,1,2) BEGIN
-      REAL(KIND=real_prec),ALLOCATABLE,TARGET,PUBLIC :: plasma_grid_3d(:,:,:,:)      
+!SMS$DISTRIBUTE(dh,2,3) BEGIN
+      REAL(KIND=real_prec),ALLOCATABLE,TARGET,PUBLIC :: plasma_grid_3d(:,:,:,:)      !(MaxFluxTube,NLP,NMP,6)
 !SMS$DISTRIBUTE END
 !V_ExB m/s at the apex height
       REAL(KIND=real_prec), DIMENSION(:,:),ALLOCATABLE, PUBLIC :: VEXBup !DIMENSION(NMP,NLP)

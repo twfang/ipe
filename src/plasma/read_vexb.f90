@@ -21,8 +21,8 @@
         INTEGER (KIND=int_prec),  INTENT(IN)  :: utime    !universal time [sec]
         INTEGER (KIND=int_prec),INTENT(IN) :: lp,mp
 !---local variables---
-        INTEGER (KIND=int_prec) :: record_number_plasma_dum,utime_dum
-
+        INTEGER (KIND=int_prec) :: record_number_plasma_dum,utime_dum,lpin,mpin
+        real VEXBupIN(NMP,NLP)
 
 luntmp1=6001
 luntmp2=6002
@@ -47,10 +47,15 @@ print *,'check ut', utime_dum,' utime-172800=',(utime-172800)
 STOP
 endif
 !ExB
-      READ (UNIT=luntmp2) VEXBup
+      READ (UNIT=luntmp2) VEXBupIN
+      do mpin=1,NMP
+        do lpin=1,NLP
+          VEXBup(lpin,mpin) = VEXBupIN(mpin,lpin)
+        enddo
+      enddo
 
-!print *,'check EXB MAX',MAXVAL( vexbup(1:NMP,lp) ),MINVAL( vexbup(1:NMP,lp) )
-print *,'check EXB lp=135',mp, vexbup(mp,135) ,utime
+!print *,'check EXB MAX',MAXVAL( vexbup(lp,1:NMP) ),MINVAL( vexbup(lp,1:NMP) )
+print *,'check EXB lp=135',mp, vexbup(135,mp) ,utime
 
 if( utime==stop_time ) then 
              CLOSE(UNIT=luntmp1)

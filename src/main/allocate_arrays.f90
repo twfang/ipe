@@ -59,7 +59,7 @@
         END IF !( sw_neutral_heating_flip==1 )
 
         ALLOCATE ( Be3     (2,1:NMP,NLP) &
-     &,            VEXBup  (  1:NMP,NLP) &
+     &,            VEXBup  (  1:NLP,NMP) &
      &,            Pvalue  (        NLP) &
      &,            JMIN_IN (        NLP) &
      &,            JMAX_IS (        NLP) &
