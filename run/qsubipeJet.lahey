@@ -11,7 +11,7 @@ cp ../SMSnamelist        .
 cp ../IPE.inp            .
 cp ../wei96.cofcnts      .
 cp ../stup_ut_rec        .
-ln -s /scratch2/portfolios/BMC/acb/IPEdata/* .
+ln -s /pan2/projects/fim-njet/jacques/IPEdata/* .
 
 set compute_tasks = 1
 # Make rundir a full path for runscript
@@ -21,9 +21,9 @@ cat << EOF >! runscript
 #!/bin/csh
   cd $rundir
   pwd
-  module load intel
-  module load mpt
+  module switch intel lahey
   module list
+  limit
   set par = "parallel"
   set par = "serial"
   if (\$par == 'parallel') then
@@ -45,13 +45,13 @@ EOF
 
 chmod 755 ./runscript
 
+set queue_time=08:00:00
 qsub -N ipe \
-     -l walltime=00:30:00 \
-     -A acb \
+     -A acb-gpu \
      -r y \
-     -l mem=1800M \
-     -l procs=1 \
-     -l nodes=1:ppn=1 \
+     -pe tgpu 1 \
+     -cwd \
+     -l h_rt=$queue_time \
      ./runscript || echo "qsub failed" && exit 1
 
 exit 0

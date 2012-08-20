@@ -21,7 +21,6 @@ cat << EOF >! runscript
 #!/bin/csh
   cd $rundir
   pwd
-  module switch intel lahey
   module list
   limit
   set par = "parallel"
@@ -45,7 +44,7 @@ EOF
 
 chmod 755 ./runscript
 
-set queue_time=08:00:00
+set queue_time=00:20:00
 qsub -N ipe \
      -A acb-gpu \
      -r y \
