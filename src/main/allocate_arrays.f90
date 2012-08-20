@@ -58,12 +58,12 @@
           END IF
         END IF !( sw_neutral_heating_flip==1 )
 
-        ALLOCATE ( Be3     (2,1:NMP,NLP) &
-     &,            VEXBup  (  1:NLP,NMP) &
-     &,            Pvalue  (        NLP) &
-     &,            JMIN_IN (        NLP) &
-     &,            JMAX_IS (        NLP) &
-     &,            mlon_rad(  NMP+1    ) &
+        ALLOCATE ( Be3     (2,NLP,NMP  ) &
+     &,            VEXBup  (  NLP,NMP  ) &
+     &,            Pvalue  (  NLP      ) &
+     &,            JMIN_IN (  NLP      ) &
+     &,            JMAX_IS (  NLP      ) &
+     &,            mlon_rad(      NMP+1) &
      &,            STAT=stat_alloc       )
  
       IF ( stat_alloc==0 ) THEN

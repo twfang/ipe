@@ -45,10 +45,10 @@
 ! (1) WACCM E empirical model
 ! Ed1/2[V/m] at ( phi_t1(mp), theta_t1(lp) ), Be3[T]
 !note: Be3 should be constant along a magnetic field!!! 
-        v_e(1) =   Ed2_90(mp,lp0) / Be3(ihem,mp,lp) !(4.18) +mag-east(d1?) 
-        v_e(2) = - Ed1_90(mp,lp0) / Be3(ihem,mp,lp) !(4.19) +down/equatorward(d2?)
+        v_e(1) =   Ed2_90(lp0,mp) / Be3(ihem,lp,mp) !(4.18) +mag-east(d1?) 
+        v_e(2) = - Ed1_90(lp0,mp) / Be3(ihem,lp,mp) !(4.19) +down/equatorward(d2?)
 if(sw_debug)&
-& print *,'sub-vexb:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]', Ed1_90(mp,lp0)*1.0E+3,' be3[tesla]',Be3(ihem,mp,lp) 
+& print *,'sub-vexb:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]', Ed1_90(lp0,mp)*1.0E+3,' be3[tesla]',Be3(ihem,lp,mp) 
 
 
         i_loop: DO i=IN,IS
@@ -95,6 +95,6 @@ if(sw_debug)&
         END IF !ELSE IF ( sw_exb_up==3 ) THEN 
 
 if(sw_debug)&
-& print *,'sub-vexb:',ihem,mp,lp,'v_exb_apex[m/s]: east',VEXB3D(1,midpoint,mp),' upward',VEXB3D(2,midpoint,mp)          
+& print *,'sub-vexb:',ihem,lp,mp,'v_exb_apex[m/s]: east',VEXB3D(1,midpoint,mp),' upward',VEXB3D(2,midpoint,mp)          
       END SUBROUTINE plasma_vexb    
 

@@ -48,8 +48,8 @@
       REAL(KIND=real_prec) :: cos2Lambda_m,sinLambda_m(2),sinI_m(2)
 !
 ! array initialization
-      Ed1_90(:,:)=zero
-      Ed2_90(:,:)=zero
+      Ed1_90=zero
+      Ed2_90=zero
 
 ! only utime==start_time
       IF ( j0(1,1)<0 ) THEN
@@ -228,7 +228,7 @@
      &,' IS=',i5,' latS',F6.2)",mp,lp
      &,IN,(90.-plasma_grid_GL(IN,lp)*rtd)
      &,IS,(90.-plasma_grid_GL(IS,lp)*rtd)
-! computing ed1_90(mp,lp)
+! computing ed1_90(lp,mp)
 !FUNC-linearinterpolation does not work! need more debugging. temporary use the average of the two potentials.
 ! linear interpolation of the potent at plasma_grid_3d(IN,mp) in mlat
 !NH
@@ -249,7 +249,7 @@
      &,coslam_m(lpconj(lp)),d_phi_m
       STOP
       endif
-          ed1_90(mp,lpconj(lp))=-1.0/r/coslam_m(lpconj(lp))
+          ed1_90(lpconj(lp),mp)=-1.0/r/coslam_m(lpconj(lp))
 !dbg     &*(potent_i1-potent_i0)
 !dbg     &*(potent(ii1,jj0)-potent(ii0,jj0))
      &*(pot_i1-pot_i0)
@@ -268,11 +268,11 @@
       pot_i1=( potent(i1,jj0)+potent(i1,jj1) )*0.50
       pot_i0=( potent(i0,jj0)+potent(i0,jj1) )*0.50
       if (r<=0..or.coslam_m(lp)==0..or.d_phi_m==0.)then
-      print *,'sub-get_e:SH!STOP! INVALID',mp,lp,r 
+      print *,'sub-get_e:SH!STOP! INVALID',lp,mp,r 
      &,coslam_m(lp),d_phi_m
       STOP
       endif
-          ed1_90(mp,lp)=-1.0/r/coslam_m(lp)
+          ed1_90(lp,mp)=-1.0/r/coslam_m(lp)
 !dbg     &   *(potent_i1-potent_i0)
 !dbg     &*(potent(ii1,jj0)-potent(ii0,jj0))  
      &*(pot_i1-pot_i0)
@@ -280,7 +280,7 @@
 
 
 
-! computing ed2_90(mp,lp) continues
+! computing ed2_90(lp,mp) continues
 ! calculate sinIm !eq(3.7)
       cos2Lambda_m = coslam_m(lp) * coslam_m(lp) ! 0<cos2<1
       sinLambda_m(1)  = + SQRT( 1.0 - cos2Lambda_m )  !>0 ---NH 
@@ -299,7 +299,7 @@
       print *,'sub-get_ed2:NH!STOP! INVALID',lp,d_lam_m
       STOP
       endif
-      ed2_90(mp,lpconj(lp))=+1.0/r/sinI_m(ihem)
+      ed2_90(lpconj(lp),mp)=+1.0/r/sinI_m(ihem)
      &*(pot_j1-pot_j0) /d_lam_m
 !dbg20111108     &*(-1.)*sinI_m(ihem)     !E_m_lambda (5.10)
 !SH
@@ -309,7 +309,7 @@
       d_lam_m = theta90_rad( jj1 ) - theta90_rad( jj0 )
       pot_j1=( potent(i0,jj1)+potent(i1,jj1) )*0.50
       pot_j0=( potent(i0,jj0)+potent(i1,jj0) )*0.50
-      ed2_90(mp,lp)=+1.0/r/sinI_m(ihem)
+      ed2_90(lp,mp)=+1.0/r/sinI_m(ihem)
      &*(pot_j1-pot_j0) /d_lam_m
 !dbg20111108     &*(-1.)*sinI_m(ihem)  !E_m_lambda (5.10)
 

@@ -154,7 +154,7 @@ print "('BM [Tesla]    =',2E12.4)", plasma_grid_3d(in,lp,mp,IBM), plasma_grid_3d
 print "('D3         =',6E12.4)", apexD(3,in,lp,mp,east),apexD(3,in,lp,mp,north),apexD(3,in,lp,mp,up), apexD(3,is,lp,mp,east),apexD(3,is,lp,mp,north),apexD(3,is,lp,mp,up)
 print "('E1         =',2E12.4)", apexE(1,in,lp,mp,east), apexE(1,is,lp,mp,east)
 print "('E2         =',2E12.4)", apexE(2,in,lp,mp,east), apexE(2,is,lp,mp,east)
-print "('Be3 [T] NH/SH  =',2E12.4)", Be3(1,mp,lp), Be3(2,mp,lp)
+print "('Be3 [T] NH/SH  =',2E12.4)", Be3(1,lp,mp), Be3(2,lp,mp)
 
 print "('SL [m]     =',4E13.5)", plasma_grid_3d(in:in+1,lp,mp,ISL), plasma_grid_3d(is-1:is,lp,mp,ISL)
 print "('Z  [m]     =',4E13.5)",  plasma_grid_Z(in:in+1,lp),  plasma_grid_Z(is-1:is,lp)
@@ -169,7 +169,7 @@ IF ( sw_grid==0 ) THEN  !APEX
 
 !dbg20110831
 !d print *,'calling sub-Get_sinI'&
-!d &, i,mp,lp,sw_sinI, sinI&
+!d &, i,lp,mp,sw_sinI, sinI&
 !d &, plasma_grid_GL(i), apexD(3,i,mp)%east, apexD(3,i,mp)%north, apexD(3,i,mp)%up
 
            CALL Get_sinI ( sw_sinI, sinI, plasma_grid_GL(i,lp) &
@@ -378,8 +378,12 @@ enddo
 !JFM  READ (UNIT=LUN_pgrid, FMT=*) Be3_all(1,:,:),Be3_all(2,:,:) !Apex_BE3_N
       READ (UNIT=LUN_pgrid, FMT=*) Be3_all1,Be3_all2 !Apex_BE3_N
 !JFM  Be3(1:2,1:NMP,1:NLP)=    Be3_all(1:2,1:NMP,1:NLP)
-Be3(1,1:NMP,1:NLP)=    Be3_all1(1:NMP,1:NLP)
-Be3(2,1:NMP,1:NLP)=    Be3_all2(1:NMP,1:NLP)
+      do mp=1,NMP
+        do lp=1,NLP
+          Be3(1,lp,mp)=Be3_all1(mp,lp)
+          Be3(2,lp,mp)=Be3_all2(mp,lp)
+        enddo
+      enddo
       print *,"reading Be3 etc completed"
       CLOSE(UNIT=LUN_pgrid)
       print *,"global grid reading finished, file closed..."

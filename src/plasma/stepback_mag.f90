@@ -65,13 +65,13 @@ theta_t1(2) = plasma_grid_GL( JMAX_IS(lp),lp ) !SH
         END IF
 
 ! Ed1/2[V/m] at ( phi_t1(mp), theta_t1(lp) ), Be3[T]
-        v_e(1) =   Ed2_90(mp,lp0) / Be3(ihem,mp,lp) !(4.18) +mag-east(d1?) 
-        v_e(2) = - Ed1_90(mp,lp0) / Be3(ihem,mp,lp) !(4.19) +down/equatorward(d2?)
+        v_e(1) =   Ed2_90(lp0,mp) / Be3(ihem,lp,mp) !(4.18) +mag-east(d1?) 
+        v_e(2) = - Ed1_90(lp0,mp) / Be3(ihem,lp,mp) !(4.19) +down/equatorward(d2?)
         
 !dbg
 if(sw_debug) &
-& print *,'sub-St:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]', Ed1_90(mp,lp0)*1.0E+3,' be3[tesla]',Be3(ihem,mp,lp) 
-!dbg ,' BM-N',plasma_grid_3d( JMIN_IN(mp,lp) ,mp)%BM,' BM-S',plasma_grid_3d( JMAX_IS(mp,lp) ,mp)%BM
+& print *,'sub-St:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]', Ed1_90(lp0,mp)*1.0E+3,' be3[tesla]',Be3(ihem,lp,mp) 
+!dbg ,' BM-N',plasma_grid_3d( JMIN_IN(lp,mp) ,mp)%BM,' BM-S',plasma_grid_3d( JMAX_IS(lp,mp) ,mp)%BM
 
 
 ! calculate ExB drift (4.17) at IN/IS foot point
@@ -172,7 +172,7 @@ end if
       r = earth_radius + ht90 ![m]
       midpoint = JMIN_IN(lp) + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
       r_apex = earth_radius + plasma_grid_Z(midpoint,lp) ![m]
-if(sw_debug) print *,'sub-StR:',mp,lp,r,r_apex,plasma_grid_Z(midpoint,lp)
+if(sw_debug) print *,'sub-StR:',lp,mp,r,r_apex,plasma_grid_Z(midpoint,lp)
 
 !note: for the moment, Ed1/B is calculated only in NH, assuming that the flux tube is moving with the same velocity between N/SH.
       which_hemisphere: DO ihem=1,1 !ihem_max
@@ -192,10 +192,10 @@ if(sw_debug) print *,'sub-StR:',mp,lp,r,r_apex,plasma_grid_Z(midpoint,lp)
 ! (1) WACCM E empirical model
 ! Ed1/2[V/m] at ( phi_t1(mp), theta_t1(lp) ), Be3[T]
 !note: Be3 should be constant along a magnetic field!!! 
-        v_e(1) =   Ed2_90(mp,lp0) / Be3(ihem,mp,lp) !(4.18) +mag-east(d1?) 
-        v_e(2) = - Ed1_90(mp,lp0) / Be3(ihem,mp,lp) !(4.19) +down/equatorward(d2?)
+        v_e(1) =   Ed2_90(lp0,mp) / Be3(ihem,lp,mp) !(4.18) +mag-east(d1?) 
+        v_e(2) = - Ed1_90(lp0,mp) / Be3(ihem,lp,mp) !(4.19) +down/equatorward(d2?)
 if(sw_debug)&
-& print *,'sub-StR:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]', Ed1_90(mp,lp0)*1.0E+3,' be3[tesla]',Be3(ihem,mp,lp) 
+& print *,'sub-StR:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]', Ed1_90(lp0,mp)*1.0E+3,' be3[tesla]',Be3(ihem,lp,mp) 
 
         VEXBup(lp,mp) = (v_e(1) * apexE(1,midpoint,lp,mp,up))    + (v_e(2) * apexE(2,midpoint,lp,mp,up))
 
@@ -235,7 +235,7 @@ if(sw_debug)&
         END IF !ELSE IF ( sw_exb_up==3 ) THEN 
 
 !if(sw_debug)&
-! print *,'sub-StR:',ihem,mp,lp,'v_exb_apex[m/s]',VEXBup(lp,mp)  ,utime
+! print *,'sub-StR:',ihem,lp,mp,'v_exb_apex[m/s]',VEXBup(lp,mp)  ,utime
 
 
         r0_apex = r_apex - VEXBup(lp,mp) * time_step
@@ -246,10 +246,10 @@ if(sw_debug)&
 midpoint_min = JMIN_IN(lpstop) + ( JMAX_IS(lpstop) - JMIN_IN(lpstop) )/2
 midpoint_max = JMIN_IN(lpstrt)  + ( JMAX_IS(lpstrt)  - JMIN_IN(lpstrt) )/2
 if ( r0_apex<(plasma_grid_Z(midpoint_min,lpstop)+earth_radius) ) then
-   print *,'!r0_apex too small!',r0_apex,VEXBup(lp,mp),mp,lp, (plasma_grid_Z(midpoint_min,lpstop)+earth_radius)
+   print *,'!r0_apex too small!',r0_apex,VEXBup(lp,mp),lp,mp, (plasma_grid_Z(midpoint_min,lpstop)+earth_radius)
    r0_apex = plasma_grid_Z(midpoint_min,lpstop)+earth_radius
 else if ( r0_apex>(plasma_grid_Z(midpoint_max,lpstrt)+earth_radius) ) then
-   print *,'!r0_apex too big!',r0_apex, VEXBup(lp,mp),mp,lp, (plasma_grid_Z(midpoint_max,lpstrt)+earth_radius)
+   print *,'!r0_apex too big!',r0_apex, VEXBup(lp,mp),lp,mp, (plasma_grid_Z(midpoint_max,lpstrt)+earth_radius)
    r0_apex = plasma_grid_Z(midpoint_max,lpstrt)+earth_radius
 end if
 !dbg20120301:
@@ -271,7 +271,7 @@ END DO      which_hemisphere !: DO ihem=1,ihem_max
 
 
 ihem=1 !only
-if(sw_debug) print *,mp,lp, 'Z(mp,lp)',plasma_grid_Z(midpoint,lp), (plasma_grid_Z(midpoint,lp)+earth_radius)
+if(sw_debug) print *,lp,mp, 'Z(mp,lp)',plasma_grid_Z(midpoint,lp), (plasma_grid_Z(midpoint,lp)+earth_radius)
 if(sw_debug) print *, 'mlatN(mp,lp)',90.-plasma_grid_GL( JMIN_IN(lp),lp )*180./pi !NH
 sin2theta = r/( earth_radius+plasma_grid_Z(midpoint,lp) )
 sintheta = SQRT( sin2theta )

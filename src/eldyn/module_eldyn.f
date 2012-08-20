@@ -52,11 +52,11 @@
 !      save first,utsec_last,ed11,ed22,ylatm1,ylonm1
 
       REAL(KIND=real_prec)   ,DIMENSION(0:nmlat  ),PUBLIC :: theta90_rad
-      INTEGER(KIND=int_prec) ,DIMENSION(2  ,NLP  ),PUBLIC :: j0,j1 !1:NH; 2:SH
-      REAL(KIND=real_prec)   ,DIMENSION(NMP,NLP*2),PUBLIC :: Ed1_90
-      REAL(KIND=real_prec)   ,DIMENSION(NMP,NLP*2),PUBLIC :: Ed2_90
-      REAL(KIND=real_prec)   ,DIMENSION(    NLP*2),PUBLIC :: coslam_m
-      INTEGER (KIND=int_prec),DIMENSION(    NLP  ),PUBLIC :: lpconj !4 NH
+      INTEGER(KIND=int_prec) ,DIMENSION(2,NLP    ),PUBLIC :: j0,j1 !1:NH; 2:SH
+      REAL(KIND=real_prec)   ,DIMENSION(2*NLP,NMP),PUBLIC :: Ed1_90
+      REAL(KIND=real_prec)   ,DIMENSION(2*NLP,NMP),PUBLIC :: Ed2_90
+      REAL(KIND=real_prec)   ,DIMENSION(2*NLP    ),PUBLIC :: coslam_m
+      INTEGER (KIND=int_prec),DIMENSION(  NLP    ),PUBLIC :: lpconj !4 NH
 
 !
       PRIVATE
