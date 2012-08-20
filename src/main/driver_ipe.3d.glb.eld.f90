@@ -34,7 +34,7 @@
       ret = gptlinitialize ()
       ret = gptlstart ('Total')
 
-!SMS$CREATE_DECOMP(dh,<NMP,NLP>,<5,5>)
+!SMS$CREATE_DECOMP(dh,<NLP,NMP>,<5,5>)
 
       WRITE(*,*)" DATE: 08 September, 2011"
       WRITE(*,*)"********************************************"
