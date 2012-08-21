@@ -27,7 +27,8 @@
       INTEGER(KIND=int_prec), PUBLIC,DIMENSION(NMP,NLP) :: JMIN_IN_all,JMAX_IS_all  !.. first and last indices on field line grid
 !SMS$DISTRIBUTE END
 !SMS$DISTRIBUTE(dh,1) BEGIN
-      INTEGER(KIND=int_prec), ALLOCATABLE,TARGET,PUBLIC :: JMIN_IN(:),JMAX_IS(:)    !.. first and last indices on field line grid
+      INTEGER(KIND=int_prec), ALLOCATABLE,TARGET,PUBLIC :: JMIN_IN (  :),JMAX_IS (  :) !.. first and last indices on field line grid
+      INTEGER(KIND=int_prec),             TARGET,PUBLIC :: JMIN_ING(NLP),JMAX_ISG(NLP) !.. first and last indices on field line grid
 !SMS$DISTRIBUTE END
       TYPE :: plasma_grid
 !dbg20110927         REAL(KIND=real_prec) :: Z  !.. altitude [meter]
@@ -304,14 +305,15 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
       print *,"open file completed"
       READ (UNIT=LUN_pgrid, FMT=*) JMIN_IN_all, JMAX_IS_all  !IN_2d_3d , IS_2d_3d
       print *,"reading JMIN_IN etc completed"
+      JMIN_ING = JMIN_IN_all(1,:)
+      JMAX_ISG = JMAX_IS_all(1,:)
+      MaxFluxTube = maxval(JMAX_ISG-JMIN_ING+1)
 !SMS$SERIAL END
-
-      MaxFluxTube = maxval(JMAX_IS_all(1,:)-JMIN_IN_all(1,:)+1)
 
       CALL allocate_arrays ( 0 )
 
       JMIN_IN = 1
-      JMAX_IS = JMAX_IS_all(1,:) - JMIN_IN_all(1,:) + 1
+      JMAX_IS = JMAX_ISG - JMIN_ING + 1
 
 ! array initialization
       Be3            = zero
