@@ -34,7 +34,7 @@
 !---------------------------
       subroutine neutral (utime) 
       USE module_IPE_dimension,ONLY: IPDIM
-      use module_FIELD_LINE_GRID_MKS, only : plasma_grid_3d,plasma_grid_Z, apexD, JMIN_IN,JMAX_IS,east,north,up,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,JMIN_IN_all,JMAX_IS_all
+      use module_FIELD_LINE_GRID_MKS, only : plasma_grid_3d,plasma_grid_Z, apexD, JMIN_IN,JMAX_IS,east,north,up,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,JMIN_ING,JMAX_ISG
       USE module_physical_constants,ONLY: pi,zero
       USE module_input_parameters,ONLY: F107D,F107AV,AP,NYEAR,NDAY,sw_debug,lpstrt,lpstop,lpstep,mpstrt,mpstop,mpstep,sw_grid,start_time,stop_time,sw_neutral
       USE module_unit_conversion,ONLY: M_TO_KM
@@ -266,7 +266,7 @@ read (unit=luntmp3,fmt=*) utime_dum, dum0
     STOP
   endif
   do lp=1,NLP
-    Un_ms1(3,JMIN_IN(lp):JMAX_IS(lp),lp,mp) = dum0(JMIN_IN_all(1,lp):JMAX_IS_all(1,lp))
+    Un_ms1(3,JMIN_IN(lp):JMAX_IS(lp),lp,mp) = dum0(JMIN_ING(lp):JMAX_ISG(lp))
   enddo
 
 if( utime==stop_time )   CLOSE(UNIT=luntmp3)

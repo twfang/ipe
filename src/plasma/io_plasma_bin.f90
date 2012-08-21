@@ -15,7 +15,7 @@
       SUBROUTINE io_plasma_bin ( switch, utime )
       USE module_precision
       USE module_IO,ONLY: LUN_PLASMA1,LUN_PLASMA2,lun_min1,lun_min2,lun_ut,lun_ut2,record_number_plasma,lun_max1
-      USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_3d,JMIN_IN_all,JMAX_IS_all,VEXBup
+      USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_3d,JMIN_ING,JMAX_ISG,VEXBup
       USE module_IPE_dimension,ONLY: NMP,NLP,NPTS2D,ISPEC,ISPEV,IPDIM,ISPET,ISTOT
       USE module_input_parameters,ONLY:sw_debug,record_number_plasma_start &
 &,sw_record_number,stop_time,start_time,duration
@@ -71,7 +71,7 @@ IN=JMIN_IN(lp)
 IS=JMAX_IS(lp)
   npts = IS-IN+1 
 
-  dumm(JMIN_IN_all(1,lp):JMAX_IS_all(1,lp),mp) = plasma_3d(jth,IN:IS,lp,mp)
+  dumm(JMIN_ING(lp):JMAX_ISG(lp),mp) = plasma_3d(jth,IN:IS,lp,mp)
 !dbg20120501  IF ( jth<=ISPEC ) THEN
 !dbg20120501  dumm(IN:IS,mp) = plasma_3d(mp,lp)%N_m3(jth,        1:npts)
 !dbg20120501ELSE IF ( jth==(ISPEC+1) ) THEN
@@ -218,7 +218,7 @@ mp_loop2:do mp=1,NMP
 IN=JMIN_IN(lp)
 IS=JMAX_IS(lp)
   npts = IS-IN+1 
-  plasma_3d(jth,IN:IS,lp,mp) = dumm(JMIN_IN_all(1,lp):JMAX_IS_all(1,lp),mp) 
+  plasma_3d(jth,IN:IS,lp,mp) = dumm(JMIN_ING(lp):JMAX_ISG(lp),mp) 
 !dbg20120501IF ( jth<=ISPEC ) THEN
 !dbg20120501  plasma_3d(mp,lp)%N_m3(jth,         1:npts) = dumm(IN:IS,mp) 
 !dbg20120501ELSE IF ( jth==(ISPEC+1) ) THEN

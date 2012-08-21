@@ -13,7 +13,7 @@
 SUBROUTINE output_plasma_grid ( )
       USE module_precision
         USE module_IO,ONLY: filename
-        USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,JMIN_IN_all,JMAX_IS_all
+        USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,JMIN_ING,JMAX_ISG
         USE module_IPE_dimension,ONLY: NPTS2D,NMP,NLP
 IMPLICIT NONE
 !-------------local
@@ -53,11 +53,11 @@ END IF
 
 !SMS$SERIAL(<plasma_grid_3d,IN> : default=ignore) BEGIN
 do lp=1,NLP
-  dumm(JMIN_IN_all(1,lp):JMAX_IS_all(1,LP),1:NMP) = plasma_grid_3d(JMIN_IN(lp):JMAX_IS(LP), lp,1:NMP,IGCOLAT)
+  dumm(JMIN_ING(lp):JMAX_ISG(lp),1:NMP) = plasma_grid_3d(JMIN_IN(lp):JMAX_IS(LP), lp,1:NMP,IGCOLAT)
 enddo
 WRITE(UNIT=lun) dumm !GCOLAT  !rad
 do lp=1,NLP
-  dumm(JMIN_IN_all(1,lp):JMAX_IS_all(1,LP),1:NMP) = plasma_grid_3d(JMIN_IN(lp):JMAX_IS(LP), lp,1:NMP,IGLON)
+  dumm(JMIN_ING(lp):JMAX_ISG(lp),1:NMP) = plasma_grid_3d(JMIN_IN(lp):JMAX_IS(LP), lp,1:NMP,IGLON)
 enddo
 WRITE(UNIT=lun) dumm !GLON !rad
 !SMS$SERIAL END
