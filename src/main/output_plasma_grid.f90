@@ -20,8 +20,10 @@ IMPLICIT NONE
         CHARACTER (LEN=11) :: FORM_dum
         CHARACTER (LEN=7)  :: STATUS_dum
         INTEGER (KIND=int_prec) :: lun ,mp,lp,stat_alloc
+!SMS$DISTRIBUTE(dh,,2) BEGIN
       REAL (KIND=real_prec),DIMENSION(:,:), ALLOCATABLE :: dumm  !(NPTS2D,NMP)
-!
+!SMS$DISTRIBUTE END
+
       LUN=1006
       filename ='plasma_grid'
       FORM_dum ='unformatted' 

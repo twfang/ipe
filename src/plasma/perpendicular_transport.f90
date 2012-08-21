@@ -179,7 +179,9 @@ END DO which_hemisphere!:  DO ihem=1,ihem_max
       REAL(KIND=real_prec) :: Z_t0
       INTEGER (KIND=int_prec),DIMENSION(2,2), INTENT(OUT) :: mp_t0,lp_t0
       INTEGER (KIND=int_prec) :: lp_min,l
+!SMS$DISTRIBUTE(dh,NLP) BEGIN
       INTEGER (KIND=int_prec) :: midpoint(NLP)
+!SMS$SERIAL END
       INTEGER (KIND=int_prec) :: lp1,lp2,midpoint1,midpoint2,mpx
 !---
 

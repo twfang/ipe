@@ -20,7 +20,9 @@
 
 !---local variables---
         INTEGER (KIND=int_prec) :: lp,mp
+!SMS$DISTRIBUTE(dh,NLP,NMP) BEGIN
         REAL (KIND=real_prec),dimension(NMP,NLP) :: opmaxpc,opminpc
+!SMS$DISTRIBUTE END
         REAL (KIND=real_prec),PARAMETER :: fixedval=100.0
 
 !

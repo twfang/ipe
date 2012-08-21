@@ -65,7 +65,9 @@ C..... The input parameters JMIN, EHT were also added
       
 !nm20110404: save each component of the heating rate for output
       INTEGER :: j2d,jth,lun,lp  !J converted to the 2Dsystem in a meridional plain.
+!SMS$DISTRIBUTE(dh,NLP) BEGIN
       REAL(KIND=real_prec), DIMENSION(7,MaxFluxTube,NLP) :: hrate_mks !.. each component of the Neutral heating rate (eV/kg/s) 
+!SMS$DISTRIBUTE END
       REAL(KIND=real_prec) :: min_hrate,max_hrate
 
       PO1DSR=OTHPR1(3,IJ)      !.. Schumann-Runge production of O(1D)
