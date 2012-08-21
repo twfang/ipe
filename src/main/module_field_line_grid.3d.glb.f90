@@ -328,27 +328,27 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
 !SMS$SERIAL(<dum0,dum1,dum2,dum3,r_meter2D,plasma_grid_3d,plasma_grid_GL,OUT>) BEGIN
       READ (UNIT=LUN_pgrid, FMT=*) dum0, dum1, dum2, dum3 !gr_2d, gcol_2d, glon_2d, q_coordinate_2d
 do lp=1,NLP
-  r_meter2D    (JMIN_IN(lp):JMAX_IS(lp),lp) = dum0(JMIN_IN_all(1,lp):JMAX_IS_all(1,lp),1)                !r_meter
-  plasma_grid_Z(JMIN_IN(lp):JMAX_IS(lp),lp) = dum0(JMIN_IN_all(1,lp):JMAX_IS_all(1,lp),1) - earth_radius ![meter]
+  r_meter2D    (JMIN_IN(lp):JMAX_IS(lp),lp) = dum0(JMIN_ING(lp):JMAX_ISG(lp),1)                !r_meter
+  plasma_grid_Z(JMIN_IN(lp):JMAX_IS(lp),lp) = dum0(JMIN_ING(lp):JMAX_ISG(lp),1) - earth_radius ![meter]
 enddo
 do mp=1,NMP
   do lp=1,NLP
-    plasma_grid_3d(JMIN_IN(lp):JMAX_IS(lp),lp,mp,IGCOLAT) = dum1(JMIN_IN_all(1,lp):JMAX_IS_all(1,lp),mp) !GCOLAT
-    plasma_grid_3d(JMIN_IN(lp):JMAX_IS(lp),lp,mp,IGLON  ) = dum2(JMIN_IN_all(1,lp):JMAX_IS_all(1,lp),mp) !GLON
-    plasma_grid_3d(JMIN_IN(lp):JMAX_IS(lp),lp,mp,IQ     ) = dum3(JMIN_IN_all(1,lp):JMAX_IS_all(1,lp),mp) !Q
+    plasma_grid_3d(JMIN_IN(lp):JMAX_IS(lp),lp,mp,IGCOLAT) = dum1(JMIN_ING(lp):JMAX_ISG(lp),mp) !GCOLAT
+    plasma_grid_3d(JMIN_IN(lp):JMAX_IS(lp),lp,mp,IGLON  ) = dum2(JMIN_ING(lp):JMAX_ISG(lp),mp) !GLON
+    plasma_grid_3d(JMIN_IN(lp):JMAX_IS(lp),lp,mp,IQ     ) = dum3(JMIN_ING(lp):JMAX_ISG(lp),mp) !Q
   enddo
 enddo
       print *,"reading r_meter etc completed"
 
       READ (UNIT=LUN_pgrid, FMT=*) dum0          !bcol_2d
 do lp=1,NLP
-  plasma_grid_GL(JMIN_IN(lp):JMAX_IS(lp),lp) = dum0(JMIN_IN_all(1,lp):JMAX_IS_all(1,lp),1) !GL
+  plasma_grid_GL(JMIN_IN(lp):JMAX_IS(lp),lp) = dum0(JMIN_ING(lp):JMAX_ISG(lp),1) !GL
 enddo
       print *,"reading GL_rad etc completed"
       READ (UNIT=LUN_pgrid, FMT=*) dum0, dum1 !integral_ds_2d, apex_BMAG_2d
 do lp=1,NLP
-  plasma_grid_3d(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,ISL) = dum0(JMIN_IN_all(1,lp):JMAX_IS_all(1,lp),1:NMP) !SL
-  plasma_grid_3d(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,IBM) = dum1(JMIN_IN_all(1,lp):JMAX_IS_all(1,lp),1:NMP) !BM
+  plasma_grid_3d(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,ISL) = dum0(JMIN_ING(lp):JMAX_ISG(lp),1:NMP) !SL
+  plasma_grid_3d(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,IBM) = dum1(JMIN_ING(lp):JMAX_ISG(lp),1:NMP) !BM
 enddo
       print *,"reading SL_meter etc completed"
 !SMS$SERIAL END
@@ -364,9 +364,9 @@ enddo
 !dbg20110923  apexD(2,1:NPTS2D,1:NMP)%up    =  dum5(3,1:NPTS2D,1:NMP)
 !D3
 do lp=1,NLP
-  apexD(3,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,east ) =  dum6(1,JMIN_IN_all(1,lp):JMAX_IS_all(1,lp),1:NMP) !D3
-  apexD(3,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,north) =  dum6(2,JMIN_IN_all(1,lp):JMAX_IS_all(1,lp),1:NMP)
-  apexD(3,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,up   ) =  dum6(3,JMIN_IN_all(1,lp):JMAX_IS_all(1,lp),1:NMP)
+  apexD(3,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,east ) =  dum6(1,JMIN_ING(lp):JMAX_ISG(lp),1:NMP) !D3
+  apexD(3,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,north) =  dum6(2,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
+  apexD(3,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,up   ) =  dum6(3,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
 enddo
       print *,"reading D1-3 etc completed"
 !SMS$SERIAL END
@@ -374,13 +374,13 @@ enddo
       READ (UNIT=LUN_pgrid, FMT=*) dum4, dum5          !Apex_E1_2d
 !E1
 do lp=1,NLP
-  apexE(1,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,east ) =  dum4(1,JMIN_IN_all(1,lp):JMAX_IS_all(1,lp),1:NMP) !E1
-  apexE(1,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,north) =  dum4(2,JMIN_IN_all(1,lp):JMAX_IS_all(1,lp),1:NMP)
-  apexE(1,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,up   ) =  dum4(3,JMIN_IN_all(1,lp):JMAX_IS_all(1,lp),1:NMP)
+  apexE(1,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,east ) =  dum4(1,JMIN_ING(lp):JMAX_ISG(lp),1:NMP) !E1
+  apexE(1,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,north) =  dum4(2,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
+  apexE(1,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,up   ) =  dum4(3,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
 !E2
-  apexE(2,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,east ) =  dum5(1,JMIN_IN_all(1,lp):JMAX_IS_all(1,lp),1:NMP) !E2
-  apexE(2,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,north) =  dum5(2,JMIN_IN_all(1,lp):JMAX_IS_all(1,lp),1:NMP)
-  apexE(2,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,up   ) =  dum5(3,JMIN_IN_all(1,lp):JMAX_IS_all(1,lp),1:NMP)
+  apexE(2,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,east ) =  dum5(1,JMIN_ING(lp):JMAX_ISG(lp),1:NMP) !E2
+  apexE(2,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,north) =  dum5(2,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
+  apexE(2,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,up   ) =  dum5(3,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
 enddo
       print *,"reading E1/2 etc completed"
 !SMS$SERIAL END
