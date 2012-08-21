@@ -24,11 +24,11 @@
       REAL(KIND=real_prec),PARAMETER,PUBLIC :: ht90  = 90.0E+03  !reference height in meter
 !... read in parameters
 !SMS$DISTRIBUTE(dh,NLP,NMP) BEGIN
-      INTEGER(KIND=int_prec), PUBLIC,DIMENSION(NMP,NLP) :: JMIN_IN_all,JMAX_IS_all  !.. first and last indices on field line grid
+      INTEGER(KIND=int_prec), DIMENSION(NMP,NLP) :: JMIN_IN_all,JMAX_IS_all     !.. first and last indices on field line grid
 !SMS$DISTRIBUTE END
 !SMS$DISTRIBUTE(dh,1) BEGIN
-      INTEGER(KIND=int_prec), ALLOCATABLE,TARGET,PUBLIC :: JMIN_IN (  :),JMAX_IS (  :) !.. first and last indices on field line grid
-      INTEGER(KIND=int_prec),             TARGET,PUBLIC :: JMIN_ING(NLP),JMAX_ISG(NLP) !.. first and last indices on field line grid
+      INTEGER(KIND=int_prec), ALLOCATABLE,PUBLIC :: JMIN_IN (  :),JMAX_IS (  :) !.. first and last indices on field line grid
+      INTEGER(KIND=int_prec),             PUBLIC :: JMIN_ING(NLP),JMAX_ISG(NLP) !.. first and last indices on field line grid
 !SMS$DISTRIBUTE END
       TYPE :: plasma_grid
 !dbg20110927         REAL(KIND=real_prec) :: Z  !.. altitude [meter]
@@ -267,6 +267,7 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
 !... read in parameters
       INTEGER(KIND=int_prec) lp,mp,stat_alloc
 
+!SMS$DISTRIBUTE(dh,NMP) BEGIN
       REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  dum0    !.. distance from the center of the Earth[meter]
       REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  dum1    !.. geographic co-latitude [rad]
       REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  dum2    !.. geographic longitude [rad]
@@ -278,10 +279,13 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
       REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP) ::  dum4    !.. Eq(3.8) Richmond 1995
       REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP) ::  dum5    !.. Eq(3.9) Richmond 1995
       REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP) ::  dum6    !.. Eq(3.10) Richmond 1995
+!SMS$DISTRIBUTE END
 !dbg20110927      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP) ::  E1_all    !.. Eq(3.11) Richmond 1995
 !dbg20110927      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP) ::  E2_all    !.. Eq(3.12) Richmond 1995
 !JFM  REAL(KIND=real_prec), DIMENSION(2,NMP,NLP) ::  Be3_all         ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]
+!SMS$DISTRIBUTE(dh,NLP,NMP) BEGIN
       REAL(KIND=real_prec), DIMENSION(NMP,NLP) ::  Be3_all1,Be3_all2 ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]
+!SMS$DISTRIBUTE END
 
 !-------------local
         CHARACTER (LEN=11) :: FORM_dum
