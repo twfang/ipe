@@ -199,6 +199,7 @@ C..... The input parameters JMIN, EHT were also added
 !      hrate_cgs_save(7,j2d,mp_save)=hrate(7) !!PGR 3bod CHECK dimension
         END DO
 
+!SMS$PARALLEL(dh, lp) BEGIN
 
         IF ( IJ==JMAX .AND. lp_save==lpstop ) THEN
 !dbg20111202        IF ( lp_save==lpstop ) THEN
@@ -222,6 +223,7 @@ C..... The input parameters JMIN, EHT were also added
             enddo
           END DO !jth=1,7
         END IF !( lp_save==lpstop ) THEN
+!SMS$PARALLEL END
 
       END IF !( sw_neutral_heating_flip==1 ) THEN
 

@@ -90,6 +90,7 @@ END IF
       TINF_k = zero
       Un_ms1 = zero
 
+!SMS$PARALLEL(dh, lp, mp) BEGIN
       apex_longitude_loop: DO mp = mpstrt, mpstop, mpstep          !1,NMP
         apex_latitude_height_loop: DO lp = lpstrt, lpstop, lpstep  !1,NLP
 
@@ -275,6 +276,7 @@ if( utime==stop_time )   CLOSE(UNIT=luntmp3)
 end if !sw_neutral
 
       END DO  apex_longitude_loop  !: DO mp = 1,NMP
+!SMS$PARALLEL END
 
 !      IF ( ALLOCATED(AP_dum) )  DEALLOCATE ( AP_dum )
       end subroutine neutral

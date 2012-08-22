@@ -54,6 +54,7 @@ ELSE
 STOP 'sub-io_p:!STOP! dumm has been allocated already???!!!'
 END IF
 
+!SMS$PARALLEL(dh, lp, mp) BEGIN
 ! array initialization
 dumm=zero
 
@@ -250,6 +251,7 @@ IF ( ALLOCATED(dumm) ) THEN
 ELSE
 STOP 'sub-io_p:!STOP! dumm has not been allocated???!!!'
 END IF
+!SMS$PARALLEL END
 
 print *,'END sub-io_pl: sw=',switch,' uts=' ,utime 
       END SUBROUTINE io_plasma_bin

@@ -45,6 +45,7 @@ MODULE module_heating_rate
       REAL(KIND=real_prec) :: total_rho
       INTEGER(KIND=int_prec) :: i,jth,lp
 
+!SMS$PARALLEL(dh, lp) BEGIN
       do lp=1,NLP
         i_loop: DO i=JMIN_IN(lp),JMAX_IS(lp)
           IF(plasma_grid_Z(i,lp)>=80.E+03.AND.plasma_grid_Z(i,lp)<=700.E+03) THEN
@@ -79,6 +80,7 @@ MODULE module_heating_rate
 
         END DO i_loop ! DO i=JMIN_IN(lp),JMAX_IS(lp)
       end do ! lp=1,NLP
+!SMS$PARALLEL END
     END SUBROUTINE get_neutral_heating_rate
   
 END MODULE module_heating_rate

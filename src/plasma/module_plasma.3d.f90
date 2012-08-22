@@ -97,6 +97,7 @@ end if
 
       ret = gptlstart ('apex_lon_loop') !24772.857
 !     print*,'JFM mpstrt,mpstop,mpstep', mpstrt,mpstop,mpstep !1,80,1
+!SMS$PARALLEL(dh, lp, mp) BEGIN
       apex_longitude_loop: DO mp = mpstrt,mpstop,mpstep !1,NMP
         mp_save=mp
         IF ( sw_neutral_heating_flip==1 ) hrate_cgs_save=zero
@@ -238,6 +239,7 @@ endif
 
         END DO apex_latitude_height_loop !: DO lp = 1
       END DO apex_longitude_loop !: DO mp = 
+!SMS$PARALLEL END
       ret = gptlstop ('apex_lon_loop')
 
 !dbg20120228: debug how2validate the transport

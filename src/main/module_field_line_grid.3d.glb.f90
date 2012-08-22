@@ -127,7 +127,7 @@
       print *,"Z_meter calculation completed"
 
       Pvalue(:) = zero
-!SMS$PARALLEL(dh, mp, lp) BEGIN
+!SMS$PARALLEL(dh, lp, mp) BEGIN
       apex_longitude_loop: DO mp = 1,NMP
       IF ( sw_debug.AND.mpstrt<=mp.AND.mp<=mpstop ) & 
      &  print *,"sub-init_plasma_grid: mp=",mp
@@ -217,7 +217,6 @@ endif !(mp==1) then
 
        END DO apex_latitude_height_loop   !: DO lp = 1,NLP
      END DO apex_longitude_loop         !: DO mp = 1,NMP 
-!SMS$PARALLEL END
 
      mlon_rad(:) = zero
      DO mp = 1,NMP+1 
@@ -231,6 +230,8 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
 !         plasma_grid_3d(i,lp,mp,IBM) = plasma_grid_3d(i,lp,mp,IBM) * fac_BM
 !       END DO
 !     END DO
+
+!SMS$PARALLEL END
 
         END SUBROUTINE init_plasma_grid
 !---------------------------
