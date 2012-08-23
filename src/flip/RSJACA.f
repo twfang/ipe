@@ -13,6 +13,7 @@ C
       END
 C:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       SUBROUTINE BNDX(N,M,A,KS,B,X,S,SCALE,INDEX,MUL,NFLAG,IW,M1)
+      USE module_IO,ONLY: PRUNIT
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
       DOUBLE PRECISION MUL(M1,N)
       DIMENSION A(N,IW),B(N),X(N),SCALE(N),INDEX(N),S(N,IW)
@@ -21,7 +22,8 @@ C:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       IBW=2*M+1
 C ...... modification here by PR Aug 91
       IF(M.GT.N-1) THEN
-         WRITE(6,918)
+!dbg20120306         WRITE(6,918)
+         WRITE(PRUNIT,918)
 918      FORMAT('    IN BDSLV &&&&&&& BANDWIDTH IS TOO LARGE')
          NFLAG=3
          RETURN
@@ -54,7 +56,8 @@ C
 110   BIG=ABS(S(I,J))
 111   CONTINUE
       IF(BIG) 114,112,114
-  112 WRITE(6,919)I
+!dbg20120306  112 WRITE(6,919)I
+  112 WRITE(PRUNIT,919)I
 919   FORMAT('    IN BDSLV, ROW',I6,' IS ZERO IN INPUT MATRIX')
       NFLAG=2
       RETURN
@@ -99,7 +102,8 @@ C
 C
       IF(S(N,1)) 126,118,126
 C  ..... PR mod in Aug 91
-118   WRITE(6,917)
+!dbg20120306: 118   WRITE(6,917)
+118   WRITE(PRUNIT,917)
 917   FORMAT('  IN BDSLV &&&&&&&&   ZERO PIVOT ELEMENT')
       NFLAG=1
       RETURN

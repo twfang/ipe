@@ -18,9 +18,6 @@ C--- Consult file RSLPSD-Algorithm.doc for detailed explanation
       USE SOLVARR       !... DELTA RHS WORK S, Variables for solver
       USE THERMOSPHERE  !.. ON HN N2N O2N HE TN UN EHT COLFAC
       USE ION_DEN_VEL   !.. O+ H+ He+ N+ NO+ O2+ N2+ O+(2D) O+(2P)
-!dbg20120301: N+ problem: "IN BDSLV &&&&&&& BANDWIDTH IS TOO LARGE "
-      USE module_input_parameters,ONLY:sw_LCE,ht_LCE,sw_DEBUG_flip
-      USE module_IO,ONLY: PRUNIT
       IMPLICIT NONE
       INTEGER FLDIM                      !.. Field line grid array dimension
       INTEGER NFLAG,EFLAG(11,11)         !.. error flags
@@ -53,7 +50,7 @@ C--- Consult file RSLPSD-Algorithm.doc for detailed explanation
 
 !dbg20120301: this part was commented out on 20110815, but un-comment again to solve for N+ problem: "IN BDSLV &&&&&&& BANDWIDTH IS TOO LARGE " i don't remember why we decided to comment out here and i cannot find a program to setup the local chem equil anywhere else???
 !dbg20110815      !.. Use local equilibrium for densities if flux tube apex height < 200 km
-	IF(sw_LCE.AND.Z(JEQ).LT.ht_LCE) THEN !ht_LCE=200.
+	IF(Z(JEQ).LT.200.0) THEN 
          DO J=JMIN,JMAX
            CALL HOEQ(FLDIM,J,N,TI)
            XIONV(1,J)=0.0
@@ -103,13 +100,6 @@ C*** OUTER LOOP: Return here on Non-Convergence with reduced time step
 
         MIT=JBNS-JBNN+1       !.. Number of points on field line
         IEQ=2*(MIT-2)         !.. Number of equations to set up      
-!dbg20120304:
-      if ( sw_DEBUG_flip==1 .and. IEQ==2 ) then
-        print *,MIT,JBNS,JBNN,ZLBDY
-        do j=jmin,jmax
-         print *,j,z(j)
-        enddo
-      end if
 
         !.. Main loop: On each iteration the Jacobian is formed and solved for
         !.. the increments of to add to N. 
@@ -131,8 +121,6 @@ C*** OUTER LOOP: Return here on Non-Convergence with reduced time step
             RHS(KR+2)=F(2)
           ENDDO
 
-!dbg20120304
-      if ( sw_DEBUG_flip==1 )  print *,'DMATRX: IEQ',IEQ
           !.. Create the Jacobian matrix
           CALL DMATRX(FLDIM,S,RHS,IEQ,DT,N,TI,JBNN,JBNS,MIT,NION,NSAVE)
 
@@ -140,14 +128,10 @@ C*** OUTER LOOP: Return here on Non-Convergence with reduced time step
           !.. invert the jacobian matrix 'S' in the inversion routine BDSLV.
           !.. the increments are stored in array delta in this order
           !.. x(1...n,j),x(1...n,j+1),x(1...n,j+2),....x(1...n,jmax-1)
-!dbg20120304
-      if ( sw_DEBUG_flip==1 )  print *,'O+H+ BDSLV: IEQ',IEQ
           CALL BDSLV(IEQ,3,S,0,RHS,DELTA,WORK,NFLAG)
 
           IF(NFLAG.NE.0) THEN
-            IF(EFLAG(11,11).EQ.1) 
-!dbg20120304     & WRITE(6,'(/A,I5,A,I5)')
-     & WRITE(PRUNIT,'(/A,I5,A,I5)')
+            IF(EFLAG(11,11).EQ.1) WRITE(6,'(/A,I5,A,I5)')
      >       '  ITERATION =',ITER,'  RETURN FROM BDSLV =',NFLAG
             EFLAG(2,2)=-1   !.. Report problem to calling routine
             RETURN

@@ -47,28 +47,28 @@ SRC0	=\
 	${DR0}/module_field_line_grid.f90
 # DR1: neutrals
 SRC1	=\
-	${DR1}/nrlmsise00_mod.f90 \
-	${DR1}/hwm93_mod.f90 \
-	${DR1}/thermosphere_1d_v2_mod.f90 \
+	${DR1}/nrlmsise00.f90 \
+	${DR1}/hwm93.f90 \
+	${DR1}/thermosphere_1d_v2.f90 \
 	${DR1}/module_neutral.f90 \
 	${DR1}/module_heating_rate.f90
 # DR2: FLIP
 SRC2	=\
-	${DR2}/CTIPE-int_mod.f \
+	${DR2}/CTIPE-int.f \
 	${DR2}/initialize_module_parameters.f \
 	${DR2}/CMINOR.f \
 	${DR2}/ELECXS.f \
 	${DR2}/INIT-PROFILES.f \
 	${DR2}/KEMPRN.f \
 	${DR2}/MINORA.f \
-	${DR2}/Neut_Heating_mod.f \
+	${DR2}/Neut_Heating.f \
 	${DR2}/Photoel-Freqs.f \
 	${DR2}/RSDENA_EXB.f \
-	${DR2}/RSJACA_mod.f \
-	${DR2}/RSLPSD_mod.f \
+	${DR2}/RSJACA.f \
+	${DR2}/RSLPSD.f \
 	${DR2}/RSLPST.f \
 	${DR2}/RSPE2B.f \
-	${DR2}/RSPRIM_mod.f \
+	${DR2}/RSPRIM.f \
 	${DR2}/RSTEMC_EXB.f \
 	${DR2}/Rates.f \
 	${DR2}/FLIP_GRID.f
@@ -91,7 +91,7 @@ SRC3	=\
 SRC6	=\
 	${DR6}/efield.f \
 	${DR6}/module_eldyn.f \
-	${DR6}/magfield_mod.f \
+	${DR6}/magfield.f \
 	${DR6}/get_efield90km.f \
 	${DR6}/apex_sunloc.f \
 	${DR6}/supim_exb.f

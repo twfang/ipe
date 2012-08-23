@@ -23,12 +23,12 @@
       INTEGER (KIND=int_prec),PUBLIC :: mp_save,lp_save,MaxFluxTube
       REAL(KIND=real_prec),PARAMETER,PUBLIC :: ht90  = 90.0E+03  !reference height in meter
 !... read in parameters
-!SMS$DISTRIBUTE(dh,NLP,NMP) BEGIN
-      INTEGER(KIND=int_prec), DIMENSION(NMP,NLP) :: JMIN_IN_all,JMAX_IS_all     !.. first and last indices on field line grid
+!SMS$DISTRIBUTE(dh,2,1) BEGIN
+      INTEGER(KIND=int_prec),ALLOCATABLE :: JMIN_IN_all(:,:),JMAX_IS_all(:,:)!.. first and last indices on field line grid
 !SMS$DISTRIBUTE END
 !SMS$DISTRIBUTE(dh,1) BEGIN
-      INTEGER(KIND=int_prec), ALLOCATABLE,PUBLIC :: JMIN_IN (  :),JMAX_IS (  :) !.. first and last indices on field line grid
-      INTEGER(KIND=int_prec),             PUBLIC :: JMIN_ING(NLP),JMAX_ISG(NLP) !.. first and last indices on field line grid
+      INTEGER(KIND=int_prec),ALLOCATABLE,PUBLIC :: JMIN_IN (:),JMAX_IS (:)   !.. first and last indices on field line grid
+      INTEGER(KIND=int_prec),ALLOCATABLE,PUBLIC :: JMIN_ING(:),JMAX_ISG(:)   !.. first and last indices on field line grid
 !SMS$DISTRIBUTE END
       TYPE :: plasma_grid
 !dbg20110927         REAL(KIND=real_prec) :: Z  !.. altitude [meter]
@@ -301,6 +301,17 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
 !dbg      INTEGER(KIND=int_prec) :: sw_test_grid=0  !1: ON testgrid; 0: OFF 
 !---
 
+        ALLOCATE ( JMIN_IN_all ( NMP,NLP  ) &
+     &,            JMAX_IS_all ( NMP,NLP  ) &
+     &,            JMIN_ING    (     NLP  ) &
+     &,            JMAX_ISG    (     NLP  ) &
+     &,            STAT=stat_alloc        )
+ 
+      IF ( stat_alloc/=0 ) THEN
+        print *,"!STOP! ALLOCATION of JMAX* and JMIN* FAILD!:",stat_alloc
+        STOP
+      END IF
+
 !SMS$SERIAL BEGIN
       filename =filepath_pgrid//filename_pgrid
       FORM_dum ='formatted' 
@@ -314,6 +325,12 @@ if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
       JMAX_ISG = JMAX_IS_all(1,:)
       MaxFluxTube = maxval(JMAX_ISG-JMIN_ING+1)
 !SMS$SERIAL END
+
+      DEALLOCATE ( JMIN_IN_all,JMAX_IS_all,STAT=stat_alloc )
+      IF ( stat_alloc/=0 ) THEN
+        print *,"!STOP! DEALLOCATION of JMIN_IN_all/JMAX_IS_all FAILD!",stat_alloc
+        STOP
+      END IF
 
       CALL allocate_arrays ( 0 )
 
