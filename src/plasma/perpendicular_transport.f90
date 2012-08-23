@@ -93,7 +93,7 @@ which_hemisphere: DO ihem=1,1  !ihem_max
 !!!dbg20120125:  mlon_deg = phi_t0(ihem)*rtd
 !!!dbg20120125:  mp_t0(ihem,1) = INT( (mlon_deg/dlonm90km) , int_prec )+1
 !!!dbg20120125:  mp_t0(ihem,2) = mp_t0(ihem,1)+1
-!SMS$PARALLEL(dh, mpx) BEGIN
+!SMS$PARALLEL(dh, , mpx) BEGIN
   mpx_loop: DO mpx=1,NMP
     IF ( mlon_rad(mpx)<=phi_t0(ihem) .AND. phi_t0(ihem)<mlon_rad(mpx+1) ) THEN
       mp_t0(ihem,1) =mpx
@@ -101,7 +101,7 @@ which_hemisphere: DO ihem=1,1  !ihem_max
       EXIT mpx_loop
     END IF
   END DO mpx_loop !: DO mpx=1,NMP
-!SMS$PARALLE END
+!SMS$PARALLEL END
 !dbg20120125:
 if(sw_debug) print *,'dbg20120125! sub-find_neighbor_grid:', mp_t0(ihem,1:2),phi_t0(ihem)*rtd, mlon_rad(mp_t0(ihem,1:2))*rtd
 !STOP
@@ -205,7 +205,7 @@ which_hemisphere: DO ihem=1,1  !ihem_max
 !!!dbg20120125:  mlon_deg = phi_t0(ihem)*rtd
 !!!dbg20120125:  mp_t0(ihem,1) = INT( (mlon_deg/dlonm90km) , int_prec )+1
 !!!dbg20120125:  mp_t0(ihem,2) = mp_t0(ihem,1)+1
-!SMS$PARALLEL(dh, mpx) BEGIN
+!SMS$PARALLEL(dh, , mpx) BEGIN
   mpx_loop: DO mpx=1,NMP
     IF ( mlon_rad(mpx)<=phi_t0(ihem) .AND. phi_t0(ihem)<mlon_rad(mpx+1) ) THEN
       mp_t0(ihem,1) =mpx

@@ -16,10 +16,8 @@
 #(1) COMPILER=pgf95, lf648, ifort, or xlf90
 #(2) machine=$(machine)_$(COMPILER)
 include  Make.$(machine)
-VERSION=3d
-RESOLUTION=glb.eld
 TEST=v18
-PACKAGE=../bin/ipe.${TEST}.exe
+PACKAGE=../bin/ipe_${TEST}.exe
 # DR0: modules
 DR0=${HOME_dev}/main
 FFLAG0=${FFLAGS90} ${INCLUDE_PATH}${DR3}
@@ -41,49 +39,49 @@ FFLAG4=${FFLAGS90} ${INCLUDE_PATH}${DR1} ${INCLUDE_PATH}${DR3} ${INCLUDE_PATH}${
 SRC0	=\
 	${DR0}/module_decomp.f90 \
 	${DR0}/module_precision.f90 \
-	${DR0}/module_IPE_dimension.${RESOLUTION}.f90 \
+	${DR0}/module_IPE_dimension.f90 \
 	${DR0}/module_physical_constants.f90 \
 	${DR0}/module_unit_conversion.f90 \
 	${DR0}/module_input_parameters.f90 \
-	${DR0}/module_io.${VERSION}.f90 \
-	${DR0}/module_field_line_grid.${VERSION}.glb.f90
+	${DR0}/module_io.f90 \
+	${DR0}/module_field_line_grid.f90
 # DR1: neutrals
 SRC1	=\
-	${DR1}/nrlmsise00.mod.f90 \
-	${DR1}/hwm93.mod.f90 \
-	${DR1}/thermosphere_1d_v2.mod.f90 \
-	${DR1}/module_neutral.${VERSION}.f90 \
+	${DR1}/nrlmsise00_mod.f90 \
+	${DR1}/hwm93_mod.f90 \
+	${DR1}/thermosphere_1d_v2_mod.f90 \
+	${DR1}/module_neutral.f90 \
 	${DR1}/module_heating_rate.f90
 # DR2: FLIP
 SRC2	=\
-	${DR2}/CTIPE-int.mod.${VERSION}.f \
+	${DR2}/CTIPE-int_mod.f \
 	${DR2}/initialize_module_parameters.f \
 	${DR2}/CMINOR.f \
 	${DR2}/ELECXS.f \
 	${DR2}/INIT-PROFILES.f \
 	${DR2}/KEMPRN.f \
 	${DR2}/MINORA.f \
-	${DR2}/Neut_Heating.mod.f \
+	${DR2}/Neut_Heating_mod.f \
 	${DR2}/Photoel-Freqs.f \
 	${DR2}/RSDENA_EXB.f \
-	${DR2}/RSJACA.mod.f \
-	${DR2}/RSLPSD.mod.f \
+	${DR2}/RSJACA_mod.f \
+	${DR2}/RSLPSD_mod.f \
 	${DR2}/RSLPST.f \
 	${DR2}/RSPE2B.f \
-	${DR2}/RSPRIM.mod.f \
+	${DR2}/RSPRIM_mod.f \
 	${DR2}/RSTEMC_EXB.f \
 	${DR2}/Rates.f \
 	${DR2}/FLIP_GRID.f
 # DR3: plasma
 SRC3	=\
-	${DR3}/module_plasma.${VERSION}.f90 \
+	${DR3}/module_plasma.f90 \
 	${DR3}/get_pvalue_dipole.f90 \
-	${DR3}/get_sza.${VERSION}.f90 \
+	${DR3}/get_sza.f90 \
 	${DR3}/get_sinim.f90 \
-	${DR3}/flux_tube_solver.${VERSION}.f90 \
+	${DR3}/flux_tube_solver.f90 \
 	${DR3}/perpendicular_transport.f90 \
 	${DR3}/stepback_mag.f90 \
-	${DR3}/interpolate_flux_tube.${TEST}.f90 \
+	${DR3}/interpolate_flux_tube_${TEST}.f90 \
 	${DR3}/io_plasma_bin.f90 \
 	${DR3}/read_vexb.f90
 
@@ -93,7 +91,7 @@ SRC3	=\
 SRC6	=\
 	${DR6}/efield.f \
 	${DR6}/module_eldyn.f \
-	${DR6}/magfield.mod.f \
+	${DR6}/magfield_mod.f \
 	${DR6}/get_efield90km.f \
 	${DR6}/apex_sunloc.f \
 	${DR6}/supim_exb.f
@@ -103,7 +101,7 @@ SRC4	=\
 	${DR4}/allocate_arrays.f90 \
 	${DR4}/output_plasma_grid.f90 \
 	${DR4}/stop.f90 \
-	${DR4}/driver_ipe.${VERSION}.glb.eld.f90
+	${DR4}/driver_ipe.f90
 #
 #HEADS	= $(PACKAGE).h
 OBJ0	= $(SRC0:.f90=.o)

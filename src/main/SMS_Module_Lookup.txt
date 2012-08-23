@@ -1,13 +1,13 @@
 module_decomp ./module_decomp_sms.f.tmp
-module_PLASMA ../plasma/module_plasma.3d.f90
-module_NEUTRAL_MKS ../neutral/module_neutral.3d.f90
+module_PLASMA ../plasma/module_plasma.f90
+module_NEUTRAL_MKS ../neutral/module_neutral.f90
 module_heating_rate ../neutral/module_heating_rate.f90
 module_ELDYN ../eldyn/module_eldyn.f
 
 module_precision ./module_precision_sms.f.tmp
-module_ipe_dimension ./module_IPE_dimension.glb.eld_sms.f.tmp
+module_ipe_dimension ./module_IPE_dimension_sms.f.tmp
 module_physical_constants ./module_physical_constants_sms.f.tmp
 module_unit_conversion ./module_unit_conversion_sms.f.tmp
 module_input_parameters ./module_input_parameters_sms.f.tmp
-module_io ./module_io.3d_sms.f.tmp
-module_field_line_grid_mks ./module_field_line_grid.3d.glb_sms.f.tmp
+module_io ./module_io_sms.f.tmp
+module_field_line_grid_mks ./module_field_line_grid_sms.f.tmp
