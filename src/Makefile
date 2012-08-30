@@ -91,7 +91,8 @@ SRC3	=\
 SRC6	=\
 	${DR6}/efield.f \
 	${DR6}/module_eldyn.f \
-	${DR6}/magfield.f \
+	${DR6}/module_magfield.f \
+	${DR6}/module_sunloc.f \
 	${DR6}/get_efield90km.f \
 	${DR6}/apex_sunloc.f \
 	${DR6}/supim_exb.f
