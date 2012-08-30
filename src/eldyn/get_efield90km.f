@@ -24,7 +24,8 @@
       USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS
      &,mlon_rad,ht90
       USE module_input_parameters,ONLY: sw_debug,NYEAR,NDAY
-      USE magfield_module,ONLY:sunloc,sunlons
+      USE module_magfield,ONLY:sunlons
+      USE module_sunloc,ONLY:sunloc
       IMPLICIT NONE
 !
       INTEGER (KIND=int_prec),INTENT(IN)   :: utime !universal time [sec]
