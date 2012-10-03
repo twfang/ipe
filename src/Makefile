@@ -43,8 +43,10 @@ SRC0	=\
 	${DR0}/module_physical_constants.f90 \
 	${DR0}/module_unit_conversion.f90 \
 	${DR0}/module_input_parameters.f90 \
-	${DR0}/module_io.f90 \
-	${DR0}/module_field_line_grid.f90
+	${DR0}/module_io.v1.f90 \
+	${DR0}/module_sub_io.f90 \
+	${DR0}/module_field_line_grid.v1.f90 \
+	${DR0}/module_sub_field_line_grid.f90
 # DR1: neutrals
 SRC1	=\
 	${DR1}/nrlmsise00.f90 \
@@ -75,6 +77,7 @@ SRC2	=\
 # DR3: plasma
 SRC3	=\
 	${DR3}/module_plasma.f90 \
+	${DR3}/module_sub_plasma.f90 \
 	${DR3}/get_pvalue_dipole.f90 \
 	${DR3}/get_sza.f90 \
 	${DR3}/get_sinim.f90 \
@@ -90,7 +93,8 @@ SRC3	=\
 # DR6: eldyn
 SRC6	=\
 	${DR6}/efield.f \
-	${DR6}/module_eldyn.f \
+	${DR6}/module_eldyn.v1.f \
+	${DR6}/module_sub_eldyn.f \
 	${DR6}/module_magfield.f \
 	${DR6}/module_sunloc.f \
 	${DR6}/get_efield90km.f \
