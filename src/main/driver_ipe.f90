@@ -15,13 +15,17 @@
       PROGRAM  test_plasma
       USE module_precision
       USE module_input_parameters,ONLY: read_input_parameters,start_time,stop_time,time_step,HPEQ_flip,ip_freq_msis,sw_output_plasma_grid ,sw_debug, sw_perp_transport
-      USE module_FIELD_LINE_GRID_MKS,ONLY: init_plasma_grid
+!nm20121003      USE module_FIELD_LINE_GRID_MKS,ONLY: init_plasma_grid
+      USE module_sub_FIELD_LINE_GRID_MKS,ONLY: init_plasma_grid
       USE module_NEUTRAL_MKS,ONLY: neutral 
-      USE module_PLASMA,ONLY: plasma
+      USE module_sub_PLASMA,ONLY: plasma
 !SMS$IGNORE BEGIN
-      USE module_ELDYN,ONLY: init_eldyn, eldyn
+!nm20121003      USE module_ELDYN,ONLY: init_eldyn, eldyn
+!nm20121003:
+      USE module_sub_ELDYN,ONLY: init_eldyn, eldyn
 !SMS$IGNORE END
-      USE module_IO,ONLY: open_output_files,output,close_files
+!nm20121003      USE module_IO,ONLY: open_output_files,output,close_files
+      USE module_sub_IO,ONLY: open_output_files,output,close_files
       USE module_IPE_dimension,ONLY: NMP,NLP
       IMPLICIT NONE
       include "gptl.inc"
