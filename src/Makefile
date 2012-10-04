@@ -94,8 +94,12 @@ SRC3	=\
 # DR6: eldyn
 SRC6	=\
 	${DR6}/efield.f \
+	${DR6}/sub_efield.f \
+	${DR6}/efield_init.f \
+	${DR6}/get_efield.f \
 	${DR6}/module_eldyn.f \
 	${DR6}/module_sub_eldyn.f \
+	${DR6}/init_eldyn.f \
 	${DR6}/module_magfield.f \
 	${DR6}/module_sunloc.f \
 	${DR6}/get_efield90km.f \

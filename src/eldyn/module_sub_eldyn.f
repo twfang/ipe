@@ -23,7 +23,8 @@
 !c idea
 !      subroutine idea_geteb(im,ix,dayno,utsec,f107,kp,maglat,maglon,
 !     &essa,ee1,ee2)
-      USE efield
+      USE efield !,ONLY:iday,imo,iday_m,iyear,ut,kp,by,bz,f107d
+      USE module_get_efield,ONLY:get_efield
 !c     use date_def
 !c     use physcons, pi => con_pi
       IMPLICIT NONE
@@ -31,20 +32,8 @@
 !nm20121003:module parameters are separated into module_eldyn.f
 
       PRIVATE
-      PUBLIC :: init_eldyn,eldyn
+      PUBLIC :: eldyn
       CONTAINS
-      SUBROUTINE init_eldyn ( )
-      IMPLICIT NONE
-!20120304:      CHARACTER(len=*),PARAMETER :: path='~/sandbox/efield/'
-!
-      print *,'begin init_eldyn'
-      CALL efield_init( 
-     &'coeff_lflux.dat',
-     &'coeff_hflux.dat',
-     &'wei96.cofcnts')
-!
-      print *,'END sub-init_eld'
-      END SUBROUTINE init_eldyn
 !---
       SUBROUTINE eldyn ( utime )
       USE module_precision

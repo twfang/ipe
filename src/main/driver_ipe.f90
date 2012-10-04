@@ -22,7 +22,8 @@
 !SMS$IGNORE BEGIN
 !nm20121003      USE module_ELDYN,ONLY: init_eldyn, eldyn
 !nm20121003:
-      USE module_sub_ELDYN,ONLY: init_eldyn, eldyn
+      USE module_init_ELDYN,ONLY: init_eldyn
+      USE module_sub_ELDYN,ONLY: eldyn
 !SMS$IGNORE END
 !nm20121003      USE module_IO,ONLY: open_output_files,output,close_files
       USE module_sub_IO,ONLY: open_output_files,output,close_files
