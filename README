@@ -20,10 +20,13 @@ $ make PAR=sms
 
 go to the run directory
 cd ../run
+copy the desired IPE.inp.* into IPE.inp
 
 run the executable
 $ ../src/ipe.v18.exe
 
 or submit a job:
+#For zeus:
 $ qsubipe
-
+#For JET
+$ qsubipejET

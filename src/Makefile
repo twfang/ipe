@@ -46,7 +46,8 @@ SRC0	=\
 	${DR0}/module_io.f90 \
 	${DR0}/module_sub_io.f90 \
 	${DR0}/module_field_line_grid.f90 \
-	${DR0}/module_sub_field_line_grid.f90
+	${DR0}/module_read_plasma_grid_global.f90 \
+	${DR0}/module_init_plasma_grid.f90
 # DR1: neutrals
 SRC1	=\
 	${DR1}/nrlmsise00.f90 \
