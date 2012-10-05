@@ -29,7 +29,7 @@ IMPLICIT NONE
       filename ='plasma_grid'
       FORM_dum ='unformatted' 
       STATUS_dum ='unknown'
-!SMS$SERIAL BEGIN
+!SMS$SERIAL(<JMIN_IN,JMAX_IS,mlon_rad,plasma_grid_Z,plasma_grid_GL,IN> : default=ignore) BEGIN
       CALL open_file ( filename, LUN, FORM_dum, STATUS_dum ) 
 
     WRITE(UNIT=lun) NMP
@@ -42,7 +42,7 @@ IMPLICIT NONE
     WRITE(UNIT=lun) (plasma_grid_GL(JMIN_IN(lp):JMAX_IS(lp),lp),lp=1,NLP)  !rad
 !SMS$SERIAL END
 
-!SMS$SERIAL(<plasma_grid_3d,IN> : default=ignore) BEGIN
+!SMS$SERIAL(<plasma_grid_3d,JMIN_ING,JMAX_ISG,JMIN_IN,JMAX<IS,IN> : default=ignore) BEGIN
 do lp=1,NLP
   dumm(JMIN_ING(lp):JMAX_ISG(lp),1:NMP) = plasma_grid_3d(JMIN_IN(lp):JMAX_IS(LP), lp,1:NMP,IGCOLAT)
 enddo

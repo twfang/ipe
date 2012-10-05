@@ -24,7 +24,9 @@
 !------------------------
       INTEGER (KIND=int_prec ), INTENT(IN) :: switch !2:read; 1:write
       INTEGER (KIND=int_prec ), INTENT(IN) :: utime !universal time [sec]
+!SMS$DISTRIBUTE(dh,NMP) BEGIN
       REAL    (KIND=real_prec) :: dumm(NPTS2D,NMP)
+!SMS$DISTRIBUTE END
       INTEGER (KIND=int_prec ) :: stat_alloc
       INTEGER (KIND=int_prec ) :: jth,mp,lp,npts
       INTEGER (KIND=int_prec ) :: lun,in,is
@@ -48,8 +50,7 @@ if(sw_debug)  print *,'sub-io_plasma_bin: switch=',switch,' utime[sec]' ,utime
 ! array initialization
 dumm=zero
 
-!1:WRITE TO FILE
-IF ( switch==1 ) THEN
+IF ( switch==1 ) THEN !1:Output the 16 plasma* files
 
 record_number_plasma = record_number_plasma+1
 
@@ -85,28 +86,31 @@ end do mp_loop1!mp
 LUN = LUN_PLASMA1(jth-1+lun_min1)
 if(sw_debug) print *,'jth=',jth,' LUN=',LUN
 
+!SMS$SERIAL(<dumm,IN>:default=ignore) BEGIN
       WRITE (UNIT=lun) dumm
+!SMS$SERIAL END
 if(sw_debug) print *,'!dbg! output dummy finished'
 
 !print *,'lun',
 END DO j_loop1!jth
 
-
 LUN = LUN_PLASMA1(lun_max1)
 !ExB
+!SMS$SERIAL(<VEXBup,IN>:default=ignore) BEGIN
       WRITE (UNIT=LUN) VEXBup
 !t if(sw_debug) print *,'!dbg! output VEXB finished'
 
 !UT
       WRITE (UNIT=lun_ut,FMT=*) record_number_plasma, utime
+!SMS$SERIAL END
 if(sw_debug) & 
      &  print *,'LUN=',lun_ut,'!dbg! output UT  finished: utime=',utime,record_number_plasma
 
 
 
 
-!2:READ FROM FILE
-ELSE IF ( switch==2 ) THEN
+ELSE IF ( switch==2 ) THEN !2:RESTART: Read from the 16 plasma* files
+
 print *,'sub-io_pl: start_uts=',utime
 
 ! array initialization
@@ -153,7 +157,9 @@ ELSE IF ( sw_record_number==1 ) THEN
       n_count=0
       read_loop1: DO n_read=1,n_max !=10000
 
+!SMS$SERIAL BEGIN
          READ (UNIT=lun_ut2,FMT=*,END=19) record_number_plasma_dum, utime_dum
+!SMS$SERIAL END
          n_count=n_count+1
 
          IF (n_read==1) THEN
@@ -186,7 +192,10 @@ read_loop: DO n_read=n_read_min, record_number_plasma_start
 !      READ (UNIT=lun ) utime_dum
 !if(sw_debug) 
 !print *,'LUN=',lun,'!dbg! read UT  finished: jth=',jth,utime_dum
+
+!SMS$SERIAL(<dumm,OUT>:default=ignore) BEGIN
   READ (UNIT=lun ) dumm
+!SMS$SERIAL END
 !if(sw_debug) 
   if (jth==ISPEC+3) &
      & print *,'!dbg! read dummy finished jth',jth
@@ -225,8 +234,10 @@ IS=JMAX_IS(lp)
 end do mp_loop2!mp
 
 
+!SMS$SERIAL BEGIN
 print *,'closing lun',LUN
 CLOSE(LUN)
+!SMS$SERIAL END
 END DO j_loop2!jth
 
 END IF !( switch==1 ) THEN
