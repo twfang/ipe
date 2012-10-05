@@ -1,7 +1,7 @@
 !Jan2011:original code was provided from Astrid from WACCM.
 !Aug2011:this code was provided from Fei Wu from the WAM version.
 !--------------------------------------------  
-      module module_efield_init
+      module module_prep_weimer
 !--------------------------------------------------------------------- 
 ! description: calculates the electric potential for a given year,
 !      day of year,UT, F10.7, B_z(K_p)
@@ -53,46 +53,66 @@ c     use cam_logfile,   only: iulog
       implicit none
 
 !nm20121003:module parameters are separated into efield.f!
-      public :: efield_init   ! interface routine
-
+      public :: prep_weimer
 
       contains
-
-      subroutine efield_init(efield_lflux_file, efield_hflux_file, 
-     &efield_wei96_file)
+!-----------------------------------------------------------------------
+      subroutine prep_weimer
+!-----------------------------------------------------------------
+! Purpose:  for Weimer model calculate IMF angle, IMF magnitude
+!  tilt of earth
+!
+! Method: using functions and subroutines from Weimer Model 1996
+!     output:  angle, &  ! IMF angle
+!     	       bt,    &  ! IMF magnitude
+!     	       tilt      ! tilt of earth
+!
+! Author: A. Maute Nov 2003  am 11/20/03
+!-----------------------------------------------------------------
+!nm20121003
       USE efield !,ONLY:
-      USE module_prep_pnm,ONLY:prep_pnm
-      USE module_index_quiet ,ONLY:index_quiet
-      USE module_read_acoef ,ONLY: read_acoef
-      USE module_constants ,ONLY:constants
-      USE module_prep_fk ,ONLY:prep_fk
-      implicit none
-!--------------------------------------------------------------------
-! Purpose: read in and set up coefficients needed for electric field
-!          calculation (independent of time & geog. location)
-!
-! Method:
-!
-! Author: A. Maute Dec 2003  am 12/17/03 
+!-----------------------------------------------------------------
+!  local variables
+!-----------------------------------------------------------------
+      real ::  
+     &  angle,  ! IMF angle
+     &  bt,    ! IMF magnitude
+     &  tilt       ! tilt of earth
+
+!-----------------------------------------------------------------
+! function declarations
+!-----------------------------------------------------------------
+      real, external :: get_tilt	 ! in wei96.f
+
+      if( by == 0. .and. bz == 0.) then
+         angle = 0.
+      else
+         angle = atan2( by,bz )
+      end if
+      
+      angle = angle*rtd
+      call adjust( angle )
+      bt = sqrt( by*by + bz*bz )
 !-------------------------------------------------------------------
-      character(len=*), intent(in) :: efield_lflux_file
-      character(len=*), intent(in) :: efield_hflux_file
-      character(len=*), intent(in) :: efield_wei96_file
+! use month and day of month - calculated with average no.of days per month
+! as in Weimer
+!-------------------------------------------------------------------
+c     if(debug) write(iulog,*) 'prep_weimer: day->day of month',
+c    &iday,imo,iday_m,ut
+      tilt = get_tilt( iyear, imo, iday_m, ut )
 
-      call constants	 ! calculate constants
-!-----------------------------------------------------------------------
-! low/midlatitude potential from Scherliess model
-!-----------------------------------------------------------------------
-      call read_acoef (efield_lflux_file, efield_hflux_file)	! read in A_klnm for given S_aM
-      call index_quiet  ! set up index for f_m(mlt),f_l(UT),f_-k(d)
-      call prep_fk	! set up the constant factors for f_k
-      call prep_pnm	! set up the constant factors for P_n^m & dP/d phi
-!-----------------------------------------------------------------------
-!following part should be independent of time & location if IMF constant
-!-----------------------------------------------------------------------
-      call ReadCoef (efield_wei96_file)
+c      if(debug) then
+c       write(iulog,"(/,'efield prep_weimer:')")
+c       write(iulog,*)  '  Bz   =',bz
+c       write(iulog,*)  '  By   =',by
+c       write(iulog,*)  '  Bt   =',bt
+c       write(iulog,*)  '  angle=',angle
+c       write(iulog,*)  '  VSW  =',v_sw
+c       write(iulog,*)  '  tilt =',tilt
+c      end if
 
-      end subroutine efield_init
+      call SetModel( angle, bt, tilt, v_sw )
 
-
-      end module module_efield_init
+      end subroutine prep_weimer
+!-----------------------------------------------------------------------
+      end module module_prep_weimer

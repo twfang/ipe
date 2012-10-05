@@ -1,7 +1,7 @@
 !Jan2011:original code was provided from Astrid from WACCM.
 !Aug2011:this code was provided from Fei Wu from the WAM version.
 !--------------------------------------------  
-      module module_efield_init
+      module module_pot_latsmo2
 !--------------------------------------------------------------------- 
 ! description: calculates the electric potential for a given year,
 !      day of year,UT, F10.7, B_z(K_p)
@@ -53,46 +53,69 @@ c     use cam_logfile,   only: iulog
       implicit none
 
 !nm20121003:module parameters are separated into efield.f!
-      public :: efield_init   ! interface routine
-
+      public :: pot_latsmo2
 
       contains
-
-      subroutine efield_init(efield_lflux_file, efield_hflux_file, 
-     &efield_wei96_file)
+!-----------------------------------------------------------------------
+      subroutine pot_latsmo2( pot, idlat ) 
+!------------------------------------------------------------------
+! Purpose:  smoothing in latitude of  potential
+!
+! Method: weighted smoothing in latitude 
+!         assume regular grid spacing
+!
+! Author: A. Maute Nov 2003  am 11/20/03
+!------------------------------------------------------------------
+!nm20121003
       USE efield !,ONLY:
-      USE module_prep_pnm,ONLY:prep_pnm
-      USE module_index_quiet ,ONLY:index_quiet
-      USE module_read_acoef ,ONLY: read_acoef
-      USE module_constants ,ONLY:constants
-      USE module_prep_fk ,ONLY:prep_fk
-      implicit none
-!--------------------------------------------------------------------
-! Purpose: read in and set up coefficients needed for electric field
-!          calculation (independent of time & geog. location)
-!
-! Method:
-!
-! Author: A. Maute Dec 2003  am 12/17/03 
+!------------------------------------------------------------------
+!	... dummy arguments
+!------------------------------------------------------------------
+      integer, intent(in)     :: idlat
+      real, intent(inout) :: pot(0:nmlon,0:nmlat)
+
+!------------------------------------------------------------------
+! local variables
+!------------------------------------------------------------------
+      integer  :: ilon, ilat, id
+      real :: wgt, del
+      real :: w(-idlat:idlat)
+!     real :: pot_smo(0:nmlat) ! temp array for smooth. potential
+      real :: pot_smo(0:nmlon,0:nmlath) ! temp array for smooth. potential
+
 !-------------------------------------------------------------------
-      character(len=*), intent(in) :: efield_lflux_file
-      character(len=*), intent(in) :: efield_hflux_file
-      character(len=*), intent(in) :: efield_wei96_file
+! weighting factors (regular grid spacing)  
+!-------------------------------------------------------------------
+      wgt = 0.
+      do id = -idlat,idlat
+	del   = abs(id)*dlatm	! delta lat_m
+	w(id) = 1./(del + 1.)
+        wgt   = wgt + w(id)
+      end do
+      wgt = 1./wgt
 
-      call constants	 ! calculate constants
-!-----------------------------------------------------------------------
-! low/midlatitude potential from Scherliess model
-!-----------------------------------------------------------------------
-      call read_acoef (efield_lflux_file, efield_hflux_file)	! read in A_klnm for given S_aM
-      call index_quiet  ! set up index for f_m(mlt),f_l(UT),f_-k(d)
-      call prep_fk	! set up the constant factors for f_k
-      call prep_pnm	! set up the constant factors for P_n^m & dP/d phi
-!-----------------------------------------------------------------------
-!following part should be independent of time & location if IMF constant
-!-----------------------------------------------------------------------
-      call ReadCoef (efield_wei96_file)
+!     do ilon = 0,nmlon
+!       do ilat = idlat,nmlath-idlat  ! ilat = 5:175
+!         pot_smo(ilat) = 0.
+!         do id = -idlat,idlat	!  org. was degree now grid points
+!           pot_smo(ilat) = pot_smo(ilat) + w(id)*pot(ilon,ilat+id)
+!         end do
+!         pot_smo(ilat) = pot_smo(ilat)*wgt
+!       end do
+!       pot(ilon,idlat:nmlath-idlat) = pot_smo(idlat:nmlath-idlat) ! copy back into pot
+!     end do
 
-      end subroutine efield_init
+!$omp parallel do private(ilat)
+      do ilat = idlat,nmlath-idlat
+         pot_smo(:,ilat) = matmul( pot(:,ilat-idlat:ilat+idlat),w )*wgt
+      end do
+
+      do ilat = idlat,nmlath-idlat
+         pot(:,ilat) = pot_smo(:,ilat)
+      end do
+
+      end subroutine pot_latsmo2
 
 
-      end module module_efield_init
+!-----------------------------------------------------------------------
+      end module module_pot_latsmo2

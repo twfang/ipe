@@ -1,7 +1,7 @@
 !Jan2011:original code was provided from Astrid from WACCM.
 !Aug2011:this code was provided from Fei Wu from the WAM version.
 !--------------------------------------------  
-      module module_efield_init
+      module module_prep_pnm
 !--------------------------------------------------------------------- 
 ! description: calculates the electric potential for a given year,
 !      day of year,UT, F10.7, B_z(K_p)
@@ -53,46 +53,51 @@ c     use cam_logfile,   only: iulog
       implicit none
 
 !nm20121003:module parameters are separated into efield.f!
-      public :: efield_init   ! interface routine
-
+      public :: prep_pnm
 
       contains
 
-      subroutine efield_init(efield_lflux_file, efield_hflux_file, 
-     &efield_wei96_file)
-      USE efield !,ONLY:
-      USE module_prep_pnm,ONLY:prep_pnm
-      USE module_index_quiet ,ONLY:index_quiet
-      USE module_read_acoef ,ONLY: read_acoef
-      USE module_constants ,ONLY:constants
-      USE module_prep_fk ,ONLY:prep_fk
-      implicit none
-!--------------------------------------------------------------------
-! Purpose: read in and set up coefficients needed for electric field
-!          calculation (independent of time & geog. location)
+                                                                      
+
+
+
+      subroutine prep_pnm
+!-----------------------------------------------------------------      
+! Purpose: constant factors for normalized associated Legendre polynomial P_n^m
+!          Ref.: Richmond J.Atm.Ter.Phys. 1974
 !
 ! Method:
+!   PmoPmmo(m) = sqrt(1+1/2m)
+!   R_n^m      = sqrt[ (n^2-m^2)/(4n^2-1) ]
 !
-! Author: A. Maute Dec 2003  am 12/17/03 
-!-------------------------------------------------------------------
-      character(len=*), intent(in) :: efield_lflux_file
-      character(len=*), intent(in) :: efield_hflux_file
-      character(len=*), intent(in) :: efield_wei96_file
+! Author: A. Maute Nov 2003  am 11/18/03
+!-----------------------------------------------------------------     
+!nm20121003
+      USE efield !,ONLY:
+      implicit none                
 
-      call constants	 ! calculate constants
 !-----------------------------------------------------------------------
-! low/midlatitude potential from Scherliess model
+! local variables
 !-----------------------------------------------------------------------
-      call read_acoef (efield_lflux_file, efield_hflux_file)	! read in A_klnm for given S_aM
-      call index_quiet  ! set up index for f_m(mlt),f_l(UT),f_-k(d)
-      call prep_fk	! set up the constant factors for f_k
-      call prep_pnm	! set up the constant factors for P_n^m & dP/d phi
-!-----------------------------------------------------------------------
-!following part should be independent of time & location if IMF constant
-!-----------------------------------------------------------------------
-      call ReadCoef (efield_wei96_file)
+      integer  :: mp, m, n
+      real :: xms, xns, den
 
-      end subroutine efield_init
+      do mp = 1, mmp            ! m+1 = 1,mm+1                                     
+	m = mp - 1                                               
+	xms = m*m                                                
+	if( mp /= 1 ) then
+           pmopmmo(m) = sqrt( 1. + .5/M )
+	end if
+	do n = m,nm      ! n = m,N                                     
+	  xns    = n*n                                       
+	  den    = max(4.*xns - 1.,1.)
+	  r(n,m) = sqrt( (xns  - xms)/den )
+	end do                 
+      end do 
+
+      end subroutine prep_pnm                                                                         
 
 
-      end module module_efield_init
+
+      end module module_prep_pnm
+

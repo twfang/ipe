@@ -77,7 +77,9 @@ c     use cam_control_mod, only: magfield_fix_year
 c     use spmd_utils,      only: masterproc
 !nm20121003
       USE efield !,ONLY:
-      USE sub_efield ,ONLY:adj_S_a,GlobalElPotential,DerivPotential
+      USE sub_efield ,ONLY: DerivPotential
+      USE module_GlobalElPotential ,ONLY:GlobalElPotential
+      USE module_adj_S_a ,ONLY:adj_S_a
       USE module_input_parameters,ONLY:sw_debug
 
       integer :: idum1, idum2, tod ! time of day [s] 

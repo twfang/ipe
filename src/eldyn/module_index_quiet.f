@@ -1,7 +1,7 @@
 !Jan2011:original code was provided from Astrid from WACCM.
 !Aug2011:this code was provided from Fei Wu from the WAM version.
 !--------------------------------------------  
-      module module_efield_init
+      module module_index_quiet
 !--------------------------------------------------------------------- 
 ! description: calculates the electric potential for a given year,
 !      day of year,UT, F10.7, B_z(K_p)
@@ -53,46 +53,75 @@ c     use cam_logfile,   only: iulog
       implicit none
 
 !nm20121003:module parameters are separated into efield.f!
-      public :: efield_init   ! interface routine
-
+      public :: index_quiet
 
       contains
 
-      subroutine efield_init(efield_lflux_file, efield_hflux_file, 
-     &efield_wei96_file)
-      USE efield !,ONLY:
-      USE module_prep_pnm,ONLY:prep_pnm
-      USE module_index_quiet ,ONLY:index_quiet
-      USE module_read_acoef ,ONLY: read_acoef
-      USE module_constants ,ONLY:constants
-      USE module_prep_fk ,ONLY:prep_fk
-      implicit none
-!--------------------------------------------------------------------
-! Purpose: read in and set up coefficients needed for electric field
-!          calculation (independent of time & geog. location)
+                                                                      
+
+
+
+                                                                     
+
+      subroutine index_quiet
+!-----------------------------------------------------------------
+! Purpose: set up index for factors f_m(mlt),f_l(UT),f_-k(d) to
+!    describe the electric potential Phi for the empirical model   
 !
 ! Method:
+!    Phi = sum_k sum_l sum_m sum_n [ A_klmn * P_n^m *f_m(mlt)*f_l(UT)*f_-k(d)]
+!    - since the electric potential is symmetric about the equator
+!      n+m odd terms are set zero resp. not used
+!    - in the summation for calculation Phi the index have the following
+!      range n=1,12 and m=-n,n, k=0,2 l=-2,2
 !
-! Author: A. Maute Dec 2003  am 12/17/03 
-!-------------------------------------------------------------------
-      character(len=*), intent(in) :: efield_lflux_file
-      character(len=*), intent(in) :: efield_hflux_file
-      character(len=*), intent(in) :: efield_wei96_file
+! Author: A. Maute Nov 2003  am 11/18/03
+!----------------------------------------------------------------       
+!nm20121003
+      USE efield !,ONLY:
+      implicit none
 
-      call constants	 ! calculate constants
-!-----------------------------------------------------------------------
-! low/midlatitude potential from Scherliess model
-!-----------------------------------------------------------------------
-      call read_acoef (efield_lflux_file, efield_hflux_file)	! read in A_klnm for given S_aM
-      call index_quiet  ! set up index for f_m(mlt),f_l(UT),f_-k(d)
-      call prep_fk	! set up the constant factors for f_k
-      call prep_pnm	! set up the constant factors for P_n^m & dP/d phi
-!-----------------------------------------------------------------------
-!following part should be independent of time & location if IMF constant
-!-----------------------------------------------------------------------
-      call ReadCoef (efield_wei96_file)
+!----------------------------------------------------------------      
+!	... local variables
+!----------------------------------------------------------------                                                                   
+      integer :: i, j, k, l, n, m
 
-      end subroutine efield_init
+      i = 0 	! initialize
+      j = 1 
+      do k = 2,0,-1
+        do l = -2,2
+          if( k == 2 .and. abs(l) == 2 ) then
+             cycle
+          end if
+          do n = 1,12
+            do m = -18,18 
+              if( abs(m) <= n ) then		    !  |m| < n
+                if( (((n-m)/2)*2) == (n-m) ) then   ! only n+m even
+             	  if( n-abs(m) <= 9 ) then	    ! n-|m| <= 9 why?
+             	    kf(i) = 2-k
+             	    lf(i) = l
+             	    nf(i) = n
+             	    mf(i) = m
+             	    jf(i) = j
+             	    i	  = i + 1	 ! counter
+                  end if
+                end if
+              end if
+            end do ! m
+          end do ! n
+        end do ! l
+      end do ! k
+
+      imax = i - 1  
+      if(imax /= ni ) then    ! check if imax == ni 
+c       write(iulog,'(a19,i5,a18,i5)') 'index_quiet: imax= ',imax,  
+c    &     ' not equal to ni =',ni 
+        stop
+      end if							
+c     if(debug) write(iulog,*) 'imax=',imax
+
+      end subroutine index_quiet                                                           
 
 
-      end module module_efield_init
+
+      end module module_index_quiet

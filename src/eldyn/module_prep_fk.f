@@ -1,7 +1,7 @@
 !Jan2011:original code was provided from Astrid from WACCM.
 !Aug2011:this code was provided from Fei Wu from the WAM version.
 !--------------------------------------------  
-      module module_efield_init
+      module module_prep_fk
 !--------------------------------------------------------------------- 
 ! description: calculates the electric potential for a given year,
 !      day of year,UT, F10.7, B_z(K_p)
@@ -53,46 +53,32 @@ c     use cam_logfile,   only: iulog
       implicit none
 
 !nm20121003:module parameters are separated into efield.f!
-      public :: efield_init   ! interface routine
-
+      public :: prep_fk
 
       contains
-
-      subroutine efield_init(efield_lflux_file, efield_hflux_file, 
-     &efield_wei96_file)
-      USE efield !,ONLY:
-      USE module_prep_pnm,ONLY:prep_pnm
-      USE module_index_quiet ,ONLY:index_quiet
-      USE module_read_acoef ,ONLY: read_acoef
-      USE module_constants ,ONLY:constants
-      USE module_prep_fk ,ONLY:prep_fk
-      implicit none
-!--------------------------------------------------------------------
-! Purpose: read in and set up coefficients needed for electric field
-!          calculation (independent of time & geog. location)
+!-----------------------------------------------------------------------
+      subroutine prep_fk
+!-------------------------------------------------------------------
+! Purpose: set up constants factors for f_-k(day) used for empirical model
+!     to calculate the electric potential
 !
 ! Method:
 !
-! Author: A. Maute Dec 2003  am 12/17/03 
+! Author: A. Maute Nov 2003  am 11/19/03
 !-------------------------------------------------------------------
-      character(len=*), intent(in) :: efield_lflux_file
-      character(len=*), intent(in) :: efield_hflux_file
-      character(len=*), intent(in) :: efield_wei96_file
+!nm20121003
+      USE efield !,ONLY:
 
-      call constants	 ! calculate constants
-!-----------------------------------------------------------------------
-! low/midlatitude potential from Scherliess model
-!-----------------------------------------------------------------------
-      call read_acoef (efield_lflux_file, efield_hflux_file)	! read in A_klnm for given S_aM
-      call index_quiet  ! set up index for f_m(mlt),f_l(UT),f_-k(d)
-      call prep_fk	! set up the constant factors for f_k
-      call prep_pnm	! set up the constant factors for P_n^m & dP/d phi
-!-----------------------------------------------------------------------
-!following part should be independent of time & location if IMF constant
-!-----------------------------------------------------------------------
-      call ReadCoef (efield_wei96_file)
+      ft(1,0) = .75*sqrt( 6.e0 )/pi			
+      ft(1,1) = 2.e0*ft(1,0)					      
+      ft(1,2) = 1.e0						      
+      ft(2,0) = ft(1,0) 					      
+      ft(2,1) = -ft(1,1)					      
+      ft(2,2) = 1.e0						      
+      ft(3,0) = ft(2,1) 					      
+      ft(3,1) = 0.						      
+      ft(3,2) = 1.e0							   
 
-      end subroutine efield_init
-
-
-      end module module_efield_init
+      end subroutine prep_fk
+!-----------------------------------------------------------------------
+      end module module_prep_fk

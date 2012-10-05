@@ -97,8 +97,23 @@ SRC3	=\
 # DR6: eldyn
 SRC6	=\
 	${DR6}/efield.f \
+	${DR6}/module_ff.f \
+	${DR6}/module_pnm.f \
+	${DR6}/module_prep_pnm.f \
+	${DR6}/module_index_quiet.f \
+	${DR6}/module_read_acoef.f \
+	${DR6}/module_adj_S_a.f \
+	${DR6}/module_constants.f \
+	${DR6}/module_prep_fk.f \
+	${DR6}/module_set_fkflfs.f \
+	${DR6}/module_efield_mid.f \
+	${DR6}/module_prep_weimer.f \
+	${DR6}/module_pot_latsmo.f \
+	${DR6}/module_pot_latsmo2.f \
+	${DR6}/module_pot_lonsmo.f \
 	${DR6}/sub_efield.f \
 	${DR6}/module_efield_init.f \
+	${DR6}/module_GlobalElPotential.f \
 	${DR6}/module_get_efield.f \
 	${DR6}/module_eldyn.f \
 	${DR6}/module_sub_eldyn.f \

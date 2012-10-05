@@ -1,7 +1,7 @@
 !Jan2011:original code was provided from Astrid from WACCM.
 !Aug2011:this code was provided from Fei Wu from the WAM version.
 !--------------------------------------------  
-      module module_efield_init
+      module module_set_fkflfs
 !--------------------------------------------------------------------- 
 ! description: calculates the electric potential for a given year,
 !      day of year,UT, F10.7, B_z(K_p)
@@ -53,46 +53,76 @@ c     use cam_logfile,   only: iulog
       implicit none
 
 !nm20121003:module parameters are separated into efield.f!
-      public :: efield_init   ! interface routine
-
+      public :: set_fkflfs
 
       contains
-
-      subroutine efield_init(efield_lflux_file, efield_hflux_file, 
-     &efield_wei96_file)
-      USE efield !,ONLY:
-      USE module_prep_pnm,ONLY:prep_pnm
-      USE module_index_quiet ,ONLY:index_quiet
-      USE module_read_acoef ,ONLY: read_acoef
-      USE module_constants ,ONLY:constants
-      USE module_prep_fk ,ONLY:prep_fk
-      implicit none
-!--------------------------------------------------------------------
-! Purpose: read in and set up coefficients needed for electric field
-!          calculation (independent of time & geog. location)
+!-----------------------------------------------------------------------
+      subroutine set_fkflfs( fk, fl, fs )
+!------------------------------------------------------------------
+! Purpose:  set f_-k(day) depending on seasonal flag used for empirical model
+!     to calculate the electric potential
 !
 ! Method:
 !
-! Author: A. Maute Dec 2003  am 12/17/03 
+! Author: A. Maute Nov 2003  am 11/20/03
+!-----------------------------------------------------------------
+!nm20121003
+      USE efield !,ONLY:
+      USE module_ff ,ONLY:ff
+!-----------------------------------------------------------------
+!	... dummy arguments
+!-----------------------------------------------------------------
+      real, intent(out) ::  
+     &	fk(0:2),  	                ! f_-k(day) 
+     &	fl(-2:2), 	                ! f_l(ut)  
+     &	fs(2)		                ! f_s(f10.7) 
+!------------------------------------------------------------------
+! local variables
 !-------------------------------------------------------------------
-      character(len=*), intent(in) :: efield_lflux_file
-      character(len=*), intent(in) :: efield_hflux_file
-      character(len=*), intent(in) :: efield_wei96_file
+      integer  :: lp
+      real :: ang
+      real :: lon_ut
 
-      call constants	 ! calculate constants
-!-----------------------------------------------------------------------
-! low/midlatitude potential from Scherliess model
-!-----------------------------------------------------------------------
-      call read_acoef (efield_lflux_file, efield_hflux_file)	! read in A_klnm for given S_aM
-      call index_quiet  ! set up index for f_m(mlt),f_l(UT),f_-k(d)
-      call prep_fk	! set up the constant factors for f_k
-      call prep_pnm	! set up the constant factors for P_n^m & dP/d phi
-!-----------------------------------------------------------------------
-!following part should be independent of time & location if IMF constant
-!-----------------------------------------------------------------------
-      call ReadCoef (efield_wei96_file)
+!------------------------------------------------------------------
+! f_-k(day) 
+! use factors for iseasav == 0 - Scherliess had iseasav as an input parameter
+!------------------------------------------------------------------
+      lp = iseasav
+      if( iseasav == 0 ) then
+        ang   = (day + 9.)*dy2rd
+        fk(0) = sqr2*cos( 2.*ang )
+        fk(1) = sqr2*cos( ang )
+        fk(2) = 1.
+      else if( iseasav >= 1 .and. iseasav <= 3 ) then
+        fk(0) = ft(lp,0)
+        fk(1) = ft(lp,1)
+        fk(2) = ft(lp,2)
+      else if( iseasav == 4 ) then
+        fk(0) =0.
+        fk(1) =0.
+        fk(2) =1.
+      end if
 
-      end subroutine efield_init
+!-----------------------------------------------------------------
+! f_l(ut) 
+!-----------------------------------------------------------------
+      lon_ut = 15.*ut        ! 15.*mlt - xmlon + 69. 
+      call ff( lon_ut, 2, fl )                                                 
+      if( iutav ) then  	! UT-averaging
+     
+	ang   = fl(0)
+        fl(:) = 0.
+        fl(0) = ang
+	
+      end if
 
+!-----------------------------------------------------------------
+! f_s(f10.7)  only fs(1) used  	
+!-----------------------------------------------------------------
+      fs(1) = 1.
+!     fs(2) = S_a			  
+      fs(2) = f107d			  
 
-      end module module_efield_init
+      end subroutine set_fkflfs
+!-----------------------------------------------------------------------
+      end module module_set_fkflfs

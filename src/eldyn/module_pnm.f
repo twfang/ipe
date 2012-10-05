@@ -1,7 +1,7 @@
 !Jan2011:original code was provided from Astrid from WACCM.
 !Aug2011:this code was provided from Fei Wu from the WAM version.
 !--------------------------------------------  
-      module module_efield_init
+      module module_pnm
 !--------------------------------------------------------------------- 
 ! description: calculates the electric potential for a given year,
 !      day of year,UT, F10.7, B_z(K_p)
@@ -53,46 +53,58 @@ c     use cam_logfile,   only: iulog
       implicit none
 
 !nm20121003:module parameters are separated into efield.f!
-      public :: efield_init   ! interface routine
-
+      public :: pnm
 
       contains
+                                                                      
 
-      subroutine efield_init(efield_lflux_file, efield_hflux_file, 
-     &efield_wei96_file)
-      USE efield !,ONLY:
-      USE module_prep_pnm,ONLY:prep_pnm
-      USE module_index_quiet ,ONLY:index_quiet
-      USE module_read_acoef ,ONLY: read_acoef
-      USE module_constants ,ONLY:constants
-      USE module_prep_fk ,ONLY:prep_fk
-      implicit none
-!--------------------------------------------------------------------
-! Purpose: read in and set up coefficients needed for electric field
-!          calculation (independent of time & geog. location)
-!
+      subroutine pnm( ct, p )
+!----------------------------------------------------------------      
+! Purpose: normalized associated Legendre polynomial P_n^m
+!          Ref.: Richmond J.Atm.Ter.Phys. 1974
 ! Method:
+!   P_m^m    = sqrt(1+1/2m)*si*P_m-1^m-1                  m>0
+!   P_n^m    = [cos*P_n-1^m - R_n-1^m*P_n-2^m ]/R_n^m     n>m>=0
+!   dP/d phi = n*cos*P_n^m/sin-(2*n+1)*R_n^m*P_n-1^m/sin  n>=m>=0
+!   R_n^m    = sqrt[ (n^2-m^2)/(4n^2-1) ]
 !
-! Author: A. Maute Dec 2003  am 12/17/03 
-!-------------------------------------------------------------------
-      character(len=*), intent(in) :: efield_lflux_file
-      character(len=*), intent(in) :: efield_hflux_file
-      character(len=*), intent(in) :: efield_wei96_file
+! Author: A. Maute Nov 2003  am 11/18/03
+!--------------------------------------------------------------------                                                                   
+!nm20121003
+      USE efield !,ONLY:
+      implicit none
 
-      call constants	 ! calculate constants
 !-----------------------------------------------------------------------
-! low/midlatitude potential from Scherliess model
+! dummy arguments
 !-----------------------------------------------------------------------
-      call read_acoef (efield_lflux_file, efield_hflux_file)	! read in A_klnm for given S_aM
-      call index_quiet  ! set up index for f_m(mlt),f_l(UT),f_-k(d)
-      call prep_fk	! set up the constant factors for f_k
-      call prep_pnm	! set up the constant factors for P_n^m & dP/d phi
-!-----------------------------------------------------------------------
-!following part should be independent of time & location if IMF constant
-!-----------------------------------------------------------------------
-      call ReadCoef (efield_wei96_file)
+      real, intent(inout) :: ct ! cos(colat)                 
+      real, intent(inout) :: p(0:nm,0:mm)
 
-      end subroutine efield_init
+!-----------------------------------------------------------------------
+! local variables
+!-----------------------------------------------------------------------
+      integer  :: mp, m, n, np
+      real :: pm2, st
+
+!      ct = min( ct,.99 )		! cos(colat)
+      st = sqrt( 1. - ct*ct ) 	! sin(colat)
+
+      p(0,0) = 1.  
+      do mp = 1,mmp  ! m+1=1,mm+1
+        m = mp - 1
+	if( m >= 1 ) then
+           p(m,m) = pmopmmo(m)*p(m-1,m-1)*st 			
+	end if
+	pm2 = 0.                                                                  
+	do n = mp,nm                    ! n=m+1,N
+	   np     = n + 1
+	   p(n,m) = (ct*p(n-1,m) - r(n-1,m)*pm2)/r(n,m)
+	   pm2    = p(n-1,m)
+        end do
+      end do
+
+      end subroutine pnm                                                                         
 
 
-      end module module_efield_init
+
+      end module module_pnm

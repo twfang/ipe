@@ -1,7 +1,7 @@
 !Jan2011:original code was provided from Astrid from WACCM.
 !Aug2011:this code was provided from Fei Wu from the WAM version.
 !--------------------------------------------  
-      module module_efield_init
+      module module_efield_mid
 !--------------------------------------------------------------------- 
 ! description: calculates the electric potential for a given year,
 !      day of year,UT, F10.7, B_z(K_p)
@@ -53,46 +53,68 @@ c     use cam_logfile,   only: iulog
       implicit none
 
 !nm20121003:module parameters are separated into efield.f!
-      public :: efield_init   ! interface routine
-
+      public ::efield_mid 
 
       contains
-
-      subroutine efield_init(efield_lflux_file, efield_hflux_file, 
-     &efield_wei96_file)
-      USE efield !,ONLY:
-      USE module_prep_pnm,ONLY:prep_pnm
-      USE module_index_quiet ,ONLY:index_quiet
-      USE module_read_acoef ,ONLY: read_acoef
-      USE module_constants ,ONLY:constants
-      USE module_prep_fk ,ONLY:prep_fk
-      implicit none
-!--------------------------------------------------------------------
-! Purpose: read in and set up coefficients needed for electric field
-!          calculation (independent of time & geog. location)
+!-----------------------------------------------------------------------
+      subroutine efield_mid( mlat, mlon, pot )
+!------------------------------------------------------------------
+! Purpose: calculate the electric potential for low and 
+!      midlatitudes from an empirical model (Scherliess 1999)
 !
 ! Method:
 !
-! Author: A. Maute Dec 2003  am 12/17/03 
+! Author: A. Maute Nov 2003  am 11/20/03
 !-------------------------------------------------------------------
-      character(len=*), intent(in) :: efield_lflux_file
-      character(len=*), intent(in) :: efield_hflux_file
-      character(len=*), intent(in) :: efield_wei96_file
+!nm20121003
+      USE efield !,ONLY:
+      USE module_ff ,ONLY:ff
+      USE module_pnm ,ONLY:pnm
+      USE module_set_fkflfs ,ONLY:set_fkflfs
+!------------------------------------------------------------------
+!	... dummy arguments
+!-------------------------------------------------------------------
+      real, intent(in)  :: mlat, mlon
+      real, intent(out) :: pot               ! electric potential (V)
 
-      call constants	 ! calculate constants
-!-----------------------------------------------------------------------
-! low/midlatitude potential from Scherliess model
-!-----------------------------------------------------------------------
-      call read_acoef (efield_lflux_file, efield_hflux_file)	! read in A_klnm for given S_aM
-      call index_quiet  ! set up index for f_m(mlt),f_l(UT),f_-k(d)
-      call prep_fk	! set up the constant factors for f_k
-      call prep_pnm	! set up the constant factors for P_n^m & dP/d phi
-!-----------------------------------------------------------------------
-!following part should be independent of time & location if IMF constant
-!-----------------------------------------------------------------------
-      call ReadCoef (efield_wei96_file)
+!-------------------------------------------------------------------
+! local variables
+!-------------------------------------------------------------------
+      integer  :: i, mp, np, nn
+      real :: mod_mlat, ct, x
+      real :: fk(0:2)      	    ! f_-k(day) 
+      real :: fl(-2:2)          ! f_l(ut)  
+      real :: fs(2)	            ! f_s(f10.7) 
+      real :: f(-18:18)
+      real :: p(0:nm,0:mm)      ! P_n^m	 spherical harmonics
 
-      end subroutine efield_init
+      pot = 0. ! initialize                                        
 
+      mod_mlat = mlat
+      if( abs(mlat) <= 0.5 ) then
+         mod_mlat = 0.5                     ! avoid geomag.equator
+      end if
 
-      end module module_efield_init
+!------------------------------------------------------------------
+! set f_-k, f_l, f_s depending on seasonal flag
+!------------------------------------------------------------------
+      call set_fkflfs( fk, fl, fs ) 
+      
+!------------------------------------------------------------------
+! spherical harmonics 
+!------------------------------------------------------------------
+      ct = cos( (90. - mod_mlat)*dtr )  ! magnetic colatitude 
+      call pnm( ct, p )	                   ! calculate P_n^m
+      call ff( mlon, 18, f )               ! calculate f_m (phi) why 18 if N=12                              
+
+      do i = 0,imax  
+        mp  = mf(i)                                                      
+        np  = nf(i)
+        nn  = abs(mp)                      !   P_n^m = P_n^-m  
+        x   = a_klnm(i)* fl(lf(i)) * fk(kf(i)) * fs(jf(i))
+	pot = pot + x*f(mp)*p(np,nn) 
+      end do 
+      
+      end subroutine efield_mid   
+!-----------------------------------------------------------------------
+      end module module_efield_mid

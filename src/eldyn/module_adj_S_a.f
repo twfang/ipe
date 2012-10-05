@@ -1,7 +1,7 @@
 !Jan2011:original code was provided from Astrid from WACCM.
 !Aug2011:this code was provided from Fei Wu from the WAM version.
 !--------------------------------------------  
-      module module_efield_init
+      module module_adj_S_a
 !--------------------------------------------------------------------- 
 ! description: calculates the electric potential for a given year,
 !      day of year,UT, F10.7, B_z(K_p)
@@ -53,46 +53,50 @@ c     use cam_logfile,   only: iulog
       implicit none
 
 !nm20121003:module parameters are separated into efield.f!
-      public :: efield_init   ! interface routine
-
+      public :: adj_S_a
 
       contains
-
-      subroutine efield_init(efield_lflux_file, efield_hflux_file, 
-     &efield_wei96_file)
+!-----------------------------------------------------------------------
+      subroutine adj_S_a
+!------------------------------------------------------------------
+! adjust S_a -> S_aM   eqn.8-11 Scherliess draft
+!------------------------------------------------------------------
+!nm20121003
       USE efield !,ONLY:
-      USE module_prep_pnm,ONLY:prep_pnm
-      USE module_index_quiet ,ONLY:index_quiet
-      USE module_read_acoef ,ONLY: read_acoef
-      USE module_constants ,ONLY:constants
-      USE module_prep_fk ,ONLY:prep_fk
       implicit none
-!--------------------------------------------------------------------
-! Purpose: read in and set up coefficients needed for electric field
-!          calculation (independent of time & geog. location)
-!
-! Method:
-!
-! Author: A. Maute Dec 2003  am 12/17/03 
-!-------------------------------------------------------------------
-      character(len=*), intent(in) :: efield_lflux_file
-      character(len=*), intent(in) :: efield_hflux_file
-      character(len=*), intent(in) :: efield_wei96_file
 
-      call constants	 ! calculate constants
-!-----------------------------------------------------------------------
-! low/midlatitude potential from Scherliess model
-!-----------------------------------------------------------------------
-      call read_acoef (efield_lflux_file, efield_hflux_file)	! read in A_klnm for given S_aM
-      call index_quiet  ! set up index for f_m(mlt),f_l(UT),f_-k(d)
-      call prep_fk	! set up the constant factors for f_k
-      call prep_pnm	! set up the constant factors for P_n^m & dP/d phi
-!-----------------------------------------------------------------------
-!following part should be independent of time & location if IMF constant
-!-----------------------------------------------------------------------
-      call ReadCoef (efield_wei96_file)
+!-----------------------------------------------------------------
+! local variables
+!------------------------------------------------------------------
+      integer  :: i
+      real :: x2, y2, a90, a180, S_aM
 
-      end subroutine efield_init
+      x2 = 90.*90.
+      y2 = (90. - 65.)
+      y2 = y2*y2
+      a90  = atan2(y2,x2)
+      y2 = (180. - 65.)
+      y2 = y2*y2
+      a180 = atan2(y2,x2)
+!     y2 = (S_a-65.)
+      y2 = (f107d - 65.)
+      y2 = y2*y2
+      S_aM = (atan2(y2,x2) - a90)/(a180 - a90) 
+      S_aM = 90.*(1. + S_aM)
+c     if(debug) write(iulog,*) 'f107d=',f107d,' S_aM =',S_aM
+c     if(debug) write(iulog,*) 'By=',by
 
+!-----------------------------------------------------------------
+! inter/extrapolate to S_a (f107d)
+!----------------------------------------------------------------
+      do i = 0,ni                       ! eqn.8 Scherliess draft
+        a_klnm(i) = S_aM*(a_hf(i)-a_lf(i))/90.+
+     &2.*a_lf(i)- a_hf(i)
+! for testing like in original code
+!        a_klnm(i)=S_a*(a_hf(i)-a_lf(i))/90.+2.*a_lf(i)-a_hf(i)
+!        a_klnm(i)=f107d*(a_hf(i)-a_lf(i))/90.+2.*a_lf(i)-a_hf(i)
+      end do
 
-      end module module_efield_init
+      end subroutine adj_S_a
+!-----------------------------------------------------------------------
+      end module module_adj_S_a
