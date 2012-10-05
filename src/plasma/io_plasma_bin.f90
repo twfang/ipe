@@ -22,16 +22,16 @@
       USE module_physical_constants,ONLY:zero
       IMPLICIT NONE
 !------------------------
-      INTEGER (KIND=int_prec), INTENT(IN) :: switch !2:read; 1:write
-      INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]
-      REAL (KIND=real_prec),DIMENSION(:,:), ALLOCATABLE :: dumm  !(NPTS2D,NMP)
-      INTEGER (KIND=int_prec) :: stat_alloc
-      INTEGER (KIND=int_prec) :: jth,mp,lp,npts
-      INTEGER (KIND=int_prec) :: lun,in,is
-      INTEGER (KIND=int_prec) :: n_read,n_read_min, utime_dum,record_number_plasma_dum
-      INTEGER (KIND=int_prec),PARAMETER :: n_max=10000
-      INTEGER (KIND=int_prec) :: n_count
-      INTEGER (KIND=int_prec) :: ipts !dbg20120501
+      INTEGER (KIND=int_prec ), INTENT(IN) :: switch !2:read; 1:write
+      INTEGER (KIND=int_prec ), INTENT(IN) :: utime !universal time [sec]
+      REAL    (KIND=real_prec) :: dumm(NPTS2D,NMP)
+      INTEGER (KIND=int_prec ) :: stat_alloc
+      INTEGER (KIND=int_prec ) :: jth,mp,lp,npts
+      INTEGER (KIND=int_prec ) :: lun,in,is
+      INTEGER (KIND=int_prec ) :: n_read,n_read_min, utime_dum,record_number_plasma_dum
+      INTEGER (KIND=int_prec ),PARAMETER :: n_max=10000
+      INTEGER (KIND=int_prec ) :: n_count
+      INTEGER (KIND=int_prec ) :: ipts !dbg20120501
 !----------------------------------
 
 IF ( switch<1.or.switch>2 ) THEN
@@ -43,16 +43,6 @@ if(sw_debug)  print *,'sub-io_plasma_bin: switch=',switch,' utime[sec]' ,utime
 
 
 !output time dependent plasma parameters
-IF (.NOT.ALLOCATED(dumm) ) THEN
-  ALLOCATE ( dumm(1:NPTS2D,NMP) &
-     &,STAT=stat_alloc )         
-      IF ( stat_alloc/=0 ) THEN
-        print *,"sub-io_p:!STOP! ALLOCATION FAILD!:",stat_alloc
-        STOP
-      END IF
-ELSE
-STOP 'sub-io_p:!STOP! dumm has been allocated already???!!!'
-END IF
 
 !SMS$PARALLEL(dh, lp, mp) BEGIN
 ! array initialization
@@ -241,16 +231,6 @@ END DO j_loop2!jth
 
 END IF !( switch==1 ) THEN
 
-IF ( ALLOCATED(dumm) ) THEN 
-  DEALLOCATE ( dumm &
-     &,STAT=stat_alloc )         
-      IF ( stat_alloc/=0 ) THEN
-        print *,"sub-io_p:!STOP! DEALLOCATION FAILD!:",stat_alloc
-        STOP
-      END IF
-ELSE
-STOP 'sub-io_p:!STOP! dumm has not been allocated???!!!'
-END IF
 !SMS$PARALLEL END
 
 print *,'END sub-io_pl: sw=',switch,' uts=' ,utime 

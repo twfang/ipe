@@ -22,7 +22,7 @@ IMPLICIT NONE
         CHARACTER (LEN=7)  :: STATUS_dum
         INTEGER (KIND=int_prec) :: lun ,mp,lp,stat_alloc
 !SMS$DISTRIBUTE(dh,,2) BEGIN
-      REAL (KIND=real_prec),DIMENSION(:,:), ALLOCATABLE :: dumm  !(NPTS2D,NMP)
+      REAL (KIND=real_prec) :: dumm(NPTS2D,NMP)
 !SMS$DISTRIBUTE END
 
       LUN=1006
@@ -42,18 +42,6 @@ IMPLICIT NONE
     WRITE(UNIT=lun) (plasma_grid_GL(JMIN_IN(lp):JMAX_IS(lp),lp),lp=1,NLP)  !rad
 !SMS$SERIAL END
 
-
-IF (.NOT.ALLOCATED(dumm) ) THEN
-  ALLOCATE ( dumm(NPTS2D,NMP) &
-     &,STAT=stat_alloc )         
-      IF ( stat_alloc/=0 ) THEN
-        print *,"sub-output_p:!STOP! ALLOCATION FAILD!:",stat_alloc
-        STOP
-      END IF
-ELSE
-STOP 'sub-output_p:!STOP! dumm has been allocated already???!!!'
-END IF
-
 !SMS$SERIAL(<plasma_grid_3d,IN> : default=ignore) BEGIN
 do lp=1,NLP
   dumm(JMIN_ING(lp):JMAX_ISG(lp),1:NMP) = plasma_grid_3d(JMIN_IN(lp):JMAX_IS(LP), lp,1:NMP,IGCOLAT)
@@ -63,21 +51,6 @@ do lp=1,NLP
   dumm(JMIN_ING(lp):JMAX_ISG(lp),1:NMP) = plasma_grid_3d(JMIN_IN(lp):JMAX_IS(LP), lp,1:NMP,IGLON)
 enddo
 WRITE(UNIT=lun) dumm !GLON !rad
-!SMS$SERIAL END
-
-IF ( ALLOCATED(dumm) ) THEN 
-  DEALLOCATE ( dumm &
-     &,STAT=stat_alloc )         
-      IF ( stat_alloc/=0 ) THEN
-        print *,"sub-output_p:!STOP! DEALLOCATION FAILD!:",stat_alloc
-        STOP
-      END IF
-ELSE
-STOP 'sub-output_p:!STOP! dumm has not been allocated???!!!'
-END IF
-
-
-!SMS$SERIAL BEGIN
     CLOSE(UNIT=lun)
 !SMS$SERIAL END
 print *,'output_plasma_grid finished successfully!!!'

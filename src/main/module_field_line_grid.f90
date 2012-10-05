@@ -63,7 +63,7 @@
       REAL(KIND=real_prec),ALLOCATABLE               :: r_meter2D     (:,:)  !.. distance from the center of the Earth[meter]
 !SMS$DISTRIBUTE END
 !SMS$DISTRIBUTE(dh,3) BEGIN
-      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: hrate_cgs_save(:,:,:)!.. each component of the Neutral heating rate (eV/cm^3/s) DIM(7,NPTS2D,NMP)
+      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: hrate_cgs_save(:,:,:)!.. each component of the Neutral heating rate (eV/cm^3/s) DIM(7,MaxFluxTube,NMP)
 !SMS$DISTRIBUTE END
 !SMS$DISTRIBUTE(dh,,1) BEGIN
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: mlon_rad(:)          !mag longitude in [rad]
