@@ -1,4 +1,4 @@
-#SHELL=/bin/bash
+#SHELL=/bin/bash 
 OBJS= $(OBJS)
 OBJ=$(notdir $(OBJS))
 FC=$(FC90)
