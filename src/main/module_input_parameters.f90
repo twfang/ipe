@@ -20,6 +20,7 @@
       INTEGER (KIND=int_prec), PUBLIC   :: start_time  !=0  !UT[sec]
       INTEGER (KIND=int_prec), PUBLIC   :: stop_time   !=60 !UT[sec]
       INTEGER (KIND=int_prec), PUBLIC   :: time_step   !=60 ![sec]
+      INTEGER (KIND=int_prec), PUBLIC   :: nprocs=1    !Number of processors
 
       REAL (KIND=real_prec), PUBLIC :: F107D   !.. Daily F10.7
       REAL (KIND=real_prec), PUBLIC :: F107AV  !.. 81 day average F10.7
@@ -235,6 +236,8 @@ WRITE(UNIT=LUN_LOG0,FMT=*)'real_prec=',real_prec,' int_prec=',int_prec
 
         CLOSE(LUN_nmlt)
 print *,'finished reading namelist:',filename
+!SMS$insert call NNT_NPROCS(nprocs)
+print"(' Number of Processors:',I6)",nprocs
 stop_time=start_time+duration
 print *,'stop_time',stop_time
         CLOSE(LUN_LOG0)

@@ -14,6 +14,7 @@
       USE module_precision
       USE module_IPE_dimension,ONLY: NPTS2D,NLP,NMP
       USE module_FIELD_LINE_GRID_MKS,ONLY: ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k,Un_ms1
+      USE module_input_parameters,ONLY : nprocs
 
       IMPLICIT NONE
 
@@ -254,25 +255,28 @@ END IF !( sw_debug ) THEN
 !write (6000,fmt=*) utime, Un_ms1(3,1:NPTS2D,mp) 
 if ( sw_neutral==2  ) then
 !write (6000,fmt=*) utime, Un_ms1(3,1:NPTS2D,mp) 
-        if ( utime==start_time ) then
-          luntmp3=6003
-          filename="wind_input"
-          FORM_dum="formatted  "
-          STATUS_dum="old"
-          CALL open_file ( filename, luntmp3, FORM_dum, STATUS_dum ) 
-        endif
+  if(nprocs > 1 ) then
+    print*,'module_neutral: sw_neutral=2 disabled for parallel runs'
+  else
+    if ( utime==start_time ) then
+      luntmp3=6003
+      filename="wind_input"
+      FORM_dum="formatted  "
+      STATUS_dum="old"
+      CALL open_file ( filename, luntmp3, FORM_dum, STATUS_dum ) 
+    endif
 !read (unit=luntmp3,fmt=*) utime_dum, Un_ms1(3,1:NPTS2D,mp) 
-read (unit=luntmp3,fmt=*) utime_dum, dum0 
-  if( utime_dum /=utime ) then 
-    print *,"sub-neutral: !STOP! INVALID utime_dum!",utime_dum
-    STOP
-  endif
-  do lp=1,NLP
-    Un_ms1(3,JMIN_IN(lp):JMAX_IS(lp),lp,mp) = dum0(JMIN_ING(lp):JMAX_ISG(lp))
-  enddo
+    read (unit=luntmp3,fmt=*) utime_dum, dum0 
+    if( utime_dum /=utime ) then 
+      print *,"sub-neutral: !STOP! INVALID utime_dum!",utime_dum
+      STOP
+    endif
+    do lp=1,NLP
+      Un_ms1(3,JMIN_IN(lp):JMAX_IS(lp),lp,mp) = dum0(JMIN_ING(lp):JMAX_ISG(lp))
+    enddo
 
-if( utime==stop_time )   CLOSE(UNIT=luntmp3)
-
+    if( utime==stop_time )   CLOSE(UNIT=luntmp3)
+  endif ! nprocs>1
 
 end if !sw_neutral
 

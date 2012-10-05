@@ -185,7 +185,7 @@ END DO which_hemisphere!:  DO ihem=1,ihem_max
       INTEGER (KIND=int_prec) :: lp_min,l
 !SMS$DISTRIBUTE(dh,NLP) BEGIN
       INTEGER (KIND=int_prec) :: midpoint(NLP)
-!SMS$SERIAL END
+!SMS$DISTRIBUTE END
       INTEGER (KIND=int_prec) :: lp1,lp2,midpoint1,midpoint2,mpx
 !---
 

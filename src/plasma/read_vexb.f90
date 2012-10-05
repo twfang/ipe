@@ -50,7 +50,7 @@ print *,'check ut', utime_dum,' utime-172800=',(utime-172800)
 STOP
 endif
 !ExB
-!SMS$SERIAL BEGIN
+!SMS$SERIAL(<VEXBup,OUT> : default=ignore) BEGIN
       READ (UNIT=luntmp2) VEXBupIN
       do mpin=1,NMP
         do lpin=1,NLP
