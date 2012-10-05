@@ -22,6 +22,7 @@
 &, east,north,up &
 &, MaxFluxTube &
 &, plasma_3d
+        USE module_open_file,ONLY: open_file
         IMPLICIT NONE
 
 !        integer (kind=int_prec), parameter :: NMP=80

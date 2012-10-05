@@ -25,8 +25,9 @@
       USE module_init_ELDYN,ONLY: init_eldyn
       USE module_sub_ELDYN,ONLY: eldyn
 !SMS$IGNORE END
-!nm20121003      USE module_IO,ONLY: open_output_files,output,close_files
-      USE module_sub_IO,ONLY: open_output_files,output,close_files
+      USE module_open_output_files,ONLY: open_output_files
+      USE module_output,ONLY: output
+      USE module_close_files,ONLY: close_files
       USE module_IPE_dimension,ONLY: NMP,NLP
       IMPLICIT NONE
       include "gptl.inc"

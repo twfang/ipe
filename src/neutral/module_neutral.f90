@@ -39,6 +39,7 @@
       USE module_input_parameters,ONLY: F107D,F107AV,AP,NYEAR,NDAY,sw_debug,lpstrt,lpstop,lpstep,mpstrt,mpstop,mpstep,sw_grid,start_time,stop_time,sw_neutral
       USE module_unit_conversion,ONLY: M_TO_KM
       USE module_IO, ONLY:filename,FORM_dum,STATUS_dum,luntmp3
+      USE module_open_file, ONLY:open_file
       implicit none
 
       INTEGER(KIND=int_prec), INTENT(in) :: utime  !universal time[sec]

@@ -15,6 +15,7 @@ SUBROUTINE output_plasma_grid ( )
         USE module_IO,ONLY: filename
         USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,JMIN_ING,JMAX_ISG
         USE module_IPE_dimension,ONLY: NPTS2D,NMP,NLP
+        USE module_open_file,ONLY: open_file
 IMPLICIT NONE
 !-------------local
         CHARACTER (LEN=11) :: FORM_dum

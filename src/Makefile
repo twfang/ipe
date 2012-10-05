@@ -44,7 +44,10 @@ SRC0	=\
 	${DR0}/module_unit_conversion.f90 \
 	${DR0}/module_input_parameters.f90 \
 	${DR0}/module_io.f90 \
-	${DR0}/module_sub_io.f90 \
+	${DR0}/module_open_file.f90 \
+	${DR0}/module_open_output_files.f90 \
+	${DR0}/module_output.f90 \
+	${DR0}/module_close_files.f90 \
 	${DR0}/module_field_line_grid.f90 \
 	${DR0}/module_read_plasma_grid_global.f90 \
 	${DR0}/module_init_plasma_grid.f90
@@ -95,11 +98,11 @@ SRC3	=\
 SRC6	=\
 	${DR6}/efield.f \
 	${DR6}/sub_efield.f \
-	${DR6}/efield_init.f \
-	${DR6}/get_efield.f \
+	${DR6}/module_efield_init.f \
+	${DR6}/module_get_efield.f \
 	${DR6}/module_eldyn.f \
 	${DR6}/module_sub_eldyn.f \
-	${DR6}/init_eldyn.f \
+	${DR6}/module_init_eldyn.f \
 	${DR6}/module_magfield.f \
 	${DR6}/module_sunloc.f \
 	${DR6}/get_efield90km.f \

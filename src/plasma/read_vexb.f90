@@ -17,6 +17,7 @@
         USE module_FIELD_LINE_GRID_MKS,ONLY: VEXBup
         USE module_input_parameters,ONLY:start_time,stop_time
         USE module_IO, ONLY:filename,FORM_dum,STATUS_dum,luntmp1,luntmp2
+        USE module_open_file, ONLY:open_file
         IMPLICIT NONE
         INTEGER (KIND=int_prec),  INTENT(IN)  :: utime    !universal time [sec]
         INTEGER (KIND=int_prec),INTENT(IN) :: lp,mp
