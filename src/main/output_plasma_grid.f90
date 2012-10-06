@@ -42,7 +42,8 @@ IMPLICIT NONE
     WRITE(UNIT=lun) (plasma_grid_GL(JMIN_IN(lp):JMAX_IS(lp),lp),lp=1,NLP)  !rad
 !SMS$SERIAL END
 
-!SMS$SERIAL(<plasma_grid_3d,JMIN_ING,JMAX_ISG,JMIN_IN,JMAX_IS,IN> : default=ignore) BEGIN
+!JFM dumm is an out variable to workaround an SMS bug
+!SMS$SERIAL(<plasma_grid_3d,JMIN_ING,JMAX_ISG,JMIN_IN,JMAX_IS,IN>,<dumm,OUT> : default=ignore) BEGIN
 do lp=1,NLP
   dumm(JMIN_ING(lp):JMAX_ISG(lp),1:NMP) = plasma_grid_3d(JMIN_IN(lp):JMAX_IS(LP), lp,1:NMP,IGCOLAT)
 enddo

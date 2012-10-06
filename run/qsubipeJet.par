@@ -1,0 +1,56 @@
+#!/bin/csh
+#
+mkdir ipe_${$}
+echo Created ipe_${$}
+set  rundir = "ipe_${$}"
+cd  $rundir
+cp ../../bin/ipe_v18.exe .
+cp ../coef*              .
+cp ../GPTLnamelist       .
+cp ../SMSnamelist        .
+cp ../IPE.inp            .
+cp ../wei96.cofcnts      .
+cp ../stup_ut_rec        .
+ln -s /pan2/projects/fim-njet/jacques/IPEdata/* .
+
+set compute_tasks = 1
+# Make rundir a full path for runscript
+set rundir = $cwd
+
+cat << EOF >! runscript
+#!/bin/csh
+  cd $rundir
+  pwd
+  module list
+  limit
+  set par = "parallel"
+#  set par = "serial"
+  if (\$par == 'parallel') then
+    set cmd = "time mpirun -np $compute_tasks ./ipe_v18.exe"
+  else
+    set cmd = "time ./ipe_v18.exe"
+  endif
+  echo "running \$cmd" > output
+  (\$cmd) >> output
+
+if (\$status != 0) then
+  echo ipe failed
+  exit 23
+else
+  echo ipe finished
+endif
+exit 0
+EOF
+
+chmod 755 ./runscript
+
+set queue_time=03:00:00
+qsub -N ipe \
+     -A acb-gpu \
+     -r y \
+     -pe tgpu 1 \
+     -cwd \
+     -l h_rt=$queue_time \
+     ./runscript || echo "qsub failed" && exit 1
+
+exit 0

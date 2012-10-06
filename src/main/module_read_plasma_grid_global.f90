@@ -93,7 +93,7 @@
 
 !SMS$PARALLEL(dh, lp, mp) BEGIN
 
-!JMIN_IN_all and JMAX_IS_all are OUT variables becasue of a bug in SMS
+!JMIN_IN_all and JMAX_IS_all are OUT variables to workaround an SMS bug
 !SMS$SERIAL(<JMIN_IN,JMAX_IS,IN>,<JMIN_ING,JMAX_ISG,MaxFluxTube,JMIN_IN_all,JMAX_IS_all,OUT> : default=ignore) BEGIN
       filename =filepath_pgrid//filename_pgrid
       FORM_dum ='formatted' 
@@ -128,7 +128,7 @@
       apexE          = zero
       r_meter2D      = zero
 
-!dum0,dum1,dum2,dum3 are treated as OUT variables because of a bug in SMS
+!JFM dum0,dum1,dum2,dum3 are treated as OUT variables to workaround an SMS bug
 !SMS$SERIAL(<JMIN_IN,JMAX_IS,JMIN_ING,JMAX_ISG,IN>,<r_meter2D,plasma_grid_3d,plasma_grid_GL,dum0,dum1,dum2,dum3,OUT> : default=ignore) BEGIN
       READ (UNIT=LUN_pgrid, FMT=*) dum0, dum1, dum2, dum3 !gr_2d, gcol_2d, glon_2d, q_coordinate_2d
 do lp=1,NLP
@@ -156,7 +156,7 @@ do lp=1,NLP
 enddo
       print *,"reading SL_meter etc completed"
 !SMS$SERIAL END
-!dum4,dum5,dum6 are treated as OUT variables because of a bug in SMS
+!JFM dum4,dum5,dum6 are treated as OUT variables to workaround an SMS bug
 !SMS$SERIAL(<JMIN_IN,JMAX_IS,JMIN_ING,JMAX_ISG,IN>,<apexD,dum4,dum5,dum6,OUT> : default=ignore) BEGIN
       READ (UNIT=LUN_pgrid, FMT=*) dum4, dum5, dum6      !Apex_D1_2d
 !D2
@@ -175,7 +175,7 @@ do lp=1,NLP
 enddo
       print *,"reading D1-3 etc completed"
 !SMS$SERIAL END
-!dum4,dum5 are treated as OUT variables because of a bug in SMS
+!JFM dum4,dum5 are OUT variables to workaround an SMS bug
 !SMS$SERIAL(<JMIN_IN,JMAX_IS,JMIN_ING,JMAX_ISG,IN>,<apexE,dum4,dum5,OUT> : default=ignore) BEGIN
       READ (UNIT=LUN_pgrid, FMT=*) dum4, dum5          !Apex_E1_2d
 !E1
@@ -190,7 +190,8 @@ do lp=1,NLP
 enddo
       print *,"reading E1/2 etc completed"
 !SMS$SERIAL END
-!SMS$SERIAL(<Be3,OUT> : default=ignore) BEGIN
+!JFM Be3_all1 and Be3_all2 are OUT variables to workaround an SMS bug
+!SMS$SERIAL(<Be3,Be3_all1,Be3_all2,OUT> : default=ignore) BEGIN
 !JFM  READ (UNIT=LUN_pgrid, FMT=*) Be3_all(1,1:NMP,1:NLP),Be3_all(2,1:NMP,1:NLP) !Apex_BE3_N
 !JFM  READ (UNIT=LUN_pgrid, FMT=*) Be3_all(1,:,:),Be3_all(2,:,:) !Apex_BE3_N
       READ (UNIT=LUN_pgrid, FMT=*) Be3_all1,Be3_all2 !Apex_BE3_N
