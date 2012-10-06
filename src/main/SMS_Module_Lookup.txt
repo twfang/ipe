@@ -1,5 +1,6 @@
 module_decomp ./module_decomp_sms.f.tmp
 module_PLASMA ../plasma/module_plasma.f90
+module_sub_PLASMA ../plasma/module_sub_plasma.f90
 module_NEUTRAL_MKS ../neutral/module_neutral.f90
 module_heating_rate ../neutral/module_heating_rate.f90
 module_ELDYN ../eldyn/module_eldyn.f
@@ -16,3 +17,4 @@ module_open_output_files ./module_open_output_files_sms.f.tmp
 module_output ./module_output_sms.f.tmp
 module_close_files ./module_close_files_sms.f.tmp
 module_read_plasma_grid_global ./module_read_plasma_grid_global_sms.f.tmp
+module_init_plasma_grid ./module_init_plasma_grid_sms.f.tmp

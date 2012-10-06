@@ -1,4 +1,4 @@
-# Makefile for NIM dynamics compiled using SMS
+# Makefile for IPE compiled using SMS
 
 SHELL = /bin/sh
 

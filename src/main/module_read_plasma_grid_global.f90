@@ -93,7 +93,8 @@
 
 !SMS$PARALLEL(dh, lp, mp) BEGIN
 
-!SMS$SERIAL(<JMIN_IN,JMAX_IS,IN>,<JMIN_ING,JMAX_ISG,OUT> : default=ignore) BEGIN
+!JMIN_IN_all and JMAX_IS_all are OUT variables becasue of a bug in SMS
+!SMS$SERIAL(<JMIN_IN,JMAX_IS,IN>,<JMIN_ING,JMAX_ISG,MaxFluxTube,JMIN_IN_all,JMAX_IS_all,OUT> : default=ignore) BEGIN
       filename =filepath_pgrid//filename_pgrid
       FORM_dum ='formatted' 
       STATUS_dum ='old'
@@ -103,8 +104,8 @@
       print *,"reading JMIN_IN etc completed"
       JMIN_ING = JMIN_IN_all(1,:)
       JMAX_ISG = JMAX_IS_all(1,:)
-!SMS$SERIAL END
       MaxFluxTube = maxval(JMAX_ISG-JMIN_ING+1)
+!SMS$SERIAL END
 
       DEALLOCATE ( JMIN_IN_all,JMAX_IS_all,STAT=stat_alloc )
       IF ( stat_alloc/=0 ) THEN
@@ -127,7 +128,8 @@
       apexE          = zero
       r_meter2D      = zero
 
-!SMS$SERIAL(<dum0,dum1,dum2,dum3,r_meter2D,plasma_grid_3d,plasma_grid_GL,OUT> : default=ignore) BEGIN
+!dum0,dum1,dum2,dum3 are treated as OUT variables because of a bug in SMS
+!SMS$SERIAL(<JMIN_IN,JMAX_IS,JMIN_ING,JMAX_ISG,IN>,<r_meter2D,plasma_grid_3d,plasma_grid_GL,dum0,dum1,dum2,dum3,OUT> : default=ignore) BEGIN
       READ (UNIT=LUN_pgrid, FMT=*) dum0, dum1, dum2, dum3 !gr_2d, gcol_2d, glon_2d, q_coordinate_2d
 do lp=1,NLP
   r_meter2D    (JMIN_IN(lp):JMAX_IS(lp),lp) = dum0(JMIN_ING(lp):JMAX_ISG(lp),1)                !r_meter
@@ -154,7 +156,8 @@ do lp=1,NLP
 enddo
       print *,"reading SL_meter etc completed"
 !SMS$SERIAL END
-!SMS$SERIAL(<dum4,dum5,dum6,apexD,OUT> : default=ignore) BEGIN
+!dum4,dum5,dum6 are treated as OUT variables because of a bug in SMS
+!SMS$SERIAL(<JMIN_IN,JMAX_IS,JMIN_ING,JMAX_ISG,IN>,<apexD,dum4,dum5,dum6,OUT> : default=ignore) BEGIN
       READ (UNIT=LUN_pgrid, FMT=*) dum4, dum5, dum6      !Apex_D1_2d
 !D2
 !dbg20110923  apexD(1,1:NPTS2D,1:NMP)%east  =  dum4(1,1:NPTS2D,1:NMP) !D1
@@ -172,7 +175,8 @@ do lp=1,NLP
 enddo
       print *,"reading D1-3 etc completed"
 !SMS$SERIAL END
-!SMS$SERIAL(<dum4,dum5,apexE,OUT> : default=ignore) BEGIN
+!dum4,dum5 are treated as OUT variables because of a bug in SMS
+!SMS$SERIAL(<JMIN_IN,JMAX_IS,JMIN_ING,JMAX_ISG,IN>,<apexE,dum4,dum5,OUT> : default=ignore) BEGIN
       READ (UNIT=LUN_pgrid, FMT=*) dum4, dum5          !Apex_E1_2d
 !E1
 do lp=1,NLP
