@@ -130,7 +130,7 @@ print *,'sub-io_pl: start_uts=',utime
 !nm20120509: automatically keep running global run
 !0:you need to specify the record_number_plasma_start by your self...
 IF ( sw_record_number==0 ) THEN
-      read_loop0: DO n_read=1,n_max !=10000
+      rd_loop0: DO n_read=1,n_max !=10000
          READ (UNIT=lun_ut2,FMT=*) record_number_plasma_dum, utime_dum
          print *,' record_# ', record_number_plasma_dum,' uts=', utime_dum
          IF (n_read==1) THEN
@@ -141,7 +141,7 @@ IF ( sw_record_number==0 ) THEN
             IF (utime_dum==utime) THEN
                print *,'n_read=',n_read,' confirmed that ipe output exist at rec#=',record_number_plasma_dum,' at UT=', utime_dum
               CLOSE(UNIT=lun_ut2)
-              EXIT  read_loop0
+              EXIT  rd_loop0
             ELSE !IF (utime_dum/=utime) THEN
                print *,'n_read',n_read,'!STOP! INVALID start_time!',utime, record_number_plasma_dum, utime_dum
               STOP
@@ -151,11 +151,11 @@ IF ( sw_record_number==0 ) THEN
            print *,'n_read',n_read,'!STOP! INVALID record number!',record_number_plasma_dum, utime_dum
            STOP
         END IF
-      END DO read_loop0!: DO n_read=1,n_max          
+      END DO rd_loop0!: DO n_read=1,n_max          
 ELSE IF ( sw_record_number==1 ) THEN
 !1: automatically keep running global run: the code sets up the record_number from the very last record...
       n_count=0
-      read_loop1: DO n_read=1,n_max !=10000
+      rd_loop1: DO n_read=1,n_max !=10000
 
 !SMS$SERIAL BEGIN
          READ (UNIT=lun_ut2,FMT=*,END=19) record_number_plasma_dum, utime_dum
@@ -167,7 +167,7 @@ ELSE IF ( sw_record_number==1 ) THEN
            print *,'n_read=',n_read,'n_read_min=', n_read_min
          END IF
 
-      END DO read_loop1!: DO n_read=1,n_max !=10000
+      END DO rd_loop1!: DO n_read=1,n_max !=10000
 19    CONTINUE
       record_number_plasma_start = record_number_plasma_dum
       start_time = utime_dum
@@ -185,7 +185,7 @@ j_loop2: DO jth=1,(ISPEC+3)  !t  +ISPEV)
 LUN = LUN_PLASMA2(jth-1+lun_min2)
 if(sw_debug) print *,'jth=',jth,' LUN2=',LUN
 
-read_loop: DO n_read=n_read_min, record_number_plasma_start
+rd_loop: DO n_read=n_read_min, record_number_plasma_start
   if(jth==ISPEC+3) &
      & print *,'n_read=',n_read
 !(1) UT
@@ -202,7 +202,7 @@ read_loop: DO n_read=n_read_min, record_number_plasma_start
 
 
 !      IF ( utime_dum==utime ) THEN
-!        EXIT read_loop
+!        EXIT rd_loop
 !      ELSE
 !        IF ( n_read==n_read_max ) THEN 
 !          print *,'!STOP! INVALID reading plasma file',n_read,n_read_max,jth,LUN
@@ -210,7 +210,7 @@ read_loop: DO n_read=n_read_min, record_number_plasma_start
 !        END IF
 !      END IF !      IF ( utime_dum==start_time ) THEN
 
-    END DO read_loop !: DO n_read=1,n_read_max
+    END DO rd_loop !: DO n_read=1,n_read_max
 
 
 mp_loop2:do mp=1,NMP

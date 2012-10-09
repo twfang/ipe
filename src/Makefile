@@ -244,6 +244,8 @@ cln:
 	$(RM) ${DR0}/*.mod ${DR0}/*.tmp ${DR0}/*.f ${DR0}/*~
 	$(RM) ${DR0}/*_sms.f90 ${DR0}/*ppptmp*
 	$(RM) ${DR1}/*.mod ${DR2}/*.mod ${DR3}/*.mod ${DR4}/*.mod ${DR6}/*.mod 
+	$(RM) ${DR3}/*.mod ${DR3}/*.tmp ${DR3}/*.f ${DR3}/*~
+	$(RM) ${DR3}/*_sms.f90 ${DR3}/*ppptmp*
 
 tar:
 	@echo $(PACKAGE)-$(VER) > .package

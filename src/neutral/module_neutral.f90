@@ -93,8 +93,11 @@ END IF
       Un_ms1 = zero
 
 !SMS$PARALLEL(dh, lp, mp) BEGIN
-      apex_longitude_loop: DO mp = mpstrt, mpstop, mpstep          !1,NMP
-        apex_latitude_height_loop: DO lp = lpstrt, lpstop, lpstep  !1,NLP
+!     apex_longitude_loop: DO mp = mpstrt, mpstop, mpstep          !1,NMP
+!       apex_latitude_height_loop: DO lp = lpstrt, lpstop, lpstep  !1,NLP
+!JFM Eliminated mpstep and lpstep to workaround an SMS bug.
+      apex_longitude_loop: DO mp = mpstrt,mpstop
+        apex_latitude_height_loop: DO lp = lpstrt,lpstop
 
           IN = JMIN_IN(lp)
           IS = JMAX_IS(lp)

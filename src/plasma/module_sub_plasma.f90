@@ -14,7 +14,7 @@
 !--------------------------------------------  
       MODULE module_sub_PLASMA
       USE module_precision
-      USE module_IPE_dimension,ONLY: ISPEC,ISPET,ISPEV,IPDIM,NLP,ISTOT
+      USE module_IPE_dimension,ONLY: ISPEC,ISPET,ISPEV,IPDIM,NLP,NMP,ISTOT
       USE module_FIELD_LINE_GRID_MKS,ONLY: plasma_3d,VEXBup
       IMPLICIT NONE
       include "gptl.inc"
@@ -64,7 +64,9 @@ end if
       ret = gptlstart ('apex_lon_loop') !24772.857
 !     print*,'JFM mpstrt,mpstop,mpstep', mpstrt,mpstop,mpstep !1,80,1
 !SMS$PARALLEL(dh, lp, mp) BEGIN
-      apex_longitude_loop: DO mp = mpstrt,mpstop,mpstep !1,NMP
+!JFM Eliminated mpstep to workaround an SMS bug.
+!     apex_longitude_loop: DO mp = mpstrt,mpstop,mpstep !1,NMP
+      apex_longitude_loop: DO mp = mpstrt,mpstop
         mp_save=mp
         IF ( sw_neutral_heating_flip==1 ) hrate_cgs_save=zero
         if ( sw_debug )  WRITE (0,"('sub-p: mp=',I4)")mp
@@ -81,7 +83,9 @@ end if
 !!!dbg20120125:
 !        print*,'JFM mp,lpstrt,lpstop,lpstep',mp,lpstrt,lpstop,lpstep !1,1,170,1
                                                                       !2,1,170,1
-        apex_latitude_height_loop: DO lp = lpstrt,lpstop,lpstep
+!JFM Eliminated lpstep to workaround an SMS bug.
+!       apex_latitude_height_loop: DO lp = lpstrt,lpstop,lpstep
+        apex_latitude_height_loop: DO lp = lpstrt,lpstop
           lp_save=lp
 
 

@@ -236,6 +236,12 @@ WRITE(UNIT=LUN_LOG0,FMT=*)'real_prec=',real_prec,' int_prec=',int_prec
 
         CLOSE(LUN_nmlt)
 print *,'finished reading namelist:',filename
+if(mpstep/=1.or.lpstep/=1) then
+  print*,'mpstep or lpstep /= 1'
+  print*,'mpstep,lpstep',mpstep,lpstep
+  print*,'Stopping in module_input_parameters'
+  stop
+endif
 !SMS$insert call NNT_NPROCS(nprocs)
 print"(' Number of Processors:',I6)",nprocs
 stop_time=start_time+duration
