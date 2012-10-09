@@ -29,8 +29,9 @@
       CONTAINS
 !---------------------------
       SUBROUTINE plasma ( utime )
-      USE module_input_parameters,ONLY:lpstrt,lpstop,lpstep,mpstrt,mpstop,mpstep,ip_freq_output,start_time,stop_time,sw_neutral_heating_flip,sw_perp_transport,lpmin_perp_trans,lpmax_perp_trans,sw_para_transport,sw_debug &
-&, sw_dbg_perp_trans , sw_exb_up
+      USE module_input_parameters,ONLY:lpstrt,lpstop,lpstep,mpstrt,mpstop,mpstep,ip_freq_output,start_time,stop_time,&
+&     sw_neutral_heating_flip,sw_perp_transport,lpmin_perp_trans,lpmax_perp_trans,sw_para_transport,sw_debug,        &
+&     sw_dbg_perp_trans,sw_exb_up,nprocs
       USE module_physical_constants,ONLY:rtd,zero
       USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,plasma_grid_3d,plasma_grid_GL,mp_save,lp_save,plasma_grid_Z,JMAX_IS,hrate_cgs_save
       USE module_PLASMA,ONLY:utime_save,plasma_1d
@@ -51,7 +52,9 @@
 ! array initialization
 !dbg20120313 note! needed to comment out temporarily for exb reading test:sw_exb=5
 if ( sw_exb_up/=5 ) then
-      VEXBup(:,:)=zero
+!SMS$IGNORE BEGIN
+      VEXBup=zero
+!SMS$IGNORE END
 end if
 
 
@@ -84,16 +87,21 @@ end if
 
 !dbg20120228: debug how2validate the transport
 if(sw_dbg_perp_trans.and.utime==start_time.and.lp==lpstrt)then
-DO j=1,NLP
-   DO i=JMIN_IN(j),JMAX_IS(j)
+  if(nprocs>1) then
+    print*,'sw_dbg_perp_trans=true does not work for parallel runs'
+    print*,'Stopping module_sub_plasma'
+    stop
+  endif
+  DO j=1,NLP
+    DO i=JMIN_IN(j),JMAX_IS(j)
       DO jth=1,ISTOT
          plasma_3d(jth,i,lp,mp)=100.0
 !dbg20120501      plasma_3d(mp,j)%N_m3( 1:ISPEC,i)=100.0
 !dbg20120501      plasma_3d(mp,j)%Te_k(         i)=100.0
 !dbg20120501      plasma_3d(mp,j)%Ti_k( 1:ISPET,i)=100.0
       END DO !jth
-   END DO !i
-END DO !j
+    END DO !i
+  END DO !j
 end if
 !if(sw_dbg_perp_trans) print *, '1!dbg max o+',MAXVAL( plasma_3d(mp,lp)%N_m3( 1,1:IPDIM) ),MINVAL( plasma_3d(mp,lp)%N_m3( 1,1:IPDIM) )
 

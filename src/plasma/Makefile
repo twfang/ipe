@@ -1,7 +1,19 @@
 #SHELL=/bin/bash
-OBJ=$(OBJ3)
+OBJS=$(OBJS)
+OBJ=$(notdir $(OBJS))
 FC=$(FC90)
-FFLAGS90=$(FFLAG3) 
-LFLAGS=$(LFLAG3)
+FFLAGS90=$(FFLAGS) 
+LFLAGS=$(LFLAGS)
 HOME_dev=$(HOME_dev)
-include  $(HOME_dev)/Makefile.original
+all:
+	echo plasma compiler $(FC) $(FCparallel)
+	echo plasma par $(PAR)
+	echo plasma FFLAGS $(FFLAGS)
+ifeq ($(PAR),sms)
+	echo building sms
+	echo $(FCparallel)
+	make -f  $(HOME_dev)/Makefile.sms OBJ="$(OBJ)" FC=$(FCparallel) FFLAGS90="$(FFLAGS)" LFLAGS="$(LFLAGS)" HOME_dev=$(HOME_dev)
+else
+	echo building serial
+	make -f  $(HOME_dev)/Makefile.original OBJ="$(OBJS)" FC=$(FC) FFLAGS90="$(FFLAGS)" LFLAGS="$(LFLAGS)" HOME_dev=$(HOME_dev)
+endif

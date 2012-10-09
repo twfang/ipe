@@ -30,7 +30,7 @@ C..... The input parameters JMIN, EHT were also added
       USE module_FIELD_LINE_GRID_MKS,ONLY: mp_save,lp_save,JMIN_IN
      >,                         JMAX_IS,MaxFluxTube,hrate_cgs_save
       USE module_input_parameters,ONLY: sw_neutral_heating_flip
-     >,lpstop,mpstop,start_time,ip_freq_output
+     >,lpstop,mpstop,start_time,ip_freq_output,nprocs
       USE module_heating_rate,ONLY: get_neutral_heating_rate
       USE module_precision
       USE module_PLASMA,ONLY: utime_save
@@ -65,9 +65,8 @@ C..... The input parameters JMIN, EHT were also added
       
 !nm20110404: save each component of the heating rate for output
       INTEGER :: j2d,jth,lun,lp  !J converted to the 2Dsystem in a meridional plain.
-!SMS$DISTRIBUTE(dh,NLP) BEGIN
+
       REAL(KIND=real_prec), DIMENSION(7,MaxFluxTube,NLP) :: hrate_mks !.. each component of the Neutral heating rate (eV/kg/s) 
-!SMS$DISTRIBUTE END
       REAL(KIND=real_prec) :: min_hrate,max_hrate
 
       PO1DSR=OTHPR1(3,IJ)      !.. Schumann-Runge production of O(1D)
@@ -187,6 +186,11 @@ C..... The input parameters JMIN, EHT were also added
 !nm20110404: save each component of heating rate for output
       IF ( sw_neutral_heating_flip==1 .AND.
      &  MOD( (utime_save-start_time),ip_freq_output)==0) THEN
+        if(nprocs>1) then
+          print*,'sw_neutral_heating_flip=1 does not work in parallel'
+          print*,'Stopping in Neut_heating'
+          stop
+        endif
 
         j2d=ij+JMIN_IN(lp_save)-1
         DO jth=1,7
@@ -199,7 +203,6 @@ C..... The input parameters JMIN, EHT were also added
 !      hrate_cgs_save(7,j2d,mp_save)=hrate(7) !!PGR 3bod CHECK dimension
         END DO
 
-!SMS$PARALLEL(dh, lp) BEGIN
 
         IF ( IJ==JMAX .AND. lp_save==lpstop ) THEN
 !dbg20111202        IF ( lp_save==lpstop ) THEN
@@ -223,7 +226,6 @@ C..... The input parameters JMIN, EHT were also added
             enddo
           END DO !jth=1,7
         END IF !( lp_save==lpstop ) THEN
-!SMS$PARALLEL END
 
       END IF !( sw_neutral_heating_flip==1 ) THEN
 

@@ -15,7 +15,7 @@
         USE module_precision
         USE module_IPE_dimension,ONLY:NMP,NLP,IPDIM
         USE module_FIELD_LINE_GRID_MKS,ONLY: VEXBup
-        USE module_input_parameters,ONLY:start_time,stop_time
+        USE module_input_parameters,ONLY:start_time,stop_time,nprocs
         USE module_IO, ONLY:filename,FORM_dum,STATUS_dum,luntmp1,luntmp2
         USE module_open_file, ONLY:open_file
         IMPLICIT NONE
@@ -23,10 +23,13 @@
         INTEGER (KIND=int_prec),INTENT(IN) :: lp,mp
 !---local variables---
         INTEGER (KIND=int_prec) :: record_number_plasma_dum,utime_dum,lpin,mpin
-!SMS$DISTRIBUTE(dh,NLP,NMP) BEGIN
         real VEXBupIN(NMP,NLP)
-!SMS$DISTRIBUTE END
 
+if(nprocs>1) then
+  print*,'read_vexb does not work for parallel runs'
+  print*,'Stopping in read_vexb'
+  stop
+endif
 luntmp1=6001
 luntmp2=6002
 if( utime==start_time ) then 
@@ -50,7 +53,6 @@ print *,'check ut', utime_dum,' utime-172800=',(utime-172800)
 STOP
 endif
 !ExB
-!SMS$SERIAL(<VEXBup,OUT> : default=ignore) BEGIN
       READ (UNIT=luntmp2) VEXBupIN
       do mpin=1,NMP
         do lpin=1,NLP
@@ -59,7 +61,6 @@ endif
       enddo
 !print *,'check EXB MAX',MAXVAL( vexbup(lp,1:NMP) ),MINVAL( vexbup(lp,1:NMP) )
 print *,'check EXB lp=135',mp, vexbup(135,mp) ,utime
-!SMS$SERIAL END
 
 if( utime==stop_time ) then 
              CLOSE(UNIT=luntmp1)

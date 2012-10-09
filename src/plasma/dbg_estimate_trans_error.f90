@@ -20,12 +20,17 @@
 
 !---local variables---
         INTEGER (KIND=int_prec) :: lp,mp
-!SMS$DISTRIBUTE(dh,NLP,NMP) BEGIN
+!!SMS$DISTRIBUTE(dh,NLP,NMP) BEGIN
         REAL (KIND=real_prec),dimension(NMP,NLP) :: opmaxpc,opminpc
-!SMS$DISTRIBUTE END
+!!SMS$DISTRIBUTE END
         REAL (KIND=real_prec),PARAMETER :: fixedval=100.0
 
-!
+if(nprocs>1) then
+  print*,'sw_dbg_perp_trans=true does not work for parallel runs'
+  print*,'Stopping in dbg_estimate_trans_error'
+  stop
+endif
+
 do lp=1,NLP
 do mp=1,NMP
 opmaxpc(mp,lp)=( &

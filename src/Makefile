@@ -162,7 +162,7 @@ ifeq ($(PAR),sms)
 	which mpif90
 	$(FCparallel) $(LDFLAGS) $(FINAL_OBJS) -o $@ $(LDLIBS) $(GPTL_LDFLAGS) $(SMS_LDFLAGS)
 else
-	$(FC) $(LDFLAGS) $(FINAL_OBJS) -o $@ $(LDLIBS) $(GPTL_LDFLAGS) $(SMS_LDFLAGS)
+	$(FC)         $(LDFLAGS) $(FINAL_OBJS) -o $@ $(LDLIBS) $(GPTL_LDFLAGS) $(SMS_LDFLAGS)
 endif
 
 $(FINAL_OBJS): $(HEADS) Makefile
@@ -199,11 +199,20 @@ $(FINAL_OBJS): $(HEADS) Makefile
 	"HOME_dev=${HOME_dev}"
  D3_OBJ :
 	cd ${DR3} ; ${MAKE} all \
-	"OBJ3=${OBJ3}" \
+	"OBJS=${OBJ3}" \
 	"FC=${FC}" \
-	"FFLAG3=${FFLAG3}" \
-	"LFLAG3=${LDFLAGS}" \
-	"HOME_dev=${HOME_dev}"
+	"FCparallel=${FCparallel}" \
+	"FFLAGS=${FFLAG3}" \
+	"LFLAGS=${LDFLAGS}" \
+	"HOME_dev=${HOME_dev}" \
+	"PAR=${PAR}" \
+	"CPP=${CPP}" \
+	"CPP_FLAGS=${CPP_FLAGS}" \
+	"PPP=${PPP}" \
+	"PPP_FLAGS=${PPP_FLAGS}" \
+	"PPP_FLAGS1=${PPP_FLAGS1}" \
+	"SMSFLAGS=${SMSFLAGS}" \
+	"PINCLUDES=${PINCLUDES}" 
  D6_OBJ :
 	cd ${DR6} ; ${MAKE} all \
 	"OBJ6=${OBJ6}" \

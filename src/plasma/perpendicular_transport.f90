@@ -135,7 +135,7 @@ if(sw_debug) print *,'sub-Fi: check GL NH[deg]',(90.-plasma_grid_GL( JMIN_IN(lp)
     END IF
   END IF! ( plasma_grid_3d(IN,lp)%GL <= theta_t0(ihem) ) THEN 
 
-!SMS$PARALLEL(dh, lp) BEGIN
+!SMS$PARALLEL(dh, l) BEGIN
 lp_loop: DO l=lp_min,NLP-1  !nearest point-->EQ
 IF ( plasma_grid_GL( JMIN_IN(l),l )<=theta_t0(ihem) .AND. theta_t0(ihem)<plasma_grid_GL( JMIN_IN(l+1),l+1 )  ) THEN
   lp_t0(ihem,1)=l
