@@ -239,6 +239,7 @@ print *,'finished reading namelist:',filename
 if(mpstep/=1.or.lpstep/=1) then
   print*,'mpstep or lpstep /= 1'
   print*,'mpstep,lpstep',mpstep,lpstep
+  print*,'This is a workaround for an SMS bug in module sub_plasma and module_neutral'
   print*,'Stopping in module_input_parameters'
   stop
 endif

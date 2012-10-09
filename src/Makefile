@@ -52,10 +52,11 @@ SRC0	=\
 	${DR0}/module_read_plasma_grid_global.f90 \
 	${DR0}/module_init_plasma_grid.f90
 # DR1: neutrals
-SRC1	=\
+SRC1S	=\
 	${DR1}/nrlmsise00.f90 \
 	${DR1}/hwm93.f90 \
-	${DR1}/thermosphere_1d_v2.f90 \
+	${DR1}/thermosphere_1d_v2.f90 
+SRC1P	=\
 	${DR1}/module_neutral.f90 \
 	${DR1}/module_heating_rate.f90
 # DR2: FLIP
@@ -133,13 +134,14 @@ SRC4	=\
 #
 #HEADS	= $(PACKAGE).h
 OBJ0	= $(SRC0:.f90=.o)
-OBJ1	= $(SRC1:.f90=.o)
+OBJ1S	= $(SRC1S:.f90=.o)
+OBJ1P	= $(SRC1P:.f90=.o)
 OBJ2	= $(SRC2:.f=.o)
 OBJ3	= $(SRC3:.f90=.o)
 OBJ4	= $(SRC4:.f90=.o)
 OBJ6	= $(SRC6:.f=.o)
 #
-FILES	= README Makefile $(HEADS) $(SRC0) $(SRC1) $(SRC2) $(SRC3) $(SRC6) $(SRC4)
+FILES	= README Makefile $(HEADS) $(SRC0) $(SRC1S) $(SRC1P) $(SRC2) $(SRC3) $(SRC6) $(SRC4)
 VER	= `date +%Y%m%d`
 
 
@@ -150,7 +152,8 @@ all: $(PACKAGE)
 
 FINAL_OBJS=\
 	$(OBJ0) \
-	$(OBJ1) \
+	$(OBJ1S) \
+	$(OBJ1P) \
 	$(OBJ6) \
 	$(OBJ3) \
 	$(OBJ2) \
@@ -185,11 +188,22 @@ $(FINAL_OBJS): $(HEADS) Makefile
 	"PINCLUDES=${PINCLUDES}" 
  D1_OBJ :
 	cd ${DR1} ; ${MAKE} all \
-	"OBJ1=${OBJ1}" \
+	"OBJS=${OBJ1S}" \
+	"OBJP=${OBJ1P}" \
 	"FC=${FC}" \
-	"FFLAG1=${FFLAG1}" \
-	"LFLAG1=${LDFLAGS}" \
-	"HOME_dev=${HOME_dev}"
+	"FCparallel=${FCparallel}" \
+	"FFLAGS=${FFLAG1}" \
+	"LFLAGS=${LDFLAGS}" \
+	"HOME_dev=${HOME_dev}" \
+	"PAR=${PAR}" \
+	"CPP=${CPP}" \
+	"CPP_FLAGS=${CPP_FLAGS}" \
+	"PPP=${PPP}" \
+	"PPP_FLAGS=${PPP_FLAGS}" \
+	"PPP_FLAGS1=${PPP_FLAGS1}" \
+	"SMSFLAGS=${SMSFLAGS}" \
+	"PINCLUDES=${PINCLUDES}" 
+
  D2_OBJ :
 	cd ${DR2} ; ${MAKE} all \
 	"OBJ2=${OBJ2}" \
@@ -244,6 +258,8 @@ cln:
 	$(RM) ${DR0}/*.mod ${DR0}/*.tmp ${DR0}/*.f ${DR0}/*~
 	$(RM) ${DR0}/*_sms.f90 ${DR0}/*ppptmp*
 	$(RM) ${DR1}/*.mod ${DR2}/*.mod ${DR3}/*.mod ${DR4}/*.mod ${DR6}/*.mod 
+	$(RM) ${DR1}/*.mod ${DR1}/*.tmp ${DR1}/*.f ${DR1}/*~
+	$(RM) ${DR1}/*_sms.f90 ${DR1}/*ppptmp*
 	$(RM) ${DR3}/*.mod ${DR3}/*.tmp ${DR3}/*.f ${DR3}/*~
 	$(RM) ${DR3}/*_sms.f90 ${DR3}/*ppptmp*
 

@@ -82,6 +82,8 @@ END IF
 
 
 ! array initialization
+!The ignore is to workaround an SMS bug involving LBOUND(,1)
+!SMS$IGNORE BEGIN
       ON_m3  = zero
       HN_m3  = zero
       N2N_m3 = zero
@@ -91,6 +93,7 @@ END IF
       TN_k   = zero
       TINF_k = zero
       Un_ms1 = zero
+!SMS$IGNORE END
 
 !SMS$PARALLEL(dh, lp, mp) BEGIN
 !     apex_longitude_loop: DO mp = mpstrt, mpstop, mpstep          !1,NMP

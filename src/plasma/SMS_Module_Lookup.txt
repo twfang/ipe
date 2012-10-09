@@ -1,0 +1,22 @@
+module_decomp ../main//module_decomp_sms.f.tmp
+module_PLASMA ../plasma/module_plasma.f90
+module_sub_PLASMA ../plasma/module_sub_plasma.f90
+module_NEUTRAL_MKS ../neutral/module_neutral.f90
+module_heating_rate ../neutral/module_heating_rate.f90
+module_ELDYN ../eldyn/module_eldyn.f
+
+module_precision ../main/module_precision_sms.f.tmp
+module_ipe_dimension ../main/module_IPE_dimension_sms.f.tmp
+module_physical_constants ../main/module_physical_constants_sms.f.tmp
+module_unit_conversion ../main/module_unit_conversion_sms.f.tmp
+module_input_parameters ../main/module_input_parameters_sms.f.tmp
+module_io ../main/module_io_sms.f.tmp
+module_field_line_grid_mks ../main/module_field_line_grid_sms.f.tmp
+module_open_file ../main/module_open_file_sms.f.tmp
+module_open_output_files ../main/module_open_output_files_sms.f.tmp
+module_output ../main/module_output_sms.f.tmp
+module_close_files ../main/module_close_files_sms.f.tmp
+module_read_plasma_grid_global ../main/module_read_plasma_grid_global_sms.f.tmp
+module_init_plasma_grid ../main/module_init_plasma_grid_sms.f.tmp
+module_plasma ./module_plasma_sms.f.tmp
+module_sub_plasma ./module_sub_plasma_sms.f.tmp
