@@ -82,7 +82,6 @@ END IF
 
 
 ! array initialization
-!The ignore is to workaround an SMS bug involving LBOUND(,1)
 !SMS$IGNORE BEGIN
       ON_m3  = zero
       HN_m3  = zero

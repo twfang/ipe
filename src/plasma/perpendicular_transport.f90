@@ -186,7 +186,7 @@ END DO which_hemisphere!:  DO ihem=1,ihem_max
 !SMS$DISTRIBUTE(dh,NLP) BEGIN
       INTEGER (KIND=int_prec) :: midpoint(NLP)
 !SMS$DISTRIBUTE END
-      INTEGER (KIND=int_prec) :: lp1,lp2,midpoint1,midpoint2,mpx
+      INTEGER (KIND=int_prec) :: lp1,lp2,midpoint1,midpoint2,mpx,mpp,mpm
 !---
 
 !3:both THETA&PHI:transport included, NH/SH flux tubes are moving separately with different ExB drift
@@ -206,10 +206,19 @@ which_hemisphere: DO ihem=1,1  !ihem_max
 !!!dbg20120125:  mp_t0(ihem,1) = INT( (mlon_deg/dlonm90km) , int_prec )+1
 !!!dbg20120125:  mp_t0(ihem,2) = mp_t0(ihem,1)+1
 !SMS$PARALLEL(dh, , mpx) BEGIN
-  mpx_loop: DO mpx=1,NMP
-    IF ( mlon_rad(mpx)<=phi_t0(ihem) .AND. phi_t0(ihem)<mlon_rad(mpx+1) ) THEN
-      mp_t0(ihem,1) =mpx
-      mp_t0(ihem,2) =mpx+1
+  mpx_loop: DO mpx=0,NMP
+    mpp=mp+mpx
+    if(mpp > NMP) mpp= mpp-NMP
+    mpm=mp-mpx
+    if(mpm < 1) mpm= NMP+mpm
+    IF ( mlon_rad(mpp)<=phi_t0(ihem) .AND. phi_t0(ihem)<mlon_rad(mpm+1) ) THEN
+      mp_t0(ihem,1) =mpp
+      mp_t0(ihem,2) =mpp+1
+      EXIT mpx_loop
+    END IF
+    IF ( mpm>1.and.mlon_rad(mpm)<=phi_t0(ihem) .AND. phi_t0(ihem)<mlon_rad(mpm-1) ) THEN
+      mp_t0(ihem,1) =mpm-1
+      mp_t0(ihem,2) =mpm
       EXIT mpx_loop
     END IF
   END DO mpx_loop !: DO mpx=1,NMP
