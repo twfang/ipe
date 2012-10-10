@@ -21,6 +21,7 @@
       INTEGER (KIND=int_prec), PUBLIC   :: stop_time   !=60 !UT[sec]
       INTEGER (KIND=int_prec), PUBLIC   :: time_step   !=60 ![sec]
       INTEGER (KIND=int_prec), PUBLIC   :: nprocs=1    !Number of processors
+      INTEGER (KIND=int_prec), PUBLIC   :: HaloSize=3  !Halo size
 
       REAL (KIND=real_prec), PUBLIC :: F107D   !.. Daily F10.7
       REAL (KIND=real_prec), PUBLIC :: F107AV  !.. 81 day average F10.7
@@ -245,6 +246,7 @@ if(mpstep/=1.or.lpstep/=1) then
 endif
 !SMS$insert call NNT_NPROCS(nprocs)
 print"(' Number of Processors:',I6)",nprocs
+print"(' HaloSize:            ',I6)",HaloSize
 stop_time=start_time+duration
 print *,'stop_time',stop_time
         CLOSE(LUN_LOG0)

@@ -64,7 +64,7 @@ if(sw_debug) print *,'interpolate_flux_tube finished!'
       USE module_physical_constants,ONLY: rtd
       USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,dlonm90km
       USE module_IPE_dimension,ONLY: NMP,NLP
-      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug
+      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,HaloSize
      IMPLICIT NONE
 !--- INPUT ---
       INTEGER (KIND=int_prec),INTENT(IN) :: mp
@@ -74,7 +74,7 @@ if(sw_debug) print *,'interpolate_flux_tube finished!'
 !---local
       INTEGER (KIND=int_prec) :: ihem,ihem_max
       INTEGER (KIND=int_prec),DIMENSION(2,2), INTENT(OUT) :: mp_t0,lp_t0
-      INTEGER (KIND=int_prec) :: lp_min,l,mpx
+      INTEGER (KIND=int_prec) :: lp_min,l,mpx,mpp,mpm
 !---
 
 !3:both THETA&PHI:transport included, NH/SH flux tubes are moving separately with different ExB drift
@@ -93,20 +93,30 @@ which_hemisphere: DO ihem=1,1  !ihem_max
 !!!dbg20120125:  mlon_deg = phi_t0(ihem)*rtd
 !!!dbg20120125:  mp_t0(ihem,1) = INT( (mlon_deg/dlonm90km) , int_prec )+1
 !!!dbg20120125:  mp_t0(ihem,2) = mp_t0(ihem,1)+1
-!SMS$PARALLEL(dh, , mpx) BEGIN
-  mpx_loop: DO mpx=1,NMP
-    IF ( mlon_rad(mpx)<=phi_t0(ihem) .AND. phi_t0(ihem)<mlon_rad(mpx+1) ) THEN
-      mp_t0(ihem,1) =mpx
-      mp_t0(ihem,2) =mpx+1
+  mpx_loop: DO mpx=0,NMP
+    if(mpx+1 > HaloSize) then
+      print*,'mpx+1 > HaloSize in find_neighbor_grid_R',mpx,HaloSize
+      print*,'Increase the halo size or take smaller time steps.'
+      print*,'Stopping in find_neighbor_grid_R'
+    endif
+    mpp=mp+mpx
+    if(mpp > NMP) mpp= mpp-NMP
+    mpm=mp-mpx
+    if(mpm < 1) mpm= NMP+mpm
+    IF ( mlon_rad(mpp)<=phi_t0(ihem) .AND. phi_t0(ihem)<mlon_rad(mpp+1) ) THEN
+      mp_t0(ihem,1) =mpp
+      mp_t0(ihem,2) =mpp+1
       EXIT mpx_loop
     END IF
-  END DO mpx_loop !: DO mpx=1,NMP
-!SMS$PARALLEL END
+    IF ( mpm>1.and.mlon_rad(mpm)<=phi_t0(ihem) .AND. phi_t0(ihem)<mlon_rad(mpm-1) ) THEN
+      mp_t0(ihem,1) =mpm-1
+      mp_t0(ihem,2) =mpm
+      EXIT mpx_loop
+    END IF
+  END DO mpx_loop !: DO mpx=0,NMP
 !dbg20120125:
 if(sw_debug) print *,'dbg20120125! sub-find_neighbor_grid:', mp_t0(ihem,1:2),phi_t0(ihem)*rtd, mlon_rad(mp_t0(ihem,1:2))*rtd
 !STOP
-
-
 
 !find  lp0_t0:NH
 IF (ihem==1) THEN
@@ -170,7 +180,7 @@ END DO which_hemisphere!:  DO ihem=1,ihem_max
       USE module_physical_constants,ONLY: rtd,earth_radius
       USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,dlonm90km, plasma_grid_Z
       USE module_IPE_dimension,ONLY: NMP,NLP
-      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug
+      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,HaloSize
      IMPLICIT NONE
 !--- INPUT ---
       INTEGER (KIND=int_prec),INTENT(IN) :: mp
@@ -205,13 +215,17 @@ which_hemisphere: DO ihem=1,1  !ihem_max
 !!!dbg20120125:  mlon_deg = phi_t0(ihem)*rtd
 !!!dbg20120125:  mp_t0(ihem,1) = INT( (mlon_deg/dlonm90km) , int_prec )+1
 !!!dbg20120125:  mp_t0(ihem,2) = mp_t0(ihem,1)+1
-!SMS$PARALLEL(dh, , mpx) BEGIN
   mpx_loop: DO mpx=0,NMP
+    if(mpx+1 > HaloSize) then
+      print*,'mpx+1 > HaloSize in find_neighbor_grid_R',mpx,HaloSize
+      print*,'Increase the halo size or take smaller time steps.'
+      print*,'Stopping in find_neighbor_grid_R'
+    endif
     mpp=mp+mpx
     if(mpp > NMP) mpp= mpp-NMP
     mpm=mp-mpx
     if(mpm < 1) mpm= NMP+mpm
-    IF ( mlon_rad(mpp)<=phi_t0(ihem) .AND. phi_t0(ihem)<mlon_rad(mpm+1) ) THEN
+    IF ( mlon_rad(mpp)<=phi_t0(ihem) .AND. phi_t0(ihem)<mlon_rad(mpp+1) ) THEN
       mp_t0(ihem,1) =mpp
       mp_t0(ihem,2) =mpp+1
       EXIT mpx_loop
@@ -222,11 +236,9 @@ which_hemisphere: DO ihem=1,1  !ihem_max
       EXIT mpx_loop
     END IF
   END DO mpx_loop !: DO mpx=1,NMP
-!SMS$PARALLEL END
 !dbg20120125:
 if(sw_debug) print *,'dbg20120125! sub-find_neighbor_grid_R:', mp_t0(ihem,1:2),phi_t0(ihem)*rtd, mlon_rad(mp_t0(ihem,1:2))*rtd
 !STOP
-
 
 !find  lp0_t0:NH
 IF (ihem==1) THEN
