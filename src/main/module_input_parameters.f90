@@ -21,7 +21,7 @@
       INTEGER (KIND=int_prec), PUBLIC   :: stop_time   !=60 !UT[sec]
       INTEGER (KIND=int_prec), PUBLIC   :: time_step   !=60 ![sec]
       INTEGER (KIND=int_prec), PUBLIC   :: nprocs=1    !Number of processors
-      INTEGER (KIND=int_prec), PUBLIC   :: HaloSize=3  !Halo size
+      INTEGER (KIND=int_prec), PUBLIC   :: HaloSize=99 !Halo size (big number=NOP for serial)
 
       REAL (KIND=real_prec), PUBLIC :: F107D   !.. Daily F10.7
       REAL (KIND=real_prec), PUBLIC :: F107AV  !.. 81 day average F10.7

@@ -95,9 +95,10 @@ which_hemisphere: DO ihem=1,1  !ihem_max
 !!!dbg20120125:  mp_t0(ihem,2) = mp_t0(ihem,1)+1
   mpx_loop: DO mpx=0,NMP
     if(mpx+1 > HaloSize) then
-      print*,'mpx+1 > HaloSize in find_neighbor_grid_R',mpx,HaloSize
+      print*,'mpx+1 > HaloSize in find_neighbor_grid_R',mpx,HaloSize,mp
       print*,'Increase the halo size or take smaller time steps.'
       print*,'Stopping in find_neighbor_grid'
+      STOP
     endif
     mpp=mp+mpx
     if(mpp > NMP) mpp= mpp-NMP
@@ -131,9 +132,10 @@ IF (ihem==1) THEN
 
   lpx_loop: DO lpx=0,NLP-1  !nearest point-->EQ
     IF(lpx+1 > HaloSize) THEN
-      print*,'lpx+1 > HaloSize in find_neighbor_grid_R',lpx,HaloSize
+      print*,'lpx+1 > HaloSize in find_neighbor_grid_R',lpx,HaloSize,lp
       print*,'Increase the halo size or take smaller time steps.'
       print*,'Stopping in find_neighbor_grid'
+      STOP
     ENDIF
     lpp=lp+lpx
     IF(lpp > NLP-1) lpp= lpp-NLP+1
@@ -189,7 +191,7 @@ END DO which_hemisphere!:  DO ihem=1,ihem_max
       REAL(KIND=real_prec) :: Z_t0
       INTEGER (KIND=int_prec),DIMENSION(2,2), INTENT(OUT) :: mp_t0,lp_t0
       INTEGER (KIND=int_prec) :: lp_min,l
-      INTEGER (KIND=int_prec) :: lp1,lp2,midpoint1,midpoint2,mpx,mpp,mpm
+      INTEGER (KIND=int_prec) :: lp1,lp2,midpoint1,midpoint2,mpx,mpp,mpm,lpx,lpp,lpm
 !---
 
 !3:both THETA&PHI:transport included, NH/SH flux tubes are moving separately with different ExB drift
@@ -210,9 +212,10 @@ which_hemisphere: DO ihem=1,1  !ihem_max
 !!!dbg20120125:  mp_t0(ihem,2) = mp_t0(ihem,1)+1
   mpx_loop: DO mpx=0,NMP
     if(mpx+1 > HaloSize) then
-      print*,'mpx+1 > HaloSize in find_neighbor_grid_R',mpx,HaloSize
+      print*,'mpx+1 > HaloSize in find_neighbor_grid_R',mpx,HaloSize,mp
       print*,'Increase the halo size or take smaller time steps.'
       print*,'Stopping in find_neighbor_grid_R'
+      STOP
     endif
     mpp=mp+mpx
     if(mpp > NMP) mpp= mpp-NMP
@@ -262,56 +265,39 @@ if(sw_debug) print *,'sub-FiR: check GL NH[deg]',(90.-plasma_grid_GL( JMIN_IN(lp
 !      END IF
 !    END IF
 
-!SMS$PARALLEL(dh, l) BEGIN
 z_t0 = r0_apex - earth_radius
 
 !d l=130
 !d print *,JMIN_IN(l),JMAX_IS(l), midpoint(l),z_t0
 
-
-  lpx_loop: DO lpx=0,NLP-1  !nearest point-->EQ
-    IF(lpx+1 > HaloSize) THEN
-      print*,'Searching for midpoint in find-neighbor_grid_R: lpx+1 > HaloSize',lpx,HaloSize
-      print*,'Increase the halo size or take smaller time steps.'
-      print*,'Stopping in find_neighbor_grid_R'
-    ENDIF
-    lpp=lp+lpx
-    IF(lpp > NLP-1) lpp= lpp-NLP+1
-    lpm=lp-lpx
-    IF(lpm < 1) lpm= NLP-1+lpm
-    IF(plasma_grid_GL(JMIN_IN(lpp),lpp)<=theta_t0(ihem).AND.theta_t0(ihem)<plasma_grid_GL(JMIN_IN(lpp+1),lpp+1)) THEN
-      lp_t0(ihem,1)=lpp
-      lp_t0(ihem,2)=lpp+1
-      EXIT lpx_loop
-    ENDIF
-    IF(lpm>1.and.plasma_grid_GL(JMIN_IN(lpm),lpm)<=theta_t0(ihem).AND.theta_t0(ihem)<plasma_grid_GL(JMIN_IN(lpm-1),lpm-1)) THEN
-      lp_t0(ihem,1)=lpm-1
-      lp_t0(ihem,2)=lpm
-      EXIT lpx_loop
-    ENDIF
-    IF (lpx==NLP-1) THEN
-      print*,'Could not find lp',lpp,lpm,plasma_grid_GL(JMIN_IN(lpp),lpp),plasma_grid_GL(JMIN_IN(lpm),lpm),theta_t0(ihem)
-      print*,'Stopping in find_neighbor_grid'
-      STOP
-    ENDIF
-  ENDDO lpx_loop !: DO lpx=0,NLP-1
-
-
-lp_loop: DO l=1,NLP-1  !longest -->shortest flux tube
- 
-  IF ( plasma_grid_Z( midpoint(l+1),l+1 )<=Z_t0 .AND. Z_t0<plasma_grid_Z( midpoint(l),l )  ) THEN
-    lp_t0(ihem,1)=l   !1outer flux tube
-    lp_t0(ihem,2)=l+1 !2inner flux tube
-    EXIT lp_loop
-  ELSE
-    if (l==NLP-1) then
-      print *,'sub-FiR:NH: !STOP! could not find the lp',plasma_grid_Z( midpoint(l),l ),z_t0
-      STOP
-    end if
-  END IF
-
-END DO lp_loop!: DO i=lp_min,NLP  !nearest point-->EQ
-!SMS$PARALLEL END
+lpx_loop: DO lpx=0,NLP-1  !nearest point-->EQ
+  IF(lpx+1 > HaloSize) THEN
+    print*,'Searching for inner,outer flux tube: lpx+1 > HaloSize',lpx,HaloSize,lp !JFM This failed for HaloSize=4
+    print*,'Increase the halo size or take smaller time steps.'
+    print*,'Stopping in find_neighbor_grid_R'
+    STOP
+  ENDIF
+  lpp=lp+lpx
+  IF(lpp > NLP-1) lpp= lpp-NLP+1
+  lpm=lp-lpx
+  IF(lpm < 1) lpm= NLP-1+lpm
+  IF(plasma_grid_Z(midpoint(lpp+1),lpp+1)<=Z_t0.AND.Z_t0<plasma_grid_Z(midpoint(lpp),lpp)) THEN
+    lp_t0(ihem,1)=lpp   !1=outer flux tube
+    lp_t0(ihem,2)=lpp+1 !2=inner flux tube
+    EXIT lpx_loop
+  ENDIF
+  IF(plasma_grid_Z(midpoint(lpm),lpm)<=Z_t0.AND.Z_t0<plasma_grid_Z(midpoint(lpm-1),lpm-1)) THEN
+    lp_t0(ihem,1)=lpm-1 !1=outer flux tube
+    lp_t0(ihem,2)=lpm   !2=inner flux tube
+    EXIT lpx_loop
+  ENDIF
+  IF (lpx==NLP-1) THEN
+    print*,'Could not find inner,outer flux tube',lpp,lpm,midpoint(lpp),midpoint(lpp+1),midpoint(lpm),midpoint(lpm+1)
+    print*,Z_t0,plasma_grid_Z(midpoint(lpp+1),lpp+1),plasma_grid_Z(midpoint(lpp),lpp),plasma_grid_Z(midpoint(lpm+1),lpm+1),plasma_grid_Z(midpoint(lpm),lpm)
+    print*,'Stopping in find_neighbor_grid_R'
+    STOP
+  ENDIF
+ENDDO lpx_loop !: DO lpx=0,NLP-1
 
 !OUT  lp_t0(ihem,1)=l  
 !IN   lp_t0(ihem,2)=l+1
