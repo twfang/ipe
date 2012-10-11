@@ -174,7 +174,7 @@ END DO which_hemisphere!:  DO ihem=1,ihem_max
 &,  mp_t0 ,    lp_t0 )
       USE module_precision
       USE module_physical_constants,ONLY: rtd,earth_radius
-      USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,dlonm90km,plasma_grid_Z,minTheta,maxTheta
+      USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,dlonm90km,plasma_grid_Z,minTheta,maxTheta,midpoint
       USE module_IPE_dimension,ONLY: NMP,NLP
       USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,HaloSize
      IMPLICIT NONE
@@ -189,9 +189,6 @@ END DO which_hemisphere!:  DO ihem=1,ihem_max
       REAL(KIND=real_prec) :: Z_t0
       INTEGER (KIND=int_prec),DIMENSION(2,2), INTENT(OUT) :: mp_t0,lp_t0
       INTEGER (KIND=int_prec) :: lp_min,l
-!SMS$DISTRIBUTE(dh,NLP) BEGIN
-      INTEGER (KIND=int_prec) :: midpoint(NLP)
-!SMS$DISTRIBUTE END
       INTEGER (KIND=int_prec) :: lp1,lp2,midpoint1,midpoint2,mpx,mpp,mpm
 !---
 
@@ -266,15 +263,38 @@ if(sw_debug) print *,'sub-FiR: check GL NH[deg]',(90.-plasma_grid_GL( JMIN_IN(lp
 !    END IF
 
 !SMS$PARALLEL(dh, l) BEGIN
-lp_loop0: DO l=1,NLP  !longest -->shortest flux tube
- midpoint(l) = JMIN_IN(l) + ( JMAX_IS(l) - JMIN_IN(l) )/2
-END DO lp_loop0
-
 z_t0 = r0_apex - earth_radius
-
 
 !d l=130
 !d print *,JMIN_IN(l),JMAX_IS(l), midpoint(l),z_t0
+
+
+  lpx_loop: DO lpx=0,NLP-1  !nearest point-->EQ
+    IF(lpx+1 > HaloSize) THEN
+      print*,'Searching for midpoint in find-neighbor_grid_R: lpx+1 > HaloSize',lpx,HaloSize
+      print*,'Increase the halo size or take smaller time steps.'
+      print*,'Stopping in find_neighbor_grid_R'
+    ENDIF
+    lpp=lp+lpx
+    IF(lpp > NLP-1) lpp= lpp-NLP+1
+    lpm=lp-lpx
+    IF(lpm < 1) lpm= NLP-1+lpm
+    IF(plasma_grid_GL(JMIN_IN(lpp),lpp)<=theta_t0(ihem).AND.theta_t0(ihem)<plasma_grid_GL(JMIN_IN(lpp+1),lpp+1)) THEN
+      lp_t0(ihem,1)=lpp
+      lp_t0(ihem,2)=lpp+1
+      EXIT lpx_loop
+    ENDIF
+    IF(lpm>1.and.plasma_grid_GL(JMIN_IN(lpm),lpm)<=theta_t0(ihem).AND.theta_t0(ihem)<plasma_grid_GL(JMIN_IN(lpm-1),lpm-1)) THEN
+      lp_t0(ihem,1)=lpm-1
+      lp_t0(ihem,2)=lpm
+      EXIT lpx_loop
+    ENDIF
+    IF (lpx==NLP-1) THEN
+      print*,'Could not find lp',lpp,lpm,plasma_grid_GL(JMIN_IN(lpp),lpp),plasma_grid_GL(JMIN_IN(lpm),lpm),theta_t0(ihem)
+      print*,'Stopping in find_neighbor_grid'
+      STOP
+    ENDIF
+  ENDDO lpx_loop !: DO lpx=0,NLP-1
 
 
 lp_loop: DO l=1,NLP-1  !longest -->shortest flux tube

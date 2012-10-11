@@ -17,7 +17,7 @@
       USE module_FIELD_LINE_GRID_MKS,ONLY: &
      & plasma_grid_3d,plasma_3d,r_meter2D,ON_m3,HN_m3,N2N_m3,O2N_m3&
      &,apexD,apexE,VEXBup,MaxFluxTube,HE_m3,N4S_m3,TN_k,TINF_K,Un_ms1 &
-     &,Be3, Pvalue, JMIN_IN, JMAX_IS,hrate_cgs_save &
+     &,Be3, Pvalue, JMIN_IN, JMAX_IS,hrate_cgs_save,midpoint &
      &,mlon_rad, plasma_grid_Z, plasma_grid_GL
   
       USE module_input_parameters,ONLY: sw_neutral_heating_flip
@@ -63,6 +63,7 @@
      &,            Pvalue  (  NLP      ) &
      &,            JMIN_IN (  NLP      ) &
      &,            JMAX_IS (  NLP      ) &
+     &,            midpoint(  NLP      ) &
      &,            mlon_rad(      NMP+1) &
      &,            STAT=stat_alloc       )
  
