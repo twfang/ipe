@@ -20,7 +20,7 @@
 &, r_meter2D, plasma_grid_GL,plasma_grid_3d,apexD,apexE,Be3,plasma_grid_Z &
 &, ISL,IBM,IGR,IQ,IGCOLAT,IGLON &
 &, east,north,up &
-&, MaxFluxTube &
+&, MaxFluxTube,minTheta,maxTheta &
 &, plasma_3d
         USE module_open_file,ONLY: open_file
         IMPLICIT NONE
@@ -129,7 +129,7 @@
       r_meter2D      = zero
 
 !JFM dum0,dum1,dum2,dum3 are treated as OUT variables to workaround an SMS bug
-!SMS$SERIAL(<JMIN_IN,JMAX_IS,JMIN_ING,JMAX_ISG,IN>,<r_meter2D,plasma_grid_3d,plasma_grid_GL,dum0,dum1,dum2,dum3,OUT> : default=ignore) BEGIN
+!SMS$SERIAL(<JMIN_IN,JMAX_IS,JMIN_ING,JMAX_ISG,IN>,<r_meter2D,plasma_grid_3d,plasma_grid_GL,dum0,dum1,dum2,dum3,minTheta,maxTheta,OUT> : default=ignore) BEGIN
       READ (UNIT=LUN_pgrid, FMT=*) dum0, dum1, dum2, dum3 !gr_2d, gcol_2d, glon_2d, q_coordinate_2d
 do lp=1,NLP
   r_meter2D    (JMIN_IN(lp):JMAX_IS(lp),lp) = dum0(JMIN_ING(lp):JMAX_ISG(lp),1)                !r_meter
@@ -148,6 +148,8 @@ enddo
 do lp=1,NLP
   plasma_grid_GL(JMIN_IN(lp):JMAX_IS(lp),lp) = dum0(JMIN_ING(lp):JMAX_ISG(lp),1) !GL
 enddo
+      minTheta=plasma_grid_GL(JMIN_IN(  1),  1)
+      maxTheta=plasma_grid_GL(JMIN_IN(NLP),NLP) 
       print *,"reading GL_rad etc completed"
       READ (UNIT=LUN_pgrid, FMT=*) dum0, dum1 !integral_ds_2d, apex_BMAG_2d
 do lp=1,NLP

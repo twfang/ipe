@@ -174,7 +174,7 @@ END DO which_hemisphere!:  DO ihem=1,ihem_max
 &,  mp_t0 ,    lp_t0 )
       USE module_precision
       USE module_physical_constants,ONLY: rtd,earth_radius
-      USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,dlonm90km, plasma_grid_Z
+      USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,dlonm90km,plasma_grid_Z,minTheta,maxTheta
       USE module_IPE_dimension,ONLY: NMP,NLP
       USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,HaloSize
      IMPLICIT NONE
@@ -241,13 +241,13 @@ IF (ihem==1) THEN
 
 !check pole regions!
 !not totally sure whether I should use theta_t0 or r0_apex???
-IF ( theta_t0(ihem) < plasma_grid_GL( JMIN_IN(1),1 ) ) THEN 
+IF ( theta_t0(ihem) < minTheta ) THEN 
    lp_t0(ihem,1)=-999
    lp_t0(ihem,2)=1
    print *,'sub-Fi: mp',mp,' lp',lp,'needs special pole interpolation'
    RETURN
-ELSE IF ( theta_t0(ihem) > plasma_grid_GL( JMIN_IN(NLP),NLP ) ) THEN
-   print *,'sub-Fi: !STOP! invalid theta_t0',mp,lp,theta_t0(ihem),plasma_grid_GL( JMIN_IN(NLP),NLP )
+ELSE IF ( theta_t0(ihem) > maxTheta ) THEN
+   print *,'sub-Fi: !STOP! invalid theta_t0',mp,lp,theta_t0(ihem),maxTheta
    STOP
 ELSE   !IF ( plasma_grid_GL( JMIN_IN(lp),lp ) <= theta_t0(ihem) ) THEN 
 
