@@ -67,14 +67,14 @@ if(sw_debug) print *,'interpolate_flux_tube finished!'
       USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,HaloSize
      IMPLICIT NONE
 !--- INPUT ---
-      INTEGER (KIND=int_prec),INTENT(IN) :: mp
-      INTEGER (KIND=int_prec),INTENT(IN) :: lp
-      REAL(KIND=real_prec),INTENT(IN) :: phi_t0(2) !magnetic longitude,phi[rad] at T0(previous time step)
-      REAL(KIND=real_prec),INTENT(IN) :: theta_t0(2) !magnetic latitude,theta[rad] at T0
+      INTEGER (KIND=int_prec ),INTENT(IN) :: mp
+      INTEGER (KIND=int_prec ),INTENT(IN) :: lp
+      REAL    (KIND=real_prec),INTENT(IN) :: phi_t0(2)  !magnetic longitude,phi[rad] at T0(previous time step)
+      REAL    (KIND=real_prec),INTENT(IN) :: theta_t0(2)!magnetic latitude,theta[rad] at T0
 !---local
-      INTEGER (KIND=int_prec) :: ihem,ihem_max
-      INTEGER (KIND=int_prec),DIMENSION(2,2), INTENT(OUT) :: mp_t0,lp_t0
-      INTEGER (KIND=int_prec) :: lp_min,l,mpx,mpp,mpm
+      INTEGER (KIND=int_prec ) :: ihem,ihem_max
+      INTEGER (KIND=int_prec ),DIMENSION(2,2), INTENT(OUT) :: mp_t0,lp_t0
+      INTEGER (KIND=int_prec ) :: mpx,mpp,mpm,lpx,lpp,lpm
 !---
 
 !3:both THETA&PHI:transport included, NH/SH flux tubes are moving separately with different ExB drift
@@ -97,7 +97,7 @@ which_hemisphere: DO ihem=1,1  !ihem_max
     if(mpx+1 > HaloSize) then
       print*,'mpx+1 > HaloSize in find_neighbor_grid_R',mpx,HaloSize
       print*,'Increase the halo size or take smaller time steps.'
-      print*,'Stopping in find_neighbor_grid_R'
+      print*,'Stopping in find_neighbor_grid'
     endif
     mpp=mp+mpx
     if(mpp > NMP) mpp= mpp-NMP
@@ -123,43 +123,39 @@ IF (ihem==1) THEN
 
 !check pole regions!
   IF ( theta_t0(ihem) < plasma_grid_GL( JMIN_IN(1),1 ) ) THEN 
-   lp_t0(ihem,1)=-999
-   lp_t0(ihem,2)=1
-   print *,'sub-Fi: mp',mp,' lp',lp,'needs special pole interpolation'
-   RETURN
-  ELSE IF ( plasma_grid_GL( JMIN_IN(lp),lp ) <= theta_t0(ihem) ) THEN 
-    lp_min =lp
-  ELSE  !plasma_grid_3d(IN,lp)%GL > theta_t0(ihem) ) THEN 
-
-if(sw_debug) print *,'sub-Fi: check GL NH[deg]',(90.-plasma_grid_GL( JMIN_IN(lp),lp )*rtd)
-
-    lp_min =lp-5 !not sure if 10 is enough???
-    if (lp_min<=0 ) lp_min=1
-    IF ( plasma_grid_GL( JMIN_IN(lp_min),lp_min ) > theta_t0(ihem) ) THEN 
-      lp_min=lp-5
-      if (lp_min<=0 ) lp_min=1
-      IF ( plasma_grid_GL( JMIN_IN(lp_min),lp_min ) > theta_t0(ihem) ) THEN 
-        print *,'sub-Fi:NH !STOP! not sure if this is working???'
-        STOP
-      END IF
-    END IF
+    lp_t0(ihem,1)=-999
+    lp_t0(ihem,2)=1
+    print *,'sub-Fi: mp',mp,' lp',lp,'needs special pole interpolation'
+    RETURN
   END IF! ( plasma_grid_3d(IN,lp)%GL <= theta_t0(ihem) ) THEN 
 
-!SMS$PARALLEL(dh, l) BEGIN
-lp_loop: DO l=lp_min,NLP-1  !nearest point-->EQ
-IF ( plasma_grid_GL( JMIN_IN(l),l )<=theta_t0(ihem) .AND. theta_t0(ihem)<plasma_grid_GL( JMIN_IN(l+1),l+1 )  ) THEN
-  lp_t0(ihem,1)=l
-  lp_t0(ihem,2)=l+1
-  EXIT lp_loop
-ELSE
-  if (l==NLP-1) then
-  print *,'sub-Fi:NH: !STOP! could not find the lp',plasma_grid_GL( JMIN_IN(l),l ),theta_t0(ihem)
-  STOP
-  end if
-END IF
+  lpx_loop: DO lpx=0,NLP-1  !nearest point-->EQ
+    IF(lpx+1 > HaloSize) THEN
+      print*,'lpx+1 > HaloSize in find_neighbor_grid_R',lpx,HaloSize
+      print*,'Increase the halo size or take smaller time steps.'
+      print*,'Stopping in find_neighbor_grid'
+    ENDIF
+    lpp=lp+lpx
+    IF(lpp > NLP-1) lpp= lpp-NLP+1
+    lpm=lp-lpx
+    IF(lpm < 1) lpm= NLP-1+lpm
+    IF(plasma_grid_GL(JMIN_IN(lpp),lpp)<=theta_t0(ihem).AND.theta_t0(ihem)<plasma_grid_GL(JMIN_IN(lpp+1),lpp+1)) THEN
+      lp_t0(ihem,1)=lpp
+      lp_t0(ihem,2)=lpp+1
+      EXIT lpx_loop
+    ENDIF
+    IF(lpm>1.and.plasma_grid_GL(JMIN_IN(lpm),lpm)<=theta_t0(ihem).AND.theta_t0(ihem)<plasma_grid_GL(JMIN_IN(lpm-1),lpm-1)) THEN
+      lp_t0(ihem,1)=lpm-1
+      lp_t0(ihem,2)=lpm
+      EXIT lpx_loop
+    ENDIF
+    IF (lpx==NLP-1) THEN
+      print*,'Could not find lp',lpp,lpm,plasma_grid_GL(JMIN_IN(lpp),lpp),plasma_grid_GL(JMIN_IN(lpm),lpm),theta_t0(ihem)
+      print*,'Stopping in find_neighbor_grid'
+      STOP
+    ENDIF
+  ENDDO lpx_loop !: DO lpx=0,NLP-1
 
-END DO lp_loop!: DO i=lp_min,NLP  !nearest point-->EQ
-!SMS$PARALLEL END
 END IF !(ihem==1) THEN
 
 if(sw_debug) print *,'sub-Fi: mlon', mlon_rad(mp_t0(ihem,1))*rtd, phi_t0(ihem)*rtd, mlon_rad(mp_t0(ihem,2))*rtd, mp_t0(ihem,1:2)
@@ -235,7 +231,7 @@ which_hemisphere: DO ihem=1,1  !ihem_max
       mp_t0(ihem,2) =mpm
       EXIT mpx_loop
     END IF
-  END DO mpx_loop !: DO mpx=1,NMP
+  END DO mpx_loop !: DO mpx=0,NMP
 !dbg20120125:
 if(sw_debug) print *,'dbg20120125! sub-find_neighbor_grid_R:', mp_t0(ihem,1:2),phi_t0(ihem)*rtd, mlon_rad(mp_t0(ihem,1:2))*rtd
 !STOP
