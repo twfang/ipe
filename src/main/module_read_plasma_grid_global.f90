@@ -20,7 +20,7 @@
 &, r_meter2D, plasma_grid_GL,plasma_grid_3d,apexD,apexE,Be3,plasma_grid_Z &
 &, ISL,IBM,IGR,IQ,IGCOLAT,IGLON &
 &, east,north,up &
-&, MaxFluxTube,minTheta,maxTheta,midpoint &
+&, MaxFluxTube,minTheta,maxTheta,midpnt &
 &, plasma_3d
         USE module_open_file,ONLY: open_file
         IMPLICIT NONE
@@ -118,7 +118,7 @@
       JMIN_IN = 1
       JMAX_IS = JMAX_ISG - JMIN_ING + 1
       DO lp=1,NLP  !longest -->shortest flux tube
-        midpoint(lp) = JMIN_IN(lp) + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
+        midpnt(lp) = JMIN_IN(lp) + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
       END DO
 
 ! array initialization

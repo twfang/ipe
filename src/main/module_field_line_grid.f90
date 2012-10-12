@@ -30,7 +30,7 @@
 !SMS$DISTRIBUTE(dh,1) BEGIN
       INTEGER(KIND=int_prec),ALLOCATABLE,PUBLIC :: JMIN_IN (:),JMAX_IS (:)   !.. first and last indices on field line grid
       INTEGER(KIND=int_prec),ALLOCATABLE,PUBLIC :: JMIN_ING(:),JMAX_ISG(:)   !.. first and last indices on field line grid
-      INTEGER(KIND=int_prec),ALLOCATABLE,PUBLIC :: midpoint(:)
+      INTEGER(KIND=int_prec),ALLOCATABLE,PUBLIC :: midpnt(:)
 !SMS$DISTRIBUTE END
       TYPE :: plasma_grid
 !dbg20110927         REAL(KIND=real_prec) :: Z  !.. altitude [meter]

@@ -176,7 +176,7 @@ END DO which_hemisphere!:  DO ihem=1,ihem_max
 &,  mp_t0 ,    lp_t0 )
       USE module_precision
       USE module_physical_constants,ONLY: rtd,earth_radius
-      USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,dlonm90km,plasma_grid_Z,minTheta,maxTheta,midpoint
+      USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,dlonm90km,plasma_grid_Z,minTheta,maxTheta,midpnt
       USE module_IPE_dimension,ONLY: NMP,NLP
       USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,HaloSize
      IMPLICIT NONE
@@ -268,7 +268,7 @@ if(sw_debug) print *,'sub-FiR: check GL NH[deg]',(90.-plasma_grid_GL( JMIN_IN(lp
 z_t0 = r0_apex - earth_radius
 
 !d l=130
-!d print *,JMIN_IN(l),JMAX_IS(l), midpoint(l),z_t0
+!d print *,JMIN_IN(l),JMAX_IS(l), midpnt(l),z_t0
 
 lpx_loop: DO lpx=0,NLP-1  !nearest point-->EQ
   IF(lpx+1 > HaloSize) THEN
@@ -281,19 +281,19 @@ lpx_loop: DO lpx=0,NLP-1  !nearest point-->EQ
   IF(lpp > NLP-1) lpp= lpp-NLP+1
   lpm=lp-lpx
   IF(lpm < 1) lpm= NLP-1+lpm
-  IF(plasma_grid_Z(midpoint(lpp+1),lpp+1)<=Z_t0.AND.Z_t0<plasma_grid_Z(midpoint(lpp),lpp)) THEN
+  IF(plasma_grid_Z(midpnt(lpp+1),lpp+1)<=Z_t0.AND.Z_t0<plasma_grid_Z(midpnt(lpp),lpp)) THEN
     lp_t0(ihem,1)=lpp   !1=outer flux tube
     lp_t0(ihem,2)=lpp+1 !2=inner flux tube
     EXIT lpx_loop
   ENDIF
-  IF(plasma_grid_Z(midpoint(lpm),lpm)<=Z_t0.AND.Z_t0<plasma_grid_Z(midpoint(lpm-1),lpm-1)) THEN
+  IF(plasma_grid_Z(midpnt(lpm),lpm)<=Z_t0.AND.Z_t0<plasma_grid_Z(midpnt(lpm-1),lpm-1)) THEN
     lp_t0(ihem,1)=lpm-1 !1=outer flux tube
     lp_t0(ihem,2)=lpm   !2=inner flux tube
     EXIT lpx_loop
   ENDIF
   IF (lpx==NLP-1) THEN
-    print*,'Could not find inner,outer flux tube',lpp,lpm,midpoint(lpp),midpoint(lpp+1),midpoint(lpm),midpoint(lpm+1)
-    print*,Z_t0,plasma_grid_Z(midpoint(lpp+1),lpp+1),plasma_grid_Z(midpoint(lpp),lpp),plasma_grid_Z(midpoint(lpm+1),lpm+1),plasma_grid_Z(midpoint(lpm),lpm)
+    print*,'Could not find inner,outer flux tube',lpp,lpm,midpnt(lpp),midpnt(lpp+1),midpnt(lpm),midpnt(lpm+1)
+    print*,Z_t0,plasma_grid_Z(midpnt(lpp+1),lpp+1),plasma_grid_Z(midpnt(lpp),lpp),plasma_grid_Z(midpnt(lpm+1),lpm+1),plasma_grid_Z(midpnt(lpm),lpm)
     print*,'Stopping in find_neighbor_grid_R'
     STOP
   ENDIF
@@ -302,9 +302,9 @@ ENDDO lpx_loop !: DO lpx=0,NLP-1
 !OUT  lp_t0(ihem,1)=l  
 !IN   lp_t0(ihem,2)=l+1
 lp1 = lp_t0(ihem,1)
-midpoint1 = midpoint(lp1)
+midpoint1 = midpnt(lp1)
 lp2 = lp_t0(ihem,2) !=l+1
-midpoint2 = midpoint(lp2)
+midpoint2 = midpnt(lp2)
 if(sw_debug) print *,lp1,midpoint1,lp2,midpoint2
 if(sw_debug) print *,'sub=FiR: check R',(earth_radius+plasma_grid_Z(midpoint1,lp1)),(earth_radius+Z_t0),(earth_radius+plasma_grid_Z(midpoint2,lp2))
 
