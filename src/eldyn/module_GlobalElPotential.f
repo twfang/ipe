@@ -74,13 +74,15 @@ c     use cam_logfile,   only: iulog
 !-----------------------------------------------------------------------
 !nm20121003
       USE efield !,ONLY:
-      USE sub_efield ,ONLY: 
-     &highlat_getbnd,bnd_sinus,highlat_adjust,interp_poten
+      USE module_interp_poten ,ONLY: interp_poten
       USE module_efield_mid ,ONLY:efield_mid
       USE module_prep_weimer ,ONLY:prep_weimer
       USE module_pot_latsmo ,ONLY: pot_latsmo
       USE module_pot_latsmo2 ,ONLY: pot_latsmo2
       USE module_pot_lonsmo ,ONLY: pot_lonsmo
+      USE module_highlat_getbnd ,ONLY: highlat_getbnd
+      USE module_bnd_sinus ,ONLY:      bnd_sinus
+      USE module_highlat_adjust ,ONLY: highlat_adjust
 !-----------------------------------------------------------------------
 ! local variables
 !-----------------------------------------------------------------------
