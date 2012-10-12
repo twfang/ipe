@@ -11,16 +11,71 @@ new input file :  input_test_gt    - I need to check what's needed from this for
 
 IPE input file : IPE.inp  (have to copy IPE_GT.inp on top of it)
 
+nameListGTIPE.txt :
+GT_output_dataset = 
+'/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONOSPHERE/gtgipIPE/OUTPUT/testGTIPE.nc'
 
 FOR DEBUGGING :
 
->dbx ./test_gt.exe
+>dbx ./test_gt.exe  (Vapor)
+
+>gdb ./test_gt.exe  (Zeus)
 
 
-
+---------------------------------------------------------------------------------
 For debug option output :
 
-/mtb/save/wx20lrm/DATA/IONOSPHERE/gtONLY/OUTPUT/CheckGT.dat
+Use input file :
+
+/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONOSPHERE/gtgipIPE/INPUT/
+Day_80_180_dipole_test.gt.20110913.v1.nc
+
+
+CheckGT.dat
+
+
+Edit the debug options, recompile, run ........
+
+LOGICAL, parameter :: debugStartupIPE = .TRUE.
+CHARACTER(LEN=*), PARAMETER :: debugStartIPEFileName = 'CheckStartIPE.dat'
+
+!-----------------------------------
+! Debug the Thermospheric values???
+!-----------------------------------
+LOGICAL, parameter :: debugThermo = .TRUE.
+CHARACTER(LEN=*), PARAMETER :: debugThermoFileName = 'CheckGTGIP.dat'
+
+
+
+!---------------------------------------------------
+! Write out the Thermospheric interpolated values??
+!---------------------------------------------------
+LOGICAL, parameter :: debugThermoInterp = .TRUE.
+CHARACTER(LEN=*), PARAMETER :: debugThermoInterpFileName = 'interpOut.dat'
+
+
+!------------------------------------------------
+! Write out the Ionospheric interpolated values??
+!------------------------------------------------
+LOGICAL, parameter :: debugIonoInterp = .TRUE.
+CHARACTER(LEN=*), PARAMETER :: debugIonoInterpFileName = 'interpIonoOut.dat'
+
+!----------------------------------------------------------------------
+! Debug results from INTERFACE__FIXED_GEO_to_MID_LAT_IONOSPHERE ?
+!----------------------------------------------------------------------
+INTEGER, parameter :: unitFixedGeo = 15
+CHARACTER(LEN=*), PARAMETER :: debugFixedGeoFileName = 'CheckFixedGeo.dat'
+LOGICAL :: debugFixedGeo = .TRUE.
+
+
+!-------------------------------
+! Debug the IPE grid values???
+!-------------------------------
+LOGICAL, parameter :: debugGridIPE = .TRUE.
+
+
+---------------------------------------------------------------------------------
+
 
 
 Input files :

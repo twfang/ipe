@@ -12,7 +12,6 @@ PRIVATE  ! Set everything to private access, except those
 PUBLIC :: INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO, readIPEtoGeoGrid, &
           INTERFACE__FIXED_GRID_to_THERMO
 
-SAVE
 
 ! lrm The names of nheights, mLats, lLons correspond to :  
 ! nFixedGridIonoHeights
@@ -185,7 +184,13 @@ ionoVar_high_res_fixed = 0.0
 
           ENDDO ! lats  m
 
+          !----------------------------------------------------------------------------
           !nm20120517
+          ! There are some zero values near the magnetic poles (north & south),
+          ! we want to get rid of them by assigning the zero values to the lowest or
+          ! highest available values.
+          ! We need to solve this interpolation problem lrm20120717
+          !----------------------------------------------------------------------------
           do m = 1, mlow_interface(l)-1
             ionoVar_high_res_fixed(iheight,m,l) = ionoVar_high_res_fixed(iheight, mlow_interface(l), l)
           end do
@@ -205,10 +210,10 @@ ionoVar_high_res_fixed = 0.0
   ! Add fix for when values at iheight = 1 are 0
   ! MUST CHECK THIS *********************************
   !-----------------------------------------------------
-  print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : SETTING ionoVar_high_res_fixed(1,m,l) == 0.0 TO LEVEL ABOVE ***'
-  WHERE (ionoVar_high_res_fixed(1,:,:) == 0.0 ) 
-         ionoVar_high_res_fixed(1,:,:) = ionoVar_high_res_fixed(2,:,:)
-  END WHERE
+  !print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : SETTING ionoVar_high_res_fixed(1,m,l) == 0.0 TO LEVEL ABOVE ***'
+  !WHERE (ionoVar_high_res_fixed(1,:,:) == 0.0 ) 
+  !       ionoVar_high_res_fixed(1,:,:) = ionoVar_high_res_fixed(2,:,:)
+  !END WHERE
 
 
   print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : MINVAL(ionoVar) = ',MINVAL(ionoVar)

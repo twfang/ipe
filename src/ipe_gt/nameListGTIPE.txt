@@ -1,9 +1,9 @@
 &gtipeINPUTS
-GT_input_dataset = '/scratch2/portfolios/NCEPDEV/ptmp/Leslie.Mayer/DATA/IONOSPHERE/gtgipIPE/INPUT/Day_80_180_dipole_test.gt.20110913.v1.nc'
-GT_output_dataset = '/scratch2/portfolios/NCEPDEV/ptmp/Leslie.Mayer/DATA/IONOSPHERE/gtgipIPE/OUTPUT/testGTIPE.nc'
-ionoStartDir = '/scratch2/portfolios/NCEPDEV/ptmp/Leslie.Mayer/DATA/IONOSPHERE/gtgipIPE/INPUT/'
-staticFileDir = '/scratch2/portfolios/NCEPDEV/ptmp/Leslie.Mayer/DATA/IONOSPHERE/static_files/'
-debugDir = '/scratch2/portfolios/NCEPDEV/ptmp/Leslie.Mayer/DATA/IONOSPHERE/gtgipIPE/OUTPUT/'
+GT_input_dataset = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONOSPHERE/gtgipIPE/INPUT/Day_80_180_dipole_test.gt.20110913.v1.nc'
+GT_output_dataset = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONOSPHERE/gtgipIPE/OUTPUT/testGTIPE.nc'
+ionoStartDir = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONOSPHERE/gtgipIPE/INPUT/'
+staticFileDir = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONOSPHERE/static_files/'
+debugDir = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONOSPHERE/gtgipIPE/DEBUG/'
 nday = 80                                                    
 f107 = 180.                  
 GT_timestep_in_seconds = 60  

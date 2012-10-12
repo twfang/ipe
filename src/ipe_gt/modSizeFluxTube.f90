@@ -12,7 +12,9 @@ SAVE
 !----------------------------------
 ! sizes of flux tube grid
 !----------------------------------
-INTEGER, PARAMETER :: NPTS = 44438 ! Total number of gridpoints along flux tubes
+!INTEGER, PARAMETER :: NPTS = 44438 ! Total number of gridpoints along flux tubes
+! changed to fit new plasma grid 20120717lrm
+INTEGER, PARAMETER :: NPTS = 44514 ! Total number of gridpoints along flux tubes
 INTEGER, PARAMETER :: NMP  = 80  ! number of longitude sectors
 INTEGER, PARAMETER :: NLP  = 170  ! number of tubes (N. pole to equator)
 

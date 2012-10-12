@@ -1240,7 +1240,7 @@ qion3d = 0
                  !print *,'GT_thermosphere : p1 = ',p1
                  !print *,'GT_thermosphere : p2 = ',p2
                  !print *,'GT_thermosphere : teff = ',teff
-                  print *,'GT_thermosphere : m, l = ',m, l
+                 !print *,'GT_thermosphere : m, l = ',m, l
 
                   CALL IONNEUT(p1, p2, p33, O_plus_1d, NO_plus_1d, &
                                O2_plus_1d, teff, &
@@ -3337,16 +3337,28 @@ SUBROUTINE neutral_composition_equation(XX, PREs, I11, F107, VX, VY, HT, ARMt, O
 
 
 !C  NORTH POINTS
-           ! lrm 09162011
-           !print *,'neutral_composition : n,m,le, T(n,m,le) = ',n,m,le, T(n,m,le)
-           !print *,'neutral_composition : ts, ps, pres(n) = ',ts, ps, pres(n)
 
                p1e(n) = PSAo(n,m,le)
                p2e(n) = PSMo(n,m,le)
                rmte(n) = ARMt(n,m,le)*amu
                tot = PREs(n)/bz/T(n,m,le)
 
-               fac = (T(n,m,le)/ts)**1.75*(ps/PREs(n))
+               ! Make sure not dividing by 0.
+               !if (ts == 0. .OR. pres(n) == 0.) then
+
+                  ! lrm 09162011
+               !   print *,'neutral_composition : n,m,le, T(n,m,le) = ',n,m,le, T(n,m,le)
+               !   print *,'neutral_composition : ts, ps, pres(n) = ',ts, ps, pres(n)
+
+               !endif
+
+               ! lrm20120903  Separated out calculations for debugging
+               !fac = (T(n,m,le)/ts)**1.75*(ps/PREs(n))
+               fac = (T(n,m,le)/ts)
+               !print *,'n, m, le(n,m,le), fac = ', n, m, le, T(n,m,le), fac
+               fac = fac**1.75
+               fac = fac*(ps/PREs(n))
+
 
                d12 = fac*0.26E-04
                d13 = fac*0.26E-04
