@@ -66,6 +66,7 @@ c     use cam_logfile,   only: iulog
       USE module_read_acoef ,ONLY: read_acoef
       USE module_constants ,ONLY:constants
       USE module_prep_fk ,ONLY:prep_fk
+      USE module_ReadCoef ,ONLY:ReadCoef
       implicit none
 !--------------------------------------------------------------------
 ! Purpose: read in and set up coefficients needed for electric field

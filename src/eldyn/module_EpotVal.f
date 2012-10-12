@@ -1,7 +1,8 @@
 !Jan2011:original code was provided from Astrid from WACCM.
 !Aug2011:this code was provided from Fei Wu from the WAM version.
+!sep2012: efield.f was separated into each routin for SMS compatibility.
 !--------------------------------------------  
-      module module_prep_weimer
+      module module_EpotVal
 !--------------------------------------------------------------------- 
 ! description: calculates the electric potential for a given year,
 !      day of year,UT, F10.7, B_z(K_p)
@@ -53,69 +54,74 @@ c     use cam_logfile,   only: iulog
       implicit none
 
 !nm20121003:module parameters are separated into efield.f!
-      public :: prep_weimer
+      public :: EpotVal
 
       contains
 !-----------------------------------------------------------------------
-      subroutine prep_weimer
-!-----------------------------------------------------------------
-! Purpose:  for Weimer model calculate IMF angle, IMF magnitude
-!  tilt of earth
+	FUNCTION EpotVal(gLAT,gMLT)
 !
-! Method: using functions and subroutines from Weimer Model 1996
-!     output:  angle, &  ! IMF angle
-!     	       bt,    &  ! IMF magnitude
-!     	       tilt      ! tilt of earth
-!
-! Author: A. Maute Nov 2003  am 11/20/03
-!-----------------------------------------------------------------
-!nm20121003
-      USE efield !,ONLY:
-      USE module_SetModel ,ONLY: SetModel
-      USE module_GET_TILT ,ONLY: GET_TILT
-      USE module_ADJUST ,ONLY: ADJUST
-!-----------------------------------------------------------------
-!  local variables
-!-----------------------------------------------------------------
-      real ::  
-     &  angle,  ! IMF angle
-     &  bt,    ! IMF magnitude
-     &  tilt       ! tilt of earth
-
-!-----------------------------------------------------------------
-! function declarations
-!-----------------------------------------------------------------
-!nm20121012      real, external :: get_tilt	 ! in wei96.f
-
-      if( by == 0. .and. bz == 0.) then
-         angle = 0.
-      else
-         angle = atan2( by,bz )
-      end if
-      
-      angle = angle*rtd
-      call adjust( angle )
-      bt = sqrt( by*by + bz*bz )
-!-------------------------------------------------------------------
-! use month and day of month - calculated with average no.of days per month
-! as in Weimer
-!-------------------------------------------------------------------
-c     if(debug) write(iulog,*) 'prep_weimer: day->day of month',
-c    &iday,imo,iday_m,ut
-      tilt = get_tilt( iyear, imo, iday_m, ut )
-
-c      if(debug) then
-c       write(iulog,"(/,'efield prep_weimer:')")
-c       write(iulog,*)  '  Bz   =',bz
-c       write(iulog,*)  '  By   =',by
-c       write(iulog,*)  '  Bt   =',bt
-c       write(iulog,*)  '  angle=',angle
-c       write(iulog,*)  '  VSW  =',v_sw
-c       write(iulog,*)  '  tilt =',tilt
-c      end if
-
-      call SetModel( angle, bt, tilt, v_sw )
-
-      end subroutine prep_weimer
 !-----------------------------------------------------------------------
-      end module module_prep_weimer
+! Return the value of the electric potential in kV at
+! corrected geomagnetic coordinates gLAT (degrees) and gMLT (hours).
+!
+! Must first call ReadCoef and SetModel to set up the model coeficients for
+! the desired values of Bt, IMF clock angle, Dipole tilt angle, and SW Vel.
+!-----------------------------------------------------------------------
+!
+c       use shr_kind_mod, only: r8 => shr_kind_r8
+        USE module_LEGENDRE, ONLY: LEGENDRE
+        implicit none 
+!
+!-----------------------------Return Value------------------------------
+!
+        real EpotVal
+!
+!-------------------------------Commons---------------------------------
+!
+	INTEGER ML,MM
+	REAL Coef(0:1,0:8,0:3),pi
+	COMMON/SetCoef/Coef,pi,ML,MM
+!
+!------------------------------Arguments--------------------------------
+!
+	REAL gLAT,gMLT
+!
+!---------------------------Local variables-----------------------------
+!
+        integer limit,l,m
+
+	Real Theta,Phi,Z,ct,Phim
+        real r
+	REAL Plm(0:20,0:20)
+!
+!-----------------------------------------------------------------------
+!
+	r=90.-gLAT
+	IF(r .LT. 45.)THEN
+	  Theta=r*pi/45.
+          Phi=gMLT*pi/12.
+	  Z=Coef(0,0,0)
+	  ct=COS(Theta)
+	  CALL Legendre(ct,ML,MM,Plm)
+	  DO l=1,ML
+	    Z=Z + Coef(0,l,0)*Plm(l,0)
+	    IF(l.LT.MM)THEN
+	      limit=l
+	    ELSE
+	      limit=MM
+	    ENDIF
+	    DO m=1,limit
+	      phim=phi*m
+              Z=Z + Coef(0,l,m)*Plm(l,m)*COS(phim) +  
+     &	   Coef(1,l,m)*Plm(l,m)*SIN(phim)
+	    ENDDO
+	  ENDDO
+	ELSE
+	  Z=0.
+	ENDIF
+	EpotVal=Z
+	RETURN
+	END FUNCTION EpotVal
+
+!-----------------------------------------------------------------------
+      end module module_EpotVal

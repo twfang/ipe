@@ -1,7 +1,8 @@
 !Jan2011:original code was provided from Astrid from WACCM.
 !Aug2011:this code was provided from Fei Wu from the WAM version.
+!sep2012: efield.f was separated into each routin for SMS compatibility.
 !--------------------------------------------  
-      module module_prep_weimer
+      module module_MLT
 !--------------------------------------------------------------------- 
 ! description: calculates the electric potential for a given year,
 !      day of year,UT, F10.7, B_z(K_p)
@@ -53,69 +54,51 @@ c     use cam_logfile,   only: iulog
       implicit none
 
 !nm20121003:module parameters are separated into efield.f!
-      public :: prep_weimer
+      public :: MLT
 
       contains
 !-----------------------------------------------------------------------
-      subroutine prep_weimer
-!-----------------------------------------------------------------
-! Purpose:  for Weimer model calculate IMF angle, IMF magnitude
-!  tilt of earth
+	FUNCTION MLT(MagLong)
 !
-! Method: using functions and subroutines from Weimer Model 1996
-!     output:  angle, &  ! IMF angle
-!     	       bt,    &  ! IMF magnitude
-!     	       tilt      ! tilt of earth
-!
-! Author: A. Maute Nov 2003  am 11/20/03
-!-----------------------------------------------------------------
-!nm20121003
-      USE efield !,ONLY:
-      USE module_SetModel ,ONLY: SetModel
-      USE module_GET_TILT ,ONLY: GET_TILT
-      USE module_ADJUST ,ONLY: ADJUST
-!-----------------------------------------------------------------
-!  local variables
-!-----------------------------------------------------------------
-      real ::  
-     &  angle,  ! IMF angle
-     &  bt,    ! IMF magnitude
-     &  tilt       ! tilt of earth
-
-!-----------------------------------------------------------------
-! function declarations
-!-----------------------------------------------------------------
-!nm20121012      real, external :: get_tilt	 ! in wei96.f
-
-      if( by == 0. .and. bz == 0.) then
-         angle = 0.
-      else
-         angle = atan2( by,bz )
-      end if
-      
-      angle = angle*rtd
-      call adjust( angle )
-      bt = sqrt( by*by + bz*bz )
-!-------------------------------------------------------------------
-! use month and day of month - calculated with average no.of days per month
-! as in Weimer
-!-------------------------------------------------------------------
-c     if(debug) write(iulog,*) 'prep_weimer: day->day of month',
-c    &iday,imo,iday_m,ut
-      tilt = get_tilt( iyear, imo, iday_m, ut )
-
-c      if(debug) then
-c       write(iulog,"(/,'efield prep_weimer:')")
-c       write(iulog,*)  '  Bz   =',bz
-c       write(iulog,*)  '  By   =',by
-c       write(iulog,*)  '  Bt   =',bt
-c       write(iulog,*)  '  angle=',angle
-c       write(iulog,*)  '  VSW  =',v_sw
-c       write(iulog,*)  '  tilt =',tilt
-c      end if
-
-      call SetModel( angle, bt, tilt, v_sw )
-
-      end subroutine prep_weimer
 !-----------------------------------------------------------------------
-      end module module_prep_weimer
+! given magnetic longitude in degrees, return Magnetic Local Time
+! assuming that TRANS has been called with the date & time to calculate
+! the rotation matrices.
+!
+! btf 11/06/03:
+! Call sub adjust instead of referencing it as a function
+!-----------------------------------------------------------------------
+!
+c       use shr_kind_mod, only: r8 => shr_kind_r8
+      USE module_ADJUST ,ONLY: ADJUST
+        implicit none 
+!
+!-----------------------------Return Value------------------------------
+!
+        real mlt
+!
+!-------------------------------Commons---------------------------------
+!
+        real cx, st, ct, am
+	COMMON/TRANSDAT/CX(9),ST(6),CT(6),AM(3,3,11)
+
+!
+!------------------------------Arguments--------------------------------
+!
+	REAL MagLong
+!
+!---------------------------Local variables-----------------------------
+!
+	REAL angle, rotangle
+!
+!-----------------------------------------------------------------------
+!
+	RotAngle=CX(7)
+!       MLT=ADJUST(Maglong+RotAngle+180.)/15.
+        angle = Maglong+RotAngle+180.
+        call adjust(angle)
+        mlt = angle/15.
+	RETURN
+	END FUNCTION MLT
+!-----------------------------------------------------------------------
+      end module module_MLT

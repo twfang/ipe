@@ -1,7 +1,8 @@
 !Jan2011:original code was provided from Astrid from WACCM.
 !Aug2011:this code was provided from Fei Wu from the WAM version.
+!sep2012: efield.f was separated into each routin for SMS compatibility.
 !--------------------------------------------  
-      module module_prep_weimer
+      module module_FSVal
 !--------------------------------------------------------------------- 
 ! description: calculates the electric potential for a given year,
 !      day of year,UT, F10.7, B_z(K_p)
@@ -53,69 +54,45 @@ c     use cam_logfile,   only: iulog
       implicit none
 
 !nm20121003:module parameters are separated into efield.f!
-      public :: prep_weimer
+      public :: FSVal
 
       contains
 !-----------------------------------------------------------------------
-      subroutine prep_weimer
-!-----------------------------------------------------------------
-! Purpose:  for Weimer model calculate IMF angle, IMF magnitude
-!  tilt of earth
+	FUNCTION FSVal(omega,MaxN,FSC)
 !
-! Method: using functions and subroutines from Weimer Model 1996
-!     output:  angle, &  ! IMF angle
-!     	       bt,    &  ! IMF magnitude
-!     	       tilt      ! tilt of earth
-!
-! Author: A. Maute Nov 2003  am 11/20/03
-!-----------------------------------------------------------------
-!nm20121003
-      USE efield !,ONLY:
-      USE module_SetModel ,ONLY: SetModel
-      USE module_GET_TILT ,ONLY: GET_TILT
-      USE module_ADJUST ,ONLY: ADJUST
-!-----------------------------------------------------------------
-!  local variables
-!-----------------------------------------------------------------
-      real ::  
-     &  angle,  ! IMF angle
-     &  bt,    ! IMF magnitude
-     &  tilt       ! tilt of earth
-
-!-----------------------------------------------------------------
-! function declarations
-!-----------------------------------------------------------------
-!nm20121012      real, external :: get_tilt	 ! in wei96.f
-
-      if( by == 0. .and. bz == 0.) then
-         angle = 0.
-      else
-         angle = atan2( by,bz )
-      end if
-      
-      angle = angle*rtd
-      call adjust( angle )
-      bt = sqrt( by*by + bz*bz )
-!-------------------------------------------------------------------
-! use month and day of month - calculated with average no.of days per month
-! as in Weimer
-!-------------------------------------------------------------------
-c     if(debug) write(iulog,*) 'prep_weimer: day->day of month',
-c    &iday,imo,iday_m,ut
-      tilt = get_tilt( iyear, imo, iday_m, ut )
-
-c      if(debug) then
-c       write(iulog,"(/,'efield prep_weimer:')")
-c       write(iulog,*)  '  Bz   =',bz
-c       write(iulog,*)  '  By   =',by
-c       write(iulog,*)  '  Bt   =',bt
-c       write(iulog,*)  '  angle=',angle
-c       write(iulog,*)  '  VSW  =',v_sw
-c       write(iulog,*)  '  tilt =',tilt
-c      end if
-
-      call SetModel( angle, bt, tilt, v_sw )
-
-      end subroutine prep_weimer
 !-----------------------------------------------------------------------
-      end module module_prep_weimer
+! Evaluate a  Sine/Cosine Fourier series for N terms up to MaxN
+! at angle omega, given the coefficients in FSC
+!
+!*********************** Copyright 1996, Dan Weimer/MRC ***************
+!-----------------------------------------------------------------------
+!
+c       use shr_kind_mod, only: r8 => shr_kind_r8
+        implicit none 
+!
+!-----------------------------Return Value------------------------------
+!
+        real FSVal
+!
+!------------------------------Arguments--------------------------------
+!
+	INTEGER MaxN
+	REAL omega,FSC(0:1,0:*)
+!
+!---------------------------Local variables-----------------------------
+!
+	INTEGER n
+	REAL Y,theta
+!
+!-----------------------------------------------------------------------
+!
+	Y=0.
+	DO n=0,MaxN
+	  theta=omega*n
+	  Y=Y + FSC(0,n)*COS(theta) + FSC(1,n)*SIN(theta)
+	ENDDO
+	FSVal=Y
+	RETURN
+	END FUNCTION FSVal
+!-----------------------------------------------------------------------
+      end module module_FSVal

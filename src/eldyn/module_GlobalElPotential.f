@@ -83,6 +83,7 @@ c     use cam_logfile,   only: iulog
       USE module_highlat_getbnd ,ONLY: highlat_getbnd
       USE module_bnd_sinus ,ONLY:      bnd_sinus
       USE module_highlat_adjust ,ONLY: highlat_adjust
+      USE module_EpotVal ,ONLY: EpotVal
 !-----------------------------------------------------------------------
 ! local variables
 !-----------------------------------------------------------------------
@@ -97,7 +98,7 @@ c     use cam_logfile,   only: iulog
 !-----------------------------------------------------------------------
 ! Externals
 !-----------------------------------------------------------------------
-      real,external :: EpotVal        ! in wei96.f
+!nm20121012      real,external :: EpotVal        ! in wei96.f
 
 !-----------------------------------------------------------------------
 ! convert to date and day	

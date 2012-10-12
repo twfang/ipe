@@ -1,7 +1,9 @@
 !Jan2011:original code was provided from Astrid from WACCM.
 !Aug2011:this code was provided from Fei Wu from the WAM version.
+!sep2012: efield.f was separated into each routin for SMS compatibility.
+!nm20121012: it looks like thie routine is not used!!! (thus not included in Makefile)
 !--------------------------------------------  
-      module module_prep_weimer
+      module module_TOCART
 !--------------------------------------------------------------------- 
 ! description: calculates the electric potential for a given year,
 !      day of year,UT, F10.7, B_z(K_p)
@@ -53,69 +55,39 @@ c     use cam_logfile,   only: iulog
       implicit none
 
 !nm20121003:module parameters are separated into efield.f!
-      public :: prep_weimer
+      public :: TOCART
 
       contains
 !-----------------------------------------------------------------------
-      subroutine prep_weimer
-!-----------------------------------------------------------------
-! Purpose:  for Weimer model calculate IMF angle, IMF magnitude
-!  tilt of earth
+	SUBROUTINE TOCART(R,LAT,LONG,POS)
 !
-! Method: using functions and subroutines from Weimer Model 1996
-!     output:  angle, &  ! IMF angle
-!     	       bt,    &  ! IMF magnitude
-!     	       tilt      ! tilt of earth
-!
-! Author: A. Maute Nov 2003  am 11/20/03
-!-----------------------------------------------------------------
-!nm20121003
-      USE efield !,ONLY:
-      USE module_SetModel ,ONLY: SetModel
-      USE module_GET_TILT ,ONLY: GET_TILT
-      USE module_ADJUST ,ONLY: ADJUST
-!-----------------------------------------------------------------
-!  local variables
-!-----------------------------------------------------------------
-      real ::  
-     &  angle,  ! IMF angle
-     &  bt,    ! IMF magnitude
-     &  tilt       ! tilt of earth
-
-!-----------------------------------------------------------------
-! function declarations
-!-----------------------------------------------------------------
-!nm20121012      real, external :: get_tilt	 ! in wei96.f
-
-      if( by == 0. .and. bz == 0.) then
-         angle = 0.
-      else
-         angle = atan2( by,bz )
-      end if
-      
-      angle = angle*rtd
-      call adjust( angle )
-      bt = sqrt( by*by + bz*bz )
-!-------------------------------------------------------------------
-! use month and day of month - calculated with average no.of days per month
-! as in Weimer
-!-------------------------------------------------------------------
-c     if(debug) write(iulog,*) 'prep_weimer: day->day of month',
-c    &iday,imo,iday_m,ut
-      tilt = get_tilt( iyear, imo, iday_m, ut )
-
-c      if(debug) then
-c       write(iulog,"(/,'efield prep_weimer:')")
-c       write(iulog,*)  '  Bz   =',bz
-c       write(iulog,*)  '  By   =',by
-c       write(iulog,*)  '  Bt   =',bt
-c       write(iulog,*)  '  angle=',angle
-c       write(iulog,*)  '  VSW  =',v_sw
-c       write(iulog,*)  '  tilt =',tilt
-c      end if
-
-      call SetModel( angle, bt, tilt, v_sw )
-
-      end subroutine prep_weimer
 !-----------------------------------------------------------------------
-      end module module_prep_weimer
+! CONVERT SPHERICAL COORDINATES R, LATITUDE, AND LONGITUDE (DEGREES)
+! TO CARTESIAN COORDINATES POS(3)
+!-----------------------------------------------------------------------
+!
+c       use shr_kind_mod, only: r8 => shr_kind_r8
+        implicit none 
+!
+!------------------------------Arguments--------------------------------
+!
+	REAL R, LAT, LONG, POS(3)
+!
+!---------------------------Local variables-----------------------------
+!
+        real pi, stc, ctc, sf, cf
+!
+!-----------------------------------------------------------------------
+!
+	pi=2.*ASIN(1.)
+        STC = SIN(LAT*pi/180.)    
+        CTC = COS(LAT*pi/180.)    
+        SF = SIN(LONG*pi/180.)     
+        CF = COS(LONG*pi/180.)     
+        POS(1) = R*CTC*CF        
+        POS(2) = R*CTC*SF        
+        POS(3) = R*STC
+	RETURN
+	END SUBROUTINE TOCART
+!-----------------------------------------------------------------------
+      end module module_TOCART

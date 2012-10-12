@@ -1,7 +1,8 @@
 !Jan2011:original code was provided from Astrid from WACCM.
 !Aug2011:this code was provided from Fei Wu from the WAM version.
+!sep2012: efield.f was separated into each routin for SMS compatibility.
 !--------------------------------------------  
-      module module_prep_weimer
+      module module_LEGENDRE
 !--------------------------------------------------------------------- 
 ! description: calculates the electric potential for a given year,
 !      day of year,UT, F10.7, B_z(K_p)
@@ -53,69 +54,69 @@ c     use cam_logfile,   only: iulog
       implicit none
 
 !nm20121003:module parameters are separated into efield.f!
-      public :: prep_weimer
+      public :: LEGENDRE
 
       contains
 !-----------------------------------------------------------------------
-      subroutine prep_weimer
-!-----------------------------------------------------------------
-! Purpose:  for Weimer model calculate IMF angle, IMF magnitude
-!  tilt of earth
+	SUBROUTINE LEGENDRE(x,lmax,mmax,Plm)
 !
-! Method: using functions and subroutines from Weimer Model 1996
-!     output:  angle, &  ! IMF angle
-!     	       bt,    &  ! IMF magnitude
-!     	       tilt      ! tilt of earth
-!
-! Author: A. Maute Nov 2003  am 11/20/03
-!-----------------------------------------------------------------
-!nm20121003
-      USE efield !,ONLY:
-      USE module_SetModel ,ONLY: SetModel
-      USE module_GET_TILT ,ONLY: GET_TILT
-      USE module_ADJUST ,ONLY: ADJUST
-!-----------------------------------------------------------------
-!  local variables
-!-----------------------------------------------------------------
-      real ::  
-     &  angle,  ! IMF angle
-     &  bt,    ! IMF magnitude
-     &  tilt       ! tilt of earth
-
-!-----------------------------------------------------------------
-! function declarations
-!-----------------------------------------------------------------
-!nm20121012      real, external :: get_tilt	 ! in wei96.f
-
-      if( by == 0. .and. bz == 0.) then
-         angle = 0.
-      else
-         angle = atan2( by,bz )
-      end if
-      
-      angle = angle*rtd
-      call adjust( angle )
-      bt = sqrt( by*by + bz*bz )
-!-------------------------------------------------------------------
-! use month and day of month - calculated with average no.of days per month
-! as in Weimer
-!-------------------------------------------------------------------
-c     if(debug) write(iulog,*) 'prep_weimer: day->day of month',
-c    &iday,imo,iday_m,ut
-      tilt = get_tilt( iyear, imo, iday_m, ut )
-
-c      if(debug) then
-c       write(iulog,"(/,'efield prep_weimer:')")
-c       write(iulog,*)  '  Bz   =',bz
-c       write(iulog,*)  '  By   =',by
-c       write(iulog,*)  '  Bt   =',bt
-c       write(iulog,*)  '  angle=',angle
-c       write(iulog,*)  '  VSW  =',v_sw
-c       write(iulog,*)  '  tilt =',tilt
-c      end if
-
-      call SetModel( angle, bt, tilt, v_sw )
-
-      end subroutine prep_weimer
 !-----------------------------------------------------------------------
-      end module module_prep_weimer
+! compute Associate Legendre Function P_l^m(x)
+! for all l up to lmax and all m up to mmax.
+! returns results in array Plm
+! if X is out of range ( abs(x)>1 ) then value is returned as if x=1.
+!
+!*********************** Copyright 1996, Dan Weimer/MRC ***********************
+!-----------------------------------------------------------------------
+!
+c       use shr_kind_mod, only: r8 => shr_kind_r8
+c       use cam_logfile,  only : iulog
+
+        implicit none 
+!
+!------------------------------Arguments--------------------------------
+!
+        integer lmax, mmax
+	real x, Plm(0:20,0:20)
+!
+!---------------------------Local variables-----------------------------
+!
+        integer m, lm2, l, iulog
+        real xx, fact
+        iulog=14
+!
+!-----------------------------------------------------------------------
+!
+	  DO l=0,20
+	    DO m=0,20
+		Plm(l,m)=0.
+	    ENDDO
+	  ENDDO
+	xx=MIN(x,1.)
+	xx=MAX(xx,-1.)
+c         IF(lmax .LT. 0 .OR. mmax .LT. 0 .OR. mmax .GT. lmax )THEN
+c        write(iulog,*)'Bad arguments to Legendre'
+c        RETURN
+c        ENDIF
+! First calculate all Pl0 for l=0 to l
+	Plm(0,0)=1.
+	IF(lmax.GT.0)Plm(1,0)=xx
+	IF (lmax .GT. 1 )THEN
+	  DO L=2,lmax
+	    Plm(L,0)=( (2.*L-1)*xx*Plm(L-1,0) - 
+     &(L-1)*Plm(L-2,0) )/L
+	  ENDDO
+	ENDIF
+	IF (mmax .EQ. 0 )RETURN
+	fact=SQRT( (1.-xx)*(1.+xx) )
+	DO M=1,mmax
+	  DO L=m,lmax
+	    lm2=MAX(L-2,0)
+	    Plm(L,M)=Plm(lm2,M) - ( 2*L-1)*fact*Plm(L-1,M-1)
+	  ENDDO
+	ENDDO
+	RETURN
+	END SUBROUTINE LEGENDRE
+
+!-----------------------------------------------------------------------
+      end module module_LEGENDRE

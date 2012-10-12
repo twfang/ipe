@@ -108,6 +108,11 @@ SRC6	=\
 	${DR6}/module_prep_fk.f \
 	${DR6}/module_set_fkflfs.f \
 	${DR6}/module_efield_mid.f \
+	${DR6}/module_FSVal.f \
+	${DR6}/module_SetModel.f \
+	${DR6}/module_ADJUST.f \
+	${DR6}/module_JULDAY.f \
+	${DR6}/module_GET_TILT.f \
 	${DR6}/module_prep_weimer.f \
 	${DR6}/module_pot_latsmo.f \
 	${DR6}/module_pot_latsmo2.f \
@@ -115,6 +120,9 @@ SRC6	=\
 	${DR6}/module_highlat_adjust.f \
 	${DR6}/module_interp_poten.f \
 	${DR6}/module_DerivPotential.f \
+	${DR6}/module_LEGENDRE.f \
+	${DR6}/module_EpotVal.f \
+	${DR6}/module_ReadCoef.f \
 	${DR6}/sub_efield.f \
 	${DR6}/module_highlat_getbnd.f \
 	${DR6}/module_bnd_sinus.f \
