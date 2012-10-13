@@ -125,6 +125,7 @@ SRC6	=\
 	${DR6}/module_ReadCoef.f \
 	${DR6}/sub_efield.f \
 	${DR6}/module_highlat_getbnd.f \
+	${DR6}/module_svbksb.f \
 	${DR6}/module_bnd_sinus.f \
 	${DR6}/module_efield_init.f \
 	${DR6}/module_GlobalElPotential.f \

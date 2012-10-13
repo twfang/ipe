@@ -86,6 +86,7 @@ c     use sv_decomp, only : svdcmp, svbksb
 !nm20121003
       USE efield !,ONLY:  
       USE module_ff ,ONLY:ff   
+      USE module_svbksb ,ONLY: svbksb
 !----------------------------------------------------------------------------                                                                   
 !	... dummy arguments
 !----------------------------------------------------------------------------                                                                   
