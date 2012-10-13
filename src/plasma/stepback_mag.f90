@@ -141,10 +141,11 @@ end if
       SUBROUTINE stepback_mag_R (utime,mp,lp &
      &, phi_t0 , theta_t0, r0_apex )
       USE module_precision
+      USE module_IPE_dimension,ONLY: NLP
       USE module_eldyn,ONLY: Ed1_90,Ed2_90,lpconj
       USE module_FIELD_LINE_GRID_MKS,ONLY: Be3,mlon_rad,plasma_grid_Z,JMIN_IN,JMAX_IS,ht90,apexE,plasma_grid_GL,plasma_grid_3d,east,north,up,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,VEXBup
       USE module_physical_constants,ONLY: earth_radius,rtd,pi
-      USE module_input_parameters,ONLY: time_step,sw_exb_up,sw_debug,lpstrt,lpstop,mpstrt,mpstop,start_time,lpmin_perp_trans
+      USE module_input_parameters,ONLY: time_step,sw_exb_up,sw_debug,start_time,lpmin_perp_trans
       IMPLICIT NONE
 ! INPUT
       INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]
@@ -200,7 +201,7 @@ if(sw_debug)&
         VEXBup(lp,mp) = (v_e(1) * apexE(1,midpoint,lp,mp,up))    + (v_e(2) * apexE(2,midpoint,lp,mp,up))
 
 !dbg20120301:temp solution: make sure flux tube does not go beyond the sim region...
-if ( lp==lpstrt.or.lp==lpstop ) then
+if ( lp==1.or.lp==NLP ) then
  VEXBup(lp,mp) = 0.0
 endif
 
@@ -230,7 +231,7 @@ if(sw_debug)&
 
         ELSE IF ( sw_exb_up==5 ) THEN 
 !(5) read in from a file
-          if ( mp==mpstrt.and.lp==lpmin_perp_trans.and.MOD( (utime-start_time),900 )==0 )    CALL read_vexb ( utime,lp,mp )
+          if ( mp==1.and.lp==lpmin_perp_trans.and.MOD( (utime-start_time),900 )==0 )    CALL read_vexb ( utime,lp,mp )
 
         END IF !ELSE IF ( sw_exb_up==3 ) THEN 
 
@@ -243,14 +244,14 @@ if(sw_debug)&
 & print *,'sub-StR:',r_apex,' r0 apex[m/s]',r0_apex
 
 !dbbg20120301: temporary solution to keep flux tube within the sim region, instead of stopping
-midpoint_min = JMIN_IN(lpstop) + ( JMAX_IS(lpstop) - JMIN_IN(lpstop) )/2
-midpoint_max = JMIN_IN(lpstrt)  + ( JMAX_IS(lpstrt)  - JMIN_IN(lpstrt) )/2
-if ( r0_apex<(plasma_grid_Z(midpoint_min,lpstop)+earth_radius) ) then
-   print *,'!r0_apex too small!',r0_apex,VEXBup(lp,mp),lp,mp, (plasma_grid_Z(midpoint_min,lpstop)+earth_radius)
-   r0_apex = plasma_grid_Z(midpoint_min,lpstop)+earth_radius
-else if ( r0_apex>(plasma_grid_Z(midpoint_max,lpstrt)+earth_radius) ) then
-   print *,'!r0_apex too big!',r0_apex, VEXBup(lp,mp),lp,mp, (plasma_grid_Z(midpoint_max,lpstrt)+earth_radius)
-   r0_apex = plasma_grid_Z(midpoint_max,lpstrt)+earth_radius
+midpoint_min = JMIN_IN(NLP) + ( JMAX_IS(NLP) - JMIN_IN(NLP) )/2
+midpoint_max = JMIN_IN(  1) + ( JMAX_IS(  1) - JMIN_IN(  1) )/2
+if ( r0_apex<(plasma_grid_Z(midpoint_min,NLP)+earth_radius) ) then
+   print *,'!r0_apex too small!',r0_apex,VEXBup(lp,mp),lp,mp, (plasma_grid_Z(midpoint_min,NLP)+earth_radius)
+   r0_apex = plasma_grid_Z(midpoint_min,NLP)+earth_radius
+else if ( r0_apex>(plasma_grid_Z(midpoint_max,1)+earth_radius) ) then
+   print *,'!r0_apex too big!',r0_apex, VEXBup(lp,mp),lp,mp, (plasma_grid_Z(midpoint_max,1)+earth_radius)
+   r0_apex = plasma_grid_Z(midpoint_max,1)+earth_radius
 end if
 !dbg20120301:
         sin2theta = r/r0_apex

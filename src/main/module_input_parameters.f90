@@ -13,7 +13,7 @@
 !--------------------------------------------  
       MODULE module_input_parameters
       USE module_precision
-      USE module_IPE_dimension,ONLY: NMP
+      USE module_IPE_dimension,ONLY: NLP,NMP
       IMPLICIT NONE
 
 !--- IPE wide run parameters
@@ -82,8 +82,7 @@
       LOGICAL, PUBLIC :: sw_debug_mpi
       LOGICAL, PUBLIC :: sw_output_fort167
       INTEGER(KIND=int_prec), DIMENSION(2), PUBLIC :: iout
-      INTEGER(KIND=int_prec), PUBLIC :: lpstrt,lpstop,lpstep
-      INTEGER(KIND=int_prec), PUBLIC :: mpstrt,mpstop,mpstep
+      INTEGER(KIND=int_prec), PUBLIC :: mpstop
       INTEGER(KIND=int_prec), PUBLIC :: sw_neutral    !0:GT; 1:MSIS
       INTEGER(KIND=int_prec), PUBLIC :: sw_pcp        !0:heelis; 1:weimer
       INTEGER(KIND=int_prec), PUBLIC :: sw_grid       !0:APEX; 1:FLIP
@@ -169,8 +168,8 @@
            &, sw_para_transport &
            &, sw_ksi &
            &, sw_divv &
-           &, lpstrt,lpstop,lpstep  &
-           &, mpstrt,mpstop,mpstep  &
+           &, mpstop  &
+           &, NLP,NMP &
            &, sw_debug       &
            &, sw_debug_mpi   &
            &, sw_output_fort167   &
@@ -236,20 +235,18 @@ WRITE(UNIT=LUN_LOG0,FMT=*)'real_prec=',real_prec,' int_prec=',int_prec
 
 
         CLOSE(LUN_nmlt)
-print *,'finished reading namelist:',filename
-if(mpstep/=1.or.lpstep/=1) then
-  print*,'mpstep or lpstep /= 1'
-  print*,'mpstep,lpstep',mpstep,lpstep
-  print*,'This is a workaround for an SMS bug in module sub_plasma and module_neutral'
-  print*,'Stopping in module_input_parameters'
-  stop
-endif
+        CLOSE(LUN_LOG0)
+
+stop_time=start_time+duration
 !SMS$insert call NNT_NPROCS(nprocs)
+print *,'finished reading namelist:',filename
+print *,' '
+print"(' NLP:                 ',I6)",NLP
+print"(' NMP:                 ',I6)",NMP
+print"(' mpstop:              ',I6)",mpstop
+print"(' stop_time            ',I6)",stop_time
 print"(' Number of Processors:',I6)",nprocs
 print"(' HaloSize:            ',I6)",HaloSize
-stop_time=start_time+duration
-print *,'stop_time',stop_time
-        CLOSE(LUN_LOG0)
 
 !dbg20120509        IF ( sw_rw_sw_perp_trans )  CALL setup_sw_perp_transport ()
 !note:20120207: v36: used only activating the perp.transport gradually...

@@ -32,9 +32,9 @@
       IMPLICIT NONE
       include "gptl.inc"
 
-      INTEGER (KIND=int_prec)   :: utime !universal time [sec]
+      INTEGER(KIND=int_prec)           :: utime !universal time [sec]
       INTEGER(KIND=int_prec),parameter :: luntmp=300
-      INTEGER(KIND=int_prec) :: istat,mp,ret
+      INTEGER(KIND=int_prec)           :: istat,mp,ret
 
       call gptlprocess_namelist ('GPTLnamelist', 77, ret) 
       ret = gptlinitialize ()

@@ -37,7 +37,7 @@
       USE module_IPE_dimension,ONLY: IPDIM
       use module_FIELD_LINE_GRID_MKS, only : plasma_grid_3d,plasma_grid_Z, apexD, JMIN_IN,JMAX_IS,east,north,up,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,JMIN_ING,JMAX_ISG
       USE module_physical_constants,ONLY: pi,zero
-      USE module_input_parameters,ONLY: F107D,F107AV,AP,NYEAR,NDAY,sw_debug,lpstrt,lpstop,lpstep,mpstrt,mpstop,mpstep,sw_grid,start_time,stop_time,sw_neutral
+      USE module_input_parameters,ONLY: F107D,F107AV,AP,NYEAR,NDAY,sw_debug,mpstop,sw_grid,start_time,stop_time,sw_neutral
       USE module_unit_conversion,ONLY: M_TO_KM
       USE module_IO, ONLY:filename,FORM_dum,STATUS_dum,luntmp3
       USE module_open_file, ONLY:open_file
@@ -97,9 +97,8 @@ END IF
 !SMS$PARALLEL(dh, lp, mp) BEGIN
 !     apex_longitude_loop: DO mp = mpstrt, mpstop, mpstep          !1,NMP
 !       apex_latitude_height_loop: DO lp = lpstrt, lpstop, lpstep  !1,NLP
-!JFM Eliminated mpstep and lpstep to workaround an SMS bug.
-      apex_longitude_loop: DO mp = mpstrt,mpstop
-        apex_latitude_height_loop: DO lp = lpstrt,lpstop
+      apex_longitude_loop: DO mp = 1,mpstop
+        apex_latitude_height_loop: DO lp = 1,NLP
 
           IN = JMIN_IN(lp)
           IS = JMAX_IS(lp)

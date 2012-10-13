@@ -29,7 +29,7 @@
       CONTAINS
 !---------------------------
       SUBROUTINE plasma ( utime )
-      USE module_input_parameters,ONLY:lpstrt,lpstop,lpstep,mpstrt,mpstop,mpstep,ip_freq_output,start_time,stop_time,&
+      USE module_input_parameters,ONLY:mpstop,ip_freq_output,start_time,stop_time,&
 &     sw_neutral_heating_flip,sw_perp_transport,lpmin_perp_trans,lpmax_perp_trans,sw_para_transport,sw_debug,        &
 &     sw_dbg_perp_trans,sw_exb_up,nprocs
       USE module_physical_constants,ONLY:rtd,zero
@@ -62,11 +62,9 @@ end if
       utime_save=utime
 
       ret = gptlstart ('apex_lon_loop') !24772.857
-!     print*,'JFM mpstrt,mpstop,mpstep', mpstrt,mpstop,mpstep !1,80,1
 !SMS$PARALLEL(dh, lp, mp) BEGIN
-!JFM Eliminated mpstep to workaround an SMS bug.
 !     apex_longitude_loop: DO mp = mpstrt,mpstop,mpstep !1,NMP
-      apex_longitude_loop: DO mp = mpstrt,mpstop
+      apex_longitude_loop: DO mp = 1,mpstop
         mp_save=mp
         IF ( sw_neutral_heating_flip==1 ) hrate_cgs_save=zero
         if ( sw_debug )  WRITE (0,"('sub-p: mp=',I4)")mp
@@ -81,16 +79,13 @@ end if
 !!!dbg20120125: only temporary used to switch on the transport only during the daytime...
 !dbg20120509        IF ( sw_rw_sw_perp_trans.AND.sw_perp_transport(mp)==0 )  CALL activate_perp_transport (utime,mp)
 !!!dbg20120125:
-!        print*,'JFM mp,lpstrt,lpstop,lpstep',mp,lpstrt,lpstop,lpstep !1,1,170,1
-                                                                      !2,1,170,1
-!JFM Eliminated lpstep to workaround an SMS bug.
 !       apex_latitude_height_loop: DO lp = lpstrt,lpstop,lpstep
-        apex_latitude_height_loop: DO lp = lpstrt,lpstop
+        apex_latitude_height_loop: DO lp = 1,NLP
           lp_save=lp
 
 
 !dbg20120228: debug how2validate the transport
-if(sw_dbg_perp_trans.and.utime==start_time.and.lp==lpstrt)then
+if(sw_dbg_perp_trans.and.utime==start_time.and.lp==1)then
   if(nprocs>1) then
     print*,'sw_dbg_perp_trans=true does not work for parallel runs'
     print*,'Stopping module_sub_plasma'

@@ -51,12 +51,14 @@
 !      data utsec_last/-1./
 !      save first,utsec_last,ed11,ed22,ylatm1,ylonm1
 
-      REAL(KIND=real_prec)   ,DIMENSION(0:nmlat  ),PUBLIC :: theta90_rad
-      INTEGER(KIND=int_prec) ,DIMENSION(2,NLP    ),PUBLIC :: j0,j1 !1:NH; 2:SH
-      REAL(KIND=real_prec)   ,DIMENSION(2*NLP,NMP),PUBLIC :: Ed1_90
-      REAL(KIND=real_prec)   ,DIMENSION(2*NLP,NMP),PUBLIC :: Ed2_90
-      REAL(KIND=real_prec)   ,DIMENSION(2*NLP    ),PUBLIC :: coslam_m
-      INTEGER (KIND=int_prec),DIMENSION(  NLP    ),PUBLIC :: lpconj !4 NH
+      REAL   (KIND=real_prec),DIMENSION(0:nmlat  ),PUBLIC :: theta90_rad
+
+      INTEGER(KIND=int_prec ),allocatable,public :: j0      (:,:) !1:NH; 2:SH
+      INTEGER(KIND=int_prec ),allocatable,public :: j1      (:,:) !1:NH; 2:SH
+      REAL   (KIND=real_prec),allocatable,public :: Ed1_90  (:,:)
+      REAL   (KIND=real_prec),allocatable,public :: Ed2_90  (:,:)
+      REAL   (KIND=real_prec),allocatable,public :: coslam_m(:)
+      INTEGER(KIND=int_prec ),allocatable,public :: lpconj  (:)   !4 NH
 
 !nm20121003:subroutine init_eldyn, eldyn are separated into module_sub_eldyn.f
 
