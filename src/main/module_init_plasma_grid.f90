@@ -8,7 +8,7 @@
         USE module_precision
         USE module_IPE_dimension,ONLY: NMP,NLP,ISTOT
         USE module_physical_constants,ONLY: earth_radius, pi, G0,zero
-        USE module_input_parameters,ONLY: sw_debug,lpstrt,lpstop,mpstrt,mpstop,sw_grid  
+        USE module_input_parameters,ONLY: sw_debug,sw_grid  
 !dbg, fac_BM
         USE module_FIELD_LINE_GRID_MKS,ONLY: &
 &  Pvalue &
@@ -35,8 +35,7 @@
       Pvalue(:) = zero
 !SMS$PARALLEL(dh, lp, mp) BEGIN
       apex_longitude_loop: DO mp = 1,NMP
-      IF ( sw_debug.AND.mpstrt<=mp.AND.mp<=mpstop ) & 
-     &  print *,"sub-init_plasma_grid: mp=",mp
+      IF ( sw_debug ) print *,"sub-init_plasma_grid: mp=",mp
 
 
 !.. p coordinate (L-shell) is a single value along a flux tube 
@@ -51,8 +50,7 @@
         IF (mp==1)  CALL Get_Pvalue_Dipole ( r_meter2D(IN,lp), plasma_grid_GL(IN,lp), Pvalue(lp) )
 
 !debug write
-IF ( sw_debug.AND. & !) THEN
-& mpstrt<=mp.AND.mp<=mpstop .AND. lpstrt<=lp.AND.lp<=lpstop) THEN
+IF ( sw_debug) THEN
 
 !dbg20120305
 midpoint = IN + ( IS - IN )/2
@@ -109,15 +107,12 @@ END IF !( sw_debug )  then
 !reminder:
 !(1) neutral wind should be calculated using sinI from flip_grid: "SINDIP"
 ELSE IF ( sw_grid==1 ) THEN  !FLIP
-  IF ( mpstrt<=mp.AND.mp<=mpstop .AND. lpstrt<=lp.AND.lp<=lpstop) THEN
-
    print *,'calling get_FLIP_grid',mp,lp
    CALL get_flip_grid (mp,lp)
-  ENDIF
 END IF !( sw_grid==0 ) THEN  !APEX
 
 !debug20110314
-if( sw_debug .and. mp==1 .and. lp>=lpstrt .and. lp<=lpstop ) then
+if( sw_debug .and. mp==1 ) then
 print *,'lp=',lp,' in=',in,' is=',is,(is-in+1),(90.-plasma_grid_GL(in,lp)*180./pi)
 endif !(mp==1) then
 

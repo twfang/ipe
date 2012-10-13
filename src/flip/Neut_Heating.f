@@ -30,7 +30,7 @@ C..... The input parameters JMIN, EHT were also added
       USE module_FIELD_LINE_GRID_MKS,ONLY: mp_save,lp_save,JMIN_IN
      >,                         JMAX_IS,MaxFluxTube,hrate_cgs_save
       USE module_input_parameters,ONLY: sw_neutral_heating_flip
-     >,lpstop,mpstop,start_time,ip_freq_output,nprocs
+     >,start_time,ip_freq_output,nprocs
       USE module_heating_rate,ONLY: get_neutral_heating_rate
       USE module_precision
       USE module_PLASMA,ONLY: utime_save
@@ -204,8 +204,7 @@ C..... The input parameters JMIN, EHT were also added
         END DO
 
 
-        IF ( IJ==JMAX .AND. lp_save==lpstop ) THEN
-!dbg20111202        IF ( lp_save==lpstop ) THEN
+        IF ( IJ==JMAX .AND. lp_save==NLP ) THEN
 !20111118 output
           IF ( mp_save==1 ) write(5000,*)utime_save
           CALL get_neutral_heating_rate ( hrate_mks )
@@ -225,7 +224,7 @@ C..... The input parameters JMIN, EHT were also added
               write(lun,*)hrate_mks(jth,JMIN_IN(lp):JMAX_IS(lp),lp)
             enddo
           END DO !jth=1,7
-        END IF !( lp_save==lpstop ) THEN
+        END IF !( lp_save==NLP ) THEN
 
       END IF !( sw_neutral_heating_flip==1 ) THEN
 

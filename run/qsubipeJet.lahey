@@ -4,7 +4,7 @@ mkdir ipe_${$}
 echo Created ipe_${$}
 set  rundir = "ipe_${$}"
 cd  $rundir
-cp ../../bin/ipe_v18.exe .
+cp ../../bin/ipe_v18.lf95.exe .
 cp ../coef*              .
 cp ../GPTLnamelist       .
 cp ../SMSnamelist        .
@@ -27,9 +27,9 @@ cat << EOF >! runscript
   set par = "parallel"
   set par = "serial"
   if (\$par == 'parallel') then
-    set cmd = "time mpirun -np $compute_tasks ./ipe_v18.exe"
+    set cmd = "time mpirun -np $compute_tasks ./ipe_v18.lf95.exe"
   else
-    set cmd = "time ./ipe_v18.exe"
+    set cmd = "time ./ipe_v18.lf95.exe"
   endif
   echo "running \$cmd" > output
   (\$cmd) >> output

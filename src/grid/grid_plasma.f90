@@ -55,7 +55,6 @@ INTEGER(KIND=int_prec), PARAMETER :: NLP    =   170
 ! initialise plasma grids
         SUBROUTINE init_plasma_grid ( )
         USE module_physical_constants,ONLY: earth_radius, pi, G0
-!nm20120112:        USE module_input_parameters,ONLY: sw_debug,lpstrt,lpstop,mpstrt,mpstop
         IMPLICIT NONE
 
 !---for module_input_parameters...
@@ -131,11 +130,6 @@ END IF !( sw_debug ) THEN
 !  print "('GRavity[m2 s-1]=',4E12.4)",GR_mks(in:in+2,mp),GR_mks(is,mp)
 !END IF
 
-!debug20110314
-!if( sw_debug .and. mp==1 .and. lp>=lpstrt .and. lp<=lpstop ) then
-!print *,'lp=',lp,' in=',in,' is=',is,(is-in+1),(90.-gl_rad(in,mp)*180./pi)
-!endif !(mp==1) then
-
        END DO apex_latitude_height_loop   !: DO lp = 1,NLP
      END DO apex_longitude_loop         !: DO mp = 1,NMP 
 
@@ -148,7 +142,6 @@ END IF !( sw_debug ) THEN
       SUBROUTINE read_plasma_grid_global ( r_meter_all )
 !nm20120112:        USE module_IPE_dimension,ONLY: NPTS2D,NMP,NLP
 !nm20120112:        USE module_physical_constants,ONLY: earth_radius,pi
-!nm20120112:        USE module_input_parameters,ONLY:read_input_parameters,sw_debug,lpstrt
 !nm20120112:        USE module_IO,ONLY: filename,LUN_pgrid
         IMPLICIT NONE
 
