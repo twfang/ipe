@@ -247,6 +247,8 @@ print"(' mpstop:              ',I6)",mpstop
 print"(' stop_time            ',I6)",stop_time
 print"(' Number of Processors:',I6)",nprocs
 print"(' HaloSize:            ',I6)",HaloSize
+print *,' '
+print *,' '
 
 !dbg20120509        IF ( sw_rw_sw_perp_trans )  CALL setup_sw_perp_transport ()
 !note:20120207: v36: used only activating the perp.transport gradually...

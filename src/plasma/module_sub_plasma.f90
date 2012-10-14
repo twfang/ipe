@@ -52,9 +52,8 @@
 ! array initialization
 !dbg20120313 note! needed to comment out temporarily for exb reading test:sw_exb=5
 if ( sw_exb_up/=5 ) then
-!SMS$IGNORE BEGIN
-      VEXBup=zero
-!SMS$IGNORE END
+!JFM moved to allocate_arrays
+!     VEXBup=zero
 end if
 
 

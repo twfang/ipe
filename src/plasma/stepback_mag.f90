@@ -19,7 +19,7 @@
       USE module_FIELD_LINE_GRID_MKS,ONLY: Be3,mlon_rad,plasma_grid_GL,JMIN_IN,JMAX_IS,ht90,plasma_grid_Z !,apexE, geographic_coords
       USE module_physical_constants,ONLY: earth_radius,rtd,pi
 !      USE cons_module,ONLY: h0 !potential solver reference height[cm] =90km
-      USE module_input_parameters,ONLY: time_step,sw_debug
+      USE module_input_parameters,ONLY: time_step,sw_debug,nprocs
       IMPLICIT NONE
 ! INPUT
       INTEGER (KIND=int_prec), INTENT(IN) :: mp  !mag-lon index
@@ -45,6 +45,12 @@
       INTEGER (KIND=int_prec) :: midpoint
 !---------------
 !dbg
+if(nprocs > 1) then
+  print*,'stepback_mag does not work in parallel'
+  print*,'Stopping in stepback_mag'
+  STOP
+endif
+
 phi_t1 = mlon_rad(mp)
 theta_t1(1) = plasma_grid_GL( JMIN_IN(lp),lp ) !NH
 theta_t1(2) = plasma_grid_GL( JMAX_IS(lp),lp ) !SH
@@ -138,32 +144,29 @@ end if
 
       END SUBROUTINE stepback_mag
 
-      SUBROUTINE stepback_mag_R (utime,mp,lp &
-     &, phi_t0 , theta_t0, r0_apex )
+      SUBROUTINE stepback_mag_R (utime,mp,lp,phi_t0,theta_t0,r0_apex)
       USE module_precision
       USE module_IPE_dimension,ONLY: NLP
       USE module_eldyn,ONLY: Ed1_90,Ed2_90,lpconj
-      USE module_FIELD_LINE_GRID_MKS,ONLY: Be3,mlon_rad,plasma_grid_Z,JMIN_IN,JMAX_IS,ht90,apexE,plasma_grid_GL,plasma_grid_3d,east,north,up,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,VEXBup
+      USE module_FIELD_LINE_GRID_MKS,ONLY: mlon_rad,plasma_grid_Z,JMIN_IN,JMAX_IS,ht90,plasma_grid_GL,plasma_grid_3d,east,north,up,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,VEXBup
       USE module_physical_constants,ONLY: earth_radius,rtd,pi
       USE module_input_parameters,ONLY: time_step,sw_exb_up,sw_debug,start_time,lpmin_perp_trans
       IMPLICIT NONE
 ! INPUT
       INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]
-      INTEGER (KIND=int_prec), INTENT(IN) :: mp  !mag-lon index
-      INTEGER (KIND=int_prec), INTENT(IN) :: lp  !mag-lat index
+      INTEGER (KIND=int_prec), INTENT(IN) :: mp    !mag-lon index
+      INTEGER (KIND=int_prec), INTENT(IN) :: lp    !mag-lat index
 ! OUTPUT
-      REAL(KIND=real_prec), INTENT(OUT) :: phi_t0(2)!magnetic longitude,phi[rad] at T0
+      REAL(KIND=real_prec), INTENT(OUT) :: phi_t0(2)   !magnetic longitude,phi[rad] at T0
       REAL(KIND=real_prec), INTENT(OUT) :: theta_t0(2) !magnetic latitude,theta[rad] at T0
-      REAL(KIND=real_prec), INTENT(OUT) :: r0_apex ![meter]
+      REAL(KIND=real_prec), INTENT(OUT) :: r0_apex     ![meter]
 ! local
-      REAL(KIND=real_prec) :: phi_t1  !magnetic longitude,phi at T1
-      REAL(KIND=real_prec) :: theta_t1(2)!magnetic latitude,theta at T1
-      INTEGER (KIND=int_prec) :: midpoint, midpoint_min,midpoint_max
-      REAL(KIND=real_prec) :: v_e(2)   !1:ed2/be3 (4.18) ;2: -ed1/be3 (4.19)
-      REAL(KIND=real_prec) :: r ,r_apex,  sin2theta,sintheta,theta  !meter
-      INTEGER (KIND=int_prec) :: ihem !1:NH; 2:SH
-      INTEGER (KIND=int_prec) :: lp0,ift
-      REAL(KIND=real_prec) :: GLON_deg, LT_SEC
+      REAL   (KIND=real_prec) :: phi_t1     !magnetic longitude,phi at T1
+      REAL   (KIND=real_prec) :: theta_t1(2)!magnetic latitude,theta at T1
+      INTEGER(KIND=int_prec ) :: midpoint,midpoint_min,midpoint_max
+      REAL   (KIND=real_prec) :: r,r_apex,sin2theta,sintheta,theta !meter
+      INTEGER(KIND=int_prec ) :: ihem                              !1:NH; 2:SH
+      REAL   (KIND=real_prec) :: GLON_deg, LT_SEC
 !
       phi_t1 = mlon_rad(mp)
       theta_t1(1) = plasma_grid_GL( JMIN_IN(lp),lp ) !NH
@@ -177,46 +180,23 @@ if(sw_debug) print *,'sub-StR:',lp,mp,r,r_apex,plasma_grid_Z(midpoint,lp)
 
 !note: for the moment, Ed1/B is calculated only in NH, assuming that the flux tube is moving with the same velocity between N/SH.
       which_hemisphere: DO ihem=1,1 !ihem_max
-!lp0 is used for array(NLP*2)
-        IF ( ihem==1 ) THEN
-          lp0 = lpconj(lp) !NH
-        ELSE IF ( ihem==2 ) THEN
-          lp0 = lp !SH
-        END IF
-
         
-       IF ( sw_exb_up<=1 ) THEN 
+        IF ( sw_exb_up<=1 ) THEN 
+!         (1) WACCM E empirical model moved to get_efield90km
 
-! (0) self consistent electrodynamics
-!...comming soon...
-
-! (1) WACCM E empirical model
-! Ed1/2[V/m] at ( phi_t1(mp), theta_t1(lp) ), Be3[T]
-!note: Be3 should be constant along a magnetic field!!! 
-        v_e(1) =   Ed2_90(lp0,mp) / Be3(ihem,lp,mp) !(4.18) +mag-east(d1?) 
-        v_e(2) = - Ed1_90(lp0,mp) / Be3(ihem,lp,mp) !(4.19) +down/equatorward(d2?)
-if(sw_debug)&
-& print *,'sub-StR:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]', Ed1_90(lp0,mp)*1.0E+3,' be3[tesla]',Be3(ihem,lp,mp) 
-
-        VEXBup(lp,mp) = (v_e(1) * apexE(1,midpoint,lp,mp,up))    + (v_e(2) * apexE(2,midpoint,lp,mp,up))
-
-!dbg20120301:temp solution: make sure flux tube does not go beyond the sim region...
-if ( lp==1.or.lp==NLP ) then
- VEXBup(lp,mp) = 0.0
-endif
-
-if(sw_debug)&
-& print *,'sub-StR:' &
-&, v_e(1),apexE(1,midpoint,lp,mp,up),v_e(2),apexE(2,midpoint,lp,mp,up)
+!         dbg20120301:temp solution: make sure flux tube does not go beyond the sim region...
+          if ( lp==1.or.lp==NLP ) then
+            VEXBup(lp,mp) = 0.0
+          endif
 
         ELSE IF ( sw_exb_up==2 ) THEN 
 
-!(2) GIP empirical model
+!         (2) GIP empirical model
 
         ELSE IF ( sw_exb_up==3 ) THEN 
 
-!(3)  SUPIM empirical model: 
-!note: becomes zero at R=4000km
+!         (3) SUPIM empirical model: 
+!             note: becomes zero at R=4000km
 
           GLON_deg = plasma_grid_3d(midpoint,lp,mp,IGLON)*180./pi
           LT_SEC = utime + GLON_deg/15.*3600.
@@ -226,11 +206,11 @@ if(sw_debug)&
 
         ELSE IF ( sw_exb_up==4 ) THEN 
 
-!(4) zero for debug purpose
+!         (4) zero for debug purpose
           VEXBup(lp,mp) = 0.0   !dbg20111101:v8
 
         ELSE IF ( sw_exb_up==5 ) THEN 
-!(5) read in from a file
+!         (5) read in from a file
           if ( mp==1.and.lp==lpmin_perp_trans.and.MOD( (utime-start_time),900 )==0 )    CALL read_vexb ( utime,lp,mp )
 
         END IF !ELSE IF ( sw_exb_up==3 ) THEN 

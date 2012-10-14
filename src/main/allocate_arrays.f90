@@ -73,6 +73,9 @@
         print *,switch,"!STOP! ALLOCATION FAILD!:",stat_alloc
         STOP
       END IF
+!SMS$IGNORE BEGIN
+      VEXBup = 0.0
+!SMS$IGNORE END
 
 ! (1) DEALLOCATE arrays
 ELSE IF ( switch==1 ) THEN

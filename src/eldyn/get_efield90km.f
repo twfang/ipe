@@ -22,8 +22,9 @@
      &,ed1_90,ed2_90,coslam_m,lpconj
       USE module_IPE_dimension,ONLY: NMP,NLP
       USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS
-     &,mlon_rad,ht90
-      USE module_input_parameters,ONLY: sw_debug,NYEAR,NDAY
+     &,mlon_rad,ht90,Be3,apexE,VEXBup,up
+      USE module_input_parameters,ONLY: sw_debug,NYEAR,NDAY,sw_exb_up
+     &,sw_perp_transport,lpmin_perp_trans,lpmax_perp_trans
       USE module_magfield,ONLY:sunlons
       USE module_sunloc,ONLY:sunloc
       IMPLICIT NONE
@@ -47,6 +48,8 @@
       REAL(KIND=real_prec),DIMENSION(0:nmlon) :: mlon130_rad
       REAL(KIND=real_prec) :: mlon130_0
       REAL(KIND=real_prec) :: cos2Lambda_m,sinLambda_m(2),sinI_m(2)
+      INTEGER (KIND=int_prec ) :: lp0,midpoint
+      REAL    (KIND=real_prec) :: v_e(2)   !1:ed2/be3 (4.18) ;2: -ed1/be3 (4.19)
 !
 ! array initialization
       Ed1_90=zero
@@ -313,6 +316,39 @@
       ed2_90(lp,mp)=+1.0/r/sinI_m(ihem)
      &*(pot_j1-pot_j0) /d_lam_m
 !dbg20111108     &*(-1.)*sinI_m(ihem)  !E_m_lambda (5.10)
+
+      IF(sw_exb_up<=1.and.sw_perp_transport>=1.and.
+     &   lp>=lpmin_perp_trans.AND.lp<=lpmax_perp_trans) THEN 
+
+!       (0) self consistent electrodynamics comming soon...
+
+!       (1) WACCM E empirical model
+!           Ed1/2[V/m] at ( phi_t1(mp), theta_t1(lp) ), Be3[T]
+!           note: Be3 should be constant along a magnetic field!!! 
+
+!lp0 is used for array(NLP*2)
+        ihem=1! For now
+        IF ( ihem==1 ) THEN
+          lp0 = lpconj(lp) !NH
+        ELSE IF ( ihem==2 ) THEN
+          lp0 = lp !SH
+        END IF
+        midpoint = JMIN_IN(lp) + (JMAX_IS(lp) - JMIN_IN(lp))/2
+
+        v_e(1) =   Ed2_90(lp0,mp) / Be3(ihem,lp,mp) !(4.18) +mag-east(d1?) 
+        v_e(2) = - Ed1_90(lp0,mp) / Be3(ihem,lp,mp) !(4.19) +down/equatorward(d2?)
+        if(sw_debug) then
+          print *,'sub-StR:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]', 
+     &             Ed1_90(lp0,mp)*1.0E+3,' be3[tesla]',Be3(ihem,lp,mp) 
+        endif
+        VEXBup(lp,mp)=(v_e(1)*apexE(1,midpoint,lp,mp,up))
+     &               +(v_e(2)*apexE(2,midpoint,lp,mp,up))
+        if(sw_debug) then
+          print *,'sub-StR:',v_e(1),apexE(1,midpoint,lp,mp,up)
+     &                      ,v_e(2),apexE(2,midpoint,lp,mp,up)
+        endif
+
+      ENDIF !( sw_exb_up<=1.and. ... ) 
 
         END DO mlat_loop90km1 !: DO lp=1,NLP
       END DO mlon_loop90km0     !: DO mp=1,nmp
