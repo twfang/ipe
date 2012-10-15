@@ -8,7 +8,7 @@ cp ../../bin/ipe_v18.lf95.exe .
 cp ../coef*              .
 cp ../GPTLnamelist       .
 cp ../SMSnamelist        .
-cp ../IPE.inp            .
+cp ../IPE.inp.lahey      IPE.inp
 cp ../wei96.cofcnts      .
 cp ../stup_ut_rec        .
 ln -s /pan2/projects/fim-njet/jacques/IPEdata/* .

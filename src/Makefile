@@ -96,7 +96,7 @@ SRC3	=\
 
 #dbg20120509	${DR3}/activate_perp_transport.f90 \
 # DR6: eldyn
-SRC6	=\
+SRC6S	=\
 	${DR6}/efield.f \
 	${DR6}/module_ff.f \
 	${DR6}/module_pnm.f \
@@ -135,9 +135,11 @@ SRC6	=\
 	${DR6}/module_init_eldyn.f \
 	${DR6}/module_magfield.f \
 	${DR6}/module_sunloc.f \
-	${DR6}/get_efield90km.f \
 	${DR6}/apex_sunloc.f \
 	${DR6}/supim_exb.f
+SRC6P	=\
+	${DR6}/get_efield90km.f 
+
 # DR4: main driver
 SRC4	=\
 	${DR4}/get_flip_grid.f90 \
@@ -153,9 +155,10 @@ OBJ1P	= $(SRC1P:.f90=.o)
 OBJ2	= $(SRC2:.f=.o)
 OBJ3	= $(SRC3:.f90=.o)
 OBJ4	= $(SRC4:.f90=.o)
-OBJ6	= $(SRC6:.f=.o)
+OBJ6S	= $(SRC6S:.f=.o)
+OBJ6P	= $(SRC6P:.f=.o)
 #
-FILES	= README Makefile $(HEADS) $(SRC0) $(SRC1S) $(SRC1P) $(SRC2) $(SRC3) $(SRC6) $(SRC4)
+FILES	= README Makefile $(HEADS) $(SRC0) $(SRC1S) $(SRC1P) $(SRC2) $(SRC3) $(SRC6S) $(SRC6p) $(SRC4)
 VER	= `date +%Y%m%d`
 
 
@@ -168,7 +171,8 @@ FINAL_OBJS=\
 	$(OBJ0) \
 	$(OBJ1S) \
 	$(OBJ1P) \
-	$(OBJ6) \
+	$(OBJ6S) \
+	$(OBJ6P) \
 	$(OBJ3) \
 	$(OBJ2) \
 	$(OBJ4)
@@ -243,11 +247,21 @@ $(FINAL_OBJS): $(HEADS) Makefile
 	"PINCLUDES=${PINCLUDES}" 
  D6_OBJ :
 	cd ${DR6} ; ${MAKE} all \
-	"OBJ6=${OBJ6}" \
+	"OBJS=${OBJ6S}" \
+	"OBJP=${OBJ6P}" \
 	"FC=${FC}" \
-	"FFLAG6=${FFLAG6}" \
-	"LFLAG6=${LDFLAGS}" \
-	"HOME_dev=${HOME_dev}"
+	"FCparallel=${FCparallel}" \
+	"FFLAGS=${FFLAG6}" \
+	"LFLAGS=${LDFLAGS}" \
+	"HOME_dev=${HOME_dev}" \
+	"PAR=${PAR}" \
+	"CPP=${CPP}" \
+	"CPP_FLAGS=${CPP_FLAGS}" \
+	"PPP=${PPP}" \
+	"PPP_FLAGS=${PPP_FLAGS}" \
+	"PPP_FLAGS1=${PPP_FLAGS1}" \
+	"SMSFLAGS=${SMSFLAGS}" \
+	"PINCLUDES=${PINCLUDES}" 
  D4_OBJ :
 	cd ${DR4} ; ${MAKE} all \
 	"OBJS=${OBJ4}" \
@@ -276,6 +290,8 @@ cln:
 	$(RM) ${DR1}/*_sms.f90 ${DR1}/*ppptmp*
 	$(RM) ${DR3}/*.mod ${DR3}/*.tmp ${DR3}/*.f ${DR3}/*~
 	$(RM) ${DR3}/*_sms.f90 ${DR3}/*ppptmp*
+#	$(RM) ${DR6}/*.mod ${DR6}/*.tmp ${DR6}/*~
+#	$(RM) ${DR6}/*_sms.f90 ${DR6}/*ppptmp*
 
 tar:
 	@echo $(PACKAGE)-$(VER) > .package

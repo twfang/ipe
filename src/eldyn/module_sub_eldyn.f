@@ -18,7 +18,6 @@
 !      program ts_efield
       MODULE module_sub_eldyn
       USE module_precision
-      USE module_IPE_dimension,ONLY: NMP,NLP
 !----------------------
 !c idea
 !      subroutine idea_geteb(im,ix,dayno,utsec,f107,kp,maglat,maglon,
@@ -80,25 +79,25 @@
       IF ( utime==start_time ) THEN
           write(unit=2003,FMT='(20f10.4)')ylatm
           write(unit=2004,FMT='(20f10.4)')ylonm
-        END IF
+      END IF
 !      endif !if(utsec.ne.utsec_last) then
 
 
 ! get ED1/2(nmp=80 X nlp=170) at 90km from potent(181x91)at 130km
-        IF ( utime==start_time ) j0(:,:)=-999
-        CALL GET_EFIELD90km ( utime )
-        if ( sw_debug )  print *,'GET_EFIELD90km finished'
-        IF ( utime==start_time ) write(unit=2007,FMT='(20f10.4)')
-     &    (90.-theta90_rad*rtd)    
+      IF ( utime==start_time ) j0(:,:)=-999
+      CALL GET_EFIELD90km ( utime )
+      if ( sw_debug )  print *,'GET_EFIELD90km finished'
+      IF ( utime==start_time ) write(unit=2007,FMT='(20f10.4)')
+     &   (90.-theta90_rad*rtd)    
 
-        IF ( MOD( (utime-start_time),ip_freq_output)==0 ) THEN
-          write(unit=2000,FMT='(20E12.4)')potent !V
-          write(unit=2001,FMT='(20E12.4)')ed1 *1.0E+03 !V/m-->mV/m
-          write(unit=2002,FMT='(20E12.4)')ed2 *1.0E+03 !V/m-->mV/m
-          write(unit=2008,FMT='(20E12.4)')ed1_90 *1.0E+03 !V/m-->mV/m
-          write(unit=2009,FMT='(20E12.4)')ed2_90 *1.0E+03 !V/m-->mV/m
-          write(unit=2010,FMT='(I12)')utime !sec
-        END IF
+      IF ( MOD( (utime-start_time),ip_freq_output)==0 ) THEN
+        write(unit=2000,FMT='(20E12.4)')potent !V
+        write(unit=2001,FMT='(20E12.4)')ed1 *1.0E+03 !V/m-->mV/m
+        write(unit=2002,FMT='(20E12.4)')ed2 *1.0E+03 !V/m-->mV/m
+        write(unit=2008,FMT='(20E12.4)')ed1_90 *1.0E+03 !V/m-->mV/m
+        write(unit=2009,FMT='(20E12.4)')ed2_90 *1.0E+03 !V/m-->mV/m
+        write(unit=2010,FMT='(I12)')utime !sec
+      END IF
 !c
       return
 !      end
