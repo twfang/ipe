@@ -1,5 +1,5 @@
 #SHELL=/bin/bash
-OBJ=$(OBJ2)
+OBJ=$(notdir $(OBJ2))
 FC=$(FC)
 FFLAGS=$(FFLAG2) 
 LFLAGS=$(LFLAG2)

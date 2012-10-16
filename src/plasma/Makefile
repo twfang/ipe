@@ -1,5 +1,4 @@
 #SHELL=/bin/bash
-OBJS=$(OBJS)
 OBJ=$(notdir $(OBJS))
 FC=$(FC90)
 FFLAGS90=$(FFLAGS) 
@@ -15,5 +14,5 @@ ifeq ($(PAR),sms)
 	make -f  $(HOME_dev)/Makefile.sms OBJ="$(OBJ)" FC=$(FCparallel) FFLAGS90="$(FFLAGS)" LFLAGS="$(LFLAGS)" HOME_dev=$(HOME_dev)
 else
 	echo building serial
-	make -f  $(HOME_dev)/Makefile.original OBJ="$(OBJS)" FC=$(FC) FFLAGS90="$(FFLAGS)" LFLAGS="$(LFLAGS)" HOME_dev=$(HOME_dev)
+	make -f  $(HOME_dev)/Makefile.original OBJ="$(OBJ)" FC=$(FC) FFLAGS90="$(FFLAGS)" LFLAGS="$(LFLAGS)" HOME_dev=$(HOME_dev)
 endif

@@ -20,37 +20,44 @@ TEST=v18
 PACKAGE=../bin/ipe_${TEST}.$(COMPILER).exe
 # DR0: modules
 DR0=${HOME_dev}/main
-FFLAG0=${FFLAGS90} ${INCLUDE_PATH}${DR3}
+FFLAG0=${FFLAGS90} ${GPTL_CPPFLAGS} ${GPTL_LDFLAGS}
 # DR1: neutral
 DR1=${HOME_dev}/neutral
-FFLAG1=${FFLAGS90}  ${INCLUDE_PATH}${DR0} ${INCLUDE_PATH}${DR3} ${SMSFLAGS}
+FFLAG1=${FFLAGS90}  ${INCLUDE_PATH}${DR0} ${INCLUDE_PATH}${DR3}
 # DR2: FLIP
 DR2=${HOME_dev}/flip
-FFLAG2=${FFLAGS}      ${INCLUDE_PATH}${DR0} ${INCLUDE_PATH}${DR1} ${INCLUDE_PATH}${DR3} ${GPTL_CPPFLAGS} ${GPTL_LDFLAGS} ${SMSFLAGS}
+FFLAG2=${FFLAGS}      ${INCLUDE_PATH}${DR0} ${INCLUDE_PATH}${DR1} ${INCLUDE_PATH}${DR3} ${GPTL_CPPFLAGS} ${GPTL_LDFLAGS}
 # DR3: plasma
 DR3=${HOME_dev}/plasma
-FFLAG3=${FFLAGS90}    ${INCLUDE_PATH}${DR0} ${INCLUDE_PATH}${DR6} ${GPTL_CPPFLAGS} ${GPTL_LDFLAGS} ${SMSFLAGS}
+FFLAG3=${FFLAGS90}    ${INCLUDE_PATH}${DR0} ${INCLUDE_PATH}${DR6} ${GPTL_CPPFLAGS} ${GPTL_LDFLAGS}
 # DR6: eldyn
 DR6=${HOME_dev}/eldyn
-FFLAG6=${FFLAGS_e}    ${INCLUDE_PATH}${DR0} ${SMSFLAGS}
+FFLAG6=${FFLAGS_e}    ${INCLUDE_PATH}${DR0}
 # DR4: main driver
 DR4=${HOME_dev}/main
 FFLAG4=${FFLAGS90} ${INCLUDE_PATH}${DR1} ${INCLUDE_PATH}${DR3} ${INCLUDE_PATH}${DR6} ${GPTL_CPPFLAGS} ${GPTL_LDFLAGS}
-SRC0	=\
-	${DR0}/module_decomp.f90 \
+
+SRC0S	=\
 	${DR0}/module_precision.f90 \
 	${DR0}/module_IPE_dimension.f90 \
 	${DR0}/module_physical_constants.f90 \
 	${DR0}/module_unit_conversion.f90 \
-	${DR0}/module_input_parameters.f90 \
 	${DR0}/module_io.f90 \
 	${DR0}/module_open_file.f90 \
-	${DR0}/module_open_output_files.f90 \
 	${DR0}/module_output.f90 \
-	${DR0}/module_close_files.f90 \
+	${DR0}/module_close_files.f90
+SRC0P	=\
+	${DR0}/module_decomp.f90 \
+	${DR0}/module_input_parameters.f90 \
+	${DR0}/module_sub_io.f90 \
+	${DR0}/module_open_output_files.f90 \
 	${DR0}/module_field_line_grid.f90 \
+	${DR0}/allocate_arrays.f90 \
+	${DR0}/get_flip_grid.f90 \
 	${DR0}/module_read_plasma_grid_global.f90 \
-	${DR0}/module_init_plasma_grid.f90
+	${DR0}/module_init_plasma_grid.f90 \
+	${DR0}/output_plasma_grid.f90 \
+	${DR0}/stop.f90
 # DR1: neutrals
 SRC1S	=\
 	${DR1}/nrlmsise00.f90 \
@@ -139,26 +146,23 @@ SRC6S	=\
 	${DR6}/supim_exb.f
 SRC6P	=\
 	${DR6}/get_efield90km.f 
-
 # DR4: main driver
-SRC4	=\
-	${DR4}/get_flip_grid.f90 \
-	${DR4}/allocate_arrays.f90 \
-	${DR4}/output_plasma_grid.f90 \
-	${DR4}/stop.f90 \
+SRC4P	=\
 	${DR4}/driver_ipe.f90
-#
+
 #HEADS	= $(PACKAGE).h
-OBJ0	= $(SRC0:.f90=.o)
+OBJ0S	= $(SRC0S:.f90=.o)
+OBJ0P	= $(SRC0P:.f90=.o)
 OBJ1S	= $(SRC1S:.f90=.o)
 OBJ1P	= $(SRC1P:.f90=.o)
 OBJ2	= $(SRC2:.f=.o)
 OBJ3	= $(SRC3:.f90=.o)
-OBJ4	= $(SRC4:.f90=.o)
+OBJ4S	= 
+OBJ4P	= $(SRC4P:.f90=.o)
 OBJ6S	= $(SRC6S:.f=.o)
 OBJ6P	= $(SRC6P:.f=.o)
 #
-FILES	= README Makefile $(HEADS) $(SRC0) $(SRC1S) $(SRC1P) $(SRC2) $(SRC3) $(SRC6S) $(SRC6p) $(SRC4)
+FILES	= README Makefile $(HEADS) $(SRC0S) $(SRC0P) $(SRC1S) $(SRC1P) $(SRC2) $(SRC3) $(SRC6S) $(SRC6p) $(SRC4P)
 VER	= `date +%Y%m%d`
 
 
@@ -168,14 +172,15 @@ VER	= `date +%Y%m%d`
 all: $(PACKAGE)
 
 FINAL_OBJS=\
-	$(OBJ0) \
+	$(OBJ0S) \
+	$(OBJ0P) \
 	$(OBJ1S) \
 	$(OBJ1P) \
 	$(OBJ6S) \
 	$(OBJ6P) \
 	$(OBJ3) \
 	$(OBJ2) \
-	$(OBJ4)
+	$(OBJ4P)
 
 $(PACKAGE): D0_OBJ  D1_OBJ  D6_OBJ  D3_OBJ  D2_OBJ  D4_OBJ
 
@@ -190,7 +195,8 @@ $(FINAL_OBJS): $(HEADS) Makefile
 
  D0_OBJ :
 	cd ${DR0} ; ${MAKE} all \
-	"OBJS=${OBJ0}" \
+	"OBJS=${OBJ0S}" \
+	"OBJP=${OBJ0P}" \
 	"FC=${FC}" \
 	"FCparallel=${FCparallel}" \
 	"FFLAGS=${FFLAG0}" \
@@ -264,7 +270,8 @@ $(FINAL_OBJS): $(HEADS) Makefile
 	"PINCLUDES=${PINCLUDES}" 
  D4_OBJ :
 	cd ${DR4} ; ${MAKE} all \
-	"OBJS=${OBJ4}" \
+	"OBJP=${OBJ4S}" \
+	"OBJP=${OBJ4P}" \
 	"FC=${FC}" \
 	"FCparallel=${FC}" \
 	"FFLAGS=${FFLAG4}" \
