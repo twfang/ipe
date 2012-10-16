@@ -2,7 +2,7 @@
 OBJS=$(OBJS)
 OBJS=$(notdir $(OBJS))
 OBJP=$(OBJP)
-OBJPS=$(notdir $(OBJP))
+OBJP=$(notdir $(OBJP))
 FC=$(FC90)
 FFLAGS90=$(FFLAGS) 
 LFLAGS=$(LFLAGS)

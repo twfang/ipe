@@ -290,8 +290,8 @@ cln:
 	$(RM) ${DR1}/*_sms.f90 ${DR1}/*ppptmp*
 	$(RM) ${DR3}/*.mod ${DR3}/*.tmp ${DR3}/*.f ${DR3}/*~
 	$(RM) ${DR3}/*_sms.f90 ${DR3}/*ppptmp*
-#	$(RM) ${DR6}/*.mod ${DR6}/*.tmp ${DR6}/*~
-#	$(RM) ${DR6}/*_sms.f90 ${DR6}/*ppptmp*
+	$(RM) ${DR6}/*.mod ${DR6}/*.tmp ${DR6}/*~
+	$(RM) ${DR6}/*_sms.f90 ${DR6}/*ppptmp*
 
 tar:
 	@echo $(PACKAGE)-$(VER) > .package

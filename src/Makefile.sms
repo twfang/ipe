@@ -8,15 +8,22 @@ all: $(OBJ)
 .SUFFIXES:
 .SUFFIXES: .o .f90 .f
 
-.f90.o  :
+.f.o  :
 	echo group1
+	$(PPP) $(PPP_FLAGS) $*.f 
+	mv $*_sms.f $*_sms.f
+	$(FC) -c $(FFLAGS) $(MODDIRS) $(SMSFLAGS) $*_sms.f
+	mv $*_sms.o $*.o
+
+.f90.o  :
+	echo group2
 	$(PPP) $(PPP_FLAGS) $*.f90 
 	mv $*_sms.f $*_sms.f90
 	$(FC) -c $(FFLAGS) $(MODDIRS) $(SMSFLAGS) $*_sms.f90
 	mv $*_sms.o $*.o
 
 module_decomp.o: module_decomp.f90
-	echo group2
+	echo group3
 	$(PPP) $(PPP_FLAGS1) $*.f90 
 	mv $*_sms.f $*_sms.f90
 	$(FC) -c $(FFLAGS) $(MODDIRS) $(SMSFLAGS) $*_sms.f90
