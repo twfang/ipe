@@ -45,10 +45,10 @@
 ! Author: A. Maute Dec 2003  am 12/30/03 
 !------------------------------------------------------------------------------ 
 
-c     use shr_kind_mod,  only: r8 => shr_kind_r8
-c     use physconst,     only: pi
-c     use abortutils,    only: endrun
-c     use cam_logfile,   only: iulog
+!     use shr_kind_mod,  only: r8 => shr_kind_r8
+!     use physconst,     only: pi
+!     use abortutils,    only: endrun
+!     use cam_logfile,   only: iulog
    
       implicit none
 
@@ -63,14 +63,13 @@ c     use cam_logfile,   only: iulog
 !nm20121003:
 !     &,day,dy2yr,date,nmlath,nmlat_wei,deg2mlt
 !     &,rtd,sqr2,nm,mm,mmp,pmopmmo,nm,
-c     private
+!     private
 
-      integer ::   
-     &  iday,            ! day number of year
-     &  iyear,           ! year
-     &  iday_m,          ! day of month
-     &  imo              !month
-      real ::  ut       ! universal time  
+      integer :: iday     ! day number of year
+      integer :: iyear    ! year
+      integer :: iday_m   ! day of month
+      integer :: imo      ! month
+      real    :: ut       ! universal time  
 
 !---------------------------------------------------------------------- 
 ! solar parameters
@@ -83,43 +82,39 @@ c     private
 !---------------------------------------------------------------------- 
 ! mag. grid dimensions (assumed resolution of 2deg)
 !---------------------------------------------------------------------- 
-      integer, parameter ::   
-     &nmlon = 180,          ! mlon 
-     &nmlat = 90,           ! mlat
-     &nmlath= nmlat/2,      ! mlat/2
-     &nmlonh= nmlon/2,      ! mlon/2
-     &nmlonp1 = nmlon+1,    ! mlon+1 
-     &nmlatp1 = nmlat+1,     ! mlat+1
-     &iulog=10
+      integer, parameter :: nmlon   = 180     ! mlon 
+      integer, parameter :: nmlat   = 90      ! mlat
+      integer, parameter :: nmlath  = nmlat/2 ! mlat/2
+      integer, parameter :: nmlonh  = nmlon/2 ! mlon/2
+      integer, parameter :: nmlonp1 = nmlon+1 ! mlon+1 
+      integer, parameter :: nmlatp1 = nmlat+1 ! mlat+1
+      integer, parameter :: iulog   = 10
 
-      real ::         
-     &  ylatm(0:nmlat),      ! magnetic latitudes (deg)
-     &  ylonm(0:nmlon),      ! magnetic longitudes (deg)
-     &  dlonm,	             ! delon lon grid spacing
-     &  dlatm		     ! delat lat grid spacing
+      real :: ylatm(0:nmlat) ! magnetic latitudes  (deg)
+      real :: ylonm(0:nmlon) ! magnetic longitudes (deg)
+      real :: dlonm          ! delon lon grid spacing
+      real :: dlatm	     ! delat lat grid spacing
 
 !---------------------------------------------------------------------- 
 ! array on magnetic grid:    
 !---------------------------------------------------------------------- 
-      real ::                 
-     &  potent(0:nmlon,0:nmlat),! electric potential   [V]  
-     &  ed1(0:nmlon,0:nmlat),  ! zonal electric field Ed1  [V/m] 
-     &  ed2(0:nmlon,0:nmlat) ! meridional electric field Ed2/sin I_m  [V/m]  
+      real :: potent(0:nmlon,0:nmlat) ! electric potential   [V]  
+      real :: ed1   (0:nmlon,0:nmlat) ! zonal electric field Ed1  [V/m] 
+      real :: ed2   (0:nmlon,0:nmlat) ! meridional electric field Ed2/sin I_m  [V/m]  
        
-      real :: 
-     & date,   ! iyear+iday+ut
-     & day      ! iday+ut
+      real :: date   ! iyear+iday+ut
+      real :: day    ! iday+ut
 
-      logical, parameter :: iutav=.false.   ! .true.  means UT-averaging 
-                                        ! .false. means no UT-averaging
-c     real, parameter ::  v_sw = 400.      ! solar wind velocity [km/s]
+      logical, parameter :: iutav=.false.  ! .true.  means UT-averaging 
+                                           ! .false. means no UT-averaging
+!     real, parameter ::  v_sw = 400.      ! solar wind velocity [km/s]
       real, parameter ::  v_sw = 450.      ! solar wind velocity [km/s]
 
 !---------------------------------------------------------------------- 
 ! boundary for Weimer
 !---------------------------------------------------------------------- 
       real, parameter :: bnd_wei = 44. ! colat. [deg]
-      integer :: nmlat_wei
+      integer         :: nmlat_wei
       
 !---------------------------------------------------------------------- 
 ! flag for choosing factors for empirical low latitude model      
@@ -129,22 +124,20 @@ c     real, parameter ::  v_sw = 400.      ! solar wind velocity [km/s]
 !---------------------------------------------------------------------- 
 ! constants:
 !---------------------------------------------------------------------- 
-      real, parameter ::          
-     &r_e  =  6.371e6,     ! radius_earth [m] (same as for apex.F90)
-     & h_r  = 130.0e3,    ! reference height [m] (same as for apex.F90)
-     &dy2yr= 365.24,     ! day per avg. year used in Weimer
-     &dy2mo= 30.6001,    ! day per avg. month used in Weimer
-     &pi=3.141592653
+      real,parameter :: r_e  =  6.371e6 ! radius_earth [m] (same as for apex.F90)
+      real,parameter :: h_r  = 130.0e3  ! reference height [m] (same as for apex.F90)
+      real,parameter :: dy2yr= 365.24   ! day per avg. year used in Weimer
+      real,parameter :: dy2mo= 30.6001  ! day per avg. month used in Weimer
+      real,parameter :: pi=3.141592653
 
-      real   
-     &  rtd ,         ! radians -> deg
-     &	dtr,          ! deg -> radians
-     &	sqr2,           
-     &	hr2rd,        ! pi/12 hrs
-     &	dy2rd,        ! 2*pi/365.24  average year
-     &	deg2mlt,      ! for mlon to deg
-     &	mlt2deg,      ! for mlt to mlon
-     &  sinIm_mag(0:nmlat)    ! sinIm
+      real :: rtd                ! radians -> deg
+      real :: dtr                ! deg -> radians
+      real :: sqr2           
+      real :: hr2rd              ! pi/12 hrs
+      real :: dy2rd              ! 2*pi/365.24  average year
+      real :: deg2mlt            ! for mlon to deg
+      real :: mlt2deg            ! for mlt to mlon
+      real :: sinIm_mag(0:nmlat) ! sinIm
 
       integer :: jmin, jmax   ! latitude index for interpolation of 
                               ! northward e-field ed2 at mag. equator
@@ -152,11 +145,7 @@ c     real, parameter ::  v_sw = 400.      ! solar wind velocity [km/s]
 !---------------------------------------------------------------------- 
 !  for spherical harmonics
 !---------------------------------------------------------------------- 
-      integer, parameter ::  
-     &	nm   = 19,     
-     &	mm   = 18,    					
-!nm20121003     &	nmp  = nm + 1, 					       
-     &	mmp  = mm + 1	  
+      integer, parameter ::  nm = 19, mm = 18, mmp = mm + 1	  
 
       real :: r(0:nm,0:mm)      ! R_n^m
       real :: pmopmmo(0:mm)     ! sqrt(1+1/2m)
@@ -170,20 +159,18 @@ c     real, parameter ::  v_sw = 400.      ! solar wind velocity [km/s]
       real :: ft(1:3,0:2)  ! used for f_-k(season,k)
 
       real ::  a_klnm(0:ni)        !  A_klm
-      real ::  a_lf(0:ni)          ! A_klmn^lf for minimum  
-      real ::  a_hf(0:ni)          ! A_klmn^hf for maximum
+      real ::  a_lf  (0:ni)        ! A_klmn^lf for minimum  
+      real ::  a_hf  (0:ni)        ! A_klmn^hf for maximum
 
 !---------------------------------------------------------------------- 
 ! high_latitude boundary
 !---------------------------------------------------------------------- 
-      real, parameter ::    
-     &ef_max  = 0.015,  ! max e-field for high latitude boundary location [V/m]
-     &lat_sft = 54.	 ! shift of highlat_bnd to 54 deg
-      integer :: ilat_sft        ! index of shift for high latitude boundary
+      real,parameter ::ef_max  = 0.015   ! max e-field for high latitude boundary location [V/m]
+      real,parameter ::lat_sft = 54.     ! shift of highlat_bnd to 54 deg
+      integer            :: ilat_sft     ! index of shift for high latitude boundary
       integer, parameter :: nmax_sin = 2 ! max. wave number to be represented
       logical, parameter :: debug =.false.
 
 !nm20121003:subroutines are separated into sub_efield.f.
-
 
       end module efield

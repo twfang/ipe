@@ -14,7 +14,7 @@
 !
       PROGRAM  test_plasma
       USE module_precision
-      USE module_input_parameters,ONLY: read_input_parameters,start_time,stop_time,time_step,HPEQ_flip,ip_freq_msis,sw_output_plasma_grid ,sw_debug, sw_perp_transport
+      USE module_input_parameters,ONLY: read_input_parameters,start_time,stop_time,time_step,HPEQ_flip,ip_freq_msis,sw_output_plasma_grid,sw_debug,sw_perp_transport
 !nm20121003      USE module_FIELD_LINE_GRID_MKS,ONLY: init_plasma_grid
       USE module_init_plasma_grid,ONLY: init_plasma_grid
       USE module_NEUTRAL_MKS,ONLY: neutral 
@@ -39,21 +39,6 @@
       call gptlprocess_namelist ('GPTLnamelist', 77, ret) 
       ret = gptlinitialize ()
       ret = gptlstart ('Total')
-
-!SMS$CREATE_DECOMP(dh,<NLP,NMP>,<5,5>)
-
-      WRITE(*,*)" DATE: 08 September, 2011"
-      WRITE(*,*)"********************************************"
-      WRITE(*,*)"***      Copyright 2011 NAOMI MARUYAMA   ***"
-      WRITE(*,*)"***      ALL RIGHTS RESERVED             ***"
-      WRITE(*,*)"********************************************"
-      WRITE(*,*)" LICENSE AGREEMENT Ionosphere Plasmasphere Electrodynamics (IPE) model"
-      WRITE(*,*)" DEVELOPER: Dr. Naomi Maruyama"
-      WRITE(*,*)" CONTACT INFORMATION:"
-      WRITE(*,*)" E-MAIL : Naomi.Maruyama@noaa.gov"
-      WRITE(*,*)" PHONE  : 303-497-4857"
-      WRITE(*,*)" ADDRESS: 325 Broadway, Boulder, CO 80305"
-      WRITE(*,*)"                                            "
 
 ! set up input parameters
       ret = gptlstart ('read_input')

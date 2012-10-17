@@ -13,7 +13,7 @@
       SUBROUTINE flux_tube_solver ( utime,mp,lp )
       USE module_precision
       USE module_IPE_dimension,ONLY: ISPEC,ISPEV,IPDIM
-      USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,Pvalue,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,plasma_3d,ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k,un_ms1
+      USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,Pvalue,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,plasma_3d,ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k,un_ms1,mp_save,lp_save
       USE module_input_parameters,ONLY: time_step,F107D,F107AV,DTMIN_flip  &
      &, sw_INNO,FPAS_flip,HPEQ_flip,HEPRAT_flip,COLFAC_flip,sw_IHEPLS,sw_INPLS,sw_debug,iout, start_time, sw_wind_flip, sw_depleted_flip, start_time_depleted, sw_output_fort167
       USE module_PLASMA,ONLY: plasma_1d !dbg20120501
@@ -336,7 +336,9 @@ END IF
      &            TE_TIX, & !.. IN/OUT: 2D array, Electron and ion temperatures (K) (see below)
      &     XIONNX,XIONVX, & !.. IN/OUT: 2D array, Storage for ion densities and velocities
      &             NHEAT, & !.. OUT: array, Neutral heating rate (eV/cm^3/s) 
-     &             EFLAG)  !.. OUT: 2D array, Error Flags
+     &             EFLAG, & !.. OUT: 2D array, Error Flags
+     &           mp_save, &
+     &           lp_save)
       ret = gptlstop  ('CTIPINT')
 
 !dbg20110802: 3D multiple-lp run
@@ -382,7 +384,9 @@ END IF
       ret = gptlstart ('WRITE_EFLAG')
       PRUNIT_dum = PRUNIT
       CALL WRITE_EFLAG(PRUNIT_dum, &  !.. Unit number to print results
-     &                  EFLAG)    !.. Error flag array
+     &                      EFLAG, &  !.. Error flag array
+     &                    mp_save, &
+     &                    lp_save)
       ret = gptlstop  ('WRITE_EFLAG')
 
 

@@ -122,6 +122,7 @@
 !dbg20120313 
       REAL(KIND=real_prec), PUBLIC :: fac_BM
 
+      NAMELIST/IPEDIMS/NLP,NMP 
       NAMELIST/NMIPE/start_time &
      &,stop_time &
      &,time_step &
@@ -169,7 +170,6 @@
            &, sw_ksi &
            &, sw_divv &
            &, mpstop  &
-           &, NLP,NMP &
            &, sw_debug       &
            &, sw_debug_mpi   &
            &, sw_output_fort167   &
@@ -202,6 +202,8 @@
         CHARACTER (LEN=*), PARAMETER :: filename='logfile_input_params.log'
         INTEGER (KIND=int_prec) :: istat        
 
+
+!SMS$IGNORE BEGIN
         OPEN(UNIT=LUN_LOG0,FILE=filename,STATUS='unknown',FORM='formatted',IOSTAT=istat)
         IF ( istat /= 0 ) THEN
           WRITE( UNIT=6, FMT=*)'ERROR OPENING FILE',filename
@@ -209,6 +211,12 @@
         END IF
 
         OPEN(LUN_nmlt,FILE=INPTNMLT,ERR=222,IOSTAT=IOST_OP,STATUS='OLD')
+        READ(LUN_nmlt,NML=IPEDIMS  ,ERR=222,IOSTAT=IOST_RD,END=111)
+!SMS$IGNORE END
+
+!SMS$CREATE_DECOMP(dh,<NLP,NMP>,<5,5>)
+
+!SMS$SERIAL BEGIN
         READ(LUN_nmlt,NML=NMIPE    ,ERR=222,IOSTAT=IOST_RD,END=111)
         READ(LUN_nmlt,NML=NMFLIP   ,ERR=222,IOSTAT=IOST_RD,END=111)
         READ(LUN_nmlt,NML=NMMSIS   ,ERR=222,IOSTAT=IOST_RD,END=111)
@@ -236,9 +244,24 @@ WRITE(UNIT=LUN_LOG0,FMT=*)'real_prec=',real_prec,' int_prec=',int_prec
 
         CLOSE(LUN_nmlt)
         CLOSE(LUN_LOG0)
+!SMS$SERIAL END
 
 stop_time=start_time+duration
-!SMS$insert call NNT_NPROCS(nprocs)
+
+WRITE(*,*)" DATE: 08 September, 2011"
+WRITE(*,*)"********************************************"
+WRITE(*,*)"***      Copyright 2011 NAOMI MARUYAMA   ***"
+WRITE(*,*)"***      ALL RIGHTS RESERVED             ***"
+WRITE(*,*)"********************************************"
+WRITE(*,*)" LICENSE AGREEMENT Ionosphere Plasmasphere Electrodynamics (IPE) model"
+WRITE(*,*)" DEVELOPER: Dr. Naomi Maruyama"
+WRITE(*,*)" CONTACT INFORMATION:"
+WRITE(*,*)" E-MAIL : Naomi.Maruyama@noaa.gov"
+WRITE(*,*)" PHONE  : 303-497-4857"
+WRITE(*,*)" ADDRESS: 325 Broadway, Boulder, CO 80305"
+WRITE(*,*)"                                            "
+
+!!SMS$insert call NNT_NPROCS(nprocs)
 print *,'finished reading namelist:',filename
 print *,' '
 print"(' NLP:                 ',I6)",NLP

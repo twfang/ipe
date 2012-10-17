@@ -11,8 +11,8 @@ all: $(OBJ)
 .f.o  :
 	echo group1
 	$(PPP) $(PPP_FLAGS) $*.f 
-	mv $*_sms.f $*_sms.f
-	$(FC) -c $(FFLAGS) $(MODDIRS) $(SMSFLAGS) $*_sms.f
+	mv $*_sms.f $*_sms.f90
+	$(FC) -c $(FFLAGS) $(MODDIRS) $(SMSFLAGS) $*_sms.f90
 	mv $*_sms.o $*.o
 
 .f90.o  :

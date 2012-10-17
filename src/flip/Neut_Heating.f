@@ -27,13 +27,13 @@ C..... The input parameters JMIN, EHT were also added
       USE PRODUCTION    !.. EUV, photoelectron, and auroral production, PHION
 ! save each component of heating rate for output
       USE module_IPE_dimension,ONLY: NLP
-      USE module_FIELD_LINE_GRID_MKS,ONLY: mp_save,lp_save,JMIN_IN
-     >,                         JMAX_IS,MaxFluxTube,hrate_cgs_save
+!JFM  USE module_FIELD_LINE_GRID_MKS,ONLY: mp_save,lp_save,JMIN_IN
+!JFM >,                         JMAX_IS,MaxFluxTube,hrate_cgs_save
       USE module_input_parameters,ONLY: sw_neutral_heating_flip
      >,start_time,ip_freq_output,nprocs
       USE module_heating_rate,ONLY: get_neutral_heating_rate
       USE module_precision
-      USE module_PLASMA,ONLY: utime_save
+!JFM  USE module_PLASMA,ONLY: utime_save
       IMPLICIT NONE
       INTEGER IJ,K          !.. loop control variables
       INTEGER JPR,JMIN,JMAX      !.. Turns on printing of production and loss
@@ -66,7 +66,7 @@ C..... The input parameters JMIN, EHT were also added
 !nm20110404: save each component of the heating rate for output
       INTEGER :: j2d,jth,lun,lp  !J converted to the 2Dsystem in a meridional plain.
 
-      REAL(KIND=real_prec), DIMENSION(7,MaxFluxTube,NLP) :: hrate_mks !.. each component of the Neutral heating rate (eV/kg/s) 
+!JFM  REAL(KIND=real_prec), DIMENSION(7,MaxFluxTube,NLP) :: hrate_mks !.. each component of the Neutral heating rate (eV/kg/s) 
       REAL(KIND=real_prec) :: min_hrate,max_hrate
 
       PO1DSR=OTHPR1(3,IJ)      !.. Schumann-Runge production of O(1D)
@@ -184,49 +184,49 @@ C..... The input parameters JMIN, EHT were also added
      >   HRATE(7)
 
 !nm20110404: save each component of heating rate for output
-      IF ( sw_neutral_heating_flip==1 .AND.
-     &  MOD( (utime_save-start_time),ip_freq_output)==0) THEN
-        if(nprocs>1) then
-          print*,'sw_neutral_heating_flip=1 does not work in parallel'
-          print*,'Stopping in Neut_heating'
-          stop
-        endif
+!JFM  IF ( sw_neutral_heating_flip==1 .AND.
+!JFM &  MOD( (utime_save-start_time),ip_freq_output)==0) THEN
+!JFM    if(nprocs>1) then
+!JFM      print*,'sw_neutral_heating_flip=1 does not work in parallel'
+!JFM      print*,'Stopping in Neut_heating'
+!JFM      stop
+!JFM    endif
 
-        j2d=ij+JMIN_IN(lp_save)-1
-        DO jth=1,7
-           hrate_cgs_save(jth,j2d,lp_save)=hrate(jth) !!(1) PGR neu_neu
+!JFM    j2d=ij+JMIN_IN(lp_save)-1
+!JFM    DO jth=1,7
+!JFM       hrate_cgs_save(jth,j2d,lp_save)=hrate(jth) !!(1) PGR neu_neu
 !      hrate_cgs_save(2,j2d,mp_save)=hrate(2) !!PGR O1D
 !      hrate_cgs_save(3,j2d,mp_save)=hrate(3) !!PGR ion_neu
 !      hrate_cgs_save(4,j2d,mp_save)=hrate(4) !!PGR elec_ion
 !      hrate_cgs_save(5,j2d,mp_save)=hrate(5) !!PGR SRO2dis
 !      hrate_cgs_save(6,j2d,mp_save)=hrate(6) !!PGR UVN2dis
 !      hrate_cgs_save(7,j2d,mp_save)=hrate(7) !!PGR 3bod CHECK dimension
-        END DO
+!JFM    END DO
 
 
-        IF ( IJ==JMAX .AND. lp_save==NLP ) THEN
+!JFM    IF ( IJ==JMAX .AND. lp_save==NLP ) THEN
 !20111118 output
-          IF ( mp_save==1 ) write(5000,*)utime_save
-          CALL get_neutral_heating_rate ( hrate_mks )
-          DO jth=1,7
-            lun=5000+jth  
-            min_hrate =  huge(min_hrate)
-            max_hrate = -huge(max_hrate)
-            do lp=1,NLP
-              min_hrate=min(min_hrate,MINVAL(
-     >                      hrate_mks(jth,JMIN_IN(lp):JMAX_IS(lp),lp)))
-              max_hrate=max(max_hrate,MAXVAL(
-     >                      hrate_mks(jth,JMIN_IN(lp):JMAX_IS(lp),lp)))
-            enddo
-      print *,'hrate',lun,jth,mp_save,lp_save,IJ,min_hrate,max_hrate
-            write(lun,*)mp_save
-            do lp=1,NLP
-              write(lun,*)hrate_mks(jth,JMIN_IN(lp):JMAX_IS(lp),lp)
-            enddo
-          END DO !jth=1,7
-        END IF !( lp_save==NLP ) THEN
+!JFM      IF ( mp_save==1 ) write(5000,*)utime_save
+!JFM      CALL get_neutral_heating_rate ( hrate_mks )
+!JFM      DO jth=1,7
+!JFM        lun=5000+jth  
+!JFM        min_hrate =  huge(min_hrate)
+!JFM        max_hrate = -huge(max_hrate)
+!JFM        do lp=1,NLP
+!JFM          min_hrate=min(min_hrate,MINVAL(
+!JFM >                      hrate_mks(jth,JMIN_IN(lp):JMAX_IS(lp),lp)))
+!JFM          max_hrate=max(max_hrate,MAXVAL(
+!JFM >                      hrate_mks(jth,JMIN_IN(lp):JMAX_IS(lp),lp)))
+!JFM        enddo
+!JFM  print *,'hrate',lun,jth,mp_save,lp_save,IJ,min_hrate,max_hrate
+!JFM        write(lun,*)mp_save
+!JFM        do lp=1,NLP
+!JFM          write(lun,*)hrate_mks(jth,JMIN_IN(lp):JMAX_IS(lp),lp)
+!JFM        enddo
+!JFM      END DO !jth=1,7
+!JFM    END IF !( lp_save==NLP ) THEN
 
-      END IF !( sw_neutral_heating_flip==1 ) THEN
+!JFM  END IF !( sw_neutral_heating_flip==1 ) THEN
 
       !.. Conversion factor for converting heating rates from eV/cm3/s to ergs/gm/s
       CF=(16*OXN+28*N2N+32*O2N)*1.6726E-24/1.6022E-12

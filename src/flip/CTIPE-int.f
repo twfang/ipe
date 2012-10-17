@@ -318,7 +318,9 @@ C.... Written by P. Richards June-September 2010.
      >            TE_TIX,  !.. OUT: 2D array, Electron and ion temperatures (K) (see below)
      >     XIONNX,XIONVX,  !.. OUT: 2D array, Storage for ion densities and velocities 
      >             NHEAT,  !.. OUT: array, Neutral heating rate (eV/cm^3/s) 
-     >             EFLAG)  !.. OUT: 2D array, Error Flags
+     >             EFLAG,  !.. OUT: 2D array, Error Flags
+     &           mp_save, 
+     &           lp_save)
       USE THERMOSPHERE       !.. ON HN N2N O2N HE TN UN EHT COLFAC
       USE MINORNEUT          !.. N4S N2D NNO N2P N2A O1D O1S
       USE FIELD_LINE_GRID    !.. FLDIM JMIN JMAX FLDIM Z BM GR SL GL SZA
@@ -329,7 +331,6 @@ C.... Written by P. Richards June-September 2010.
       USE module_input_parameters,ONLY: sw_TEI,sw_OHPLS
      &, sw_DEBUG_flip,sw_debug,sw_output_fort167
       USE module_IO,ONLY: LUN_FLIP1,LUN_FLIP2,LUN_FLIP3,LUN_FLIP4
-      USE module_FIELD_LINE_GRID_MKS,ONLY:mp_save,lp_save
 
       IMPLICIT NONE
       include "gptl.inc"
@@ -337,6 +338,7 @@ C.... Written by P. Richards June-September 2010.
 !nm20110923      INTEGER JTI             !.. Dummy variable to count the number of calls to this routine
       INTEGER I,J,JMINX,JMAXX !.. lcv + spatial grid indices
       INTEGER EFLAG(11,11)    !.. error flags, check =0 on return from FLIP
+      INTEGER mp_save,lp_save
       INTEGER INNO            !.. switch to turn on FLIP NO calculation if <0
 !nm20110810      INTEGER DEBUG           !.. switch to turn on debug writes 0=off, 1=on
       !.. IHEPLS,INPLS turn on diffusive solutions if > 0. no solution if 0, 
@@ -705,11 +707,13 @@ C:::::::::::::::::: WRITE_EFLAG ::::::::::::::::::::::::
 C... This routine prints the information about error flags
 C... Written by P. Richards September 2010
       SUBROUTINE WRITE_EFLAG(PRUNIT,   !.. Unit number to print results
-     >                        EFLAG)   !.. Error flag array
-      USE module_FIELD_LINE_GRID_MKS,ONLY:mp_save,lp_save
+     >                        EFLAG,   !.. Error flag array
+     >                      mp_save, 
+     >                      lp_save)
       USE module_input_parameters,ONLY:sw_output_fort167,sw_ERSTOP_flip
       IMPLICIT NONE
       INTEGER PRUNIT,EFLAG(11,11)         !.. error flags
+      INTEGER mp_save,lp_save
       IF(EFLAG(1,1).NE.0) THEN
         WRITE(PRUNIT,11)mp_save,lp_save
         IF ( sw_ERSTOP_flip==1 )  STOP

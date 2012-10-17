@@ -1,3 +1,5 @@
+&IPEDIMS NLP=170,
+         NMP=80 /
 &NMIPE	start_time=0,
 	time_step=300,
 	F107D=184.0  ,
@@ -48,8 +50,6 @@
 		sw_ksi=2 ,
 		sw_divv=0 ,
 		mpstop=80 ,
-                NLP=170,
-                NMP=80,
 		sw_debug=F ,
 		sw_debug_mpi=F ,
 		sw_output_fort167=F ,
