@@ -18,7 +18,6 @@
 !      program ts_efield
       MODULE module_eldyn
       USE module_precision
-      USE module_IPE_dimension,ONLY: NMP,NLP
 !----------------------
 !c idea
 !      subroutine idea_geteb(im,ix,dayno,utsec,f107,kp,maglat,maglon,

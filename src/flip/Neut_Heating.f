@@ -26,12 +26,12 @@ C..... The input parameters JMIN, EHT were also added
      >                     O2DISF)  !.. OUTPUT: O2 dissociation frequency
       USE PRODUCTION    !.. EUV, photoelectron, and auroral production, PHION
 ! save each component of heating rate for output
-      USE module_IPE_dimension,ONLY: NLP
+!JFM  USE module_IPE_dimension,ONLY: NLP
 !JFM  USE module_FIELD_LINE_GRID_MKS,ONLY: mp_save,lp_save,JMIN_IN
 !JFM >,                         JMAX_IS,MaxFluxTube,hrate_cgs_save
       USE module_input_parameters,ONLY: sw_neutral_heating_flip
-     >,start_time,ip_freq_output,nprocs
-      USE module_heating_rate,ONLY: get_neutral_heating_rate
+     >,start_time,ip_freq_output,parallelBuild
+!JFM  USE module_heating_rate,ONLY: get_neutral_heating_rate
       USE module_precision
 !JFM  USE module_PLASMA,ONLY: utime_save
       IMPLICIT NONE
@@ -186,7 +186,7 @@ C..... The input parameters JMIN, EHT were also added
 !nm20110404: save each component of heating rate for output
 !JFM  IF ( sw_neutral_heating_flip==1 .AND.
 !JFM &  MOD( (utime_save-start_time),ip_freq_output)==0) THEN
-!JFM    if(nprocs>1) then
+!JFM    if(parallelBuild) then
 !JFM      print*,'sw_neutral_heating_flip=1 does not work in parallel'
 !JFM      print*,'Stopping in Neut_heating'
 !JFM      stop

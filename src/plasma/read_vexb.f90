@@ -15,7 +15,7 @@
         USE module_precision
         USE module_IPE_dimension,ONLY:NMP,NLP,IPDIM
         USE module_FIELD_LINE_GRID_MKS,ONLY: VEXBup
-        USE module_input_parameters,ONLY:start_time,stop_time,nprocs
+        USE module_input_parameters,ONLY:start_time,stop_time,parallelBuild
         USE module_IO, ONLY:filename,FORM_dum,STATUS_dum,luntmp1,luntmp2
         USE module_open_file, ONLY:open_file
         IMPLICIT NONE
@@ -25,7 +25,7 @@
         INTEGER (KIND=int_prec) :: record_number_plasma_dum,utime_dum,lpin,mpin
         real VEXBupIN(NMP,NLP)
 
-if(nprocs>1) then
+if(parallelBuild) then
   print*,'read_vexb does not work for parallel runs'
   print*,'Stopping in read_vexb'
   stop

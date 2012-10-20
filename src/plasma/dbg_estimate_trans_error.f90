@@ -15,6 +15,7 @@
         USE module_precision
         USE module_IPE_dimension,ONLY:NMP,NLP,IPDIM
         USE module_FIELD_LINE_GRID_MKS,ONLY: plasma_3d
+        USE module_input_parameters,ONLY : parallelBuild
         IMPLICIT NONE
         INTEGER (KIND=int_prec),  INTENT(IN)  :: utime    !universal time [sec]
 
@@ -25,7 +26,7 @@
 !!SMS$DISTRIBUTE END
         REAL (KIND=real_prec),PARAMETER :: fixedval=100.0
 
-if(nprocs>1) then
+if(parallelBuild) then
   print*,'sw_dbg_perp_trans=true does not work for parallel runs'
   print*,'Stopping in dbg_estimate_trans_error'
   stop

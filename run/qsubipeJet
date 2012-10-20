@@ -44,7 +44,7 @@ EOF
 
 chmod 755 ./runscript
 
-set queue_time=00:20:00
+set queue_time=02:00:00
 qsub -N ipe \
      -A acb-gpu \
      -r y \

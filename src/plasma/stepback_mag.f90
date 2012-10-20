@@ -19,7 +19,7 @@
       USE module_FIELD_LINE_GRID_MKS,ONLY: Be3,mlon_rad,plasma_grid_GL,JMIN_IN,JMAX_IS,ht90,plasma_grid_Z !,apexE, geographic_coords
       USE module_physical_constants,ONLY: earth_radius,rtd,pi
 !      USE cons_module,ONLY: h0 !potential solver reference height[cm] =90km
-      USE module_input_parameters,ONLY: time_step,sw_debug,nprocs
+      USE module_input_parameters,ONLY: time_step,sw_debug,parallelBuild
       IMPLICIT NONE
 ! INPUT
       INTEGER (KIND=int_prec), INTENT(IN) :: mp  !mag-lon index
@@ -45,7 +45,7 @@
       INTEGER (KIND=int_prec) :: midpoint
 !---------------
 !dbg
-if(nprocs > 1) then
+if(parallelBuild) then
   print*,'stepback_mag does not work in parallel'
   print*,'Stopping in stepback_mag'
   STOP

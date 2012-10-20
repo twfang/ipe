@@ -69,6 +69,7 @@
 !SMS$DISTRIBUTE END
 !SMS$DISTRIBUTE(dh,,1) BEGIN
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: mlon_rad(:)          !mag longitude in [rad]
+      REAL(KIND=real_prec),PUBLIC                    :: mlon_rad_fac         !mag longitude factor
 !SMS$DISTRIBUTE END
 
       REAL(KIND=real_prec),PARAMETER  ,PUBLIC        :: dlonm90km = 4.5 ![deg]

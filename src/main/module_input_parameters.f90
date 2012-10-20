@@ -31,6 +31,8 @@
 
       INTEGER (KIND=int_prec), PUBLIC :: ip_freq_output  ![sec] must be multiple of time_step
       INTEGER (KIND=int_prec), PUBLIC :: ip_freq_msis    !frequency[sec] to call MSIS/HWM: default 15min
+      LOGICAL                , PUBLIC :: parallelBuild=.false.
+
 !--- FLIP specific input parameters
       REAL (KIND=real_prec), PUBLIC :: DTMIN_flip  !.. Minimum time step allowed (&=10 secs?)
       INTEGER (KIND=int_prec),PUBLIC :: sw_INNO  !.. switch to turn on FLIP NO calculation if <0
@@ -261,7 +263,7 @@ WRITE(*,*)" PHONE  : 303-497-4857"
 WRITE(*,*)" ADDRESS: 325 Broadway, Boulder, CO 80305"
 WRITE(*,*)"                                            "
 
-!!SMS$insert call NNT_NPROCS(nprocs)
+!SMS$insert call NNT_NPROCS(nprocs)
 print *,'finished reading namelist:',filename
 print *,' '
 print"(' NLP:                 ',I6)",NLP

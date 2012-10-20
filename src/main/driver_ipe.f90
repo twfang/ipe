@@ -14,7 +14,7 @@
 !
       PROGRAM  test_plasma
       USE module_precision
-      USE module_input_parameters,ONLY: read_input_parameters,start_time,stop_time,time_step,HPEQ_flip,ip_freq_msis,sw_output_plasma_grid,sw_debug,sw_perp_transport
+      USE module_input_parameters,ONLY: read_input_parameters,start_time,stop_time,time_step,HPEQ_flip,ip_freq_msis,sw_output_plasma_grid,sw_debug,sw_perp_transport,parallelBuild
 !nm20121003      USE module_FIELD_LINE_GRID_MKS,ONLY: init_plasma_grid
       USE module_init_plasma_grid,ONLY: init_plasma_grid
       USE module_NEUTRAL_MKS,ONLY: neutral 
@@ -40,6 +40,7 @@
       ret = gptlinitialize ()
       ret = gptlstart ('Total')
 
+!SMS$INSERT parallelBuild=.true.
 ! set up input parameters
       ret = gptlstart ('read_input')
       CALL read_input_parameters ( )

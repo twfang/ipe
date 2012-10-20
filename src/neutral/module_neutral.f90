@@ -14,7 +14,7 @@
       USE module_precision
       USE module_IPE_dimension,ONLY: NPTS2D,NLP,NMP
       USE module_FIELD_LINE_GRID_MKS,ONLY: ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k,Un_ms1
-      USE module_input_parameters,ONLY : nprocs
+      USE module_input_parameters,ONLY : parallelBuild
 
       IMPLICIT NONE
 
@@ -259,7 +259,7 @@ END IF !( sw_debug ) THEN
 !write (6000,fmt=*) utime, Un_ms1(3,1:NPTS2D,mp) 
 if ( sw_neutral==2  ) then
 !write (6000,fmt=*) utime, Un_ms1(3,1:NPTS2D,mp) 
-  if(nprocs > 1 ) then
+  if(parallelBuild) then
     print*,'module_neutral: sw_neutral=2 disabled for parallel runs'
   else
     if ( utime==start_time ) then
@@ -280,7 +280,7 @@ if ( sw_neutral==2  ) then
     enddo
 
     if( utime==stop_time )   CLOSE(UNIT=luntmp3)
-  endif ! nprocs>1
+  endif ! parallelBuild
 
 end if !sw_neutral
 

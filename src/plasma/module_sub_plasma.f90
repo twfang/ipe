@@ -31,7 +31,7 @@
       SUBROUTINE plasma ( utime )
       USE module_input_parameters,ONLY:mpstop,ip_freq_output,start_time,stop_time,&
 &     sw_neutral_heating_flip,sw_perp_transport,lpmin_perp_trans,lpmax_perp_trans,sw_para_transport,sw_debug,        &
-&     sw_dbg_perp_trans,sw_exb_up,nprocs
+&     sw_dbg_perp_trans,sw_exb_up,parallelBuild
       USE module_physical_constants,ONLY:rtd,zero
       USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,plasma_grid_3d,plasma_grid_GL,mp_save,lp_save,plasma_grid_Z,JMAX_IS,hrate_cgs_save
       USE module_PLASMA,ONLY:utime_save,plasma_1d
@@ -85,7 +85,7 @@ end if
 
 !dbg20120228: debug how2validate the transport
 if(sw_dbg_perp_trans.and.utime==start_time.and.lp==1)then
-  if(nprocs>1) then
+  if(parallelBuild) then
     print*,'sw_dbg_perp_trans=true does not work for parallel runs'
     print*,'Stopping module_sub_plasma'
     stop
