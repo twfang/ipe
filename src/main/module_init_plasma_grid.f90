@@ -13,9 +13,7 @@
         USE module_FIELD_LINE_GRID_MKS,ONLY: &
 &  Pvalue &
 &, JMIN_IN,JMAX_IS, r_meter2D, plasma_grid_GL,plasma_grid_3d,apexD,apexE,Be3,plasma_grid_Z &
-&, ISL,IBM,IGR,IQ,IGCOLAT,IGLON &
-&, east,north,up &
-&, mlon_rad,dlonm90km
+&, ISL,IBM,IGR,IQ,IGCOLAT,IGLON,east,north,up,mlon_rad,dlonm90km
         IMPLICIT NONE
 
         INTEGER (KIND=int_prec) :: i, mp,lp
@@ -120,10 +118,9 @@ endif !(mp==1) then
      END DO apex_longitude_loop         !: DO mp = 1,NMP 
 
      mlon_rad(:) = zero
-     DO mp = 1,NMP+1 
+     DO mp = 1,NMP
        mlon_rad(mp) = REAL( (mp-1),real_prec ) * dlonm90km *pi/180.00
      END DO
-if ( sw_debug ) print *,'mlon_rad[deg]',mlon_rad*180.0/pi
 
 !dbg20120313
 !     DO mp = 1,NMP 

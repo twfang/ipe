@@ -61,8 +61,8 @@ if(sw_debug) print *,'interpolate_flux_tube finished!'
 &, phi_t0 , theta_t0 &
 &,  mp_t0 ,    lp_t0 )
       USE module_precision
-      USE module_physical_constants,ONLY: rtd
-      USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,dlonm90km
+      USE module_physical_constants,ONLY: rtd,pi
+      USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,dlonm90km
       USE module_IPE_dimension,ONLY: NMP,NLP
       USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,HaloSize
      IMPLICIT NONE
@@ -104,19 +104,19 @@ which_hemisphere: DO ihem=1,1  !ihem_max
     if(mpp > NMP) mpp= mpp-NMP
     mpm=mp-mpx
     if(mpm < 1) mpm= NMP+mpm
-    IF ( mlon_rad(mpp)<=phi_t0(ihem) .AND. phi_t0(ihem)<mlon_rad(mpp+1) ) THEN
+    IF(REAL((mpp-1),real_prec)*dlonm90km*pi/180.0<=phi_t0(ihem).AND.phi_t0(ihem)<REAL((mpp),real_prec)*dlonm90km*pi/180.0) THEN
       mp_t0(ihem,1) =mpp
       mp_t0(ihem,2) =mpp+1
       EXIT mpx_loop
     END IF
-    IF ( mpm>1.and.mlon_rad(mpm)<=phi_t0(ihem) .AND. phi_t0(ihem)<mlon_rad(mpm-1) ) THEN
+    IF(mpm>1.and.REAL((mpm-1),real_prec)*dlonm90km*pi/180.0<=phi_t0(ihem).AND.phi_t0(ihem)<REAL((mpm-2),real_prec)*dlonm90km*pi/180.0) THEN
       mp_t0(ihem,1) =mpm-1
       mp_t0(ihem,2) =mpm
       EXIT mpx_loop
     END IF
   END DO mpx_loop !: DO mpx=0,NMP
 !dbg20120125:
-if(sw_debug) print *,'dbg20120125! sub-find_neighbor_grid:', mp_t0(ihem,1:2),phi_t0(ihem)*rtd, mlon_rad(mp_t0(ihem,1:2))*rtd
+if(sw_debug) print *,'dbg20120125! sub-find_neighbor_grid:', mp_t0(ihem,1:2),phi_t0(ihem)*rtd
 !STOP
 
 !find  lp0_t0:NH
@@ -160,7 +160,6 @@ IF (ihem==1) THEN
 
 END IF !(ihem==1) THEN
 
-if(sw_debug) print *,'sub-Fi: mlon', mlon_rad(mp_t0(ihem,1))*rtd, phi_t0(ihem)*rtd, mlon_rad(mp_t0(ihem,2))*rtd, mp_t0(ihem,1:2)
 if(sw_debug) print *,'sub-Fi: mlat',plasma_grid_GL( JMIN_IN(lp_t0(ihem,1)),lp_t0(ihem,1) )*rtd, theta_t0(ihem)*rtd, plasma_grid_GL( JMIN_IN(lp_t0(ihem,2)),lp_t0(ihem,2) )*rtd
 
 END DO which_hemisphere!:  DO ihem=1,ihem_max
@@ -175,8 +174,8 @@ END DO which_hemisphere!:  DO ihem=1,ihem_max
 &, r0_apex &
 &,  mp_t0 ,    lp_t0 )
       USE module_precision
-      USE module_physical_constants,ONLY: rtd,earth_radius
-      USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,dlonm90km,plasma_grid_Z,minTheta,maxTheta,midpnt
+      USE module_physical_constants,ONLY: rtd,earth_radius,pi
+      USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,dlonm90km,plasma_grid_Z,minTheta,maxTheta,midpnt
       USE module_IPE_dimension,ONLY: NMP,NLP
       USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,HaloSize
      IMPLICIT NONE
@@ -221,19 +220,19 @@ which_hemisphere: DO ihem=1,1  !ihem_max
     if(mpp > NMP) mpp= mpp-NMP
     mpm=mp-mpx
     if(mpm < 1) mpm= NMP+mpm
-    IF ( mlon_rad(mpp)<=phi_t0(ihem) .AND. phi_t0(ihem)<mlon_rad(mpp+1) ) THEN
+    IF(REAL((mpp-1),real_prec)*dlonm90km*pi/180.0<=phi_t0(ihem).AND.phi_t0(ihem)<REAL((mpp),real_prec)*dlonm90km*pi/180.0) THEN
       mp_t0(ihem,1) =mpp
       mp_t0(ihem,2) =mpp+1
       EXIT mpx_loop
     END IF
-    IF ( mpm>1.and.mlon_rad(mpm)<=phi_t0(ihem) .AND. phi_t0(ihem)<mlon_rad(mpm-1) ) THEN
+    IF(mpm>1.and.REAL((mpm-1),real_prec)*dlonm90km*pi/180.0<=phi_t0(ihem).AND.phi_t0(ihem)<REAL((mpm-2),real_prec)*dlonm90km*pi/180.0) THEN
       mp_t0(ihem,1) =mpm-1
       mp_t0(ihem,2) =mpm
       EXIT mpx_loop
     END IF
   END DO mpx_loop !: DO mpx=0,NMP
 !dbg20120125:
-if(sw_debug) print *,'dbg20120125! sub-find_neighbor_grid_R:', mp_t0(ihem,1:2),phi_t0(ihem)*rtd, mlon_rad(mp_t0(ihem,1:2))*rtd
+if(sw_debug) print *,'dbg20120125! sub-find_neighbor_grid_R:', mp_t0(ihem,1:2),phi_t0(ihem)*rtd
 !STOP
 
 !find  lp0_t0:NH
@@ -308,7 +307,6 @@ midpoint2 = midpnt(lp2)
 if(sw_debug) print *,lp1,midpoint1,lp2,midpoint2
 if(sw_debug) print *,'sub=FiR: check R',(earth_radius+plasma_grid_Z(midpoint1,lp1)),(earth_radius+Z_t0),(earth_radius+plasma_grid_Z(midpoint2,lp2))
 
-if(sw_debug) print *,'sub-FiR: mlon',mlon_rad(mp_t0(ihem,1))*rtd, phi_t0(ihem)*rtd, mlon_rad(mp_t0(ihem,2))*rtd, mp_t0(ihem,1:2)
 if(sw_debug) print *,'sub-FiR: mlat',(90.-plasma_grid_GL( JMIN_IN(lp_t0(ihem,1)),lp_t0(ihem,1) )*rtd), (90.-theta_t0(ihem)*rtd),(90.- plasma_grid_GL( JMIN_IN(lp_t0(ihem,2)),lp_t0(ihem,2) )*rtd)
 
 
