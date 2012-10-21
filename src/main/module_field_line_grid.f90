@@ -67,9 +67,8 @@
 !SMS$DISTRIBUTE(dh,3) BEGIN
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: hrate_cgs_save(:,:,:)!.. each component of the Neutral heating rate (eV/cm^3/s) DIM(7,MaxFluxTube,NMP)
 !SMS$DISTRIBUTE END
-!SMS$DISTRIBUTE(dh,,1) BEGIN
+!JFM mlon_rad is not distributed becasue it is dimensioned NMP+1
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: mlon_rad(:)          !mag longitude in [rad]
-!SMS$DISTRIBUTE END
 
       REAL(KIND=real_prec),PARAMETER  ,PUBLIC        :: dlonm90km = 4.5 ![deg]
 !      REAL(KIND=real_prec), ALLOCATABLE, PUBLIC ::  GCOLAT(:,:)    !.. geographic co-latitude [rad]

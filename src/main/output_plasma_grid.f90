@@ -37,7 +37,7 @@ IMPLICIT NONE
     WRITE(UNIT=lun) NPTS2D
     WRITE(UNIT=lun) JMIN_IN (1:NLP)
     WRITE(UNIT=lun) JMAX_IS (1:NLP)
-    WRITE(UNIT=lun) mlon_rad(1:NMP) !rad
+    WRITE(UNIT=lun) mlon_rad(1:NMP+1) !rad
     WRITE(UNIT=lun) (plasma_grid_Z (JMIN_IN(lp):JMAX_IS(lp),lp),lp=1,NLP)  !meter
     WRITE(UNIT=lun) (plasma_grid_GL(JMIN_IN(lp):JMAX_IS(lp),lp),lp=1,NLP)  !rad
 !SMS$SERIAL END

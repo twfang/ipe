@@ -117,11 +117,6 @@ endif !(mp==1) then
        END DO apex_latitude_height_loop   !: DO lp = 1,NLP
      END DO apex_longitude_loop         !: DO mp = 1,NMP 
 
-     mlon_rad(:) = zero
-     DO mp = 1,NMP
-       mlon_rad(mp) = REAL( (mp-1),real_prec ) * dlonm90km *pi/180.00
-     END DO
-
 !dbg20120313
 !     DO mp = 1,NMP 
 !       DO i = 1,NPTS2D 
@@ -130,6 +125,11 @@ endif !(mp==1) then
 !     END DO
 
 !SMS$PARALLEL END
+
+     mlon_rad(:) = zero
+     DO mp = 1,NMP+1
+       mlon_rad(mp) = REAL( (mp-1),real_prec ) * dlonm90km *pi/180.00
+     END DO
 
         END SUBROUTINE init_plasma_grid
       END MODULE module_init_plasma_grid

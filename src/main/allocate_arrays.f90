@@ -58,14 +58,14 @@
           END IF
         END IF !( sw_neutral_heating_flip==1 )
 
-        ALLOCATE ( Be3     (2,NLP,NMP) &
-     &,            VEXBup  (  NLP,NMP) &
-     &,            Pvalue  (  NLP    ) &
-     &,            JMIN_IN (  NLP    ) &
-     &,            JMAX_IS (  NLP    ) &
-     &,            midpnt  (  NLP    ) &
-     &,            mlon_rad(      NMP) &
-     &,            STAT=stat_alloc     )
+        ALLOCATE ( Be3     (2,NLP,NMP  ) &
+     &,            VEXBup  (  NLP,NMP  ) &
+     &,            Pvalue  (  NLP      ) &
+     &,            JMIN_IN (  NLP      ) &
+     &,            JMAX_IS (  NLP      ) &
+     &,            midpnt  (  NLP      ) &
+     &,            mlon_rad(      NMP+1) &
+     &,            STAT=stat_alloc       )
  
       IF ( stat_alloc==0 ) THEN
         print *,'ALLOCATion SUCCESSFUL!!!'
