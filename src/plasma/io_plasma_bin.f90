@@ -18,7 +18,7 @@
       USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_3d,JMIN_ING,JMAX_ISG,VEXBup
       USE module_IPE_dimension,ONLY: NMP,NLP,NPTS2D,ISPEC,ISPEV,IPDIM,ISPET,ISTOT
       USE module_input_parameters,ONLY:sw_debug,record_number_plasma_start &
-&,sw_record_number,stop_time,start_time,duration
+&,sw_record_number,stop_time,start_time,duration,mpstop
       USE module_physical_constants,ONLY:zero
       IMPLICIT NONE
 !------------------------
@@ -56,7 +56,7 @@ record_number_plasma = record_number_plasma+1
 
 j_loop1: DO jth=1,ISTOT !=(ISPEC+3+ISPEV)
 
-mp_loop1:do mp=1,NMP
+mp_loop1:do mp=1,mpstop
  lp_loop1:do lp=1,nlp
 !  i_loop:do i=
 IN=JMIN_IN(lp)
@@ -87,7 +87,7 @@ LUN = LUN_PLASMA1(jth-1+lun_min1)
 if(sw_debug) print *,'jth=',jth,' LUN=',LUN
 
 !SMS$SERIAL(<dumm,IN>:default=ignore) BEGIN
-      WRITE (UNIT=lun) dumm
+      WRITE (UNIT=lun) (dumm(:,mp),mp=1,mpstop)
 !SMS$SERIAL END
 if(sw_debug) print *,'!dbg! output dummy finished'
 
@@ -97,7 +97,7 @@ END DO j_loop1!jth
 LUN = LUN_PLASMA1(lun_max1)
 !ExB
 !SMS$SERIAL(<VEXBup,IN>:default=ignore) BEGIN
-      WRITE (UNIT=LUN) VEXBup
+      WRITE (UNIT=LUN) (VEXBup(:,mp),mp=1,mpstop)
 !t if(sw_debug) print *,'!dbg! output VEXB finished'
 
 !UT
