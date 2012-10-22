@@ -93,6 +93,7 @@ which_hemisphere: DO ihem=1,1  !ihem_max
 !!!dbg20120125:  mlon_deg = phi_t0(ihem)*rtd
 !!!dbg20120125:  mp_t0(ihem,1) = INT( (mlon_deg/dlonm90km) , int_prec )+1
 !!!dbg20120125:  mp_t0(ihem,2) = mp_t0(ihem,1)+1
+!Need an exchange of the variables that use mp_t0
   mpx_loop: DO mpx=0,NMP
     if(mpx+1 > HaloSize) then
       print*,'mpx+1 > HaloSize in find_neighbor_grid_R',mpx,HaloSize,mp
@@ -129,7 +130,8 @@ IF (ihem==1) THEN
     print *,'sub-Fi: mp',mp,' lp',lp,'needs special pole interpolation'
     RETURN
   END IF! ( plasma_grid_3d(IN,lp)%GL <= theta_t0(ihem) ) THEN 
-
+!SMS$EXCHANGE(plasma_grid_GL)
+!Need to exchange the variables that use lp_t0
   lpx_loop: DO lpx=0,NLP-1  !nearest point-->EQ
     IF(lpx+1 > HaloSize) THEN
       print*,'lpx+1 > HaloSize in find_neighbor_grid_R',lpx,HaloSize,lp
@@ -211,6 +213,7 @@ which_hemisphere: DO ihem=1,1  !ihem_max
 !!!dbg20120125:  mlon_deg = phi_t0(ihem)*rtd
 !!!dbg20120125:  mp_t0(ihem,1) = INT( (mlon_deg/dlonm90km) , int_prec )+1
 !!!dbg20120125:  mp_t0(ihem,2) = mp_t0(ihem,1)+1
+!Need an exchange of the variables that use mp_t0
   mpx_loop: DO mpx=0,NMP
     if(mpx+1 > HaloSize) then
       print*,'mpx+1 > HaloSize in find_neighbor_grid_R',mpx,HaloSize,mp
@@ -271,6 +274,8 @@ z_t0 = r0_apex - earth_radius
 !d l=130
 !d print *,JMIN_IN(l),JMAX_IS(l), midpnt(l),z_t0
 
+!SMS$EXCHANGE(plasma_grid_Z)
+!Need and exchange of the variables that use lp_t0
 lpx_loop: DO lpx=0,NLP-1  !nearest point-->EQ
   IF(lpx+1 > HaloSize) THEN
     print*,'Searching for inner,outer flux tube: lpx+1 > HaloSize',lpx,HaloSize,lp !JFM This failed for HaloSize=4

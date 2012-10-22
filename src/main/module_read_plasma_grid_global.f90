@@ -120,7 +120,7 @@
       DO lp=1,NLP  !longest -->shortest flux tube
         midpnt(lp) = JMIN_IN(lp) + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
       END DO
-
+!SMS$EXCHANGE(JMIN_IN,JMAX_IS,midpnt)
 ! array initialization
       Be3            = zero
       plasma_grid_3d = zero

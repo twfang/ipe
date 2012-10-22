@@ -8,7 +8,7 @@
         USE module_precision
         USE module_IPE_dimension,ONLY: NMP,NLP,ISTOT
         USE module_physical_constants,ONLY: earth_radius, pi, G0,zero
-        USE module_input_parameters,ONLY: sw_debug,sw_grid  
+        USE module_input_parameters,ONLY: sw_debug,sw_grid,parallelBuild
 !dbg, fac_BM
         USE module_FIELD_LINE_GRID_MKS,ONLY: &
 &  Pvalue &
@@ -105,8 +105,13 @@ END IF !( sw_debug )  then
 !reminder:
 !(1) neutral wind should be calculated using sinI from flip_grid: "SINDIP"
 ELSE IF ( sw_grid==1 ) THEN  !FLIP
-   print *,'calling get_FLIP_grid',mp,lp
-   CALL get_flip_grid (mp,lp)
+  if(parallelBuild) then
+    print*,'sw_grid=1 does not work for a parallel run'
+    print*,'Stopping in module_init_plasma_grid'
+    STOP
+  endif
+  print *,'calling get_FLIP_grid',mp,lp
+  CALL get_flip_grid (mp,lp)
 END IF !( sw_grid==0 ) THEN  !APEX
 
 !debug20110314
