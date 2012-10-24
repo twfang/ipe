@@ -21,6 +21,7 @@
       INTEGER (KIND=int_prec), PUBLIC   :: stop_time   !=60 !UT[sec]
       INTEGER (KIND=int_prec), PUBLIC   :: time_step   !=60 ![sec]
       INTEGER (KIND=int_prec), PUBLIC   :: nprocs=1    !Number of processors
+      INTEGER (KIND=int_prec), PUBLIC   :: mype=0      !Processor number
       INTEGER (KIND=int_prec), PUBLIC   :: HaloSize=99 !Halo size (big number=NOP for serial)
 
       REAL (KIND=real_prec), PUBLIC :: F107D   !.. Daily F10.7
@@ -216,7 +217,8 @@
         READ(LUN_nmlt,NML=IPEDIMS  ,ERR=222,IOSTAT=IOST_RD,END=111)
 !SMS$IGNORE END
 
-!SMS$CREATE_DECOMP(dh,<NLP,NMP>,<5,5>)
+!SMS$INSERT HaloSize=5
+!SMS$CREATE_DECOMP(dh,<NLP,NMP>,<HaloSize,HaloSize>)
 
 !SMS$SERIAL BEGIN
         READ(LUN_nmlt,NML=NMIPE    ,ERR=222,IOSTAT=IOST_RD,END=111)
@@ -264,6 +266,7 @@ WRITE(*,*)" ADDRESS: 325 Broadway, Boulder, CO 80305"
 WRITE(*,*)"                                            "
 
 !SMS$insert call NNT_NPROCS(nprocs)
+!SMS$insert call NNT_ME    (mype  )
 print *,'finished reading namelist:',filename
 print *,' '
 print"(' NLP:                 ',I6)",NLP

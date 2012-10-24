@@ -24,7 +24,7 @@
 !------------------------
       INTEGER (KIND=int_prec ), INTENT(IN) :: switch !2:read; 1:write
       INTEGER (KIND=int_prec ), INTENT(IN) :: utime !universal time [sec]
-!SMS$DISTRIBUTE(dh,NMP) BEGIN
+!SMS$DISTRIBUTE(dh,NLP,NMP) BEGIN
       REAL    (KIND=real_prec) :: dumm(NPTS2D,NMP)
 !SMS$DISTRIBUTE END
       INTEGER (KIND=int_prec ) :: stat_alloc

@@ -11,7 +11,7 @@
         USE module_IPE_dimension,ONLY: NMP,NLP,ISTOT
         USE module_IPE_dimension,ONLY: NPTS2D,NMP,NLP
         USE module_physical_constants,ONLY: earth_radius,pi,zero
-        USE module_input_parameters,ONLY:read_input_parameters,sw_debug,sw_neutral_heating_flip
+        USE module_input_parameters,ONLY:read_input_parameters,sw_debug,sw_neutral_heating_flip,nprocs,mype
         USE module_IO,ONLY: filename,LUN_pgrid
         USE module_FIELD_LINE_GRID_MKS,ONLY: &
 &  JMIN_IN_all,JMAX_IS_all &
@@ -47,7 +47,7 @@
 !... read in parameters
       INTEGER(KIND=int_prec) lp,mp,stat_alloc
 
-!SMS$DISTRIBUTE(dh,NMP) BEGIN
+!SMS$DISTRIBUTE(dh,NLP,NMP) BEGIN
       REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  dum0    !.. distance from the center of the Earth[meter]
       REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  dum1    !.. geographic co-latitude [rad]
       REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  dum2    !.. geographic longitude [rad]
@@ -59,11 +59,9 @@
       REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP) ::  dum4    !.. Eq(3.8) Richmond 1995
       REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP) ::  dum5    !.. Eq(3.9) Richmond 1995
       REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP) ::  dum6    !.. Eq(3.10) Richmond 1995
-!SMS$DISTRIBUTE END
 !dbg20110927      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP) ::  E1_all    !.. Eq(3.11) Richmond 1995
 !dbg20110927      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP) ::  E2_all    !.. Eq(3.12) Richmond 1995
 !JFM  REAL(KIND=real_prec), DIMENSION(2,NMP,NLP) ::  Be3_all         ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]
-!SMS$DISTRIBUTE(dh,NLP,NMP) BEGIN
       REAL(KIND=real_prec), DIMENSION(NMP,NLP) ::  Be3_all1,Be3_all2 ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]
 !SMS$DISTRIBUTE END
 
@@ -120,7 +118,9 @@
       DO lp=1,NLP  !longest -->shortest flux tube
         midpnt(lp) = JMIN_IN(lp) + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
       END DO
+
 !SMS$EXCHANGE(JMIN_IN,JMAX_IS,midpnt)
+
 ! array initialization
       Be3            = zero
       plasma_grid_3d = zero
@@ -161,6 +161,7 @@ do lp=1,NLP
 enddo
       print *,"reading SL_meter etc completed"
 !SMS$SERIAL END
+
 !JFM dum4,dum5,dum6 are treated as OUT variables to workaround an SMS bug
 !SMS$SERIAL(<JMIN_IN,JMAX_IS,JMIN_ING,JMAX_ISG,IN>,<apexD,dum4,dum5,dum6,OUT> : default=ignore) BEGIN
       READ (UNIT=LUN_pgrid, FMT=*) dum4, dum5, dum6      !Apex_D1_2d
@@ -180,6 +181,7 @@ do lp=1,NLP
 enddo
       print *,"reading D1-3 etc completed"
 !SMS$SERIAL END
+
 !JFM dum4,dum5 are OUT variables to workaround an SMS bug
 !SMS$SERIAL(<JMIN_IN,JMAX_IS,JMIN_ING,JMAX_ISG,IN>,<apexE,dum4,dum5,OUT> : default=ignore) BEGIN
       READ (UNIT=LUN_pgrid, FMT=*) dum4, dum5          !Apex_E1_2d
@@ -195,6 +197,7 @@ do lp=1,NLP
 enddo
       print *,"reading E1/2 etc completed"
 !SMS$SERIAL END
+
 !JFM Be3_all1 and Be3_all2 are OUT variables to workaround an SMS bug
 !SMS$SERIAL(<Be3,Be3_all1,Be3_all2,OUT> : default=ignore) BEGIN
 !JFM  READ (UNIT=LUN_pgrid, FMT=*) Be3_all(1,1:NMP,1:NLP),Be3_all(2,1:NMP,1:NLP) !Apex_BE3_N
