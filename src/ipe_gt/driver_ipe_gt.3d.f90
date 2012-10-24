@@ -1227,15 +1227,15 @@ CALL INTERFACE__FIXED_GRID_to_THERMO ( &
 if ((debugIonoFixedtoPressure) .and. (idump_gt == 1)) then
 
       ! Uncomment this when I get the height part working **********************
-      write(unitCheckPressureInterp,*) Oplus_density_from_IPE
-      write(unitCheckPressureInterp + 1,*) Hplus_density_from_IPE
-      write(unitCheckPressureInterp + 2,*) Nplus_density_from_IPE
-      write(unitCheckPressureInterp + 3,*) NOplus_density_from_IPE
-      write(unitCheckPressureInterp + 4,*) O2plus_density_from_IPE
-      write(unitCheckPressureInterp + 5,*) N2plus_density_from_IPE
-      write(unitCheckPressureInterp + 6,*) Ne_density_from_IPE
-      write(unitCheckPressureInterp + 7,*) Te_from_IPE
-      write(unitCheckPressureInterp + 8,*) Ti_from_IPE
+      write(unitCheckPressureInterp,*) Oplus_density_for_GT
+      write(unitCheckPressureInterp + 1,*) Hplus_density_for_GT
+      write(unitCheckPressureInterp + 2,*) Nplus_density_for_GT
+      write(unitCheckPressureInterp + 3,*) NOplus_density_for_GT
+      write(unitCheckPressureInterp + 4,*) O2plus_density_for_GT
+      write(unitCheckPressureInterp + 5,*) N2plus_density_for_GT
+      write(unitCheckPressureInterp + 6,*) Ne_density_for_GT
+      write(unitCheckPressureInterp + 7,*) Te_for_GT
+      write(unitCheckPressureInterp + 8,*) Ti_Oplus_for_GT
 
       !--------------------------------------------------------------------
       ! Calculate and write out the average height for each pressure level
