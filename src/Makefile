@@ -64,8 +64,7 @@ SRC1S	=\
 	${DR1}/hwm93.f90 \
 	${DR1}/thermosphere_1d_v2.f90 
 SRC1P	=\
-	${DR1}/module_neutral.f90 \
-	${DR1}/module_heating_rate.f90
+	${DR1}/module_neutral.f90
 # DR2: FLIP
 SRC2	=\
 	${DR2}/CTIPE-int.f \
@@ -93,6 +92,7 @@ SRC3	=\
 	${DR3}/get_pvalue_dipole.f90 \
 	${DR3}/get_sza.f90 \
 	${DR3}/get_sinim.f90 \
+	${DR3}/module_heating_rate.f90 \
 	${DR3}/flux_tube_solver.f90 \
 	${DR3}/perpendicular_transport.f90 \
 	${DR3}/stepback_mag.f90 \

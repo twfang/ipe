@@ -17,7 +17,7 @@
       USE module_FIELD_LINE_GRID_MKS,ONLY: &
      & plasma_grid_3d,plasma_3d,r_meter2D,ON_m3,HN_m3,N2N_m3,O2N_m3&
      &,apexD,apexE,VEXBup,MaxFluxTube,HE_m3,N4S_m3,TN_k,TINF_K,Un_ms1 &
-     &,Be3, Pvalue, JMIN_IN, JMAX_IS,hrate_cgs_save,midpnt &
+     &,Be3, Pvalue, JMIN_IN, JMAX_IS,hrate_mks3d,midpnt &
      &,mlon_rad, plasma_grid_Z, plasma_grid_GL
   
       USE module_input_parameters,ONLY: sw_neutral_heating_flip
@@ -49,11 +49,11 @@
      &,           Un_ms1(3:3,MaxFluxTube,NLP,NMP) )
 
         IF ( sw_neutral_heating_flip==1 ) THEN
-          ALLOCATE(hrate_cgs_save(7,MaxFluxTube,NLP),STAT=stat_alloc)
+          ALLOCATE(hrate_mks3d(7,MaxFluxTube,NLP,NMP),STAT=stat_alloc)
           IF ( stat_alloc==0 ) THEN
-            print *,' hrate_cgs_save ALLOCATION SUCCESSFUL!!!'
+            print *,' hrate_mks3d ALLOCATION SUCCESSFUL!!!'
           ELSE !stat_alloc/=0
-            print *,"!STOP hrate_cgs_save ALLOCATION FAILD!:NHEAT",stat_alloc
+            print *,"!STOP hrate_mks3d ALLOCATION FAILD!:NHEAT",stat_alloc
             STOP
           END IF
         END IF !( sw_neutral_heating_flip==1 )
@@ -110,12 +110,12 @@ print *,'DE-ALLOCATing ARRAYS'
 
 !---neutral heating
       IF ( sw_neutral_heating_flip==1 ) THEN
-         DEALLOCATE ( hrate_cgs_save &
+         DEALLOCATE ( hrate_mks3d &
               &,  STAT=stat_alloc         )
          IF ( stat_alloc==0 ) THEN
             print *,'DE-ALLOCATion SUCCESSFUL!!! NHEAT'
          ELSE !/=0
-            print *, ALLOCATED( hrate_cgs_save )
+            print *, ALLOCATED( hrate_mks3d )
             print *,switch,"!STOP! DEALLOCATION FAILD!: NHEAT",stat_alloc
             STOP
          END IF

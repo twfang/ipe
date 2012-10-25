@@ -23,16 +23,23 @@ C..... The input parameters JMIN, EHT were also added
      >                    O1D,O1S,  !.. Input: O(1D), O(1S)
      >                        EHT,  !.. Input: Electron heating rate
      >                      NHEAT,  !.. OUTPUT: Total neutral heating rate
-     >                     O2DISF)  !.. OUTPUT: O2 dissociation frequency
+     >                     O2DISF,  !.. OUTPUT: O2 dissociation frequency
+     > hrate ) !.. OUTPUT: !nm20121020
+!     >                   hrate(2),  !.. 
+!     >                   hrate(3),  !.. 
+!     >                   hrate(4),  !.. 
+!     >                   hrate(5),  !.. 
+!     >                   hrate(6),  !.. 
+!     >                   hrate(7))  !.. 
       USE PRODUCTION    !.. EUV, photoelectron, and auroral production, PHION
 ! save each component of heating rate for output
 !JFM  USE module_IPE_dimension,ONLY: NLP
 !JFM  USE module_FIELD_LINE_GRID_MKS,ONLY: mp_save,lp_save,JMIN_IN
 !JFM >,                         JMAX_IS,MaxFluxTube,hrate_cgs_save
-      USE module_input_parameters,ONLY: sw_neutral_heating_flip
-     >,start_time,ip_freq_output,parallelBuild
+!nm20121020      USE module_input_parameters,ONLY: sw_neutral_heating_flip
+!nm20121020     >,start_time,ip_freq_output,parallelBuild
 !JFM  USE module_heating_rate,ONLY: get_neutral_heating_rate
-      USE module_precision
+!nm20121020      USE module_precision
 !JFM  USE module_PLASMA,ONLY: utime_save
       IMPLICIT NONE
       INTEGER IJ,K          !.. loop control variables
@@ -64,10 +71,10 @@ C..... The input parameters JMIN, EHT were also added
       DOUBLE PRECISION HN2D             !.. Electron heating from N2D
       
 !nm20110404: save each component of the heating rate for output
-      INTEGER :: j2d,jth,lun,lp  !J converted to the 2Dsystem in a meridional plain.
+!nm20121020      INTEGER :: j2d,jth,lun,lp  !J converted to the 2Dsystem in a meridional plain.
 
 !JFM  REAL(KIND=real_prec), DIMENSION(7,MaxFluxTube,NLP) :: hrate_mks !.. each component of the Neutral heating rate (eV/kg/s) 
-      REAL(KIND=real_prec) :: min_hrate,max_hrate
+!nm20121020      REAL(KIND=real_prec) :: min_hrate,max_hrate
 
       PO1DSR=OTHPR1(3,IJ)      !.. Schumann-Runge production of O(1D)
       PEO1D=PEXCIT(1,1,IJ)     !.. Photoelectron production of O(1D)

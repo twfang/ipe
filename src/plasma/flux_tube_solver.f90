@@ -15,12 +15,14 @@
       USE module_IPE_dimension,ONLY: ISPEC,ISPEV,IPDIM
       USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,Pvalue,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,plasma_3d,ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k,un_ms1,mp_save,lp_save
       USE module_input_parameters,ONLY: time_step,F107D,F107AV,DTMIN_flip  &
-     &, sw_INNO,FPAS_flip,HPEQ_flip,HEPRAT_flip,COLFAC_flip,sw_IHEPLS,sw_INPLS,sw_debug,iout, start_time, sw_wind_flip, sw_depleted_flip, start_time_depleted, sw_output_fort167
+     &, sw_INNO,FPAS_flip,HPEQ_flip,HEPRAT_flip,COLFAC_flip,sw_IHEPLS,sw_INPLS,sw_debug,iout, start_time, sw_wind_flip, sw_depleted_flip, start_time_depleted, sw_output_fort167 &
+     &, sw_neutral_heating_flip, ip_freq_output, parallelBuild
       USE module_PLASMA,ONLY: plasma_1d !dbg20120501
 !dbg20110927      USE module_heating_rate,ONLY: NHEAT_cgs
       USE module_physical_constants,ONLY: pi,zero
       USE module_IO,ONLY: PRUNIT,LUN_FLIP1,LUN_FLIP2,LUN_FLIP3,LUN_FLIP4
       USE module_unit_conversion,ONLY: M_TO_KM
+      USE module_heating_rate,ONLY: get_neutral_heating_rate
 
       IMPLICIT NONE
       include "gptl.inc"
@@ -56,7 +58,11 @@
       !.. TE_TI(3,J) = Te, TE_TIX(2,J) = Ti = TE_TIX(2,J)
      & ,TE_TIX(3,IPDIM) &
      & ,XIONNX(ISPEC,IPDIM),XIONVX(ISPEC,IPDIM) &
-     & ,NHEAT(IPDIM)   !.. Neutral heating rate [eV/cm^3/s]
+     & ,NHEAT(IPDIM) &  !.. Neutral heating rate [eV/cm^3/s]
+     & ,hrate_cgs(22,IPDIM)   !.. heating rates [eV/cm^3/s]
+
+!nm20121020       REAL(KIND=real_prec), DIMENSION(7,MaxFluxTube,NLP,NMP) :: hrate_mks !.. each component of the Neutral heating rate (eV/kg/s) 
+!nm20121020      REAL(KIND=real_prec) :: min_hrate,max_hrate
 
       INTEGER EFLAG(11,11)    !.. error flags, check =0 on return from FLIP
       INTEGER :: PRUNIT_dum !.. Unit number to print results
@@ -295,6 +301,7 @@ END IF
            print *,'CTIPe calculates NO'
          END IF
          NHEAT(             ipts)=zero !dbg20110927
+         hrate_cgs(1:22,    ipts)=zero !nm20121020
       END DO !ipts=
       ret = gptlstop ('flux_tube_solver_loop1')
 
@@ -337,8 +344,9 @@ END IF
      &     XIONNX,XIONVX, & !.. IN/OUT: 2D array, Storage for ion densities and velocities
      &             NHEAT, & !.. OUT: array, Neutral heating rate (eV/cm^3/s) 
      &             EFLAG, & !.. OUT: 2D array, Error Flags
-     &           mp_save, &
-     &           lp_save)
+     &                mp, &
+     &                lp, &
+     &         hrate_cgs  ) !.. heating rates [eV/cm^3/s] !nm20121020
       ret = gptlstop  ('CTIPINT')
 
 !dbg20110802: 3D multiple-lp run
@@ -377,6 +385,57 @@ END IF
 !dbg20110927         plasma_3d(mp,lp)%heating_rate_i_cgs(1,ipts)=EHTX(1   ,ipts)
 !dbg20110923         IF ( INNO<0 ) &  !when flip calculates NO
 !dbg20110923        &  plasma_3d(mp,lp)%NO_m3(      ipts) =   NNOX(        ipts)
+
+!nm20121020
+!nm20110404: save each component of heating rate for output
+         IF ( sw_neutral_heating_flip==1 .AND. &
+            &  MOD( (utime-start_time),ip_freq_output)==0) THEN
+            if(parallelBuild) then
+               print*,'sw_neutral_heating_flip=1 does not work in parallel'
+               print*,'Stopping in Neut_heating'
+               stop
+            endif
+
+!nm20121020            DO ij=1,MaxFluxTube
+!nm20121020            j2d=ij+JMIN_IN(lp)-1
+!nm20121020               DO jth=1,7
+!nm20121020                  hrate_cgs_save(jth,ij)=hrate_cgs(jth,ij) !!(1) PGR neu_neu
+!      hrate_cgs_save(2,j2d,mp_save)=hrate(2) !!PGR O1D
+!      hrate_cgs_save(3,j2d,mp_save)=hrate(3) !!PGR ion_neu
+!      hrate_cgs_save(4,j2d,mp_save)=hrate(4) !!PGR elec_ion
+!      hrate_cgs_save(5,j2d,mp_save)=hrate(5) !!PGR SRO2dis
+!      hrate_cgs_save(6,j2d,mp_save)=hrate(6) !!PGR UVN2dis
+!      hrate_cgs_save(7,j2d,mp_save)=hrate(7) !!PGR 3bod CHECK dimension
+!nm20121020               END DO !jth
+!nm20121020            END DO !ij
+
+
+!nm20121020            IF ( lp==NLP ) THEN
+!20111118 output hrate_mks
+!nm20121020               IF ( mp==1 ) write(5000,*) utime
+               CALL get_neutral_heating_rate ( hrate_cgs , lp,mp )
+!nm20121020: need to move the output to io_plasma_bin!!!
+!nm20121020               DO jth=1,7
+!nm20121020                  lun=5000+jth  
+!nm20121020                  min_hrate =  huge(min_hrate)
+!nm20121020                  max_hrate = -huge(max_hrate)
+!nm20121020                  do lp0=1,NLP
+!nm20121020                     min_hrate=min(min_hrate,MINVAL( &
+!nm20121020                          & hrate_mks(jth,1:MaxFluxTube,lp0,mp)))
+!nm20121020                     max_hrate=max(max_hrate,MAXVAL( &
+!nm20121020                          & hrate_mks(jth,1:MaxFluxTube,lp0,mp)))
+!nm20121020                  enddo
+!nm20121020                  print *,'hrate=',lun,jth,mp,lp,min_hrate,max_hrate
+!nm20121020                  write(lun,*) mp
+!nm20121020                  do lp0=1,NLP
+!nm20121020                     write(lun,*)hrate_mks(jth,1:MaxFluxTube,lp0,mp)
+!nm20121020                  enddo
+!nm20121020               END DO !jth=1,7
+!nm20121020            END IF !( lp_save==NLP ) THEN
+
+         END IF !( sw_neutral_heating_flip==1 ) THEN
+!nm20121020:
+
       END DO       !DO ipts=1,CTIPDIM
       ret = gptlstop  ('flux_tube_solver_loop2')
 !dbg20110927      NHEAT_cgs(IN:IS,lp,mp) =  NHEAT(        1:CTIPDIM) 
@@ -385,8 +444,8 @@ END IF
       PRUNIT_dum = PRUNIT
       CALL WRITE_EFLAG(PRUNIT_dum, &  !.. Unit number to print results
      &                      EFLAG, &  !.. Error flag array
-     &                    mp_save, &
-     &                    lp_save)
+     &                         mp, &
+     &                         lp )
       ret = gptlstop  ('WRITE_EFLAG')
 
 

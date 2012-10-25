@@ -320,7 +320,9 @@ C.... Written by P. Richards June-September 2010.
      >             NHEAT,  !.. OUT: array, Neutral heating rate (eV/cm^3/s) 
      >             EFLAG,  !.. OUT: 2D array, Error Flags
      &           mp_save, 
-     &           lp_save)
+     &           lp_save,
+     &         hrate_cgs ) !.. OUTPUT: (eV/cm^3/s) !nm20121020
+
       USE THERMOSPHERE       !.. ON HN N2N O2N HE TN UN EHT COLFAC
       USE MINORNEUT          !.. N4S N2D NNO N2P N2A O1D O1S
       USE FIELD_LINE_GRID    !.. FLDIM JMIN JMAX FLDIM Z BM GR SL GL SZA
@@ -331,7 +333,7 @@ C.... Written by P. Richards June-September 2010.
       USE module_input_parameters,ONLY: sw_TEI,sw_OHPLS
      &, sw_DEBUG_flip,sw_debug,sw_output_fort167
       USE module_IO,ONLY: LUN_FLIP1,LUN_FLIP2,LUN_FLIP3,LUN_FLIP4
-
+        USE module_physical_constants,ONLY: zero
       IMPLICIT NONE
       include "gptl.inc"
       INTEGER CTIPDIM         !.. CTIPe array dimension, must equal to FLDIM
@@ -375,6 +377,8 @@ C.... Written by P. Richards June-September 2010.
       DOUBLE PRECISION RTS(99)         !.. Reaction rates
       DOUBLE PRECISION EDEN(FLDIM)     !.. electron density
       DOUBLE PRECISION O2DISF(FLDIM)   !.. O2 dissociation frequency
+!nm20121020
+      DOUBLE PRECISION hrate_cgs(22,FLDIM)   !.. heating rates
 
       DATA M_TO_CM,M3_TO_CM3/1.0E+2,1.0E-6/    !.. Unit conversion factors
 !dbg20110120:      DATA DEBUG/1/  !.. turn on debug writes if DEBUG=1
@@ -445,6 +449,8 @@ C.... Written by P. Richards June-September 2010.
         N(4,J)=XIONN(3,J)
         NHEAT(J)=0.0
         O2DISF(J)=0.0
+!nm20121020
+        hrate_cgs(1:22,J)=zero
       ENDDO
       ret = gptlstop ('CTIPINT upload')
       !.. Set up initial temperature and density profiles.
@@ -669,7 +675,14 @@ c      ENDIF
      >       ,N2P(J),N2A(J),XIONN(8,J),XIONN(9,J),O1D(J),O1S(J)
      >       ,EHT(3,J)   !.. Input: Electron heating rate
      &       ,NHEAT(J)   !.. OUTPUT: Total neutral heating rate
-     &       ,O2DISF(J)) !.. OUTPUT: O2 dissociation frequency !PGR added index
+     &       ,O2DISF(J)  !.. OUTPUT: O2 dissociation frequency !PGR added index
+     &,hrate_cgs(1:22,J) ) !.. OUTPUT: !nm20121020
+!     &       ,hrate_cgs(2,J)  !..
+!     &       ,hrate_cgs(3,J)  !..
+!     &       ,hrate_cgs(4,J)  !..
+!     &       ,hrate_cgs(5,J)  !..
+!     &       ,hrate_cgs(6,J)  !..
+!     &       ,hrate_cgs(7,J) )!..
           ENDIF
         ENDDO
         ret = gptlstop ('CTIPINT get NHEAT')
