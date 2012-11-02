@@ -20,6 +20,7 @@
 &, r0_apex &
 &,mp_t0,lp_t0 )
       USE module_precision
+!     plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,plasma_3d are all IN arrays
       USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,ht90,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,plasma_3d
       USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,sw_ksi
       USE module_plasma,ONLY:plasma_1d !dbg20120501 n0_1d   !d, n0_2dbg
@@ -52,7 +53,7 @@
       REAL(KIND=real_prec) :: Qint(iR,IPDIM,2,2)  !1d:species; ; 4d:imp; 5d:ilp
 !---
 
-!SMS$EXCHANGE(plasma_grid_3d,plasma_grid_GL,plasma_3d)
+!SMS$EXCHANGE(plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,plasma_3d)
 
 !array initialization: may not be necessary because they are local parameters...
       Qint(:,:,:,:)=zero
