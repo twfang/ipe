@@ -53,8 +53,6 @@
       REAL(KIND=real_prec) :: Qint(iR,IPDIM,2,2)  !1d:species; ; 4d:imp; 5d:ilp
 !---
 
-!SMS$EXCHANGE(plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,plasma_3d)
-
 !array initialization: may not be necessary because they are local parameters...
       Qint(:,:,:,:)=zero
       n0(:,:)=zero

@@ -62,7 +62,7 @@ if(sw_debug) print *,'interpolate_flux_tube finished!'
 &,  mp_t0 ,    lp_t0 )
       USE module_precision
       USE module_physical_constants,ONLY: rtd
-      USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,dlonm90km
+      USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,dlonm90km,minTheta
       USE module_IPE_dimension,ONLY: NMP,NLP
       USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,HaloSize
      IMPLICIT NONE
@@ -93,7 +93,6 @@ which_hemisphere: DO ihem=1,1  !ihem_max
 !!!dbg20120125:  mlon_deg = phi_t0(ihem)*rtd
 !!!dbg20120125:  mp_t0(ihem,1) = INT( (mlon_deg/dlonm90km) , int_prec )+1
 !!!dbg20120125:  mp_t0(ihem,2) = mp_t0(ihem,1)+1
-!Need an exchange of the variables that use mp_t0
   mpx_loop: DO mpx=0,NMP
     if(mpx+1 > HaloSize) then
       print*,'mpx+1 > HaloSize in find_neighbor_grid_R',mpx,HaloSize,mp
@@ -124,15 +123,13 @@ if(sw_debug) print *,'dbg20120125! sub-find_neighbor_grid:', mp_t0(ihem,1:2),phi
 IF (ihem==1) THEN
 
 !check pole regions!
-  IF ( theta_t0(ihem) < plasma_grid_GL( JMIN_IN(1),1 ) ) THEN 
+  IF ( theta_t0(ihem) < minTheta ) THEN 
     lp_t0(ihem,1)=-999
     lp_t0(ihem,2)=1
     print *,'sub-Fi: mp',mp,' lp',lp,'needs special pole interpolation'
     RETURN
   END IF! ( plasma_grid_3d(IN,lp)%GL <= theta_t0(ihem) ) THEN 
 
-!SMS$EXCHANGE(plasma_grid_GL)
-!Need to exchange the variables that use lp_t0
   lpx_loop: DO lpx=0,NLP-1  !nearest point-->EQ
     IF(lpx+1 > HaloSize) THEN
       print*,'lpx+1 > HaloSize in find_neighbor_grid_R',lpx,HaloSize,lp
@@ -213,7 +210,6 @@ which_hemisphere: DO ihem=1,1  !ihem_max
 !!!dbg20120125:  mlon_deg = phi_t0(ihem)*rtd
 !!!dbg20120125:  mp_t0(ihem,1) = INT( (mlon_deg/dlonm90km) , int_prec )+1
 !!!dbg20120125:  mp_t0(ihem,2) = mp_t0(ihem,1)+1
-!Need an exchange of the variables that use mp_t0
   mpx_loop: DO mpx=0,NMP
     if(mpx+1 > HaloSize) then
       print*,'mpx+1 > HaloSize in find_neighbor_grid_R',mpx,HaloSize,mp
@@ -274,8 +270,6 @@ z_t0 = r0_apex - earth_radius
 !d l=130
 !d print *,JMIN_IN(l),JMAX_IS(l), midpnt(l),z_t0
 
-!SMS$EXCHANGE(plasma_grid_Z)
-!Need and exchange of the variables that use lp_t0
 lpx_loop: DO lpx=0,NLP-1  !nearest point-->EQ
   IF(lpx+1 > HaloSize) THEN
     print*,'Searching for inner,outer flux tube: lpx+1 > HaloSize',lpx,HaloSize,lp !JFM This failed for HaloSize=4

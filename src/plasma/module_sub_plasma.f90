@@ -15,7 +15,7 @@
       MODULE module_sub_PLASMA
       USE module_precision
       USE module_IPE_dimension,ONLY: ISPEC,ISPET,ISPEV,IPDIM,NLP,NMP,ISTOT
-      USE module_FIELD_LINE_GRID_MKS,ONLY: plasma_3d,VEXBup
+      USE module_FIELD_LINE_GRID_MKS,ONLY: plasma_3d,VEXBup,plasma_3d_old
       IMPLICIT NONE
       include "gptl.inc"
 
@@ -62,6 +62,8 @@ end if
 
       ret = gptlstart ('apex_lon_loop') !24772.857
 !SMS$PARALLEL(dh, lp, mp) BEGIN
+      plasma_3d_old = plasma_3d
+!SMS$EXCHANGE(plasma_grid_3d_old)
 !     apex_longitude_loop: DO mp = mpstrt,mpstop,mpstep !1,NMP
       apex_longitude_loop: DO mp = 1,mpstop
         mp_save=mp
@@ -93,7 +95,7 @@ if(sw_dbg_perp_trans.and.utime==start_time.and.lp==1)then
   DO j=1,NLP
     DO i=JMIN_IN(j),JMAX_IS(j)
       DO jth=1,ISTOT
-         plasma_3d(jth,i,lp,mp)=100.0
+!JFM     plasma_3d(jth,i,lp,mp)=100.0
 !dbg20120501      plasma_3d(mp,j)%N_m3( 1:ISPEC,i)=100.0
 !dbg20120501      plasma_3d(mp,j)%Te_k(         i)=100.0
 !dbg20120501      plasma_3d(mp,j)%Ti_k( 1:ISPET,i)=100.0

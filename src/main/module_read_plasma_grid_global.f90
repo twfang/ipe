@@ -132,7 +132,7 @@
       r_meter2D      = zero
 
 !JFM dum0,dum1,dum2,dum3 are treated as OUT variables to workaround an SMS bug
-!SMS$SERIAL(<JMIN_IN,JMAX_IS,JMIN_ING,JMAX_ISG,IN>,<r_meter2D,plasma_grid_3d,plasma_grid_GL,dum0,dum1,dum2,dum3,minTheta,maxTheta,OUT> : default=ignore) BEGIN
+!SMS$SERIAL(<JMIN_IN,JMAX_IS,JMIN_ING,JMAX_ISG,IN>,<r_meter2D,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,dum0,dum1,dum2,dum3,minTheta,maxTheta,OUT> : default=ignore) BEGIN
       READ (UNIT=LUN_pgrid, FMT=*) dum0, dum1, dum2, dum3 !gr_2d, gcol_2d, glon_2d, q_coordinate_2d
 do lp=1,NLP
   r_meter2D    (JMIN_IN(lp):JMAX_IS(lp),lp) = dum0(JMIN_ING(lp):JMAX_ISG(lp),1)                !r_meter

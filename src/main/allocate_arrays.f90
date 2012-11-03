@@ -18,7 +18,7 @@
      & plasma_grid_3d,plasma_3d,r_meter2D,ON_m3,HN_m3,N2N_m3,O2N_m3&
      &,apexD,apexE,VEXBup,MaxFluxTube,HE_m3,N4S_m3,TN_k,TINF_K,Un_ms1 &
      &,Be3, Pvalue, JMIN_IN, JMAX_IS,hrate_mks3d,midpnt &
-     &,mlon_rad, plasma_grid_Z, plasma_grid_GL
+     &,mlon_rad, plasma_grid_Z, plasma_grid_GL, plasma_3d_old
   
       USE module_input_parameters,ONLY: sw_neutral_heating_flip
       IMPLICIT NONE
@@ -33,6 +33,7 @@
      &,           plasma_grid_GL(      MaxFluxTube,NLP      ) &
      &,           r_meter2D     (      MaxFluxTube,NLP      ) &
      &,           plasma_3d     (ISTOT,MaxFluxTube,NLP,NMP  ) &
+     &,           plasma_3d_old (ISTOT,MaxFluxTube,NLP,NMP  ) &
      &,           apexD         (3:3  ,MaxFluxTube,NLP,NMP,3) &
      &,           apexE         (2    ,MaxFluxTube,NLP,NMP,3) )
 
@@ -84,20 +85,21 @@ print *,'DE-ALLOCATing ARRAYS'
       DEALLOCATE ( &
      &    plasma_grid_3d &
 !---
-     &,        apexD &
+     &,        apexD     &
 !dbg20110923     &,        apexE &
 !---
-     &,          Be3 &
-     &,       Pvalue &
-     &,      JMIN_IN &
-     &,      JMAX_IS &
+     &,          Be3     &
+     &,       Pvalue     &
+     &,      JMIN_IN     &
+     &,      JMAX_IS     &
 !---
-     &,      mlon_rad &
+     &,      mlon_rad    &
 !---plasma
-     &,  plasma_3d   &
+     &,  plasma_3d       &
+     &,  plasma_3d_old   &
 !dbg20120501     &,  plasma_3d4n &
-     &,  VEXBup      &
-     &,STAT=stat_alloc         )
+     &,  VEXBup          &
+     &,STAT=stat_alloc     )
  
       IF ( stat_alloc==0 ) THEN
         print *,'DE-ALLOCATion SUCCESSFUL!!!'

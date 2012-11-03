@@ -14,8 +14,7 @@
 !--------------------------------------------  
       MODULE module_PLASMA
       USE module_precision
-      USE module_IPE_dimension,ONLY: ISPEC,ISPET,ISPEV,IPDIM,NLP,ISTOT
-      USE module_FIELD_LINE_GRID_MKS,ONLY: plasma_3d,VEXBup
+      USE module_IPE_dimension,ONLY: IPDIM,ISTOT
       IMPLICIT NONE
       include "gptl.inc"
 ! --- PRIVATE ---
