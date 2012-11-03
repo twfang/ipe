@@ -63,7 +63,7 @@ end if
       ret = gptlstart ('apex_lon_loop') !24772.857
 !SMS$PARALLEL(dh, lp, mp) BEGIN
       plasma_3d_old = plasma_3d
-!SMS$EXCHANGE(plasma_grid_3d_old)
+!SMS$EXCHANGE(plasma_3d_old)
 !     apex_longitude_loop: DO mp = mpstrt,mpstop,mpstep !1,NMP
       apex_longitude_loop: DO mp = 1,mpstop
         mp_save=mp

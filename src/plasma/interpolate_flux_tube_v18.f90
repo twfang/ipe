@@ -20,8 +20,8 @@
 &, r0_apex &
 &,mp_t0,lp_t0 )
       USE module_precision
-!     plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,plasma_3d are all IN arrays
-      USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,ht90,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,plasma_3d
+!     plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,plasma_3d_old are all IN arrays
+      USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,ht90,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,plasma_3d_old
       USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,sw_ksi
       USE module_plasma,ONLY:plasma_1d !dbg20120501 n0_1d   !d, n0_2dbg
       USE module_IPE_dimension,ONLY: ISPEC,ISPET,IPDIM
@@ -193,14 +193,14 @@ jth_loop0:         DO jth=1,iT !=TSP+3
 
 IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop0
 !dbg20120501            IF(jth<=TSP) THEN
-               Qint(jth, ip1d,imp,ilp) = (factor2*(plasma_3d(jth,inorth,lp0,mp0) - plasma_3d(jth,isouth,lp0,mp0))) + plasma_3d(jth,isouth,lp0,mp0)
+               Qint(jth, ip1d,imp,ilp) = (factor2*(plasma_3d_old(jth,inorth,lp0,mp0) - plasma_3d_old(jth,isouth,lp0,mp0))) + plasma_3d_old(jth,isouth,lp0,mp0)
 
 !T TSP+1:TSP+3=iT
 !dbg20120501            ELSE IF(jth==TSP+1) THEN
-!dbg20120501               Qint(jth, ip1d,imp,ilp) = (factor2*(plasma_3d(mp0,lp0)%Te_k(i1d-1) - plasma_3d(mp0,lp0)%Te_k(i1d))) + plasma_3d(mp0,lp0)%Te_k(i1d)
+!dbg20120501               Qint(jth, ip1d,imp,ilp) = (factor2*(plasma_3d_old(mp0,lp0)%Te_k(i1d-1) - plasma_3d_old(mp0,lp0)%Te_k(i1d))) + plasma_3d_old(mp0,lp0)%Te_k(i1d)
 
 !dbg20120501            ELSE !Ti
-!dbg20120501               Qint(jth, ip1d,imp,ilp) = (factor2*(plasma_3d(mp0,lp0)%Ti_k( (jth-TSP-1),i1d-1) - plasma_3d(mp0,lp0)%Ti_k( (jth-TSP-1),i1d))) + plasma_3d(mp0,lp0)%Ti_k( (jth-TSP-1),i1d)
+!dbg20120501               Qint(jth, ip1d,imp,ilp) = (factor2*(plasma_3d_old(mp0,lp0)%Ti_k( (jth-TSP-1),i1d-1) - plasma_3d_old(mp0,lp0)%Ti_k( (jth-TSP-1),i1d))) + plasma_3d_old(mp0,lp0)%Ti_k( (jth-TSP-1),i1d)
 !dbg20120501            END IF
 
             if (&
@@ -212,8 +212,8 @@ IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop0
 
 
                WRITE(6,*)'sub-Intrp:!STOP! INVALID density',Qint(jth, ip1d,imp,ilp),factor2 &
-                    &,plasma_3d(jth,inorth,lp0,mp0)   & !dbg20120501
-                    &,plasma_3d(jth,isouth,lp0,mp0)   & !dbg20120501
+                    &,plasma_3d_old(jth,inorth,lp0,mp0)   & !dbg20120501
+                    &,plasma_3d_old(jth,isouth,lp0,mp0)   & !dbg20120501
                     &,jth, ip1d,imp,ilp,mp0,lp0,i1d,inorth,isouth
                STOP
             endif
@@ -247,14 +247,14 @@ endif
 
         jth_loop1: DO jth=1,iT
 IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop1
-          Qint(jth   ,ip1d,imp,ilp) = plasma_3d(jth,isouth,lp0,mp0)
+          Qint(jth   ,ip1d,imp,ilp) = plasma_3d_old(jth,isouth,lp0,mp0)
         END DO jth_loop1 !jth
          !N:        ni1_in(ip)=ni(IS_t0,mp0,1)
-!dbg20120501        Qint(1:TSP   ,ip1d,imp,ilp) = plasma_3d(mp0,lp0)%N_m3( 1:TSP,i1d)
+!dbg20120501        Qint(1:TSP   ,ip1d,imp,ilp) = plasma_3d_old(mp0,lp0)%N_m3( 1:TSP,i1d)
         !Te:
-!dbg20120501         Qint(TSP+1   ,ip1d,imp,ilp) = plasma_3d(mp0,lp0)%Te_k(         i1d)
+!dbg20120501         Qint(TSP+1   ,ip1d,imp,ilp) = plasma_3d_old(mp0,lp0)%Te_k(         i1d)
         !Ti:
-!dbg20120501         Qint(TSP+2:iT,ip1d,imp,ilp) = plasma_3d(mp0,lp0)%Ti_k(1:ISPET,i1d)
+!dbg20120501         Qint(TSP+2:iT,ip1d,imp,ilp) = plasma_3d_old(mp0,lp0)%Ti_k(1:ISPET,i1d)
         !B:
         Qint(iB      ,ip1d,imp,ilp) = plasma_grid_3d(isouth,lp0,mp0,IBM)
         !R:
@@ -269,14 +269,14 @@ endif
      ELSE if(ispecial == 2) then
        jth_loop2: DO jth=1,iT
 IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop2
-          Qint(jth   ,ip1d,imp,ilp) = plasma_3d(jth,inorth,lp0,mp0)
+          Qint(jth   ,ip1d,imp,ilp) = plasma_3d_old(jth,inorth,lp0,mp0)
        END DO jth_loop2!jth
         !N        ni1_in(ip)=ni(IN_t0,mp0,1) 
-!dbg20120501        Qint(1:TSP   ,ip1d,imp,ilp) = plasma_3d(mp0,lp0)%N_m3(1:TSP,i1d)
+!dbg20120501        Qint(1:TSP   ,ip1d,imp,ilp) = plasma_3d_old(mp0,lp0)%N_m3(1:TSP,i1d)
          !Te
-!dbg20120501        Qint(TSP+1   ,ip1d,imp,ilp) = plasma_3d(mp0,lp0)%Te_k(        i1d)
+!dbg20120501        Qint(TSP+1   ,ip1d,imp,ilp) = plasma_3d_old(mp0,lp0)%Te_k(        i1d)
          !Ti
-!dbg20120501        Qint(TSP+2:iT,ip1d,imp,ilp) = plasma_3d(mp0,lp0)%Ti_k(1:ISPET,i1d)
+!dbg20120501        Qint(TSP+2:iT,ip1d,imp,ilp) = plasma_3d_old(mp0,lp0)%Ti_k(1:ISPET,i1d)
          !B
         Qint(iB      ,ip1d,imp,ilp) = plasma_grid_3d(inorth,lp0,mp0,IBM)
          !R
@@ -448,7 +448,7 @@ IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop3
 
 !4. calculate N(phi0,theta0) with weighting of X between Nin & Nout
 ! X can be either R or lambda (but only at IN/IS)
-!    plasma_3d(mp,lp)%N_m3(1:TSP,i1d) &
+!    plasma_3d_old(mp,lp)%N_m3(1:TSP,i1d) &
     jth_loop4: DO jth=1,iT !TSP+3
 IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop4
 
