@@ -19,8 +19,10 @@ char_size=0.8 ;1.0
 ; prepare display parameters
 main_TITLE=' '
 
-if ( VarType ge 0 ) and (VarType le 3 ) then $
+if ( VarType eq 0 ) then $
   X_TICKFORMAT='(F5.2)'  $
+else if ( VarType eq 1 ) or ( VarType eq 2 ) then $
+  X_TICKFORMAT='(F5.0)'  $
 else if ( VarType ge 4 ) and ( VarType ge 5 ) then $
   X_TICKFORMAT='(F5.0)'  $
 else if ( VarType eq 6 ) then $
