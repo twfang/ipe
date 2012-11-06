@@ -64,8 +64,8 @@ print "('BM [Tesla]    =',2E12.4)", plasma_grid_3d(in,lp,mp,IBM), plasma_grid_3d
 !print "('D1         =',2E12.4)", apexD(1,in,mp)%east, apexD(1,is,mp)%east
 !print "('D2         =',2E12.4)", apexD(2,in,mp)%east, apexD(2,is,mp)%east
 print "('D3         =',6E12.4)", apexD(in,lp,mp,east,3),apexD(in,lp,mp,north,3),apexD(in,lp,mp,up,3), apexD(is,lp,mp,east,3),apexD(is,lp,mp,north,3),apexD(is,lp,mp,up,3)
-print "('E1         =',2E12.4)", apexE(1,in,lp,mp,east), apexE(1,is,lp,mp,east)
-print "('E2         =',2E12.4)", apexE(2,in,lp,mp,east), apexE(2,is,lp,mp,east)
+print "('E1         =',2E12.4)", apexE(in,lp,mp,east,1), apexE(is,lp,mp,east,1)
+print "('E2         =',2E12.4)", apexE(in,lp,mp,east,2), apexE(is,lp,mp,east,2)
 print "('Be3 [T] NH/SH  =',2E12.4)", Be3(1,lp,mp), Be3(2,lp,mp)
 
 print "('SL [m]     =',4E13.5)", plasma_grid_3d(in:in+1,lp,mp,ISL), plasma_grid_3d(is-1:is,lp,mp,ISL)

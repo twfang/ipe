@@ -35,7 +35,7 @@
      &,           plasma_3d     (MaxFluxTube,NLP,NMP,ISTOT) &
      &,           plasma_3d_old (MaxFluxTube,NLP,NMP,ISTOT) &
      &,           apexD         (MaxFluxTube,NLP,NMP,3,3:3) &
-     &,           apexE         (2    ,MaxFluxTube,NLP,NMP,3) )
+     &,           apexE         (MaxFluxTube,NLP,NMP,3,2  ) )
 
 !---neutral
 

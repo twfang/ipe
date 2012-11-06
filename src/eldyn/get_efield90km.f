@@ -329,11 +329,11 @@
               print *,'sub-StR:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]',    &
      &               Ed1_90(lp0,mp)*1.0E+3,' be3[tesla]',Be3(ihem,lp,mp) 
             endif
-            VEXBup(lp,mp)=(v_e(1)*apexE(1,midpoint,lp,mp,up))           &
-     &                   +(v_e(2)*apexE(2,midpoint,lp,mp,up))
+            VEXBup(lp,mp)=(v_e(1)*apexE(midpoint,lp,mp,up,1))           &
+     &                   +(v_e(2)*apexE(midpoint,lp,mp,up,2))
             if(sw_debug) then
-              print *,'sub-StR:',v_e(1),apexE(1,midpoint,lp,mp,up)      &
-     &                          ,v_e(2),apexE(2,midpoint,lp,mp,up)
+              print *,'sub-StR:',v_e(1),apexE(midpoint,lp,mp,up,1)      &
+     &                          ,v_e(2),apexE(midpoint,lp,mp,up,2)
             endif
 
           ENDIF !( sw_exb_up<=1.and. ... ) 

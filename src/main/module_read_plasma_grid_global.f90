@@ -187,13 +187,13 @@ enddo
       READ (UNIT=LUN_pgrid, FMT=*) dum4, dum5          !Apex_E1_2d
 !E1
 do lp=1,NLP
-  apexE(1,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,east ) =  dum4(1,JMIN_ING(lp):JMAX_ISG(lp),1:NMP) !E1
-  apexE(1,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,north) =  dum4(2,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
-  apexE(1,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,up   ) =  dum4(3,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
+  apexE(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,east ,1) =  dum4(1,JMIN_ING(lp):JMAX_ISG(lp),1:NMP) !E1
+  apexE(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,north,1) =  dum4(2,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
+  apexE(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,up   ,1) =  dum4(3,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
 !E2
-  apexE(2,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,east ) =  dum5(1,JMIN_ING(lp):JMAX_ISG(lp),1:NMP) !E2
-  apexE(2,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,north) =  dum5(2,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
-  apexE(2,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,up   ) =  dum5(3,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
+  apexE(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,east ,2) =  dum5(1,JMIN_ING(lp):JMAX_ISG(lp),1:NMP) !E2
+  apexE(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,north,2) =  dum5(2,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
+  apexE(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,up   ,2) =  dum5(3,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
 enddo
       print *,"reading E1/2 etc completed"
 !SMS$SERIAL END
