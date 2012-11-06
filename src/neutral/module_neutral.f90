@@ -179,18 +179,18 @@ IF( sw_debug )  print *,'sub-neut: mp=',lp,mp,IN,IS,npts
                     &  + apexD(i,lp,mp,north,3)*apexD(i,lp,mp,north,3) &
                     &  + apexD(i,lp,mp,up   ,3)*apexD(i,lp,mp,up   ,3)
                IF ( dotprod > 0.0 ) THEN
-                  Un_ms1(3,i,lp,mp) = & 
+                  Un_ms1(i,lp,mp,3) = & 
                        &     ( apexD(i,lp,mp,east ,3)*Vn_ms1(1,ipts)     &
                        &     + apexD(i,lp,mp,north,3)*Vn_ms1(2,ipts)     &
                        &     + apexD(i,lp,mp,up   ,3)*Vn_ms1(3,ipts) ) / &
                        &     SQRT(  dotprod   )
                ELSE
-                  Un_ms1(3,i,lp,mp) = 0.0
+                  Un_ms1(i,lp,mp,3) = 0.0
                END IF
 !!!DOT_PRODUCT( D3(1:3,i,mp), Vn_ms1(1:3,i) ) / SQRT(  DOT_PRODUCT( D3(1:3,i,mp), D3(1:3,i,mp) )  )
 
 !dbg20110131: the midpoint values become NaN otherwise because of inappropriate D1/3 values...
-               IF ( lp>=1 .AND. lp<=6 .AND. i==midpoint )   Un_ms1(:,i,lp,mp) = Un_ms1(:,i-1,lp,mp) 
+               IF ( lp>=1 .AND. lp<=6 .AND. i==midpoint )   Un_ms1(i,lp,mp,:) = Un_ms1(i-1,lp,mp,:) 
 
 !print *,'apex :npts=',npts
 
@@ -208,12 +208,12 @@ print *,'glati',glati,'glongi',glongi
 !FLIP or: UN(J)= -ABS(COSDIP(J))*BCOMPU * 100.0   !.. The wind along B in cm/s 
 !*(-1) will be done in flux_tube_solver...f90
 ! unit: meter s-1: unit conversion to cm/s will be done in CTIP-INT.f
-               Un_ms1(3,i,lp,mp) = ABS( apexD(i,lp,mp,north,3) )*BCOMPU    !.. The wind along B
+               Un_ms1(i,lp,mp,3) = ABS( apexD(i,lp,mp,north,3) )*BCOMPU    !.. The wind along B
 
 print *,'flip grid2 :npts=',npts
 
 if( 350.<=alt_km(ipts).and.alt_km(ipts)<=450.) then
-print *,i,ipts,alt_km(ipts),Vn_ms1(1,ipts),Un_ms1(3,i,lp,mp),glongi,glati,(decmag*57.296),BCOMPU
+print *,i,ipts,alt_km(ipts),Vn_ms1(1,ipts),Un_ms1(i,lp,mp,3),glongi,glati,(decmag*57.296),BCOMPU
 endif
 
 END IF !( sw_grid==0 ) THEN !APEX
@@ -241,9 +241,9 @@ IF ( sw_debug ) THEN
       print "(' vn_east_ms1  = ',2F10.4)",vn_ms1(1,1), vn_ms1(1,npts)
       print "(' vn_north_ms1 = ',2F10.4)",vn_ms1(2,1), vn_ms1(2,npts)
 
-!dbg20110923      print "(' un_meast_ms1      = ',2F10.4)",un_ms1(1,IN,lp,mp), un_ms1(1,IS,lp,mp)
-!dbg20110923      print "(' un_down/eq_ms1   = ',2F10.4)",un_ms1(2,IN,lp,mp), un_ms1(2,IS,lp,mp)
-      print "(' un_para_ms1      = ',2F10.4)",un_ms1(3,IN,lp,mp), un_ms1(3,IS,lp,mp)
+!dbg20110923      print "(' un_meast_ms1     = ',2F10.4)",un_ms1(IN,lp,mp,1), un_ms1(IS,lp,mp,1)
+!dbg20110923      print "(' un_down/eq_ms1   = ',2F10.4)",un_ms1(IN,lp,mp,2), un_ms1(IS,lp,mp,2)
+      print "(' un_para_ms1      = ',2F10.4)",un_ms1(IN,lp,mp,3), un_ms1(IS,lp,mp,3)
 END IF !( sw_debug ) THEN 
 
 
@@ -256,9 +256,9 @@ END IF !( sw_debug ) THEN
         END DO  apex_latitude_height_loop !: DO lp = 1,NLP
 
 !nm20120312 output wind
-!write (6000,fmt=*) utime, Un_ms1(3,1:NPTS2D,mp) 
+!write (6000,fmt=*) utime, Un_ms1(1:NPTS2D,mp,3) 
 if ( sw_neutral==2  ) then
-!write (6000,fmt=*) utime, Un_ms1(3,1:NPTS2D,mp) 
+!write (6000,fmt=*) utime, Un_ms1(1:NPTS2D,mp,3) 
   if(parallelBuild) then
     print*,'module_neutral: sw_neutral=2 disabled for parallel runs'
   else
@@ -269,14 +269,14 @@ if ( sw_neutral==2  ) then
       STATUS_dum="old"
       CALL open_file ( filename, luntmp3, FORM_dum, STATUS_dum ) 
     endif
-!read (unit=luntmp3,fmt=*) utime_dum, Un_ms1(3,1:NPTS2D,mp) 
+!read (unit=luntmp3,fmt=*) utime_dum, Un_ms1(1:NPTS2D,mp,3) 
     read (unit=luntmp3,fmt=*) utime_dum, dum0 
     if( utime_dum /=utime ) then 
       print *,"sub-neutral: !STOP! INVALID utime_dum!",utime_dum
       STOP
     endif
     do lp=1,NLP
-      Un_ms1(3,JMIN_IN(lp):JMAX_IS(lp),lp,mp) = dum0(JMIN_ING(lp):JMAX_ISG(lp))
+      Un_ms1(JMIN_IN(lp):JMAX_IS(lp),lp,mp,3) = dum0(JMIN_ING(lp):JMAX_ISG(lp))
     enddo
 
     if( utime==stop_time )   CLOSE(UNIT=luntmp3)

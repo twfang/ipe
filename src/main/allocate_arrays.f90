@@ -39,15 +39,15 @@
 
 !---neutral
 
-        allocate( ON_m3 (    MaxFluxTube,NLP,NMP) &
-     &,           HN_m3 (    MaxFluxTube,NLP,NMP) &
-     &,           N2N_m3(    MaxFluxTube,NLP,NMP) &
-     &,           O2N_m3(    MaxFluxTube,NLP,NMP) &
-     &,           HE_m3 (    MaxFluxTube,NLP,NMP) &
-     &,           N4S_m3(    MaxFluxTube,NLP,NMP) &
-     &,           TN_k  (    MaxFluxTube,NLP,NMP) &
-     &,           TINF_K(    MaxFluxTube,NLP,NMP) &
-     &,           Un_ms1(3:3,MaxFluxTube,NLP,NMP) )
+        allocate( ON_m3 (MaxFluxTube,NLP,NMP)     &
+     &,           HN_m3 (MaxFluxTube,NLP,NMP)     &
+     &,           N2N_m3(MaxFluxTube,NLP,NMP)     &
+     &,           O2N_m3(MaxFluxTube,NLP,NMP)     &
+     &,           HE_m3 (MaxFluxTube,NLP,NMP)     &
+     &,           N4S_m3(MaxFluxTube,NLP,NMP)     &
+     &,           TN_k  (MaxFluxTube,NLP,NMP)     &
+     &,           TINF_K(MaxFluxTube,NLP,NMP)     &
+     &,           Un_ms1(MaxFluxTube,NLP,NMP,3:3) )
 
         IF ( sw_neutral_heating_flip==1 ) THEN
           ALLOCATE(hrate_mks3d(MaxFluxTube,NLP,NMP,7),STAT=stat_alloc)

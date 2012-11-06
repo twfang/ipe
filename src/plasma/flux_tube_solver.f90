@@ -129,7 +129,7 @@
 
 ! FLIP assumes positive SOUTHWARD along a field line
       IF ( sw_wind_flip == 1 ) THEN
-        UNX(1:CTIPDIM)  = (-1.) * Un_ms1(3,IN:IS,lp,mp) 
+        UNX(1:CTIPDIM)  = (-1.) * Un_ms1(IN:IS,lp,mp,3) 
       ELSE IF ( sw_wind_flip == 0 ) THEN
         UNX(1:CTIPDIM)  = 0.0
       END IF

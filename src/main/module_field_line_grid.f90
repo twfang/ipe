@@ -30,7 +30,7 @@
 !SMS$DISTRIBUTE(dh,1) BEGIN
       INTEGER(KIND=int_prec),ALLOCATABLE,PUBLIC :: JMIN_IN (:),JMAX_IS (:)   !.. first and last indices on field line grid
       INTEGER(KIND=int_prec),ALLOCATABLE,PUBLIC :: JMIN_ING(:),JMAX_ISG(:)   !.. first and last indices on field line grid
-      INTEGER(KIND=int_prec),ALLOCATABLE,PUBLIC :: midpnt(:)
+      INTEGER(KIND=int_prec),ALLOCATABLE,PUBLIC :: midpnt  (:)
 !SMS$DISTRIBUTE END
       TYPE :: plasma_grid
 !dbg20110927         REAL(KIND=real_prec) :: Z  !.. altitude [meter]
@@ -44,7 +44,13 @@
       END TYPE plasma_grid
       INTEGER (KIND=int_prec) :: ISL=1,IBM=2,IGR=3,IQ=4,IGCOLAT=5,IGLON=6
 !SMS$DISTRIBUTE(dh,2,3) BEGIN
-      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: plasma_grid_3d(:,:,:,:)      !(MaxFluxTube,NLP,NMP,6)
+      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: plasma_grid_3d(:,:,:,:)!MaxFluxTube,NLP,NMP,6
+      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: plasma_3d     (:,:,:,:)!MaxFluxTube,NLP,NMP,ISTOT
+      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: plasma_3d_old (:,:,:,:)!MaxFluxTube,NLP,NMP,ISTOT
+      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: Un_ms1        (:,:,:,:)!MaxFluxTube,NLP,NMP,3:3 Ue1 Eq5.6 in magnetic frame last dim = apexD1-3
+      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: apexD       (:,:,:,:,:)!MaxFluxTube,NLP,NMP,3,3.. Eq(3.8-10 ) Richmond 1995
+      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: apexE       (:,:,:,:,:)!MaxFluxTube,NLP,NMP,3,2.. Eq(3.11-12) Richmond 1995
+      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: hrate_mks3d   (:,:,:,:)!MaxFluxTube,NLP,NMP,7 each component of Neutral heating rate(eV/kg/s)
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: Be3(:,:,:) ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,dimension(:,:,:) :: ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k
 !SMS$DISTRIBUTE END
@@ -53,20 +59,10 @@
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,DIMENSION(:,:) :: VEXBup !DIMENSION(NMP,NLP)
 !SMS$DISTRIBUTE END
 
-!SMS$DISTRIBUTE(dh,3,4) BEGIN
-      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: plasma_3d    (:,:,:,:) !MaxFluxTube,NLP,NMP,ISTOT
-      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: plasma_3d_old(:,:,:,:) !MaxFluxTube,NLP,NMP,ISTOT
-      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: Un_ms1       (:,:,:,:) !Ue1 Eq(5.6) in magnetic frame !1st dim: corresponds to apexD1-3
-      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: apexD      (:,:,:,:,:) !MaxFluxTube,NLP,NMP,3,3.. Eq(3.8-10 ) Richmond 1995
-      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: apexE      (:,:,:,:,:) !MaxFluxTube,NLP,NMP,3,2.. Eq(3.11-12) Richmond 1995
-!SMS$DISTRIBUTE END
 !SMS$DISTRIBUTE(dh,2) BEGIN
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: plasma_grid_Z (:,:)  !.. altitude [meter] (MaxFluxTube,NLP)
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: plasma_grid_GL(:,:)  !.. magnetic co-latitude Eq(6.1) [rad]
       REAL(KIND=real_prec),ALLOCATABLE               :: r_meter2D     (:,:)  !.. distance from the center of the Earth[meter]
-!SMS$DISTRIBUTE END
-!SMS$DISTRIBUTE(dh,4) BEGIN
-      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: hrate_mks3d(:,:,:,:) !.. each component of the Neutral heating rate (eV/kg/s) DIM(MaxFluxTube,NLP,NMP,7)
 !SMS$DISTRIBUTE END
 !JFM mlon_rad is not distributed becasue it is dimensioned NMP+1
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: mlon_rad(:)          !mag longitude in [rad]
