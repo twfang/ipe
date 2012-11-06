@@ -66,7 +66,7 @@
       REAL(KIND=real_prec),ALLOCATABLE               :: r_meter2D     (:,:)  !.. distance from the center of the Earth[meter]
 !SMS$DISTRIBUTE END
 !SMS$DISTRIBUTE(dh,4) BEGIN
-      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: hrate_mks3d(:,:,:,:) !.. each component of the Neutral heating rate (eV/kg/s) DIM(7,MaxFluxTube,NLP,NMP)
+      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: hrate_mks3d(:,:,:,:) !.. each component of the Neutral heating rate (eV/kg/s) DIM(MaxFluxTube,NLP,NMP,7)
 !SMS$DISTRIBUTE END
 !JFM mlon_rad is not distributed becasue it is dimensioned NMP+1
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: mlon_rad(:)          !mag longitude in [rad]

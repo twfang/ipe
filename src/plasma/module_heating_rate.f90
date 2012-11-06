@@ -65,7 +65,7 @@ MODULE module_heating_rate
  !t     NHEAT_mks(1:NPTS2D,NMP) = NHEAT_cgs(1:NPTS2D,NMP) * eV2J / total_rho(1:NPTS2D,NMP) 
 ! each component of the heating rate
             IF ( total_rho>0.0 ) THEN
-              hrate_mks3d(1:7,i,lp,mp) = hrate_cgs(1:7,i) * eV2J / total_rho
+              hrate_mks3d(i,lp,mp,1:7) = hrate_cgs(1:7,i) * eV2J / total_rho
             ELSE
 
               print *,'!STOP! INVALID total_rho',total_rho,i,lp,mp
@@ -76,7 +76,7 @@ MODULE module_heating_rate
 
           ELSE    ! IF(plasma_grid_Z(i)<80.or.plasma_grid_Z(i)>700) THEN
 
-            hrate_mks3d(1:7,i,lp,mp) = 0.0
+            hrate_mks3d(i,lp,mp,1:7) = 0.0
 
           END IF  !(plasma_grid_Z(i)>=80.AND.plasma_grid_Z(i)<=700) THEN      
 

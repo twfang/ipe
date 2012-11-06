@@ -50,7 +50,7 @@
      &,           Un_ms1(3:3,MaxFluxTube,NLP,NMP) )
 
         IF ( sw_neutral_heating_flip==1 ) THEN
-          ALLOCATE(hrate_mks3d(7,MaxFluxTube,NLP,NMP),STAT=stat_alloc)
+          ALLOCATE(hrate_mks3d(MaxFluxTube,NLP,NMP,7),STAT=stat_alloc)
           IF ( stat_alloc==0 ) THEN
             print *,' hrate_mks3d ALLOCATION SUCCESSFUL!!!'
           ELSE !stat_alloc/=0

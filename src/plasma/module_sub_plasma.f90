@@ -67,7 +67,7 @@ end if
 !     apex_longitude_loop: DO mp = mpstrt,mpstop,mpstep !1,NMP
       apex_longitude_loop: DO mp = 1,mpstop
         mp_save=mp
-        IF ( sw_neutral_heating_flip==1 )  hrate_mks3d(:,:,:,mp)=zero
+        IF ( sw_neutral_heating_flip==1 )  hrate_mks3d(:,:,mp,:)=zero
         if ( sw_debug )  WRITE (0,"('sub-p: mp=',I4)")mp
 !d        n0_2dbg(:)=zero
 
