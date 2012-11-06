@@ -57,7 +57,7 @@
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: plasma_3d    (:,:,:,:) !MaxFluxTube,NLP,NMP,ISTOT
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: plasma_3d_old(:,:,:,:) !MaxFluxTube,NLP,NMP,ISTOT
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: Un_ms1       (:,:,:,:) !Ue1 Eq(5.6) in magnetic frame !1st dim: corresponds to apexD1-3
-      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: apexD      (:,:,:,:,:) !(3,MaxFluxTube,NLP,NMP,3).. Eq(3.8-10 ) Richmond 1995
+      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: apexD      (:,:,:,:,:) !MaxFluxTube,NLP,NMP,3,3.. Eq(3.8-10 ) Richmond 1995
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: apexE      (:,:,:,:,:) !(2,MaxFluxTube,NLP,NMP,3).. Eq(3.11-12) Richmond 1995
 !SMS$DISTRIBUTE END
 !SMS$DISTRIBUTE(dh,2) BEGIN

@@ -118,8 +118,8 @@ print "('SL [m]     =',4E13.5)", plasma_grid_Z(in,lp), plasma_grid_Z(is,lp)
 !do i=1,jmax
 !   istp=JMIN_IN(lp)+i-1
 
-   apexD(3,in:is,lp,mp,north) = COSDIP(1:JMAX)
-   apexD(3,in:is,lp,mp,up   ) = SINDIP(1:JMAX)
+   apexD(in:is,lp,mp,north,3) = COSDIP(1:JMAX)
+   apexD(in:is,lp,mp,up   ,3) = SINDIP(1:JMAX)
 
 !end do !i=1,jmax
 

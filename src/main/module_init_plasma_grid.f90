@@ -63,7 +63,7 @@ print "('Qvalue     =',2E12.4)", plasma_grid_3d(in,lp,mp,IQ), plasma_grid_3d(is,
 print "('BM [Tesla]    =',2E12.4)", plasma_grid_3d(in,lp,mp,IBM), plasma_grid_3d(is,lp,mp,IBM)
 !print "('D1         =',2E12.4)", apexD(1,in,mp)%east, apexD(1,is,mp)%east
 !print "('D2         =',2E12.4)", apexD(2,in,mp)%east, apexD(2,is,mp)%east
-print "('D3         =',6E12.4)", apexD(3,in,lp,mp,east),apexD(3,in,lp,mp,north),apexD(3,in,lp,mp,up), apexD(3,is,lp,mp,east),apexD(3,is,lp,mp,north),apexD(3,is,lp,mp,up)
+print "('D3         =',6E12.4)", apexD(in,lp,mp,east,3),apexD(in,lp,mp,north,3),apexD(in,lp,mp,up,3), apexD(is,lp,mp,east,3),apexD(is,lp,mp,north,3),apexD(is,lp,mp,up,3)
 print "('E1         =',2E12.4)", apexE(1,in,lp,mp,east), apexE(1,is,lp,mp,east)
 print "('E2         =',2E12.4)", apexE(2,in,lp,mp,east), apexE(2,is,lp,mp,east)
 print "('Be3 [T] NH/SH  =',2E12.4)", Be3(1,lp,mp), Be3(2,lp,mp)
@@ -85,7 +85,7 @@ IF ( sw_grid==0 ) THEN  !APEX
 !d &, plasma_grid_GL(i), apexD(3,i,mp)%east, apexD(3,i,mp)%north, apexD(3,i,mp)%up
 
            CALL Get_sinI ( sw_sinI, sinI, plasma_grid_GL(i,lp) &
-     &, apexD(3,i,lp,mp,east), apexD(3,i,lp,mp,north), apexD(3,i,lp,mp,up) ) 
+     &, apexD(i,lp,mp,east,3), apexD(i,lp,mp,north,3), apexD(i,lp,mp,up,3) ) 
            plasma_grid_3d(i,lp,mp,IGR)  =  G0 * ( earth_radius * earth_radius ) / ( r_meter2D(i,lp) * r_meter2D(i,lp) ) * sinI * (-1.0)
 
 !IF ( sw_debug )  print "(4E12.4)", Z_meter(i,mp),sinI, (G0 * ( earth_radius * earth_radius ) / ( r_meter2D(i,lp) * r_meter2D(i,lp) )),  GR_mks(i,mp)

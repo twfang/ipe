@@ -175,14 +175,14 @@ IF( sw_debug )  print *,'sub-neut: mp=',lp,mp,IN,IS,npts
          
 
 ! un(3)=Ue3=d3*U: positive parallel to a field line, Eq(5.6) 
-               dotprod = apexD(3,i,lp,mp,east )*apexD(3,i,lp,mp,east )  &
-                    &  + apexD(3,i,lp,mp,north)*apexD(3,i,lp,mp,north) &
-                    &  + apexD(3,i,lp,mp,up   )*apexD(3,i,lp,mp,up   )
+               dotprod = apexD(i,lp,mp,east ,3)*apexD(i,lp,mp,east ,3)  &
+                    &  + apexD(i,lp,mp,north,3)*apexD(i,lp,mp,north,3) &
+                    &  + apexD(i,lp,mp,up   ,3)*apexD(i,lp,mp,up   ,3)
                IF ( dotprod > 0.0 ) THEN
                   Un_ms1(3,i,lp,mp) = & 
-                       &     ( apexD(3,i,lp,mp,east )*Vn_ms1(1,ipts)     &
-                       &     + apexD(3,i,lp,mp,north)*Vn_ms1(2,ipts)     &
-                       &     + apexD(3,i,lp,mp,up   )*Vn_ms1(3,ipts) ) / &
+                       &     ( apexD(i,lp,mp,east ,3)*Vn_ms1(1,ipts)     &
+                       &     + apexD(i,lp,mp,north,3)*Vn_ms1(2,ipts)     &
+                       &     + apexD(i,lp,mp,up   ,3)*Vn_ms1(3,ipts) ) / &
                        &     SQRT(  dotprod   )
                ELSE
                   Un_ms1(3,i,lp,mp) = 0.0
@@ -208,7 +208,7 @@ print *,'glati',glati,'glongi',glongi
 !FLIP or: UN(J)= -ABS(COSDIP(J))*BCOMPU * 100.0   !.. The wind along B in cm/s 
 !*(-1) will be done in flux_tube_solver...f90
 ! unit: meter s-1: unit conversion to cm/s will be done in CTIP-INT.f
-               Un_ms1(3,i,lp,mp) = ABS( apexD(3,i,lp,mp,north) )*BCOMPU    !.. The wind along B
+               Un_ms1(3,i,lp,mp) = ABS( apexD(i,lp,mp,north,3) )*BCOMPU    !.. The wind along B
 
 print *,'flip grid2 :npts=',npts
 

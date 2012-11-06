@@ -28,13 +28,13 @@
 ! (0) ALLOCATE arrays
       IF ( switch==0 ) THEN
         print *,'ALLOCATing ARRAYS',ISTOT,MaxFluxTube,NLP,NMP
-        allocate( plasma_grid_3d(      MaxFluxTube,NLP,NMP,6) &
-     &,           plasma_grid_Z (      MaxFluxTube,NLP      ) &
-     &,           plasma_grid_GL(      MaxFluxTube,NLP      ) &
-     &,           r_meter2D     (      MaxFluxTube,NLP      ) &
-     &,           plasma_3d     (MaxFluxTube,NLP,NMP,ISTOT  ) &
-     &,           plasma_3d_old (MaxFluxTube,NLP,NMP,ISTOT  ) &
-     &,           apexD         (3:3  ,MaxFluxTube,NLP,NMP,3) &
+        allocate( plasma_grid_3d(MaxFluxTube,NLP,NMP,6    ) &
+     &,           plasma_grid_Z (MaxFluxTube,NLP          ) &
+     &,           plasma_grid_GL(MaxFluxTube,NLP          ) &
+     &,           r_meter2D     (MaxFluxTube,NLP          ) &
+     &,           plasma_3d     (MaxFluxTube,NLP,NMP,ISTOT) &
+     &,           plasma_3d_old (MaxFluxTube,NLP,NMP,ISTOT) &
+     &,           apexD         (MaxFluxTube,NLP,NMP,3,3:3) &
      &,           apexE         (2    ,MaxFluxTube,NLP,NMP,3) )
 
 !---neutral

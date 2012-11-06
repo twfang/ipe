@@ -175,9 +175,9 @@ enddo
 !dbg20110923  apexD(2,1:NPTS2D,1:NMP)%up    =  dum5(3,1:NPTS2D,1:NMP)
 !D3
 do lp=1,NLP
-  apexD(3,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,east ) =  dum6(1,JMIN_ING(lp):JMAX_ISG(lp),1:NMP) !D3
-  apexD(3,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,north) =  dum6(2,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
-  apexD(3,JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,up   ) =  dum6(3,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
+  apexD(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,east ,3) =  dum6(1,JMIN_ING(lp):JMAX_ISG(lp),1:NMP) !D3
+  apexD(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,north,3) =  dum6(2,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
+  apexD(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,up   ,3) =  dum6(3,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
 enddo
       print *,"reading D1-3 etc completed"
 !SMS$SERIAL END
