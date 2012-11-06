@@ -32,8 +32,8 @@
      &,           plasma_grid_Z (      MaxFluxTube,NLP      ) &
      &,           plasma_grid_GL(      MaxFluxTube,NLP      ) &
      &,           r_meter2D     (      MaxFluxTube,NLP      ) &
-     &,           plasma_3d     (ISTOT,MaxFluxTube,NLP,NMP  ) &
-     &,           plasma_3d_old (ISTOT,MaxFluxTube,NLP,NMP  ) &
+     &,           plasma_3d     (MaxFluxTube,NLP,NMP,ISTOT  ) &
+     &,           plasma_3d_old (MaxFluxTube,NLP,NMP,ISTOT  ) &
      &,           apexD         (3:3  ,MaxFluxTube,NLP,NMP,3) &
      &,           apexE         (2    ,MaxFluxTube,NLP,NMP,3) )
 

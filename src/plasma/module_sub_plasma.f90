@@ -117,7 +117,7 @@ end if
           DO i=JMIN_IN(lp),JMAX_IS(lp)
              i1d=i-JMIN_IN(lp)+1
              DO jth=1,ISTOT
-                plasma_1d(jth,i1d) = plasma_3d(jth,i,lp,mp)
+                plasma_1d(jth,i1d) = plasma_3d(i,lp,mp,jth)
 !dbg20120501          DO i=1,IPDIM
 !dbg20120501            n0_1d%N_m3( 1:ISPEC,i) = plasma_3d(mp,lp)%N_m3( 1:ISPEC,i)
 !dbg20120501            n0_1d%Te_k(         i) = plasma_3d(mp,lp)%Te_k(         i)
@@ -179,7 +179,7 @@ endif
             DO i=JMIN_IN(lp),JMAX_IS(lp)
              i1d=i-JMIN_IN(lp)+1
               DO jth=1,ISTOT
-                 plasma_3d(jth,i,lp,mp) = plasma_1d(jth,i1d)
+                 plasma_3d(i,lp,mp,jth) = plasma_1d(jth,i1d)
 !dbg20120501            DO i=1,IPDIM
 !dbg20120501              plasma_3d(mp,lp)%N_m3( 1:ISPEC,i)=            n0_1d%N_m3( 1:ISPEC,i)
 !dbg20120501              plasma_3d(mp,lp)%Te_k(         i)=            n0_1d%Te_k(         i)

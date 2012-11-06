@@ -63,7 +63,7 @@ IN=JMIN_IN(lp)
 IS=JMAX_IS(lp)
   npts = IS-IN+1 
 
-  dumm(JMIN_ING(lp):JMAX_ISG(lp),mp) = plasma_3d(jth,IN:IS,lp,mp)
+  dumm(JMIN_ING(lp):JMAX_ISG(lp),mp) = plasma_3d(IN:IS,lp,mp,jth)
 !dbg20120501  IF ( jth<=ISPEC ) THEN
 !dbg20120501  dumm(IN:IS,mp) = plasma_3d(mp,lp)%N_m3(jth,        1:npts)
 !dbg20120501ELSE IF ( jth==(ISPEC+1) ) THEN
@@ -118,7 +118,7 @@ print *,'sub-io_pl: start_uts=',utime
     DO lp=1,NLP
       DO ipts=JMIN_IN(lp),JMAX_IS(lp)
         DO jth=1,ISTOT
-          plasma_3d(jth,ipts,lp,mp) = zero
+          plasma_3d(ipts,lp,mp,jth) = zero
 !dbg20120501        plasma_3d(mp,lp)%N_m3(1:ISPEC,npts) = zero
 !dbg20120501        plasma_3d(mp,lp)%Te_k(        npts) = zero
 !dbg20120501        plasma_3d(mp,lp)%Ti_k(1:ISPET,npts) = zero
@@ -218,7 +218,7 @@ mp_loop2:do mp=1,NMP
 IN=JMIN_IN(lp)
 IS=JMAX_IS(lp)
   npts = IS-IN+1 
-  plasma_3d(jth,IN:IS,lp,mp) = dumm(JMIN_ING(lp):JMAX_ISG(lp),mp) 
+  plasma_3d(IN:IS,lp,mp,jth) = dumm(JMIN_ING(lp):JMAX_ISG(lp),mp) 
 !dbg20120501IF ( jth<=ISPEC ) THEN
 !dbg20120501  plasma_3d(mp,lp)%N_m3(jth,         1:npts) = dumm(IN:IS,mp) 
 !dbg20120501ELSE IF ( jth==(ISPEC+1) ) THEN

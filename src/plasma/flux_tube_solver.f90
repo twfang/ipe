@@ -360,18 +360,18 @@ END IF
       DO ipts=1,CTIPDIM
 !dbg20120501
          DO jth=1,ISPEC
-            plasma_3d(jth,ipts+IN-1,lp,mp) = XIONNX(jth,ipts)
+            plasma_3d(ipts+IN-1,lp,mp,jth) = XIONNX(jth,ipts)
          END DO !jth
 
 !te
-         plasma_3d(ISPEC+1,ipts+IN-1,lp,mp) = TE_TIX(3,ipts)
+         plasma_3d(ipts+IN-1,lp,mp,ISPEC+1) = TE_TIX(3,ipts)
 !ti
          DO jth=1,2
-            plasma_3d(jth+ISPEC+1,ipts+IN-1,lp,mp) = TE_TIX(jth,ipts)
+            plasma_3d(ipts+IN-1,lp,mp,jth+ISPEC+1) = TE_TIX(jth,ipts)
          END DO !jth
 !vi
          DO jth=1,ISPEV
-           plasma_3d(jth+ISPEC+3,ipts+IN-1,lp,mp) = XIONVX(jth,ipts)
+           plasma_3d(ipts+IN-1,lp,mp,jth+ISPEC+3) = XIONVX(jth,ipts)
          END DO !jth
 !dbg20120501         plasma_3d(mp,lp)%N_m3( 1:ISPEC,ipts) = XIONNX(1:ISPEC,ipts)
 !dbg20120501         plasma_3d(mp,lp)%Te_k(         ipts) = TE_TIX(3      ,ipts)

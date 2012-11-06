@@ -193,7 +193,7 @@ jth_loop0:         DO jth=1,iT !=TSP+3
 
 IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop0
 !dbg20120501            IF(jth<=TSP) THEN
-               Qint(jth, ip1d,imp,ilp) = (factor2*(plasma_3d_old(jth,inorth,lp0,mp0) - plasma_3d_old(jth,isouth,lp0,mp0))) + plasma_3d_old(jth,isouth,lp0,mp0)
+               Qint(jth, ip1d,imp,ilp) = (factor2*(plasma_3d_old(inorth,lp0,mp0,jth) - plasma_3d_old(isouth,lp0,mp0,jth))) + plasma_3d_old(isouth,lp0,mp0,jth)
 
 !T TSP+1:TSP+3=iT
 !dbg20120501            ELSE IF(jth==TSP+1) THEN
@@ -212,8 +212,8 @@ IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop0
 
 
                WRITE(6,*)'sub-Intrp:!STOP! INVALID density',Qint(jth, ip1d,imp,ilp),factor2 &
-                    &,plasma_3d_old(jth,inorth,lp0,mp0)   & !dbg20120501
-                    &,plasma_3d_old(jth,isouth,lp0,mp0)   & !dbg20120501
+                    &,plasma_3d_old(inorth,lp0,mp0,jth)   & !dbg20120501
+                    &,plasma_3d_old(isouth,lp0,mp0,jth)   & !dbg20120501
                     &,jth, ip1d,imp,ilp,mp0,lp0,i1d,inorth,isouth
                STOP
             endif
@@ -247,7 +247,7 @@ endif
 
         jth_loop1: DO jth=1,iT
 IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop1
-          Qint(jth   ,ip1d,imp,ilp) = plasma_3d_old(jth,isouth,lp0,mp0)
+          Qint(jth   ,ip1d,imp,ilp) = plasma_3d_old(isouth,lp0,mp0,jth)
         END DO jth_loop1 !jth
          !N:        ni1_in(ip)=ni(IS_t0,mp0,1)
 !dbg20120501        Qint(1:TSP   ,ip1d,imp,ilp) = plasma_3d_old(mp0,lp0)%N_m3( 1:TSP,i1d)
@@ -269,7 +269,7 @@ endif
      ELSE if(ispecial == 2) then
        jth_loop2: DO jth=1,iT
 IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop2
-          Qint(jth   ,ip1d,imp,ilp) = plasma_3d_old(jth,inorth,lp0,mp0)
+          Qint(jth   ,ip1d,imp,ilp) = plasma_3d_old(inorth,lp0,mp0,jth)
        END DO jth_loop2!jth
         !N        ni1_in(ip)=ni(IN_t0,mp0,1) 
 !dbg20120501        Qint(1:TSP   ,ip1d,imp,ilp) = plasma_3d_old(mp0,lp0)%N_m3(1:TSP,i1d)
