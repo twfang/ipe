@@ -199,56 +199,50 @@
 !---------
         INTEGER(KIND=int_prec),PARAMETER :: LUN_nmlt=1
         CHARACTER(LEN=*),PARAMETER :: INPTNMLT='IPE.inp'
-        INTEGER(KIND=int_prec) :: IOST_OP
-        INTEGER(KIND=int_prec) :: IOST_RD
+        INTEGER(KIND=int_prec) :: IOST_OP=0
+        INTEGER(KIND=int_prec) :: IOST_RD=0
         INTEGER (KIND=int_prec), PARAMETER :: LUN_LOG0=10  !output4input parameters only
         CHARACTER (LEN=*), PARAMETER :: filename='logfile_input_params.log'
         INTEGER (KIND=int_prec) :: istat        
 
-
 !SMS$IGNORE BEGIN
-        OPEN(UNIT=LUN_LOG0,FILE=filename,STATUS='unknown',FORM='formatted',IOSTAT=istat)
-        IF ( istat /= 0 ) THEN
-          WRITE( UNIT=6, FMT=*)'ERROR OPENING FILE',filename
-          STOP
-        END IF
-
         OPEN(LUN_nmlt,FILE=INPTNMLT,ERR=222,IOSTAT=IOST_OP,STATUS='OLD')
-        READ(LUN_nmlt,NML=IPEDIMS  ,ERR=222,IOSTAT=IOST_RD,END=111)
+        READ(LUN_nmlt,NML=IPEDIMS  ,ERR=222,IOSTAT=IOST_RD)
+        READ(LUN_nmlt,NML=NMIPE    ,ERR=222,IOSTAT=IOST_RD)
 !SMS$IGNORE END
 
 !SMS$INSERT HaloSize=5
 !SMS$CREATE_DECOMP(dh,<NLP,NMP>,<HaloSize,HaloSize>)
 
 !SMS$SERIAL BEGIN
-        READ(LUN_nmlt,NML=NMIPE    ,ERR=222,IOSTAT=IOST_RD,END=111)
-        READ(LUN_nmlt,NML=NMFLIP   ,ERR=222,IOSTAT=IOST_RD,END=111)
-        READ(LUN_nmlt,NML=NMMSIS   ,ERR=222,IOSTAT=IOST_RD,END=111)
-        READ(LUN_nmlt,NML=NMSWITCH ,ERR=222,IOSTAT=IOST_RD,END=111)
+        READ(LUN_nmlt,NML=NMFLIP   ,ERR=222,IOSTAT=IOST_RD)
+        READ(LUN_nmlt,NML=NMMSIS   ,ERR=222,IOSTAT=IOST_RD)
+        READ(LUN_nmlt,NML=NMSWITCH ,ERR=222,IOSTAT=IOST_RD)
 
-222     IF ( IOST_OP /= 0 ) THEN
-          WRITE(UNIT=LUN_LOG0, FMT=*) "OPEN NAMELIST FAILED!", IOST_OP
+        OPEN(UNIT=LUN_LOG0,FILE=filename,STATUS='unknown',FORM='formatted',IOSTAT=istat)
+        IF ( istat /= 0 ) THEN
+          WRITE( UNIT=6, FMT=*)'ERROR OPENING FILE',filename
           STOP
-        ELSEIF ( IOST_RD /= 0 ) THEN
-          WRITE(UNIT=LUN_LOG0, FMT=*) "READ NAMELIST FAILED!", IOST_RD
-          STOP
-        ENDIF
-
-111     CONTINUE
+        END IF
         WRITE(UNIT=LUN_LOG0, NML=NMIPE)
         WRITE(UNIT=LUN_LOG0, NML=NMFLIP)
         WRITE(UNIT=LUN_LOG0, NML=NMMSIS)
         WRITE(UNIT=LUN_LOG0, NML=NMSWITCH)
 
+        WRITE(UNIT=LUN_LOG0,FMT=*)'NMP=',NMP,' NLP=',NLP,' NPTS2D=',NPTS2D
 
-WRITE(UNIT=LUN_LOG0,FMT=*)'NMP=',NMP,' NLP=',NLP,' NPTS2D=',NPTS2D
+        WRITE(UNIT=LUN_LOG0,FMT=*)'real_prec=',real_prec,' int_prec=',int_prec
 
-WRITE(UNIT=LUN_LOG0,FMT=*)'real_prec=',real_prec,' int_prec=',int_prec
-
-
-        CLOSE(LUN_nmlt)
         CLOSE(LUN_LOG0)
 !SMS$SERIAL END
+        CLOSE(LUN_nmlt)
+222     IF ( IOST_OP /= 0 ) THEN
+          WRITE(UNIT=LUN_nmlt, FMT=*) "OPEN NAMELIST FAILED!", IOST_OP
+          STOP
+        ELSEIF ( IOST_RD /= 0 ) THEN
+          WRITE(UNIT=LUN_nmlt, FMT=*) "READ NAMELIST FAILED!", IOST_RD
+          STOP
+        ENDIF
 
 stop_time=start_time+duration
 

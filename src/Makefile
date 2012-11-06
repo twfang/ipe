@@ -290,14 +290,14 @@ $(FINAL_OBJS): $(HEADS) Makefile
 
 cln:
 	$(RM) $(PACKAGE) $(FINAL_OBJS)
-	$(RM) ${DR0}/*.mod ${DR0}/*.tmp ${DR0}/*.f ${DR0}/*~
+	$(RM) ${DR0}/*.mod ${DR0}/*.tmp* ${DR0}/*.f ${DR0}/*~
 	$(RM) ${DR0}/*_sms.f90 ${DR0}/*ppptmp*
 	$(RM) ${DR1}/*.mod ${DR2}/*.mod ${DR3}/*.mod ${DR4}/*.mod ${DR6}/*.mod 
-	$(RM) ${DR1}/*.mod ${DR1}/*.tmp ${DR1}/*.f ${DR1}/*~
+	$(RM) ${DR1}/*.mod ${DR1}/*.tmp* ${DR1}/*.f ${DR1}/*~
 	$(RM) ${DR1}/*_sms.f90 ${DR1}/*ppptmp*
-	$(RM) ${DR3}/*.mod ${DR3}/*.tmp ${DR3}/*.f ${DR3}/*~
+	$(RM) ${DR3}/*.mod ${DR3}/*.tmp* ${DR3}/*.f ${DR3}/*~
 	$(RM) ${DR3}/*_sms.f90 ${DR3}/*ppptmp*
-	$(RM) ${DR6}/*.mod ${DR6}/*.tmp ${DR6}/*~
+	$(RM) ${DR6}/*.mod ${DR6}/*.tmp* ${DR6}/*~
 	$(RM) ${DR6}/*_sms.f90 ${DR6}/*ppptmp*
 
 tar:

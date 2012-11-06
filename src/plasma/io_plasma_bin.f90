@@ -35,7 +35,7 @@
       INTEGER (KIND=int_prec ) :: n_count
       INTEGER (KIND=int_prec ) :: ipts !dbg20120501
 !----------------------------------
-
+      
 IF ( switch<1.or.switch>2 ) THEN
   print *,'sub-io_plasma:!STOP! INVALID switch',switch
   STOP
@@ -154,12 +154,11 @@ IF ( sw_record_number==0 ) THEN
       END DO rd_loop0!: DO n_read=1,n_max          
 ELSE IF ( sw_record_number==1 ) THEN
 !1: automatically keep running global run: the code sets up the record_number from the very last record...
+!SMS$SERIAL(<record_number_plasma_start,start_time,n_read_min,OUT>:default=ignore) BEGIN
       n_count=0
       rd_loop1: DO n_read=1,n_max !=10000
 
-!SMS$SERIAL BEGIN
          READ (UNIT=lun_ut2,FMT=*,END=19) record_number_plasma_dum, utime_dum
-!SMS$SERIAL END
          n_count=n_count+1
 
          IF (n_read==1) THEN
@@ -171,6 +170,7 @@ ELSE IF ( sw_record_number==1 ) THEN
 19    CONTINUE
       record_number_plasma_start = record_number_plasma_dum
       start_time = utime_dum
+!SMS$SERIAL END
 
       print *,'new record_number_plasma_start=',record_number_plasma_start
       print *,'new start_time=',start_time
@@ -178,9 +178,7 @@ ELSE IF ( sw_record_number==1 ) THEN
       stop_time = start_time + duration
       print *,'new stop_time=',stop_time,' duration=', duration
 END IF !( sw_record_number==0 ) THEN        
-
 j_loop2: DO jth=1,(ISPEC+3)  !t  +ISPEV)
-
 
 LUN = LUN_PLASMA2(jth-1+lun_min2)
 if(sw_debug) print *,'jth=',jth,' LUN2=',LUN
@@ -212,7 +210,6 @@ rd_loop: DO n_read=n_read_min, record_number_plasma_start
 
     END DO rd_loop !: DO n_read=1,n_read_max
 
-
 mp_loop2:do mp=1,NMP
  lp_loop2:do lp=1,NLP
 IN=JMIN_IN(lp)
@@ -232,7 +229,6 @@ IS=JMAX_IS(lp)
 !print *,'IN'
  end do lp_loop2!lp
 end do mp_loop2!mp
-
 
 !SMS$SERIAL BEGIN
 print *,'closing lun',LUN
