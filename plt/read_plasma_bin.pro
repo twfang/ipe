@@ -13,6 +13,7 @@ size_result=size(XIONN_m3)
 if ( sw_debug eq 1 ) then  print,size_result
 NPTS2D=size_result[2]
 NMP=size_result[3]
+
 dum=fltarr(NPTS2D,NMP)
 
 if ( sw_lun[2] eq 1 ) then begin
@@ -43,6 +44,42 @@ if ( sw_dif eq 0 ) then begin
      readu, LUN[9], dum
      XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
      if sw_debug eq 1 then  print, 'N+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
+   endif ;( sw_lun
+
+   if ( sw_lun[10] eq 1 ) then begin
+     jth=4                        ;no+
+     readu, LUN[10], dum
+print, 'debug dum =',dum[60,0]
+     XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
+     if sw_debug eq 1 then  print, 'NO+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
+   endif ;( sw_lun
+
+   if ( sw_lun[11] eq 1 ) then begin
+     jth=5                        ;o2+
+     readu, LUN[11], dum
+     XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
+     if sw_debug eq 1 then  print, 'O2+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
+   endif ;( sw_lun
+
+   if ( sw_lun[12] eq 1 ) then begin
+     jth=6                        ;n2+
+     readu, LUN[12], dum
+     XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
+     if sw_debug eq 1 then  print, 'n2+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
+   endif ;( sw_lun
+
+   if ( sw_lun[13] eq 1 ) then begin
+     jth=7                        ;o+(2D)
+     readu, LUN[13], dum
+     XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
+     if sw_debug eq 1 then  print, 'o+(2D) XIONN_m3=',jth,XIONN_m3[jth,60,0]
+   endif ;( sw_lun
+
+   if ( sw_lun[14] eq 1 ) then begin
+     jth=8                        ;o+(2P)
+     readu, LUN[14], dum
+     XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
+     if sw_debug eq 1 then  print, 'o+(2P) XIONN_m3=',jth,XIONN_m3[jth,60,0]
    endif ;( sw_lun
 endif ;( sw_dif eq 0 ) then begin
 

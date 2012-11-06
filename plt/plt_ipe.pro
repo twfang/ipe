@@ -1,52 +1,80 @@
-;20120305: renamed from plot_contour_3d_dif.pro-->plt_ipe.pro
+;.20120305: renamed from plot_contour_3d_dif.pro-->plt_ipe.pro
 ;20120228: sw_dif: useed for comparison of two different runs
 ;20111205: sw_save=2 to save plotting time!!!
 ;include parallel plasma velocity to help the debug!!!
 pro plt_ipe
+plot_UT=422700;74700;05600;251100+100;415800;248306.;    152906. ; [sec]
+;plot_UT=415800;248306.;    152906. ; [sec]
+plot_UT_end=434400;plot_UT;+13500;+14400.*2.;86400*2.;248306.;421106.;230406. ; [sec]
+sw_output2file=0 ;1'PNG' ;0NONE';
+;TEST='ipe_19574';/but118706er'
+TEST='v66.1';/but118706er'
+;TEST='jet';/but118706er'
+input_DIR0=$
+;TEST+'/but91800/'
+;TEST+'/but107100/'
+;TEST+'/'
+;TEST+'/';bkup20120605short/'
+;TEST+'/bkup24/' ;v70.1
+;TEST+'/bkup2/' ;v63.1
+;TEST+'/bkup15/' ;v66.2
+;TEST+'/bkup42/' ;65.1 v1
+TEST+'/bkup69/' ;66.1
+title_res='low20120709';2xdyn';low';low20120709';low';dyn';'low' ; 'high'
+plot_type=3L ;0:contour; 1:ht profile; 2:LT-LAT contour; 3:LON-LAT contour; 4:refilling: 5:psphere, 6:tec
+n_read_max=(121-108+1) ;86400*2/output_freq +1L
+mp_plot=8-1L ; longitude sector to plot
+fac_window=1.0
 
-sw_frame=0
-fac_window=2.0
-sw_output2file=1 ;1'PNG' ;0NONE';
+sw_debug=1L
+sw_frame=0L
 sw_dif=0L
-mp_plot=1-1L ; longitude sector to plot
 sw_hr=0L
 sw_3DJ=0L
 sw_anim=0L
 ; freq_plot_hr = (60.*12.)/60. ;frequency of plotting in hr
-freq_plot_hr=3600./3600.
-;READ, freq_plot_hr,PROMPT='Enter frequency of plotting in hour:'
-
-;sw_save option does not work for plot_type=1
-sw_save=0L ;0:no save; 1:save; 2:restore
-;READ, sw_save,PROMPT='Enter switch for saving readin data 0or1:'
-
 output_freq=900
-n_read_max=86400*2/output_freq +1L
-plot_UT=248306.;    152906. ; [sec]
-plot_UT_end=plot_UT;248306.;421106.;230406. ; [sec]
+freq_plot_hr=output_freq/3600.
+;READ, freq_plot_hr,PROMPT='Enter frequency of plotting in hour:'
+sw_save=1L ;0:no save; 1:save; 2:restore
+;sw_save option does not work for plot_type=1
+;READ, sw_save,PROMPT='Enter switch for saving readin data 0or1:'
+htstrt=400.
+htstop=400.
+htstep=200.
+Varstrt=0
+Varstop=0
+
 STOP_TIME='230406'
-rundate='20120112'
+rundate='20120424'
 TEST0='trans'
-TEST='v31.1';/but118706er'
 title_test=TEST0+'.'+TEST  ;trans.'+TEST
 title_hemi='glb';SH'eq';
-plot_type=3L ;0:contour; 1:ht profile; 2:LT-LAT contour; 3:LON-LAT contour; 4:refilling
+
 version='3d'
 
 ;HOME_DIR='/lfs0/projects/idea/maruyama/sandbox/ipe/run/'
 HOME_DIR=$
 ;'/Users/naomi/sandbox/ipe/run/' ;mac
+;'/home/Naomi.Maruyama/wamsv/tmp20120723ipe/run/' ;zeus
+;'/home/Naomi.Maruyama/wamsv/' ;zeus
+'/home/Naomi.Maruyama/wamns/' ;zeus
+;'/home/Naomi.Maruyama/ptmp/' ;zeus
+fig_DIR=$
 '/home/Naomi.Maruyama/iper/' ;zeus
-n_file=10L;6L;13L;
+n_file=15L;6L;13L;
 input_flnm=['','','','','','' $
-,'','','','']
-;,'','','','','','','']
+,'','','','' $
+,'','','','',''] ;,'','']
 input_DIR =input_flnm
 ;input_DIR[*]=rundate+'.'+version+'.'+title_test+'/';backup20120223mpall/';But'+STOP_TIME+'error/'
-input_DIR[*]=TEST+'/';But1371506/'
+input_DIR[*]=$
+input_DIR0
+;'ipe4gsd/run_naomi/'
+;TEST+'/bkup19/'
 input_DIR[1]=$
 ;'../plt/' ;mac
-'../ipe/plt/' ;zeus
+'../ipe/trunk/plt/' ;zeus
 LUN  = INTARR(n_file)
 sw_LUN  = INTARR(n_file)
 sw_lun[0:1]=1
@@ -58,6 +86,11 @@ sw_lun[6]=0 ;h+
 sw_lun[7]=0 ;ti
 sw_lun[8]=0 ;he+
 sw_lun[9]=0 ;n+
+sw_lun[10]=1 ;no+
+sw_lun[11]=0 ;o2+
+sw_lun[12]=0 ;n2+
+sw_lun[13]=0 ;o+(2D)
+sw_lun[14]=0 ;o+(2P)
 
 if ( sw_dif eq 1 ) then begin
 LUNq  = INTARR(n_file)
@@ -72,21 +105,20 @@ TESTq+'/'
    input_DIRq[1]=input_DIR[1]
 endif
 
-sw_debug=0L
 
 
 mlat_title='79.56'
-title_res='low'
 title_f107='f180'
 which_endian='big_endian'
 ;plot_DIR='../figures/'+title_res+'res/'+title_f107+'/glb/'
 plot_DIR=$
-;HOME_DIR+'../figures/glb/nmp80/fpasp0.3/'
- HOME_DIR+'fig/'+TEST+'/'
+ ;HOME_DIR+'../figures/glb/nmp80/fpasp0.3/'
+ fig_DIR+'fig/'+TEST+'/'
+;'/home/Naomi.Maruyama/ptmp/ipe4gsd/fig/'
 ;if ( sw_dif eq 1 ) then $
 ;  plot_DIR=plot_DIR+'dif/'
 if ( sw_frame eq 0 ) then $
-title_frame='' $
+title_frame='mag' $
 else if ( sw_frame eq 1 ) then $
 title_frame='geo'
 filename_sav=plot_DIR+rundate+'_'+version+'.'+title_res+title_frame+'.sav'
@@ -94,10 +126,19 @@ filename_sav=plot_DIR+rundate+'_'+version+'.'+title_res+title_frame+'.sav'
 if title_res eq 'low' then begin
   NLP=170L;low res
   NPTS2D=44438L ;low res
-endif else begin
+endif else if title_res eq 'low20120709' then begin
+  NLP=170L;low res
+  NPTS2D=44514L ;low res
+endif else if title_res eq 'high' then  begin
   NLP=209L;high res
   NPTS2D=165717L ;high res
-endelse
+endif else if title_res eq '2xdyn' then  begin
+  NLP=93L;
+  NPTS2D=31287L ;high res
+endif else if title_res eq 'dyn' then  begin
+  NLP=45L;
+  NPTS2D=15857L ;high res
+endif
 
 NMP=80L
 ISPEC=9L
@@ -109,11 +150,11 @@ FLDIM = 1115L
   UT_hr = 0.00D0
   UT_hr_save = fltarr(n_read_max)
 ;  LT_hr = fltarr(  NMP,NLP)
-NPAR   =2L;12L;
+NPAR   =12L;
 ;i should be aware of the memory limit!!!
 if ( plot_type eq 0 ) or ( plot_type eq 2 ) or ( plot_type eq 4 ) then begin
 ;  plot_z = fltarr(n_read_max,NPAR, NMP,NPTS2D)
-  plot_z = fltarr(n_read_max,NPAR, mp_plot+1,NPTS2D) ;to save memory!!!
+  plot_z = fltarr(n_read_max,NPAR, mp_plot+3 ,NPTS2D) ;to save memory!!!
   if ( plot_type eq 0 ) then $
   plot_VEXB = fltarr(n_read_max,NMP,NLP)
 endif
@@ -126,7 +167,7 @@ if ( sw_hr eq 1 ) then $
 
 
 
-XIONN_m3 =fltarr(4,NPTS2D,NMP)  ;fltarr(ISPEC,NPTS2D,NMP)
+XIONN_m3 =fltarr(ISPEC,NPTS2D,NMP)
 XIONV_ms1=fltarr(1,NPTS2D,NMP) ;fltarr(ISPEV,NPTS2D,NMP)
 TE_TI_k  =fltarr(3,NPTS2D,NMP)
 VEXB=fltarr(NMP,NLP) ;before2011-11-16.v18 only meridional transport version
@@ -188,20 +229,32 @@ endif
 ;opening files
 if ( sw_save le 1 ) then $
 open_file, HOME_DIR, input_DIR, LUN,version,input_flnm $
-,sw_3DJ,sw_hr, sw_lun
+,sw_3DJ,sw_hr, sw_lun,title_res $
+,sw_debug
 
 if ( sw_dif eq 1 ) then $
    open_file, HOME_DIR, input_DIRq, LUNq,version,input_flnmq $
-,sw_3DJ,sw_hr, sw_lun
+,sw_3DJ,sw_hr, sw_lun,title_res $
+,sw_debug
 
-for ht_plot=400.00,400.00, 200.00  do begin
-for VarType=1,1 do begin
+;need to debug when sw_save=2 
+for ht_plot=400., 400., htstep  do begin
+for VarType=0, 0  do begin
 
 if ( sw_save eq 2 ) then begin
 plot_zz[*,*]=0.0
 plot_yy[*,*]=0.0
 plot_xx[*,*]=0.0
 endif
+
+
+if ( plot_type eq 6 ) then begin
+NX=19L
+NY=121L
+TEC3d=fltarr(n_read_max,nx,nmp)
+glat3d=fltarr(n_read_max,nx,nmp)
+glon3d=fltarr(n_read_max,nx,nmp)
+endif ;( plot_type eq 6 ) then begin
 
 n_read=-1L
 ;if ( sw_save lt 2 ) then $
@@ -217,10 +270,11 @@ n_read=-1L
 
   if ( sw_save le 1 ) then begin
 
-  if ( n_read eq 0 ) then  read_grid,LUN,JMIN_IN,JMAX_IS,Z_km,mlat_deg,sw_debug,glat_deg,glon_deg
+  if ( n_read eq 0 ) then  read_grid,LUN,JMIN_IN,JMAX_IS,Z_km,mlat_deg,sw_debug,glat_deg,glon_deg,title_res
   read_plasma_bin,LUN,UT_hr,XIONN_m3,XIONV_ms1,TE_TI_k,VEXB,sw_debug $
 ,sw_3DJ,je_3d,sw_hr,hrate, sw_dif, sw_lun
   UT_hr_save[n_read]=UT_hr
+
 
   if ( sw_dif eq 1 ) then  begin
      read_plasma_bin,LUNq,UT_hrq,XIONN_m3q,XIONV_ms1q,TE_TI_kq,VEXBq,sw_debug $
@@ -240,41 +294,58 @@ endif ;( sw_save eq 1 ) then begin
   if ( plot_type eq 0 ) or ( plot_type eq 2 ) or ( plot_type eq 4 )  then begin
     ipts=0L
   if ( sw_save le 1 ) then begin
-    for mp=mp_plot,mp_plot do begin ;NMP-1 do begin
+    for mp=mp_plot,mp_plot+2 do begin ;NMP-1 do begin
 
-;0 Ne electron density[m-3]
-;     for ipts=0L,NPTS2D-1L do  $
-;      plot_z[n_read,0,mp,ipts] = TOTAL( XIONN_m3[0:5,ipts,mp] )
+;0: Ne electron density[m-3]
+      k=0L
+      for ipts=0L,NPTS2D-1L do begin 
+        for jth=0,ISPEC-1L do begin
+          plot_z[n_read,k,mp,ipts] = plot_z[n_read,k,mp,ipts] + XIONN_m3[jth,ipts,mp] 
+        endfor;jth
+      endfor ;ipts
 ;jth:O+,H+,He+   ,N+,NO+,O2+,  N2+,O+(2D),O+(2P)
 ;1:O+
-      for jth=0,0 do $ ;2 do begin
-        plot_z[n_read,jth+1,mp,0:NPTS2D-1] = XIONN_m3[jth,0:NPTS2D-1,mp]
+;      for jth=0,0 do $ ;2 do begin
+;        plot_z[n_read,jth+1,mp,0:NPTS2D-1] = XIONN_m3[jth,0:NPTS2D-1,mp]
 
 ;1 Te electron temperature
-jth=3-1
-    plot_z[n_read,jth-2,mp,0:NPTS2D-1] = TE_TI_k[jth,0:NPTS2D-1,mp]
+      jth=3-1
+      k=1
+      for ipts=0L,NPTS2D-1L do $ 
+        plot_z[n_read,k,mp,ipts] = TE_TI_k[jth,ipts,mp]
 
-if ( sw_hr eq 1 ) then begin 
-  for jth=1,7 do begin
-    plot_z[n_read,jth+1,mp,0:NPTS2D-1] = hrate[jth-1,0:NPTS2D-1,mp]
-  endfor
-endif
 
-;5 TO+ ion temperature
-;    plot_z[n_read,5,mp,0:NPTS2D-1] = TE_TI_k[1-1,0:NPTS2D-1,mp]
+;2 TO+ ion temperature
+      jth=1-1
+      k=2                    
+      for ipts=0L,NPTS2D-1L do $ 
+       plot_z[n_read,k,mp,ipts] = TE_TI_k[jth,ipts,mp]
+
+;3 [O+]
+for k=3,3+8 do begin
+  jth=k-3
+      for ipts=0L,NPTS2D-1L do $ 
+       plot_z[n_read,k,mp,ipts] = XIONN_m3[jth,ipts,mp] 
+endfor;k
 
 ;6:O+, flux [m-2 s-1]
 ;    for jth=0,0 do begin
 ;      plot_z[n_read,jth+6,mp,0:NPTS2D-1] = XIONN_m3[jth,0:NPTS2D-1,mp] * XIONV_ms1[jth,0:NPTS2D-1,mp]
 ;  endfor
 
-;7:O+,velocity [m s-1]
-;    for jth=0,0 do begin
-;      plot_z[n_read,jth+7,mp,0:NPTS2D-1] = XIONV_ms1[jth,0:NPTS2D-1,mp]
+;;4:O+,velocity [m s-1]
+;k=4
+;      for ipts=0L,NPTS2D-1L do $ 
+;        plot_z[n_read,k,mp,ipts] = XIONV_ms1[1-1,ipts,mp]
 ;      plot_z[n_read,0,mp,0:NPTS2D-1] = XIONV_ms1[jth,0:NPTS2D-1,mp] ;temporary solution to save memory
 ;    endfor
 
 ;neutral heating rate eV/kg/s
+if ( sw_hr eq 1 ) then begin 
+  for jth=1,7 do begin
+    plot_z[n_read,jth+1,mp,0:NPTS2D-1] = hrate[jth-1,0:NPTS2D-1,mp]
+  endfor
+endif
 ;    plot_z[5,   mp,0:NPTS2D-1] = NHEAT_mks[    0:NPTS2D-1,mp]
 ;    plot_z[6:11,mp,0:NPTS2D-1] = hrate_mks[0:5,0:NPTS2D-1,mp]
 
@@ -308,38 +379,116 @@ endif
 ; lon-lat plot
     endif else if ( plot_type eq 3 ) then begin 
 ;     ht_plot = 110.00 ;[km]
-     ctr_LON_LAT $
+     ctr_lon_lat $
   , JMIN_IN,JMAX_IS,Z_km,mlat_deg  $ 
 ;  , je_3d   $
-  ,  XIONN_m3       $
+  , XIONN_m3, TE_TI_k $
+  , XIONV_ms1 $
   , UT_hr, plot_DIR $
   , n_read $
   , sw_output2file $
-  ,glon_deg,glat_deg,sw_frame,fac_window
+  ,glon_deg,glat_deg,sw_frame,fac_window, TEST $
+  , sw_debug
 
+
+
+    endif else if ( plot_type eq 6 ) then begin 
+
+
+
+
+for mp=0,nmp-1 do begin
+print,'mp',mp
+
+;interpolate Ne from 
+ipdim=1115L
+elden=fltarr(3,NPTS2D)
+for i=1-1,NPTS2D-1 do begin
+  for jth=0,ISPEC-1 do  elden[0,i]=elden[i]+XIONN_m3[jth,i,mp] 
+  elden[1,i]=glat_deg[i,mp] 
+  elden[2,i]=glon_deg[i,mp] 
+endfor
+
+;loadct,39
+;xloadct
+;stop
+fxht_var=fltarr(3,nx,ny)
+intrp2fixht $
+,jmin_in,jmax_is,z_km $
+,ut_hr $ 
+,elden $
+,ipdim,nlp,mlat_deg $
+,fxht_var,fxht_x,fxht_y
+;xloadct
+;STOP
+;calculate tec
+TEC2d=fltarr(nx)
+cal_tec $
+,fxht_var,fxht_x,fxht_y $
+,tec2d
+;xloadct
+tec3d[ n_read,0:nx-1,mp]=   tec2d[  0:nx-1]
+print,'glat3d MIN=',MIN(fxht_var[1,0:nx-1,0]),'MAX',MAX(fxht_var[1,0:nx-1,0])
+glat3d[n_read,0:nx-1,mp]=fxht_var[1,0:nx-1,0]
+glon3d[n_read,0:nx-1,mp]=fxht_var[2,0:nx-1,0]
+print,mp, MIN(tec2d[0:nx-1]), MAX(tec2d[0:nx-1])
+
+;loadct,39
+;lclr=(255/nmp) * mp
+;print,'lclr',lclr
+;if ( mp eq 0 ) then $
+;  plot,  fxht_x,tec2d $
+;,yrange=[ 12.,+15.], ystyle=1 $
+;,xrange=[-60.,+60.], xstyle=1 $
+;,color=lclr $
+;else $ ;if ( mp eq 0 ) then $
+;  oplot,  fxht_x,tec2d $
+;,color=lclr ;$
+;plt_tec, tec3d, fxht_x; , mlon???
+
+endfor ;mp=0,nmp-1 do begin
 
     endif; plot_type eq 0
 
 ;dbg  endif ;( sw_save eq 1 ) then begin
 
 
-;print, 'before plotting',UT_hr , plot_UT/3600.
+;d print, 'before plotting' $ 
+;d , (UT_hr-UT_hr_save[0]) , freq_plot_hr $
+;d  ,UT_hr,UT_hr_save[0] $
+;d ,  ( (UT_hr-UT_hr_save[0]) MOD freq_plot_hr )
+
 IF ( UT_hr gt plot_UT_end/3600. ) THEN $
   BREAK $
 ELSE IF $
    ( UT_hr ge plot_UT/3600. ) $
 ; AND $
-; ( ( (UT_hr-UT_hr_save[0]) MOD freq_plot_hr ) LT 0.00001 ) $  ;20120223! need debug! does not work!!!
+; ( ( (UT_hr-UT_hr_save[0]) MOD freq_plot_hr ) LT 0.1 ) $  ;20120223! need debug! does not work!!!
 THEN BEGIN
 
 if ( sw_debug eq 1 ) then  print, 'after plotting',UT_hr , plot_UT/3600.
 
 ;glon_deg=fltarr(NPTS2D,NMP)
-lp=129L ;jicamarca
+;jicamarca
+
+if ( title_res eq 'low') OR ( title_res eq 'low20120709' )  then $
+  lp=129L $;low
+else if title_res eq '2xdyn' then $
+  lp=70L $;2xdyn
+else if title_res eq 'dyn' then $
+  lp=34L ;dyn
+
 midpoint= JMIN_IN[lp] + ( JMAX_IS[lp] - JMIN_IN[lp] ) /2
-lt_hr=UT_hr + glon_deg[midpoint,mp_plot]/15.
-if ( lt_hr ge 24. ) then lt_hr=lt_hr MOD 24.
-print,'uthr',UT_hr,'lt_hr=',lt_hr,' mp_plot=',mp_plot,' glon=',glon_deg[midpoint,mp_plot]
+
+lt_hr2D=fltarr(NMP)
+for mp=0,NMP-1 do begin
+lt_hr2D[mp]=UT_hr + glon_deg[midpoint,mp]/15.
+if ( lt_hr2D[mp] ge 24. ) then lt_hr2D[mp]=lt_hr2D[mp] MOD 24.
+
+;if   ( UT_hr eq plot_UT/3600. ) then $
+; if ( sw_debug eq 1 ) then $
+; print,' mp=',mp,' glon=',glon_deg[midpoint,mp],'UT ',UT_hr,' LT ',lt_hr2D[mp]
+endfor
 
   if ( plot_type eq 0 ) then begin 
      if ( sw_debug eq 1 ) then     print, 'plotting contour: UT=',ut_hr
@@ -352,8 +501,8 @@ if( sw_debug eq 1 ) then  print,'plot_type',plot_type
      contour_plot_2d    $ 
   , JMIN_IN,JMAX_IS,Z_km,mlat_deg  $ 
   , plot_z,plot_VEXB,n_read   $
-  , UT_hr, plot_DIR, title_res,rundate,title_test,sw_debug, title_hemi,sw_anim,mp_plot, lt_hr, fac_window $
-  , sw_output2file
+  , UT_hr, plot_DIR, title_res,rundate,title_test,sw_debug, title_hemi,sw_anim,mp_plot, lt_hr2D, fac_window $
+  , sw_output2file, TEST
 
 
 
@@ -383,12 +532,12 @@ plot_x = fltarr(plot_type_max, k_species,FLDIM_max,n_file_plot)
      plot_x[*,*,*,*] =-999999999.999999
  FLDIM_plot=LONARR(n_file_plot)
 for   mp_plot0=mp_plot,mp_plot,1  do begin
-  lp_plot0= 100-1L
+  lp_plot0= 126-1L
 
 for i_file = 0,n_file_plot-1 do begin
 
 if (i_file eq 0 ) then begin
-  lp_plot=100-1  ;lp_plot0-2
+  lp_plot=126-1  ;lp_plot0-2
 ;d  mp_plot=mp_plot0
 endif else if (i_file eq 1 ) then begin
   lp_plot=136-1 ;lp_plot0-1L

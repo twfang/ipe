@@ -6,22 +6,27 @@
 , in2d,is2d,z_km,mlat_deg  $             ;input 
 , plot_z,plot_VEXB,n_read   $ ;input
 , uthr, plot_DIR, title_res,rundate,title_test,sw_debug, title_hemi,sw_anim,mp_plot, lt_hr,fac_window $
-, sw_output2file
+, sw_output2file, TEST
+
+sw_arw_vpara=0
+fac_arw_para=0.7
 
 n_read0=0L
-sw_plot_grid=1L  ;1: plot grid only
-sw_arrow_exb=0
+sw_plot_grid=0L  ;1: plot grid only
+sw_arrow_exb=0L
 reference_arrow=40L  ;m/s
 factor_arrow=5.
+
 lp_step_arrow=7
-lpmax_perp_trans=151-1
+lpmax_perp_trans=37;151-1
 mpstart=mp_plot;0
 mpstop=mp_plot;0
 mpstep=1
+;debug
+for i=mpstart, mpstop  do print,' mp', i,' LT',lt_hr[i]
 
-
-HTmin=   90.  ;min(yy)   ;75.   ;400. ;
-HTmax=600.;3.000000E+03;700.; 
+HTmin=90.  ;min(yy)   ;75.   ;400. ;
+HTmax=500. ;1.000000E+03;700.; 
 ; plot range
 if ( title_hemi eq 'NH' ) then begin
   gLATmax=+65.;+90.;-10.;
@@ -30,7 +35,7 @@ endif else if ( title_hemi eq 'SH' ) then begin
   gLATmax=-5.;+90.;-10.;
   gLATmin=-65.;+50.;-gLATmax;-27.; 
 endif else if ( title_hemi eq 'glb' ) then begin
-  gLATmax=+90.;+90.;-10.;
+  gLATmax=+90.;-10.;
   gLATmin=-gLATmax;-27.; 
 endif else if ( title_hemi eq 'eq' ) then begin
   gLATmax=+30.;+90.;-10.;
@@ -59,11 +64,11 @@ NPAR = size_result[2]
 
 
 N_LDCT=39;33
-lp_strt=28-1;  0+1 ;58;0;63 ;1-1L
+lp_strt=1;28-1;  0+1 ;58;0;63 ;1-1L
 lp_stop=NLP-1-1 ;138L;
-VarType_min=1L
-VarType_max=1L ;PAR-1
-VarType_step=1L
+VarType_min=7L
+VarType_max=7L ;PAR-1
+VarType_step=4L
 
 
 
@@ -82,23 +87,30 @@ if ( sw_debug eq 1 ) then  print, 'mp=',mp
 
 ;042004:
 ;if ( elhr le 0.00 ) then $
-FileID=time_string+'_'+STRTRIM(STRING( lt_hr, FORMAT='(F6.2)'),1)+'LT'+'_mp'+STRTRIM(STRING( (mp+1), FORMAT='(i3)'),1) ;mp+1:ipe convention
+FileID=time_string+'_'+STRTRIM(STRING( lt_hr[mp], FORMAT='(F6.2)'),1)+'LT'+'_mp'+STRTRIM(STRING( (mp+1), FORMAT='(i3)'),1)+'.'+TEST ;mp+1:ipe convention
 
 VarTitle=[ $
-'Te',$ ;'Ne',$ ;
-'No+',$
-'hr4',$;'NH+',$
-'NHe+','Te','To+','o+flux','Vo+']
+'Ne',$
+'Te',$ 
+'Ti',$ 
+'O+','H+','He+','N+','NO+','O2+','N2+','O+2D','O+2P' $
+;'Vpar(O+)',$
+;'hr4',$;'NH+',$
+;'NHe+','Te','To+','o+flux','Vo+'$
+]
 
-VarUnit= $
-[ $
-'[K]', $ ;Te
+VarUnit=[ $
 '[log!D10!N cm-3]',$
-'[J/kg/s]', $;hrate
-'[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]' $
-,'[K]','[K]' $
-,'[cm2 s-1]' $
-,'[m/s]']
+'[K]', $ ;Te
+'[K]', $ ;Ti
+'[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]' $
+;'[m/s]',$
+;'[J/kg/s]', $;hrate
+;'[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]' $
+;,'[K]','[K]' $
+;,'[cm2 s-1]' $
+;,'[m/s]'$
+]
 
 X_Title='MAGNETIC LATITUDE [deg.]'
 Y_Title='ALTITUDE [km]'
@@ -116,23 +128,23 @@ Y=dblarr(4)
 
 if ( sw_dif eq 0 ) then begin
 ARY_min0=[ $
-178.8, $
-           3.,$
-0.,$ ;hrate
- 3., 3., 3. $  ;densities
-        ,  178.8        ,  178.8  $      ;To+;Te
-        ,  -1.0E+13  $;flux [cm2 s-1]
-        ,  -3500.  $   
+           0.,$;           3.,$
+178.8, 178.8, $
+0.,0.,0.,0.,0.,0.,0.,0.,0., $
+; 3., 3., 3. $  ;densities
+;        ,  178.8        ,  178.8  $      ;To+;Te
+;        ,  -1.0E+13  $;flux [cm2 s-1]
+          -3500.  $   
          ] 
 
 ARY_max0=[ $
-4657. ,$
-           7.,$
-77.,$ ;hrate
- 7., 7., 7.  $ ;densities
-        ,  3600. ,   3600.  $    ;To+,Te
-        ,  +1.0E+13  $
-        ,  +3500.     $  ;vel [m s-1]
+           7.,$;           7.,$
+3600. ,4657. ,$
+6.,6.,6.,6.,6.,6.,6.,6.,6., $
+; 7., 7., 7.  $ ;densities
+;        ,  3600. ,   3600.  $    ;To+,Te
+;        ,  +1.0E+13  $
+          +3500.     $  ;vel [m s-1]
         ]
 endif else if ( sw_dif eq 1 ) then begin
 ARY_min0=[ $
@@ -154,7 +166,7 @@ col_min=0.   +0.3
 col_max=256. -0.3
 N_LVLs=100  ;intarr(2)       ; number of contour levels
 ;*** Load color table
-;LOADCT, N_LDCT
+LOADCT, N_LDCT
 
 
 
@@ -232,28 +244,28 @@ endif
 
 LOADCT, N_LDCT
 
-if ( sw_plot_grid eq 1 ) then begin ;20120328
-LOADCT, 0
+;if ( sw_plot_grid eq 1 ) then begin ;20120328
+;LOADCT, 0
 Plot, xx(0:istop), yy(0:istop)     $
 , Xstyle = 1, Xrange = [ gLATmin, gLATmax]  $
 , Ystyle = 1, Yrange = [ HTmin, HTmax]      $
 , TITLE = MainTitle+'   '+FileID, SUBTitle =' ' $   ;FileID $
 , XTITLE = X_Title,    YTITLE = Y_Title  $
 , PSYM =  3,  SYMSIZE=1.0  $
-, Color = 255. $ ;col_min  $
+;, Color = col_min  $
 ;, CharSize = 1.5 $
 ;, THICK    = 1.0 $
-, Pos = [X0/X_SIZE, Y0/Y_SIZE, (X0+dX)/X_SIZE, (Y0+dY)/Y_SIZE] ; $
-;,/NODATA
+, Pos = [X0/X_SIZE, Y0/Y_SIZE, (X0+dX)/X_SIZE, (Y0+dY)/Y_SIZE]  $
+,/NODATA
 
-if ( sw_output2file eq 1 ) then begin
-  print,'output to file=',plot_DIR+'ipe_grid.'+device_type
-  output_png,plot_DIR+'ipe_grid.v2.'+device_type
-endif
-LOADCT, N_LDCT
-RETURN
+;if ( sw_output2file eq 1 ) then begin
+;  print,'output to file=',plot_DIR+'ipe_grid.'+device_type
+;  output_png,plot_DIR+'ipe_grid.v2.'+device_type
+;endif
+;LOADCT, N_LDCT
+;RETURN
 
-endif ;( sw_plot_grid ne 1 ) then begin ;20120328
+;endif ;( sw_plot_grid ne 1 ) then begin ;20120328
 
 
 ;tmp20110414: plot grid only
@@ -266,16 +278,16 @@ ARY_maxZ=ARY_min0(VarType)
 
 for lp=lp_strt , lp_stop do begin
 
-;if ( sw_debug ) then $
-if ( (lp+1) ge 148 ) AND ( (lp+1) le 155 ) then $
- print,'lp=', lp, in2d[lp], mlat_deg[ in2d[lp] ]
+;d if ( sw_debug ) then $
+;if ( (lp+1) ge 148 ) AND ( (lp+1) le 155 ) then $
+;d  print,'lp=', lp, in2d[lp], mlat_deg[ in2d[lp] ]
 
 ; midpoint = JMIN_IN(lp) + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
   midpoint =      IN2D[lp]+ (     IS2D[lp] -    IN2D[lp]    )/2  -1 
 
-;if ( sw_debug ) then $
-if ( (lp+1) ge 148 ) AND ( (lp+1) le 155 ) then $
- print,(lp+1),midpoint,'mlat',mlat_deg[ midpoint ]  ,'midpoint z', z_km[ midpoint ],' max z',MAX( z_km[ IN2D[lp]:IS2D[lp] ] )
+;d if ( sw_debug ) then $
+;if ( (lp+1) ge 148 ) AND ( (lp+1) le 155 ) then $
+;d print,(lp+1),midpoint,'mlat',mlat_deg[ midpoint ]  ,'midpoint z', z_km[ midpoint ],' max z',MAX( z_km[ IN2D[lp]:IS2D[lp] ] )
 
 
   for ihem=0,1   do begin
@@ -318,15 +330,16 @@ Yd=z_km(ipts)    ;Yc     ;
 
 
 
+
  X=[Xa, Xb, Xc, Xd]  ;glat [deg]
  Y=[Ya, Yb, Yc, Yd]  ;altitude [km]
 
-if ( VarType ge 0 ) AND ( VarType le 3 ) then begin
+if ( VarType eq 0 ) OR ( VarType ge 3 ) then begin
 
-;temporary 0Te, 
-if ( VarType eq 0 ) or ( VarType eq 2 ) then $
-  Value = plot_z[n_read,VarType,mp,ipts] $
-else begin
+;;temporary 0Te, 
+;if ( VarType eq 0 ) or ( VarType eq 2 ) then $
+;  Value = plot_z[n_read,VarType,mp,ipts] $
+;else begin
 
 ;for 1[O+]
   density = $
@@ -336,18 +349,18 @@ plot_z[n_read,VarType, mp,ipts] * 1.0E-6  ;m-3 --> cm-3
     Value= ALOG10( density ) $
   else $ 
     Value= ALOG10( 0.1 )
-endelse
+;endelse
 
-endif else if ( VarType ge 4 ) then $
-  Value = plot_z[n_read,VarType,mp,ipts] $
+endif else if ( VarType eq 1 ) or ( VarType eq 2 ) then $
+  Value = plot_z[n_read,VarType,mp,ipts] ;$
 
 ;flux
-else if ( VarType eq 6 ) then $
-  Value = (plot_z[n_read,VarType,mp,ipts] - plot_z[n_read0,VarType,mp,ipts] )* 1.0E-4  $ ;m2 -->cm2  
+;else if ( VarType eq 6 ) then $
+;  Value = (plot_z[n_read,VarType,mp,ipts] - plot_z[n_read0,VarType,mp,ipts] )* 1.0E-4  $ ;m2 -->cm2  
 
 ;velocity
-else if ( VarType eq 7 ) then $
-  Value = plot_z[n_read,VarType,mp,ipts] - plot_z[n_read0,VarType,mp,ipts]
+;else if ( VarType eq 4 ) then $
+;  Value = plot_z[n_read,VarType,mp,ipts]
 
 
 ; save actual MIN & MAX values
@@ -384,6 +397,41 @@ POLYFILL, X , Y       $      ;[, Z]]
 ;[, /T3D] 
 ;[, THICK=value] 
 ;[, Z=value]
+
+if ( sw_arw_vpara eq 1 ) AND $
+ ( (lp MOD lp_step_arrow) eq 2 ) AND $
+ ( (ipts MOD 10) eq 0 ) then begin
+x2= (mlat_deg[ipts+1]-mlat_deg[ipts])*(mlat_deg[ipts+1]-mlat_deg[ipts])
+y2= (z_km[ipts+1]-z_km[ipts])*(z_km[ipts+1]-z_km[ipts])
+dr=SQRT( x2 + y2 )
+cosI=SQRT( x2 ) / dr
+sinI=SQRT( y2 ) / dr
+;
+X0_arrow = mlat_deg[ipts]
+Y0_arrow = z_km[ipts]
+Vpara    = plot_z[n_read,VarType,mp,ipts]*fac_arw_para
+dX_arrow = Vpara *cosI
+dY_arrow = Vpara *sinI
+X1_arrow = X0_arrow + dX_arrow
+Y1_arrow = Y0_arrow + dY_arrow
+
+LOADCT, 0
+head_thick=2.0
+head_size=!D.X_SIZE / 64.*0.5 
+if ( sw_debug ) then $
+ print, 'head_size', head_size
+;
+  ARROW, X0_arrow, Y0_arrow, X1_arrow, Y1_arrow  $
+, /DATA       $ ;???
+, /NORMALIZED $
+, HSIZE=head_size $
+, COLOR=col_max  $ ;index] $
+, HTHICK=head_thick $ ;value] $
+;, /SOLID] $
+, THICK=3 ;value]
+LOADCT, N_LDCT
+endif ;( sw_arw_vpara ) then begin
+
 
 endif ;( glatd(ipts  ,ifl-1) gt gLATmin ) and ( glatd(ipts  ,ifl-1) lt gLATmax) thenbegin
 endif  ;( gpz(ipts  ,ifl-1) gt HTmin ) then begin
@@ -429,7 +477,8 @@ if ( sw_arrow_exb eq 1 ) then begin
 X0_arrow = gLATmax +  2.0
 Y0_arrow = HTmin   - 60.
 dX_arrow = 0.
-dY_arrow = reference_arrow * factor_arrow
+;dY_arrow = reference_arrow * factor_arrow
+dY_arrow = reference_arrow * fac_arw_para
 X1_arrow = X0_arrow + dX_arrow
 Y1_arrow = Y0_arrow + dY_arrow
 

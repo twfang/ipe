@@ -4,15 +4,16 @@ fac_window=1.
 sw_dif=0
 sw_output2file=1
 
-HOME_DIR='/home/Naomi.Maruyama/iper'
-TEST='v55';43';
+HOME_DIR='/home/Naomi.Maruyama/wamns'
+TEST='v57/but91800';43';
 plot_UT =$
+24.0
 ;16.00
-24.002;v55
+;24.002;v55
 ;23.07;v43
 ;23.83;v45
 ; freq_plot_hr = (60.*12.)/60. ;frequency of plotting in hr
-freq_plot_hr=300./3600.;0.25000
+freq_plot_hr=900./3600.;0.25000
 ;READ, freq_plot_hr,PROMPT='Enter frequency of plotting in hour:' 
 
 title_hemi='NH'

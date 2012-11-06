@@ -1,23 +1,27 @@
 ;pro plot_efield ;shorter name
 pro plt_ef
-utime_min=82706;141206L
-utime_max=utime_min+86400;83606 ;230306L ;314006L ;to plot ExB time variation on the 6th panel 
-freq_plot_sec=(utime_max-utime_min);900 ;3600L*6
+utime_min=422700;121500;141206L
+utime_max=434400;;135900;utime_min+86400;83606 ;230306L ;314006L ;to plot ExB time variation on the 6th panel 
+freq_plot_sec=900.;(utime_max-utime_min);900 ;3600L*6
 sw_debug=0L
-sw_plot_exb=1L ;1
+sw_plot_exb=0L ;1
+if sw_plot_exb eq 0 then iplot_max=5 else $
+if sw_plot_exb eq 1 then iplot_max=4
 ;HOMEDIR='/lfs0/projects/idea/maruyama/sandbox/ipe/'
 HOMEDIR='/home/Naomi.Maruyama/'
-runDIR=HOMEDIR+'iper/'
-runDATE='20120306'
+;runDIR=HOMEDIR+'iper/'
+runDIR=HOMEDIR+'wamns/'
+figDIR=HOMEDIR+'iper/'
 TEST0='3d'
 TEST1='trans'
-TEST2='v52'
-SW_range=1L
-plot_NH=1L
+TEST2='v66.1'
+runDATE='20120509'
 plot_DIR=$
-runDIR+'fig/'+TEST2+'/'
+figDIR+'fig/'+TEST2+'/'
 ;runDIR+'fig/efield/'+TEST2+'/'
 
+SW_range=1L
+plot_NH=1L
   var_title=['pot130[kV]','ed1130[mV/m]','ed2130[mV/m]','pot130-mlat90[kV]','ed190[mV/m]','ed290/sini'] 
 if( SW_range eq 1 ) then  begin
 ;  value_min_fix=[  -30.,     -20.,    -25. ,-30.,-20.]
@@ -29,8 +33,8 @@ if( SW_range eq 1 ) then  begin
 endif
 
 utime=0L
-freq_output=5 ;min
-n_read_max=(60/freq_output)*24 +1
+freq_output=900/60 ;min
+n_read_max=15;(60/freq_output)*24 +1
 utsec_save=fltarr(n_read_max)
 utsec_save[*]=-9999L
 
@@ -61,11 +65,11 @@ formatF1='(i4,f10.4)'
 formatI='(i12)'
 
 input_DIR=$
-runDIR+TEST2+'/bk20120306mp8nonstop/'
+runDIR+TEST2+'/bkup69/'
 ;runDIR+runDATE+'.'+TEST0+'.'+TEST1+'.'+TEST2+'/But'+STRTRIM( string(utime_max, FORMAT='(i7)'),1 )+'error/'
 ;input_DIR=runDIR+runDATE+'.'+TEST0+'.'+TEST1+'.'+TEST2+'/backup20111108/'
-;20120125: openr, LUN10, input_DIR+'fort.2010', /GET_LUN
-openr, LUN10, input_DIR+'fort.2009', /GET_LUN ;20120125utime
+openr, LUN10, input_DIR+'fort.2010', /GET_LUN
+;openr, LUN10, input_DIR+'fort.2009', /GET_LUN ;20120125utime
 openr, LUN0, input_DIR+'fort.2000', /GET_LUN
 openr, LUN1, input_DIR+'fort.2001', /GET_LUN
 openr, LUN2, input_DIR+'fort.2002', /GET_LUN
@@ -77,7 +81,7 @@ readf, LUN4, mlon130,  FORMAT=formatF
 openr, LUN7, input_DIR+'fort.2007', /GET_LUN
 readf, LUN7, mlat90_0,  FORMAT=formatF
 openr, LUN8, input_DIR+'fort.2008', /GET_LUN
-;20120125: openr, LUN9, input_DIR+'fort.2009', /GET_LUN
+openr, LUN9, input_DIR+'fort.2009', /GET_LUN
 openr, LUN6, input_DIR+'fort.2006', /GET_LUN
 string='GL'
 readf, LUN6 , string
@@ -111,10 +115,11 @@ readf, LUN1, ed1130,  FORMAT=formatE
 readf, LUN2, ed2130,  FORMAT=formatE
 readf, LUN8, ed190,  FORMAT=formatE
 ;20120125: readf, LUN9, ed290,  FORMAT=formatE
+mp=10-1L
 ;mp=0L
 ;mp=17L ;st santin
 ;mp=4-1L
-mp=8-1L
+;mp=8-1L
 ;mp=60-1L
 lp=129L  ;-9.05[deg] mp=0;jicamarca: ht=254.107km
 ;lp=45L  ;-31.43605[deg];mp=0  Arecibo:31; ht=2504.20km
@@ -128,9 +133,9 @@ if ( n_read eq 0 ) then  print,'mp=',mp,' lp=',lp,' mlat90=',mlat90_2d[mp,lp]
 title_exb='lat='+STRTRIM( string(mlat90_2d[mp,lp], FORMAT='(F6.2)'),1 )+' mp='+STRTRIM( string((mp+1), FORMAT='(i2)'),1 ) ;IDL convention
 
 
-if $
-( utime gt utsec_save[0]) and $
-( ( (utime-utsec_save[0]) MOD freq_plot_sec ) LT 0.00001 ) then begin
+;if $
+;( utime gt utsec_save[0]) and $
+;( ( (utime-utsec_save[0]) MOD freq_plot_sec ) LT 0.00001 ) then begin
 iwindow=0L
 DEVICE, RETAIN=2, DECOMPOSED=0
 WINDOW,iwindow,XSIZE=900,YSIZE=650
@@ -157,8 +162,7 @@ endif
 
 charsize_colorbar=3.4
 format_colorbar='(f6.2)'
-;20120125: for iplot=0,5 do begin
-for iplot=0,4 do begin
+for iplot=0,iplot_max do begin
 if ( iplot eq 0 ) then begin
  zz=poten*1.0E-3   ;V-->kV
 endif else if ( iplot eq 1 ) then begin
@@ -261,7 +265,7 @@ filename=plot_DIR+'ts_efield.'+'UTsec'+STRTRIM( string(utime, FORMAT='(i6)'),1 )
 if ( sw_plot_exb eq 1 ) and ( utime eq utime_max ) then begin
 
 ;VEXB(mp,lp)
-  n_max =12*24+1L
+  n_max =16L;12*24+1L
   plot_VEXB_ut = fltarr(n_max)
   plot_VEXB    = fltarr(n_max,3)
 n_max1=0L
@@ -283,6 +287,9 @@ if ( lp eq 130-1 ) then begin ;jicamarca
   endif else if ( mp eq 8-1L ) then begin
     Bmag90=2.923e-05 ;
     glon=316.5370
+  endif else if ( mp eq 10-1L ) then begin
+    Bmag90=2.829e-05 ;
+    glon=327.2482
   endif else if ( mp eq 19-1L ) then begin
     Bmag90=3.242e-05 ;[tesla] at h_ref=90km for lp=129 mlat=-9.05
     glon=7.1758
@@ -362,8 +369,8 @@ oplot,slt[0:n_max1*2+1],exb[0:n_max1*2+1] *0.0 $
 endif
 
 output_png, filename
-BREAK ;exit from the while loop
-endif ;( ( (utime-utime_save) MOD freq_plot_sec ) LT 0.00001 ) then begin
+;BREAK ;exit from the while loop
+;endif ;( ( (utime-utime_save) MOD freq_plot_sec ) LT 0.00001 ) then begin
 
 endwhile ;(eof(LUN10) eqq 0 ) do begin
 

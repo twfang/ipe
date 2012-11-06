@@ -1,16 +1,20 @@
 ;opening files
-pro open_fort168, n_file,LUN,sw_debug,title_hemi,lp_title,sw_fort
+pro open_fort168, n_file,LUN,sw_debug,title_hemi,lp_title,sw_fort,TEST
 
-HOME_DIR='/lfs0/projects/idea/maruyama/sandbox/ipe/run/'
+HOME_DIR=$
+'/home/Naomi.Maruyama/iper/'
+;'/lfs0/projects/idea/maruyama/sandbox/ipe/run/'
 
 input_DIR=['','','','']
 rundate='20110817'
 rundate1='20110813'
 versionD='1d'
-test='high'
+;test='high'
 test1='low'
 ;blue lp10
-input_DIR[0]=rundate+'.'+versionD+'.lp'+STRTRIM( string(   lp_title,     FORMAT='(i2)'),1)+'.'+test1+'/'
+input_DIR[0]=$
+TEST+'/'
+;rundate+'.'+versionD+'.lp'+STRTRIM( string(   lp_title,     FORMAT='(i2)'),1)+'.'+test1+'/'
 ;red  lp11
 input_DIR[1]=rundate+'.'+versionD+'.lp'+STRTRIM( string(  (lp_title+1),  FORMAT='(i2)'),1)+'.'+test1+'/'
 ;green lp12
