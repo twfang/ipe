@@ -59,9 +59,9 @@
       IF ( j0(1,1)<0 ) THEN
 
 ! array initialization
-        theta90_rad(:)=zero
-        coslam_m(:)=zero
-        lpconj(:)=0
+        theta90_rad = zero
+        coslam_m    = zero
+        lpconj      = 0
 
 !NOTE: ylatm-90: magnetic latitude [deg] --> ylatm:degrees from SP
 ! find out grid point at r0=90km(ht1) (theta90,phi90) of ylonm(ii),ylatm(jj) using dipole assumption
@@ -92,22 +92,22 @@
           lpconj(lp) = NLP - lp + NLP + 1
           write(unit=2006,FMT='(i4,f10.4)')lpconj(lp)                   &
      &                        ,(90.-plasma_grid_GL(IN,lp)*rtd)
-          coslam_m(lpconj(lp))=COS(pi*0.5-plasma_grid_GL(IN,lp))
+          coslam_m(1,lp)=COS(pi*0.5-plasma_grid_GL(IN,lp))
 
-          if(coslam_m(lpconj(lp))<=0.or.coslam_m(lpconj(lp))>=1.)then
+          if(coslam_m(1,lp)<=0.or.coslam_m(1,lp)>=1.)then
             print *,'sub-get_e:NH!STOP! INVALID coslam!',mp,lp          &
-     &             ,coslam_m(lpconj(lp)),(90.-plasma_grid_GL(IN,lp)*rtd)
+     &             ,coslam_m(1,lp),(90.-plasma_grid_GL(IN,lp)*rtd)
             STOP
           end if
 
           IS = JMAX_IS(lp)
           write(unit=2006,FMT='(i4,f10.4)') lp                          &
      &         ,(90.-plasma_grid_GL(IS,lp)*rtd)
-          coslam_m(lp) = COS( pi*0.5-plasma_grid_GL(IS,lp) )
+          coslam_m(2,lp) = COS( pi*0.5-plasma_grid_GL(IS,lp) )
 
-          if(coslam_m(lpconj(lp))<=0.or.coslam_m(lpconj(lp))>=1.)then
+          if(coslam_m(1,lp)<=0.or.coslam_m(1,lp)>=1.)then
             print *,'sub-get_e:SH!STOP! INVALID coslam!',mp,lp          &
-     &             ,coslam_m(lp),(90.-plasma_grid_GL(IS,lp)*rtd)
+     &             ,coslam_m(2,lp),(90.-plasma_grid_GL(IS,lp)*rtd)
             STOP
           end if
 
@@ -251,12 +251,12 @@
           jj1=j1(1,lp)
           pot_i1=( potent(i1,jj0)+potent(i1,jj1) )*0.50 
           pot_i0=( potent(i0,jj0)+potent(i0,jj1) )*0.50
-          if (r<=0..or.coslam_m(lpconj(lp))==0..or.d_phi_m==0.)then
+          if (r<=0..or.coslam_m(1,lp)==0..or.d_phi_m==0.)then
             print *,'sub-get_e:NH!STOP! INVALID',lp,lpconj(lp),mp,r     &
-     &             ,coslam_m(lpconj(lp)),d_phi_m
+     &             ,coslam_m(1,lp),d_phi_m
             STOP
           endif
-          ed1_90(lpconj(lp),mp)=-1.0/r/coslam_m(lpconj(lp))             &
+          ed1_90(lpconj(lp),mp)=-1.0/r/coslam_m(1,lp)                   &
      &                         *(pot_i1-pot_i0)/d_phi_m
 !         SH
 !         d          potent_i0=LINEAR_INTERPOLATION(theta90_rad(j0(1,lp)) 
@@ -271,15 +271,15 @@
           jj1=j1(2,lp)              !2:SH
           pot_i1=( potent(i1,jj0)+potent(i1,jj1) )*0.50
           pot_i0=( potent(i0,jj0)+potent(i0,jj1) )*0.50
-          if (r<=0..or.coslam_m(lp)==0..or.d_phi_m==0.)then
+          if (r<=0..or.coslam_m(2,lp)==0..or.d_phi_m==0.)then
             print *,'sub-get_e:SH!STOP! INVALID',lp,mp,r                &
-     &             ,coslam_m(lp),d_phi_m
+     &             ,coslam_m(2,lp),d_phi_m
             STOP
           endif
-          ed1_90(lp,mp)=-1.0/r/coslam_m(lp)*(pot_i1-pot_i0)/d_phi_m
+          ed1_90(lp,mp)=-1.0/r/coslam_m(2,lp)*(pot_i1-pot_i0)/d_phi_m
 !         computing ed2_90(lp,mp) continues
 !         calculate sinIm !eq(3.7)
-          cos2Lambda_m = coslam_m(lp) * coslam_m(lp)      ! 0<cos2<1
+          cos2Lambda_m = coslam_m(2,lp) * coslam_m(2,lp)      ! 0<cos2<1
           sinLambda_m(1)  = + SQRT( 1.0 - cos2Lambda_m )  !>0 ---NH 
           sinLambda_m(2)  = - SQRT( 1.0 - cos2Lambda_m )  !<0 ---SH 
           sinI_m(1:2)= 2.0*sinLambda_m(1:2)/SQRT(4.0-3.0*cos2Lambda_m)

@@ -88,7 +88,7 @@ if(sw_debug) &
 !print *,'VEXB[m/s]',VEXB !%east,VEXB%north,VEXB%up
 
 ! assume Lambda_m in Richmond 95 equals to theta_t1
-        cos2Lambda_m = coslam_m(lp0) * coslam_m(lp0) ! 0<cos2<1
+        cos2Lambda_m = coslam_m(ihem,lp) * coslam_m(ihem,lp) ! 0<cos2<1
         IF ( ihem==1 ) THEN
           sinLambda_m  = + SQRT( 1.0 - cos2Lambda_m )  !>0 ---NH 
         ELSE IF ( ihem==2 ) THEN 

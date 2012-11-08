@@ -46,7 +46,7 @@
      &          j1      (2,NLP    ),
      &          Ed1_90  (2*NLP,NMP),
      &          Ed2_90  (2*NLP,NMP),
-     &          coslam_m(2*NLP    ),
+     &          coslam_m(2,NLP    ),
      &          lpconj  (  NLP    ),
      &          STAT=status       )
       if(status /=0) then
