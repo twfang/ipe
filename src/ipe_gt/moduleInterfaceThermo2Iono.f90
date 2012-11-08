@@ -45,23 +45,23 @@ CONTAINS
 
 
 SUBROUTINE INTERFACE__thermosphere_to_FIXED_GEO ( &
-           GIP_switches, &
-           thermospheric_model_name, &
-           ht_dim,  &
-           lat_dim, &
-           lon_dim, &
-           therm_o_density, &
-           therm_o2_density, &
-           therm_n2_density, & 
+           GIP_switches, & ! input
+           thermospheric_model_name, &  ! input
+           ht_dim,  &   ! input
+           lat_dim, &   ! input
+           lon_dim, &   ! input
+           therm_o_density, &   ! input
+           therm_o2_density, &   ! input
+           therm_n2_density, &    ! input
            !! therm_NO_density, &   ! not needed now
            !! therm_N4S_density, &  ! not needed now
            !! therm_N2D_density, &  ! not needed now
-           therm_Tn, &
-           therm_Un, &
-           therm_Vn, &
-           therm_qion3d, &
-           therm_elx, &
-           therm_ely, &
+           therm_Tn, &   ! input
+           therm_Un, &   ! input
+           therm_Vn, &   ! input
+           therm_qion3d, &   ! input
+           therm_elx, &   ! input
+           therm_ely, &   ! input
 
            !! AURORA VARIABLES NOT NEEDED FOR IPE YET lrm20110929
            !! therm_qo2p_aurora, therm_qop_aurora, therm_qn2p_aurora, &

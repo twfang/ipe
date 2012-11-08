@@ -43,6 +43,9 @@ USE modSizeFixedGridIono, ONLY : nFixedGridIonoHeights, &
 
 USE modSizeFixedGridThermo, ONLY : nFixedGridThermoHeights
 
+! sizes of thermosphere pressure grid
+USE modSizeThermo, ONLY : GT_ht_dim, GT_lat_dim, GT_lon_dim
+
 
 USE moduleInterfaceIono2Thermo, ONLY : INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO, &
                                        readIPEtoGeoGrid, INTERFACE__FIXED_GRID_to_THERMO
@@ -57,11 +60,11 @@ IMPLICIT NONE
 INTEGER (KIND=int_prec)   :: utime ! universal time [sec]
       
       
-! Variables for GT_thermosphere -------------------  PUT THIS IN A MODULE ????*****
+! Variables for GT_thermosphere -------------------  NOW THIS IN A MODULE
 ! Parameters
-integer, parameter :: GT_ht_dim = 15
-integer, parameter :: GT_lat_dim = 91
-integer, parameter :: GT_lon_dim = 20
+!integer, parameter :: GT_ht_dim = 15
+!integer, parameter :: GT_lat_dim = 91
+!integer, parameter :: GT_lon_dim = 20
 
 
 ! Parameters for IPE fixed grid  - in modSizeFixedGridIono module
