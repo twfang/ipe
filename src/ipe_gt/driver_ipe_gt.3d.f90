@@ -402,12 +402,12 @@ LOGICAL, parameter :: debugGridIPE = .FALSE.
 !----------------------
 ! Files & Directories
 !----------------------
-CHARACTER(140) :: geoToMagFileName
-CHARACTER(160) :: GT_input_dataset , GT_output_dataset
-character(140) :: ionoStartDir
-character(140) :: staticFileDir
-character(140) :: debugDir
-CHARACTER(140) :: giptogeoFileName
+CHARACTER(len=140) :: geoToMagFileName
+CHARACTER(len=200) :: GT_input_dataset , GT_output_dataset
+character(len=140) :: ionoStartDir
+character(len=140) :: staticFileDir
+character(len=140) :: debugDir
+CHARACTER(len=140) :: giptogeoFileName
 
 
 ! should be inputs???

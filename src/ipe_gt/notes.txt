@@ -13,7 +13,7 @@ IPE input file : IPE.inp  (have to copy IPE_GT.inp on top of it)
 
 nameListGTIPE.txt :
 GT_output_dataset = 
-'/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONOSPHERE/gtgipIPE/OUTPUT/testGTIPE.nc'
+'/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/OUTPUT/testGTIPE.nc'
 
 FOR DEBUGGING :
 
@@ -27,7 +27,7 @@ For debug option output :
 
 Use input file :
 
-/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONOSPHERE/gtgipIPE/INPUT/
+/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/INPUT/
 Day_80_180_dipole_test.gt.20110913.v1.nc
 
 
@@ -87,9 +87,9 @@ driver_ipe_gt.3d.f90
 
 Input, Output files, hardwired in driver_ipe_gt.3d.f90 :
 
-GT_input_dataset = '/mtb/save/wx20lrm/DATA/IONOSPHERE/gtgipIPE/INPUT/Day_80_180_dipole_test.gt.20110913.v1.nc'
-GT_output_dataset = '/mtb/save/wx20lrm/DATA/IONOSPHERE/gtgipIPE/OUTPUT/Day_80_180_testInterp.nc'
-static_file_location = '/mtb/save/wx20lrm/DATA/IONOSPHERE/static_files/'
+GT_input_dataset = '/mtb/save/wx20lrm/DATA/IONO/gtgipIPE/INPUT/Day_80_180_dipole_test.gt.20110913.v1.nc'
+GT_output_dataset = '/mtb/save/wx20lrm/DATA/IONO/gtgipIPE/OUTPUT/Day_80_180_testInterp.nc'
+static_file_location = '/mtb/save/wx20lrm/DATA/IONO/static_files/'
 
 input for running a full test :
 fullTestIPE.inp

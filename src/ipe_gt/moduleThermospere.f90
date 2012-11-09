@@ -69,7 +69,7 @@
        integer :: irec_number  ! for writing to the graphics file
        integer :: iout_high  !  counter for # of times gt_thermosphere has been called
 
-CHARACTER*100 :: graphics_file
+CHARACTER(len=200) :: graphics_file
 
 CONTAINS
 
@@ -1963,9 +1963,9 @@ REAL*8, parameter  :: PI = 3.14159
 !           GRAV=9.5, PI=3.14159, &
 !           P0=1.0376, GSCON=8.3141E+03)
 
-
-INTEGER :: ilenp1
-CHARACTER*100 :: filer
+! these not needed lrm20121108
+!INTEGER :: ilenp1  
+!CHARACTER*100 :: filer
 
 
 REAL*8 :: zn
@@ -1988,8 +1988,8 @@ LOGICAL, parameter :: debugInit = .FALSE.
 !------------------------
 ! Initialize  variables - lrm
 !------------------------
-ilenp1 = 0
-filer = 'xxxxxx'
+!ilenp1 = 0 not needed lrm20121108
+!filer = 'xxxxxx'  not needed lrm20121108
 zn = 0.
 ty = 0.
 cp = 0.
@@ -2035,19 +2035,19 @@ mj2 = ixx - mj1
 !----------------
 ! input datasets
 !----------------
-ilenp1 = INDEX(GT_input_dataset,' ')
+!ilenp1 = INDEX(GT_input_dataset,' ')
 WRITE (6,*) 'GT_thermosphere_INIT :     '
-filer = GT_input_dataset(1:ilenp1-1)
-WRITE (6,*) 'GT_thermosphere_INIT : INPUT DATA SET :  ',filer
+!filer = GT_input_dataset(1:ilenp1-1)
+WRITE (6,*) 'GT_thermosphere_INIT : INPUT DATA SET :  ', GT_input_dataset
 
 !----------------
 ! output datasets
 !----------------
-ilenp1 = INDEX(GT_output_dataset,' ')
+!ilenp1 = INDEX(GT_output_dataset,' ')
 WRITE (6,*) 'GT_thermosphere_INIT :   '
 
-filer = GT_output_dataset(1:ilenp1-1)
-WRITE (6,*) 'GT_thermosphere_INIT : OUTPUT DATA SET :  ',filer
+!filer = GT_output_dataset(1:ilenp1-1)
+WRITE (6,*) 'GT_thermosphere_INIT : OUTPUT DATA SET :  ', GT_output_dataset
 
 !-------------------------------
 ! Counters for graphics output
@@ -2057,8 +2057,10 @@ iout_high = 0 ! counter for # of thermospheric calls
 
 !-------------------------------
 ! Graphics output file name 
+! Changed graphics_file name creation lrm20121108
 !-------------------------------
-graphics_file = trim(GT_output_dataset(1:ilenp1-1)//'.graphics.nc')
+!graphics_file = trim(GT_output_dataset(1:ilenp1-1)//'.graphics.nc')
+graphics_file = trim(GT_output_dataset)//'.graphics.nc'
 call create_gt_netcdf_graphics(graphics_file)
 
 !-----------------------------------------------

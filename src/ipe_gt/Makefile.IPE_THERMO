@@ -40,6 +40,7 @@ LFLAGS=-L. -L$(NETCDF)/lib -lnetcdf  $(ERRORFLAGS)
 SRC0	= module_precision.f90 \
           modSizeFluxTube.f90 \
           modSizeFixedGridThermo.f90 \
+          modSizeThermo.f90 \
           modSizeFixedGridIono.f90 \
           moduleAmplitude.f90 \
           moduleTidalPhase.f90 \
