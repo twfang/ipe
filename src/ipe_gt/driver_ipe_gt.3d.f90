@@ -110,7 +110,7 @@ INTEGER, parameter :: unitCheckThermoInterp = 14
 !---------------------------------------------------
 ! Write out the Thermospheric interpolated values??
 !---------------------------------------------------
-LOGICAL, parameter :: debugThermoInterp = .FALSE.
+LOGICAL, parameter :: debugThermoInterp = .falsE.
 CHARACTER(LEN=*), PARAMETER :: debugThermoInterpFileName = 'interpOut.dat'
 
 
@@ -1423,6 +1423,7 @@ end if
            Tn_K_FOR_IPE, & ! Temperature_K_FROM_GT, &        ! was : therm_model_Tn
            Vn_Eastwards_ms1_FOR_IPE, & ! wind_eastwards_ms1_FROM_GT, &  ! was : therm_model_Vy
            Vn_Southwards_ms1_FOR_IPE, &  ! wind_southwards_ms1_FROM_GT, &   ! was : therm_model_Vx
+           Vn_Upwards_ms1_FOR_IPE, &  ! wind_upwards_ms1_from_gt,  added lrm20121108
            qion3d_FOR_IPE, & ! qion3d, &                       ! was : therm_model_qion3d
            elx_FOR_IPE, & ! exns, &  ****                       ! was : therm_model_elx
            ely_FOR_IPE, & ! eyns, &  ****                      ! was : therm_model_ely
@@ -1488,7 +1489,7 @@ iwrite_plasma_interface = 0
         !! N4S_density_fixed_ht, &   not needed now
         !! N2D_density_fixed_ht, &   not needed now
 
-        Vx_fixed_ht, Vy_fixed_ht, wvz_fixed_ht, tts_fixed_ht, & 
+        Vx_fixed_ht, Vy_fixed_ht, wvz_fixed_ht, tts_fixed_ht, &   ! inputs
 
         !! telec_fixed_ht, &  not needed now
 

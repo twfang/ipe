@@ -41,8 +41,8 @@ DATA fixed_heights_km /90.,95.,100.,105.,110.,115.,120.,125., &
 
 CONTAINS
 
-!---------------------------------------------------------------------------
-
+!--------------------------------------------------------------------------------------------
+! This subroutine interpolates variables from the GT pressure grid to the fixed height grid
 
 SUBROUTINE INTERFACE__thermosphere_to_FIXED_GEO ( &
            GIP_switches, & ! input
@@ -56,9 +56,10 @@ SUBROUTINE INTERFACE__thermosphere_to_FIXED_GEO ( &
            !! therm_NO_density, &   ! not needed now
            !! therm_N4S_density, &  ! not needed now
            !! therm_N2D_density, &  ! not needed now
-           therm_Tn, &   ! input
-           therm_Un, &   ! input
-           therm_Vn, &   ! input
+           therm_Tn, &   ! input : temperature from GT
+           therm_Un, &   ! input : eastward wind from GT
+           therm_Vn, &   ! input : southward wind from GT
+           therm_Zn, &   ! input : upward wind from GT
            therm_qion3d, &   ! input
            therm_elx, &   ! input
            therm_ely, &   ! input
@@ -77,8 +78,9 @@ SUBROUTINE INTERFACE__thermosphere_to_FIXED_GEO ( &
            !! N4S_density_fixed_ht, &
            !! N2D_density_fixed_ht, &                    ! output
 
-           Vx_fixed_ht, Vy_fixed_ht, wvz_fixed_ht, tts_fixed_ht, &          ! output
-           qion3d_fixed_ht, elx_fixed_ht, ely_fixed_ht)                     ! output
+           Vx_fixed_ht, Vy_fixed_ht, wvz_fixed_ht, & ! wind  ! output
+           tts_fixed_ht, &    ! output
+           qion3d_fixed_ht, elx_fixed_ht, ely_fixed_ht)         ! output
 
            ! AURORA VARIABLES NOT NEEDED FOR IPE YET lrm20110929
            !qo2p_aurora_fixed_ht, qop_aurora_fixed_ht, qn2p_aurora_fixed_ht, & ! output
@@ -96,8 +98,12 @@ REAL(kind=8) :: therm_NO_density(ht_dim,lon_dim,lat_dim)
 REAL(kind=8) :: therm_N4S_density(ht_dim,lon_dim,lat_dim)
 REAL(kind=8) :: therm_N2D_density(ht_dim,lon_dim,lat_dim)
 REAL(kind=8) :: therm_Tn(ht_dim,lon_dim,lat_dim)
+
+! wind
 REAL(kind=8) :: therm_Un(ht_dim,lon_dim,lat_dim)
 REAL(kind=8) :: therm_Vn(ht_dim,lon_dim,lat_dim)
+REAL(kind=8) :: therm_Zn(ht_dim,lon_dim,lat_dim)
+
 REAL(kind=8) :: therm_qion3d(ht_dim,lon_dim,lat_dim)
 REAL(kind=8) :: therm_elx(ht_dim,lon_dim,lat_dim)
 REAL(kind=8) :: therm_ely(ht_dim,lon_dim,lat_dim)
@@ -148,9 +154,15 @@ REAL(kind=8) interface_n2_density(interface_hts,91,20)
 REAL(kind=8) interface_NO_density(interface_hts,91,20)
 REAL(kind=8) interface_N4S_density(interface_hts,91,20)
 REAL(kind=8) interface_N2D_density(interface_hts,91,20)
+
+! temperature
 REAL(kind=8) interface_Tn(interface_hts,91,20)
+
+! wind
 REAL(kind=8) interface_Un(interface_hts,91,20)
 REAL(kind=8) interface_Vn(interface_hts,91,20)
+REAL(kind=8) interface_Zn(interface_hts,91,20)
+
 REAL(kind=8) interface_qion3d(interface_hts,91,20)
 REAL(kind=8) interface_elx(interface_hts,91,20)
 REAL(kind=8) interface_ely(interface_hts,91,20)
@@ -219,15 +231,26 @@ REAL(kind=8) N4S_den_p_12_log
 REAL(kind=8) N2D_den_p_u12_log
 REAL(kind=8) N2D_den_p_l12_log
 REAL(kind=8) N2D_den_p_12_log
+
+! temperature
 REAL(kind=8) Tn_p_u12
 REAL(kind=8) Tn_p_l12
 REAL(kind=8) Tn_p_12
+
+! wind
 REAL(kind=8) Un_p_u12
 REAL(kind=8) Un_p_l12
 REAL(kind=8) Un_p_12
+
 REAL(kind=8) Vn_p_u12
 REAL(kind=8) Vn_p_l12
 REAL(kind=8) Vn_p_12
+
+REAL(kind=8) Zn_p_u12
+REAL(kind=8) Zn_p_l12
+REAL(kind=8) Zn_p_12
+
+
 REAL(kind=8) qion3d_p_u12
 REAL(kind=8) qion3d_p_l12
 REAL(kind=8) qion3d_p_12
@@ -278,15 +301,25 @@ REAL(kind=8) N4S_den_p_22_log
 REAL(kind=8) N2D_den_p_u22_log
 REAL(kind=8) N2D_den_p_l22_log
 REAL(kind=8) N2D_den_p_22_log
+
+! temperature
 REAL(kind=8) Tn_p_u22
 REAL(kind=8) Tn_p_l22
 REAL(kind=8) Tn_p_22
+
+! wind
 REAL(kind=8) Un_p_u22
 REAL(kind=8) Un_p_l22
 REAL(kind=8) Un_p_22
+
 REAL(kind=8) Vn_p_u22
 REAL(kind=8) Vn_p_l22
 REAL(kind=8) Vn_p_22
+
+REAL(kind=8) Zn_p_u22
+REAL(kind=8) Zn_p_l22
+REAL(kind=8) Zn_p_22
+
 REAL(kind=8) qion3d_p_u22
 REAL(kind=8) qion3d_p_l22
 REAL(kind=8) qion3d_p_22
@@ -337,15 +370,25 @@ REAL(kind=8) N4S_den_p_11_log
 REAL(kind=8) N2D_den_p_u11_log
 REAL(kind=8) N2D_den_p_l11_log
 REAL(kind=8) N2D_den_p_11_log
+
+! temperature
 REAL(kind=8) Tn_p_u11
 REAL(kind=8) Tn_p_l11
 REAL(kind=8) Tn_p_11
+
+! wind
 REAL(kind=8) Un_p_u11
 REAL(kind=8) Un_p_l11
 REAL(kind=8) Un_p_11
+
 REAL(kind=8) Vn_p_u11
 REAL(kind=8) Vn_p_l11
 REAL(kind=8) Vn_p_11
+
+REAL(kind=8) Zn_p_u11
+REAL(kind=8) Zn_p_l11
+REAL(kind=8) Zn_p_11
+
 REAL(kind=8) qion3d_p_u11
 REAL(kind=8) qion3d_p_l11
 REAL(kind=8) qion3d_p_11
@@ -396,15 +439,27 @@ REAL(kind=8) N4S_den_p_21_log
 REAL(kind=8) N2D_den_p_u21_log
 REAL(kind=8) N2D_den_p_l21_log
 REAL(kind=8) N2D_den_p_21_log
+
+! temperature
 REAL(kind=8) Tn_p_u21
 REAL(kind=8) Tn_p_l21
 REAL(kind=8) Tn_p_21
+
+! wind
 REAL(kind=8) Un_p_u21
 REAL(kind=8) Un_p_l21
 REAL(kind=8) Un_p_21
+
 REAL(kind=8) Vn_p_u21
 REAL(kind=8) Vn_p_l21
 REAL(kind=8) Vn_p_21
+
+REAL(kind=8) Zn_p_u21
+REAL(kind=8) Zn_p_l21
+REAL(kind=8) Zn_p_21
+
+
+
 REAL(kind=8) qion3d_p_u21
 REAL(kind=8) qion3d_p_l21
 REAL(kind=8) qion3d_p_21
@@ -447,12 +502,19 @@ REAL(kind=8) N4S_den_p_2
 REAL(kind=8) N4S_den_p_1
 REAL(kind=8) N2D_den_p_2
 REAL(kind=8) N2D_den_p_1
+
+! temperature
 REAL(kind=8) Tn_p_2 
 REAL(kind=8) Tn_p_1
+
+! wind
 REAL(kind=8) Un_p_2 
 REAL(kind=8) Un_p_1
 REAL(kind=8) Vn_p_2 
 REAL(kind=8) Vn_p_1
+REAL(kind=8) Zn_p_2 
+REAL(kind=8) Zn_p_1
+
 REAL(kind=8) qion3d_p_2 
 REAL(kind=8) qion3d_p_1
 REAL(kind=8) elx_p_2
@@ -731,53 +793,68 @@ if (sw_External_model_provides_NO_N4S_densities) then
    N2D_den_p_12_log = 10**(N2D_den_p_12_log)
 endif
 
+   ! Temperature
+   Tn_p_u12 = therm_Tn(iht_above,ilon_west,ilat_north)
+   Tn_p_l12 = therm_Tn(iht_below,ilon_west,ilat_north)
+   Tn_p_12  = ((Tn_p_u12 - Tn_p_l12)*factor_ht12) + Tn_p_l12
 
-   Tn_p_u12=therm_Tn(iht_above,ilon_west,ilat_north)
-   Tn_p_l12=therm_Tn(iht_below,ilon_west,ilat_north)
-   Tn_p_12 = ((Tn_p_u12 - Tn_p_l12)*factor_ht12) + Tn_p_l12
-   Un_p_u12=therm_Un(iht_above,ilon_west,ilat_north)
-   Un_p_l12=therm_Un(iht_below,ilon_west,ilat_north)
-   Un_p_12 = ((Un_p_u12 - Un_p_l12)*factor_ht12) + Un_p_l12
-   Vn_p_u12=therm_Vn(iht_above,ilon_west,ilat_north)
-   Vn_p_l12=therm_Vn(iht_below,ilon_west,ilat_north)
-   Vn_p_12 = ((Vn_p_u12 - Vn_p_l12)*factor_ht12) + Vn_p_l12
+   ! wind
+   Un_p_u12 = therm_Un(iht_above,ilon_west,ilat_north)
+   Un_p_l12 = therm_Un(iht_below,ilon_west,ilat_north)
+   Un_p_12  = ((Un_p_u12 - Un_p_l12)*factor_ht12) + Un_p_l12
+
+   Vn_p_u12 = therm_Vn(iht_above,ilon_west,ilat_north)
+   Vn_p_l12 = therm_Vn(iht_below,ilon_west,ilat_north)
+   Vn_p_12  = ((Vn_p_u12 - Vn_p_l12)*factor_ht12) + Vn_p_l12
+
+   Zn_p_u12 = therm_Zn(iht_above,ilon_west,ilat_north)
+   Zn_p_l12 = therm_Zn(iht_below,ilon_west,ilat_north)
+   Zn_p_12  = ((Zn_p_u12 - Zn_p_l12)*factor_ht12) + Zn_p_l12
 
 
 if (sw_input_Auroral_production_is_single_overall_rate) then
-   qion3d_p_u12=therm_qion3d(iht_above,ilon_west,ilat_north)
-   qion3d_p_l12=therm_qion3d(iht_below,ilon_west,ilat_north)
-   qion3d_p_12 = ((qion3d_p_u12 - qion3d_p_l12)*factor_ht12) + qion3d_p_l12
+
+   qion3d_p_u12 = therm_qion3d(iht_above,ilon_west,ilat_north)
+   qion3d_p_l12 = therm_qion3d(iht_below,ilon_west,ilat_north)
+   qion3d_p_12  = ((qion3d_p_u12 - qion3d_p_l12)*factor_ht12) + qion3d_p_l12
    if (qion3d_p_12 < 0.0) qion3d_p_12 = 0.0
+
 else
-   qo2p_aurora_p_u12=therm_qo2p_aurora(iht_above,ilon_west,ilat_north) ! therm_qo2p_aurora is used but never set
-   qo2p_aurora_p_l12=therm_qo2p_aurora(iht_below,ilon_west,ilat_north)
-   qo2p_aurora_p_12 = ((qo2p_aurora_p_u12 - qo2p_aurora_p_l12)*factor_ht12) + qo2p_aurora_p_l12
+
+   qo2p_aurora_p_u12 = therm_qo2p_aurora(iht_above,ilon_west,ilat_north) ! therm_qo2p_aurora is used but never set
+   qo2p_aurora_p_l12 = therm_qo2p_aurora(iht_below,ilon_west,ilat_north)
+   qo2p_aurora_p_12  = ((qo2p_aurora_p_u12 - qo2p_aurora_p_l12)*factor_ht12) + qo2p_aurora_p_l12
    if (qo2p_aurora_p_12 < 0.0) qo2p_aurora_p_12 = 0.0
-   qop_aurora_p_u12=therm_qop_aurora(iht_above,ilon_west,ilat_north) ! therm_qop_aurora is used but never set
-   qop_aurora_p_l12=therm_qop_aurora(iht_below,ilon_west,ilat_north)
-   qop_aurora_p_12 = ((qop_aurora_p_u12 - qop_aurora_p_l12)*factor_ht12) + qop_aurora_p_l12
+
+   qop_aurora_p_u12 = therm_qop_aurora(iht_above,ilon_west,ilat_north) ! therm_qop_aurora is used but never set
+   qop_aurora_p_l12 = therm_qop_aurora(iht_below,ilon_west,ilat_north)
+   qop_aurora_p_12  = ((qop_aurora_p_u12 - qop_aurora_p_l12)*factor_ht12) + qop_aurora_p_l12
    if (qop_aurora_p_12 < 0.0) qop_aurora_p_12 = 0.0
-   qn2p_aurora_p_u12=therm_qn2p_aurora(iht_above,ilon_west,ilat_north) ! therm_qn2p_aurora is used but never set
-   qn2p_aurora_p_l12=therm_qn2p_aurora(iht_below,ilon_west,ilat_north)
-   qn2p_aurora_p_12 = ((qn2p_aurora_p_u12 - qn2p_aurora_p_l12)*factor_ht12) + qn2p_aurora_p_l12
+
+   qn2p_aurora_p_u12 = therm_qn2p_aurora(iht_above,ilon_west,ilat_north) ! therm_qn2p_aurora is used but never set
+   qn2p_aurora_p_l12 = therm_qn2p_aurora(iht_below,ilon_west,ilat_north)
+   qn2p_aurora_p_12  = ((qn2p_aurora_p_u12 - qn2p_aurora_p_l12)*factor_ht12) + qn2p_aurora_p_l12
    if (qn2p_aurora_p_12 < 0.0) qn2p_aurora_p_12 = 0.0
-   qnp_aurora_p_u12=therm_qnp_aurora(iht_above,ilon_west,ilat_north) ! therm_qnp_aurora is used but never set
-   qnp_aurora_p_l12=therm_qnp_aurora(iht_below,ilon_west,ilat_north)
-   qnp_aurora_p_12 = ((qnp_aurora_p_u12 - qnp_aurora_p_l12)*factor_ht12) + qnp_aurora_p_l12
+
+   qnp_aurora_p_u12 = therm_qnp_aurora(iht_above,ilon_west,ilat_north) ! therm_qnp_aurora is used but never set
+   qnp_aurora_p_l12 = therm_qnp_aurora(iht_below,ilon_west,ilat_north)
+   qnp_aurora_p_12  = ((qnp_aurora_p_u12 - qnp_aurora_p_l12)*factor_ht12) + qnp_aurora_p_l12
    if (qnp_aurora_p_12 < 0.0) qnp_aurora_p_12 = 0.0
-   qtef_aurora_p_u12=therm_qtef_aurora(iht_above,ilon_west,ilat_north) ! therm_qtef_aurora is used but never set
-   qtef_aurora_p_l12=therm_qtef_aurora(iht_below,ilon_west,ilat_north)
-   qtef_aurora_p_12 = ((qtef_aurora_p_u12 - qtef_aurora_p_l12)*factor_ht12) + qtef_aurora_p_l12
+
+   qtef_aurora_p_u12 = therm_qtef_aurora(iht_above,ilon_west,ilat_north) ! therm_qtef_aurora is used but never set
+   qtef_aurora_p_l12 = therm_qtef_aurora(iht_below,ilon_west,ilat_north)
+   qtef_aurora_p_12  = ((qtef_aurora_p_u12 - qtef_aurora_p_l12)*factor_ht12) + qtef_aurora_p_l12
    if (qtef_aurora_p_12 < 0.0) qtef_aurora_p_12 = 0.0
-endif
 
-   elx_p_u12=therm_elx(iht_above,ilon_west,ilat_north)
-   elx_p_l12=therm_elx(iht_below,ilon_west,ilat_north)
-   elx_p_12 = ((elx_p_u12 - elx_p_l12)*factor_ht12) + elx_p_l12
+endif ! sw_input_Auroral_production_is_single_overall_rate
 
-   ely_p_u12=therm_ely(iht_above,ilon_west,ilat_north)
-   ely_p_l12=therm_ely(iht_below,ilon_west,ilat_north)
-   ely_p_12 = ((ely_p_u12 - ely_p_l12)*factor_ht12) + ely_p_l12
+   elx_p_u12 = therm_elx(iht_above,ilon_west,ilat_north)
+   elx_p_l12 = therm_elx(iht_below,ilon_west,ilat_north)
+   elx_p_12  = ((elx_p_u12 - elx_p_l12)*factor_ht12) + elx_p_l12
+
+   ely_p_u12 = therm_ely(iht_above,ilon_west,ilat_north)
+   ely_p_l12 = therm_ely(iht_below,ilon_west,ilat_north)
+   ely_p_12  = ((ely_p_u12 - ely_p_l12)*factor_ht12) + ely_p_l12
 
 
    factor_ht22 = factor_ht_east_north(iht,ilat,ilon) 
@@ -788,10 +865,12 @@ endif
    O_den_p_l22_log=log10(therm_o_density(iht_below,ilon_east,ilat_north))
    O_den_p_22_log = ((O_den_p_u22_log - O_den_p_l22_log)*factor_ht22) + O_den_p_l22_log
    O_den_p_22_log = 10**(O_den_p_22_log)
+
    O2_den_p_u22_log=log10(therm_o2_density(iht_above,ilon_east,ilat_north))
    O2_den_p_l22_log=log10(therm_o2_density(iht_below,ilon_east,ilat_north))
    O2_den_p_22_log = ((O2_den_p_u22_log - O2_den_p_l22_log)*factor_ht22) + O2_den_p_l22_log
    O2_den_p_22_log = 10**(O2_den_p_22_log)
+
    N2_den_p_u22_log=log10(therm_n2_density(iht_above,ilon_east,ilat_north))
    N2_den_p_l22_log=log10(therm_n2_density(iht_below,ilon_east,ilat_north))
    N2_den_p_22_log = ((N2_den_p_u22_log - N2_den_p_l22_log)*factor_ht22) + N2_den_p_l22_log
@@ -799,6 +878,7 @@ endif
 
 
 if (sw_External_model_provides_NO_N4S_densities) then
+
    NO_den_p_u22_log=log10(therm_NO_density(iht_above,ilon_west,ilat_north))
    NO_den_p_l22_log=log10(therm_NO_density(iht_below,ilon_west,ilat_north))
    NO_den_p_22_log = ((NO_den_p_u22_log - NO_den_p_l22_log)*factor_ht22) + NO_den_p_l22_log
@@ -811,211 +891,271 @@ if (sw_External_model_provides_NO_N4S_densities) then
    N2D_den_p_l22_log=log10(therm_N2D_density(iht_below,ilon_west,ilat_north))
    N2D_den_p_22_log = ((N2D_den_p_u22_log - N2D_den_p_l22_log)*factor_ht22) + N2D_den_p_l22_log
    N2D_den_p_22_log = 10**(N2D_den_p_22_log)
+
 endif
 
+   ! temperature
+   Tn_p_u22 = therm_Tn(iht_above,ilon_east,ilat_north)
+   Tn_p_l22 = therm_Tn(iht_below,ilon_east,ilat_north)
+   Tn_p_22  = ((Tn_p_u22 - Tn_p_l22)*factor_ht22) + Tn_p_l22
 
-   Tn_p_u22= therm_Tn(iht_above,ilon_east,ilat_north)
-   Tn_p_l22= therm_Tn(iht_below,ilon_east,ilat_north)
-   Tn_p_22 = ((Tn_p_u22 - Tn_p_l22)*factor_ht22) + Tn_p_l22
-   Un_p_u22= therm_Un(iht_above,ilon_east,ilat_north)
-   Un_p_l22= therm_Un(iht_below,ilon_east,ilat_north)
-   Un_p_22 = ((Un_p_u22 - Un_p_l22)*factor_ht22) + Un_p_l22
-   Vn_p_u22= therm_Vn(iht_above,ilon_east,ilat_north)
-   Vn_p_l22= therm_Vn(iht_below,ilon_east,ilat_north)
-   Vn_p_22 = ((Vn_p_u22 - Vn_p_l22)*factor_ht22) + Vn_p_l22
+   ! wind
+   Un_p_u22 = therm_Un(iht_above,ilon_east,ilat_north)
+   Un_p_l22 = therm_Un(iht_below,ilon_east,ilat_north)
+   Un_p_22  = ((Un_p_u22 - Un_p_l22)*factor_ht22) + Un_p_l22
+
+   Vn_p_u22 = therm_Vn(iht_above,ilon_east,ilat_north)
+   Vn_p_l22 = therm_Vn(iht_below,ilon_east,ilat_north)
+   Vn_p_22  = ((Vn_p_u22 - Vn_p_l22)*factor_ht22) + Vn_p_l22
+
+   Zn_p_u22 = therm_Zn(iht_above,ilon_east,ilat_north)
+   Zn_p_l22 = therm_Zn(iht_below,ilon_east,ilat_north)
+   Zn_p_22  = ((Zn_p_u22 - Zn_p_l22)*factor_ht22) + Zn_p_l22
+
 
 if (sw_input_Auroral_production_is_single_overall_rate) then
-   qion3d_p_u22=therm_qion3d(iht_above,ilon_east,ilat_north)
-   qion3d_p_l22=therm_qion3d(iht_below,ilon_east,ilat_north)
+
+   qion3d_p_u22 = therm_qion3d(iht_above,ilon_east,ilat_north)
+   qion3d_p_l22 = therm_qion3d(iht_below,ilon_east,ilat_north)
    qion3d_p_22 = ((qion3d_p_u22 - qion3d_p_l22)*factor_ht22) + qion3d_p_l22
    if (qion3d_p_22 < 0.0) qion3d_p_22 = 0.0
-else
-   qo2p_aurora_p_u22=therm_qo2p_aurora(iht_above,ilon_east,ilat_north)
-   qo2p_aurora_p_l22=therm_qo2p_aurora(iht_below,ilon_east,ilat_north)
-   qo2p_aurora_p_22 = ((qo2p_aurora_p_u22 - qo2p_aurora_p_l22)*factor_ht22) + qo2p_aurora_p_l22
-   if (qo2p_aurora_p_22 < 0.0) qo2p_aurora_p_22 = 0.0
-   qop_aurora_p_u22=therm_qop_aurora(iht_above,ilon_east,ilat_north)
-   qop_aurora_p_l22=therm_qop_aurora(iht_below,ilon_east,ilat_north)
-   qop_aurora_p_22 = ((qop_aurora_p_u22 - qop_aurora_p_l22)*factor_ht22) + qop_aurora_p_l22
-   if (qop_aurora_p_22 < 0.0) qop_aurora_p_22 = 0.0
-   qn2p_aurora_p_u22=therm_qn2p_aurora(iht_above,ilon_east,ilat_north)
-   qn2p_aurora_p_l22=therm_qn2p_aurora(iht_below,ilon_east,ilat_north)
-   qn2p_aurora_p_22 = ((qn2p_aurora_p_u22 - qn2p_aurora_p_l22)*factor_ht22) + qn2p_aurora_p_l22
-   if (qn2p_aurora_p_22 < 0.0) qn2p_aurora_p_22 = 0.0
-   qnp_aurora_p_u22=therm_qnp_aurora(iht_above,ilon_east,ilat_north)
-   qnp_aurora_p_l22=therm_qnp_aurora(iht_below,ilon_east,ilat_north)
-   qnp_aurora_p_22 = ((qnp_aurora_p_u22 - qnp_aurora_p_l22)*factor_ht22) + qnp_aurora_p_l22
-   if (qnp_aurora_p_22 < 0.0) qnp_aurora_p_22 = 0.0
-   qtef_aurora_p_u22=therm_qtef_aurora(iht_above,ilon_east,ilat_north)
-   qtef_aurora_p_l22=therm_qtef_aurora(iht_below,ilon_east,ilat_north)
-   qtef_aurora_p_22 = ((qtef_aurora_p_u22 - qtef_aurora_p_l22)*factor_ht22) + qtef_aurora_p_l22
-   if (qtef_aurora_p_22 < 0.0) qtef_aurora_p_22 = 0.0
-endif
 
-   elx_p_u22=therm_elx(iht_above,ilon_east,ilat_north)
-   elx_p_l22=therm_elx(iht_below,ilon_east,ilat_north)
-   elx_p_22 = ((elx_p_u22 - elx_p_l22)*factor_ht22) + elx_p_l22
-   ely_p_u22=therm_ely(iht_above,ilon_east,ilat_north)
-   ely_p_l22=therm_ely(iht_below,ilon_east,ilat_north)
-   ely_p_22 = ((ely_p_u22 - ely_p_l22)*factor_ht22) + ely_p_l22
+else
+
+   qo2p_aurora_p_u22 = therm_qo2p_aurora(iht_above,ilon_east,ilat_north)
+   qo2p_aurora_p_l22 = therm_qo2p_aurora(iht_below,ilon_east,ilat_north)
+   qo2p_aurora_p_22  = ((qo2p_aurora_p_u22 - qo2p_aurora_p_l22)*factor_ht22) + qo2p_aurora_p_l22
+   if (qo2p_aurora_p_22 < 0.0) qo2p_aurora_p_22 = 0.0
+
+   qop_aurora_p_u22 = therm_qop_aurora(iht_above,ilon_east,ilat_north)
+   qop_aurora_p_l22 = therm_qop_aurora(iht_below,ilon_east,ilat_north)
+   qop_aurora_p_22  = ((qop_aurora_p_u22 - qop_aurora_p_l22)*factor_ht22) + qop_aurora_p_l22
+   if (qop_aurora_p_22 < 0.0) qop_aurora_p_22 = 0.0
+
+   qn2p_aurora_p_u22 = therm_qn2p_aurora(iht_above,ilon_east,ilat_north)
+   qn2p_aurora_p_l22 = therm_qn2p_aurora(iht_below,ilon_east,ilat_north)
+   qn2p_aurora_p_22  = ((qn2p_aurora_p_u22 - qn2p_aurora_p_l22)*factor_ht22) + qn2p_aurora_p_l22
+   if (qn2p_aurora_p_22 < 0.0) qn2p_aurora_p_22 = 0.0
+
+   qnp_aurora_p_u22 = therm_qnp_aurora(iht_above,ilon_east,ilat_north)
+   qnp_aurora_p_l22 = therm_qnp_aurora(iht_below,ilon_east,ilat_north)
+   qnp_aurora_p_22  = ((qnp_aurora_p_u22 - qnp_aurora_p_l22)*factor_ht22) + qnp_aurora_p_l22
+   if (qnp_aurora_p_22 < 0.0) qnp_aurora_p_22 = 0.0
+
+   qtef_aurora_p_u22 = therm_qtef_aurora(iht_above,ilon_east,ilat_north)
+   qtef_aurora_p_l22 = therm_qtef_aurora(iht_below,ilon_east,ilat_north)
+   qtef_aurora_p_22  = ((qtef_aurora_p_u22 - qtef_aurora_p_l22)*factor_ht22) + qtef_aurora_p_l22
+   if (qtef_aurora_p_22 < 0.0) qtef_aurora_p_22 = 0.0
+
+endif ! sw_input_Auroral_production_is_single_overall_rate
+
+   elx_p_u22 = therm_elx(iht_above,ilon_east,ilat_north)
+   elx_p_l22 = therm_elx(iht_below,ilon_east,ilat_north)
+   elx_p_22  = ((elx_p_u22 - elx_p_l22)*factor_ht22) + elx_p_l22
+
+   ely_p_u22 = therm_ely(iht_above,ilon_east,ilat_north)
+   ely_p_l22 = therm_ely(iht_below,ilon_east,ilat_north)
+   ely_p_22  = ((ely_p_u22 - ely_p_l22)*factor_ht22) + ely_p_l22
 
    factor_ht11 = factor_ht_west_south(iht,ilat,ilon) 
    iht_above = iht_above_west_south(iht,ilat,ilon) 
    iht_below = iht_below_west_south(iht,ilat,ilon)
 
-   O_den_p_u11_log=log10(therm_o_density(iht_above,ilon_west,ilat_south))
-   O_den_p_l11_log=log10(therm_o_density(iht_below,ilon_west,ilat_south))
+   O_den_p_u11_log = log10(therm_o_density(iht_above,ilon_west,ilat_south))
+   O_den_p_l11_log = log10(therm_o_density(iht_below,ilon_west,ilat_south))
    O_den_p_11_log = ((O_den_p_u11_log - O_den_p_l11_log)*factor_ht11) + O_den_p_l11_log
    O_den_p_11_log = 10**(O_den_p_11_log)
-   O2_den_p_u11_log=log10(therm_o2_density(iht_above,ilon_west,ilat_south))
-   O2_den_p_l11_log=log10(therm_o2_density(iht_below,ilon_west,ilat_south))
+
+   O2_den_p_u11_log = log10(therm_o2_density(iht_above,ilon_west,ilat_south))
+   O2_den_p_l11_log = log10(therm_o2_density(iht_below,ilon_west,ilat_south))
    O2_den_p_11_log = ((O2_den_p_u11_log - O2_den_p_l11_log)*factor_ht11) + O2_den_p_l11_log
    O2_den_p_11_log = 10**(O2_den_p_11_log)
-   N2_den_p_u11_log=log10(therm_n2_density(iht_above,ilon_west,ilat_south))
-   N2_den_p_l11_log=log10(therm_n2_density(iht_below,ilon_west,ilat_south))
+
+   N2_den_p_u11_log = log10(therm_n2_density(iht_above,ilon_west,ilat_south))
+   N2_den_p_l11_log = log10(therm_n2_density(iht_below,ilon_west,ilat_south))
    N2_den_p_11_log = ((N2_den_p_u11_log - N2_den_p_l11_log)*factor_ht11) + N2_den_p_l11_log
    N2_den_p_11_log = 10**(N2_den_p_11_log)
 
 if (sw_External_model_provides_NO_N4S_densities) then
-   NO_den_p_u11_log=log10(therm_NO_density(iht_above,ilon_west,ilat_north))
-   NO_den_p_l11_log=log10(therm_NO_density(iht_below,ilon_west,ilat_north))
+   NO_den_p_u11_log = log10(therm_NO_density(iht_above,ilon_west,ilat_north))
+   NO_den_p_l11_log = log10(therm_NO_density(iht_below,ilon_west,ilat_north))
    NO_den_p_11_log = ((NO_den_p_u11_log - NO_den_p_l11_log)*factor_ht11) + NO_den_p_l11_log
    NO_den_p_11_log = 10**(NO_den_p_11_log)
-   N4S_den_p_u11_log=log10(therm_N4S_density(iht_above,ilon_west,ilat_north))
-   N4S_den_p_l11_log=log10(therm_N4S_density(iht_below,ilon_west,ilat_north))
+
+   N4S_den_p_u11_log = log10(therm_N4S_density(iht_above,ilon_west,ilat_north))
+   N4S_den_p_l11_log = log10(therm_N4S_density(iht_below,ilon_west,ilat_north))
    N4S_den_p_11_log = ((N4S_den_p_u11_log - N4S_den_p_l11_log)*factor_ht11) + N4S_den_p_l11_log
    N4S_den_p_11_log = 10**(N4S_den_p_11_log)
-   N2D_den_p_u11_log=log10(therm_N2D_density(iht_above,ilon_west,ilat_north))
-   N2D_den_p_l11_log=log10(therm_N2D_density(iht_below,ilon_west,ilat_north))
+
+   N2D_den_p_u11_log = log10(therm_N2D_density(iht_above,ilon_west,ilat_north))
+   N2D_den_p_l11_log = log10(therm_N2D_density(iht_below,ilon_west,ilat_north))
    N2D_den_p_11_log = ((N2D_den_p_u11_log - N2D_den_p_l11_log)*factor_ht11) + N2D_den_p_l11_log
    N2D_den_p_11_log = 10**(N2D_den_p_11_log)
 endif
 
+! temperature
+Tn_p_u11 = therm_Tn(iht_above,ilon_west,ilat_south)
+Tn_p_l11 = therm_Tn(iht_below,ilon_west,ilat_south)
+Tn_p_11  = ((Tn_p_u11 - Tn_p_l11)*factor_ht11) + Tn_p_l11
 
-Tn_p_u11=therm_Tn(iht_above,ilon_west,ilat_south)
-Tn_p_l11=therm_Tn(iht_below,ilon_west,ilat_south)
-Tn_p_11 = ((Tn_p_u11 - Tn_p_l11)*factor_ht11) + Tn_p_l11
-Un_p_u11=therm_Un(iht_above,ilon_west,ilat_south)
-Un_p_l11=therm_Un(iht_below,ilon_west,ilat_south)
-Un_p_11 = ((Un_p_u11 - Un_p_l11)*factor_ht11) + Un_p_l11
-Vn_p_u11=therm_Vn(iht_above,ilon_west,ilat_south)
-Vn_p_l11=therm_Vn(iht_below,ilon_west,ilat_south)
-Vn_p_11 = ((Vn_p_u11 - Vn_p_l11)*factor_ht11) + Vn_p_l11
+! wind
+Un_p_u11 = therm_Un(iht_above,ilon_west,ilat_south)
+Un_p_l11 = therm_Un(iht_below,ilon_west,ilat_south)
+Un_p_11  = ((Un_p_u11 - Un_p_l11)*factor_ht11) + Un_p_l11
+
+Vn_p_u11 = therm_Vn(iht_above,ilon_west,ilat_south)
+Vn_p_l11 = therm_Vn(iht_below,ilon_west,ilat_south)
+Vn_p_11  = ((Vn_p_u11 - Vn_p_l11)*factor_ht11) + Vn_p_l11
+
+zn_p_u11 = therm_Zn(iht_above,ilon_west,ilat_south)
+Zn_p_l11 = therm_Zn(iht_below,ilon_west,ilat_south)
+Zn_p_11  = ((Zn_p_u11 - Zn_p_l11)*factor_ht11) + Zn_p_l11
 
 
 if (sw_input_Auroral_production_is_single_overall_rate) then
-   qion3d_p_u11=therm_qion3d(iht_above,ilon_west,ilat_south)
-   qion3d_p_l11=therm_qion3d(iht_below,ilon_west,ilat_south)
-   qion3d_p_11 = ((qion3d_p_u11 - qion3d_p_l11)*factor_ht11) + qion3d_p_l11
+
+   qion3d_p_u11 = therm_qion3d(iht_above,ilon_west,ilat_south)
+   qion3d_p_l11 = therm_qion3d(iht_below,ilon_west,ilat_south)
+   qion3d_p_11  = ((qion3d_p_u11 - qion3d_p_l11)*factor_ht11) + qion3d_p_l11
    if (qion3d_p_11 < 0.0) qion3d_p_11 = 0.0
+
 else
-   qo2p_aurora_p_u11=therm_qo2p_aurora(iht_above,ilon_west,ilat_south)
-   qo2p_aurora_p_l11=therm_qo2p_aurora(iht_below,ilon_west,ilat_south)
+
+   qo2p_aurora_p_u11 = therm_qo2p_aurora(iht_above,ilon_west,ilat_south)
+   qo2p_aurora_p_l11 = therm_qo2p_aurora(iht_below,ilon_west,ilat_south)
    qo2p_aurora_p_11 = ((qo2p_aurora_p_u11 - qo2p_aurora_p_l11)*factor_ht11) + qo2p_aurora_p_l11
    if (qo2p_aurora_p_11 < 0.0) qo2p_aurora_p_11 = 0.0
-   qop_aurora_p_u11=therm_qop_aurora(iht_above,ilon_west,ilat_south)
-   qop_aurora_p_l11=therm_qop_aurora(iht_below,ilon_west,ilat_south)
+
+   qop_aurora_p_u11 = therm_qop_aurora(iht_above,ilon_west,ilat_south)
+   qop_aurora_p_l11 = therm_qop_aurora(iht_below,ilon_west,ilat_south)
    qop_aurora_p_11 = ((qop_aurora_p_u11 - qop_aurora_p_l11)*factor_ht11) + qop_aurora_p_l11
    if (qop_aurora_p_11 < 0.0) qop_aurora_p_11 = 0.0
-   qn2p_aurora_p_u11=therm_qn2p_aurora(iht_above,ilon_west,ilat_south)
-   qn2p_aurora_p_l11=therm_qn2p_aurora(iht_below,ilon_west,ilat_south)
+
+   qn2p_aurora_p_u11 = therm_qn2p_aurora(iht_above,ilon_west,ilat_south)
+   qn2p_aurora_p_l11 = therm_qn2p_aurora(iht_below,ilon_west,ilat_south)
    qn2p_aurora_p_11 = ((qn2p_aurora_p_u11 - qn2p_aurora_p_l11)*factor_ht11) + qn2p_aurora_p_l11
    if (qn2p_aurora_p_11 < 0.0) qn2p_aurora_p_11 = 0.0
-   qnp_aurora_p_u11=therm_qnp_aurora(iht_above,ilon_west,ilat_south)
-   qnp_aurora_p_l11=therm_qnp_aurora(iht_below,ilon_west,ilat_south)
+
+   qnp_aurora_p_u11 = therm_qnp_aurora(iht_above,ilon_west,ilat_south)
+   qnp_aurora_p_l11 = therm_qnp_aurora(iht_below,ilon_west,ilat_south)
    qnp_aurora_p_11 = ((qnp_aurora_p_u11 - qnp_aurora_p_l11)*factor_ht11) + qnp_aurora_p_l11
    if (qnp_aurora_p_11 < 0.0) qnp_aurora_p_11 = 0.0
-   qtef_aurora_p_u11=therm_qtef_aurora(iht_above,ilon_west,ilat_south)
-   qtef_aurora_p_l11=therm_qtef_aurora(iht_below,ilon_west,ilat_south)
+
+   qtef_aurora_p_u11 = therm_qtef_aurora(iht_above,ilon_west,ilat_south)
+   qtef_aurora_p_l11 = therm_qtef_aurora(iht_below,ilon_west,ilat_south)
    qtef_aurora_p_11 = ((qtef_aurora_p_u11 - qtef_aurora_p_l11)*factor_ht11) + qtef_aurora_p_l11
    if (qtef_aurora_p_11 < 0.0) qtef_aurora_p_11 = 0.0
-endif
 
-elx_p_u11=therm_elx(iht_above,ilon_west,ilat_south)
-elx_p_l11=therm_elx(iht_below,ilon_west,ilat_south)
-elx_p_11 = ((elx_p_u11 - elx_p_l11)*factor_ht11) + elx_p_l11
-ely_p_u11=therm_ely(iht_above,ilon_west,ilat_south)
-ely_p_l11=therm_ely(iht_below,ilon_west,ilat_south)
-ely_p_11 = ((ely_p_u11 - ely_p_l11)*factor_ht11) + ely_p_l11
+endif ! sw_input_Auroral_production_is_single_overall_rate
+
+elx_p_u11 = therm_elx(iht_above,ilon_west,ilat_south)
+elx_p_l11 = therm_elx(iht_below,ilon_west,ilat_south)
+elx_p_11  = ((elx_p_u11 - elx_p_l11)*factor_ht11) + elx_p_l11
+ely_p_u11 = therm_ely(iht_above,ilon_west,ilat_south)
+ely_p_l11 = therm_ely(iht_below,ilon_west,ilat_south)
+ely_p_11  = ((ely_p_u11 - ely_p_l11)*factor_ht11) + ely_p_l11
 
 
 factor_ht21 = factor_ht_east_south(iht,ilat,ilon) 
-iht_above = iht_above_east_south(iht,ilat,ilon)
-iht_below = iht_below_east_south(iht,ilat,ilon)
+iht_above  = iht_above_east_south(iht,ilat,ilon)
+iht_below  = iht_below_east_south(iht,ilat,ilon)
 
-O_den_p_u21_log=log10(therm_o_density(iht_above,ilon_east,ilat_south))
-O_den_p_l21_log=log10(therm_o_density(iht_below,ilon_east,ilat_south))
+O_den_p_u21_log = log10(therm_o_density(iht_above,ilon_east,ilat_south))
+O_den_p_l21_log = log10(therm_o_density(iht_below,ilon_east,ilat_south))
 O_den_p_21_log = ((O_den_p_u21_log - O_den_p_l21_log)*factor_ht21) + O_den_p_l21_log
 O_den_p_21_log = 10**(O_den_p_21_log)
-O2_den_p_u21_log=log10(therm_o2_density(iht_above,ilon_east,ilat_south))
-O2_den_p_l21_log=log10(therm_o2_density(iht_below,ilon_east,ilat_south))
+
+O2_den_p_u21_log = log10(therm_o2_density(iht_above,ilon_east,ilat_south))
+O2_den_p_l21_log = log10(therm_o2_density(iht_below,ilon_east,ilat_south))
 O2_den_p_21_log = ((O2_den_p_u21_log - O2_den_p_l21_log)*factor_ht21) + O2_den_p_l21_log
 O2_den_p_21_log = 10**(O2_den_p_21_log)
-N2_den_p_u21_log=log10(therm_n2_density(iht_above,ilon_east,ilat_south))
-N2_den_p_l21_log=log10(therm_n2_density(iht_below,ilon_east,ilat_south))
+
+N2_den_p_u21_log = log10(therm_n2_density(iht_above,ilon_east,ilat_south))
+N2_den_p_l21_log = log10(therm_n2_density(iht_below,ilon_east,ilat_south))
 N2_den_p_21_log = ((N2_den_p_u21_log - N2_den_p_l21_log)*factor_ht21) + N2_den_p_l21_log
 N2_den_p_21_log = 10**(N2_den_p_21_log)
 
 
 if (sw_External_model_provides_NO_N4S_densities) then
-   NO_den_p_u21_log=log10(therm_NO_density(iht_above,ilon_west,ilat_north))
-   NO_den_p_l21_log=log10(therm_NO_density(iht_below,ilon_west,ilat_north))
+
+   NO_den_p_u21_log = log10(therm_NO_density(iht_above,ilon_west,ilat_north))
+   NO_den_p_l21_log = log10(therm_NO_density(iht_below,ilon_west,ilat_north))
    NO_den_p_21_log = ((NO_den_p_u21_log - NO_den_p_l21_log)*factor_ht21) + NO_den_p_l21_log
    NO_den_p_21_log = 10**(NO_den_p_21_log)
-   N4S_den_p_u21_log=log10(therm_N4S_density(iht_above,ilon_west,ilat_north))
-   N4S_den_p_l21_log=log10(therm_N4S_density(iht_below,ilon_west,ilat_north))
+
+   N4S_den_p_u21_log = log10(therm_N4S_density(iht_above,ilon_west,ilat_north))
+   N4S_den_p_l21_log = log10(therm_N4S_density(iht_below,ilon_west,ilat_north))
    N4S_den_p_21_log = ((N4S_den_p_u21_log - N4S_den_p_l21_log)*factor_ht21) + N4S_den_p_l21_log
    N4S_den_p_21_log = 10**(N4S_den_p_21_log)
-   N2D_den_p_u21_log=log10(therm_N2D_density(iht_above,ilon_west,ilat_north))
-   N2D_den_p_l21_log=log10(therm_N2D_density(iht_below,ilon_west,ilat_north))
+
+   N2D_den_p_u21_log = log10(therm_N2D_density(iht_above,ilon_west,ilat_north))
+   N2D_den_p_l21_log = log10(therm_N2D_density(iht_below,ilon_west,ilat_north))
    N2D_den_p_21_log = ((N2D_den_p_u21_log - N2D_den_p_l21_log)*factor_ht21) + N2D_den_p_l21_log
    N2D_den_p_21_log = 10**(N2D_den_p_21_log)
+
 endif
 
-   
-Tn_p_u21=therm_Tn(iht_above,ilon_east,ilat_south) 
-Tn_p_l21=therm_Tn(iht_below,ilon_east,ilat_south)
-Tn_p_21 = ((Tn_p_u21 - Tn_p_l21)*factor_ht21) + Tn_p_l21
-Un_p_u21=therm_Un(iht_above,ilon_east,ilat_south)
-Un_p_l21=therm_Un(iht_below,ilon_east,ilat_south)
-Un_p_21 = ((Un_p_u21 - Un_p_l21)*factor_ht21) + Un_p_l21
-Vn_p_u21=therm_Vn(iht_above,ilon_east,ilat_south)
-Vn_p_l21=therm_Vn(iht_below,ilon_east,ilat_south)
-Vn_p_21 = ((Vn_p_u21 - Vn_p_l21)*factor_ht21) + Vn_p_l21
+! temperature   
+Tn_p_u21 = therm_Tn(iht_above,ilon_east,ilat_south) 
+Tn_p_l21 = therm_Tn(iht_below,ilon_east,ilat_south)
+Tn_p_21  = ((Tn_p_u21 - Tn_p_l21)*factor_ht21) + Tn_p_l21
+
+! wind
+Un_p_u21 = therm_Un(iht_above,ilon_east,ilat_south)
+Un_p_l21 = therm_Un(iht_below,ilon_east,ilat_south)
+Un_p_21  = ((Un_p_u21 - Un_p_l21)*factor_ht21) + Un_p_l21
+
+Vn_p_u21 = therm_Vn(iht_above,ilon_east,ilat_south)
+Vn_p_l21 = therm_Vn(iht_below,ilon_east,ilat_south)
+Vn_p_21  = ((Vn_p_u21 - Vn_p_l21)*factor_ht21) + Vn_p_l21
+
+Zn_p_u21 = therm_Zn(iht_above,ilon_east,ilat_south)
+Zn_p_l21 = therm_Zn(iht_below,ilon_east,ilat_south)
+Zn_p_21  = ((Zn_p_u21 - Zn_p_l21)*factor_ht21) + Zn_p_l21
+
 
 
 if (sw_input_Auroral_production_is_single_overall_rate) then
-   qion3d_p_u21=therm_qion3d(iht_above,ilon_east,ilat_south)
-   qion3d_p_l21=therm_qion3d(iht_below,ilon_east,ilat_south)
+
+   qion3d_p_u21 = therm_qion3d(iht_above,ilon_east,ilat_south)
+   qion3d_p_l21 = therm_qion3d(iht_below,ilon_east,ilat_south)
    qion3d_p_21 = ((qion3d_p_u21 - qion3d_p_l21)*factor_ht21) + qion3d_p_l21
    if (qion3d_p_21 < 0.0) qion3d_p_21 = 0.0
+
 else
+
    qo2p_aurora_p_u21=therm_qo2p_aurora(iht_above,ilon_east,ilat_south)
    qo2p_aurora_p_l21=therm_qo2p_aurora(iht_below,ilon_east,ilat_south)
    qo2p_aurora_p_21 = ((qo2p_aurora_p_u21 - qo2p_aurora_p_l21)*factor_ht21) + qo2p_aurora_p_l21
    if (qo2p_aurora_p_21 < 0.0) qo2p_aurora_p_21 = 0.0
+
    qop_aurora_p_u21=therm_qop_aurora(iht_above,ilon_east,ilat_south)
    qop_aurora_p_l21=therm_qop_aurora(iht_below,ilon_east,ilat_south)
    qop_aurora_p_21 = ((qop_aurora_p_u21 - qop_aurora_p_l21)*factor_ht21) + qop_aurora_p_l21
    if (qop_aurora_p_21 < 0.0) qop_aurora_p_21 = 0.0
+
    qn2p_aurora_p_u21=therm_qn2p_aurora(iht_above,ilon_east,ilat_south)
    qn2p_aurora_p_l21=therm_qn2p_aurora(iht_below,ilon_east,ilat_south)
    qn2p_aurora_p_21 = ((qn2p_aurora_p_u21 - qn2p_aurora_p_l21)*factor_ht21) + qn2p_aurora_p_l21
    if (qn2p_aurora_p_21 < 0.0) qn2p_aurora_p_21 = 0.0
+
    qnp_aurora_p_u21=therm_qnp_aurora(iht_above,ilon_east,ilat_south)
    qnp_aurora_p_l21=therm_qnp_aurora(iht_below,ilon_east,ilat_south)
    qnp_aurora_p_21 = ((qnp_aurora_p_u21 - qnp_aurora_p_l21)*factor_ht21) + qnp_aurora_p_l21
    if (qnp_aurora_p_21 < 0.0) qnp_aurora_p_21 = 0.0
+
    qtef_aurora_p_u21=therm_qtef_aurora(iht_above,ilon_east,ilat_south)
    qtef_aurora_p_l21=therm_qtef_aurora(iht_below,ilon_east,ilat_south)
    qtef_aurora_p_21 = ((qtef_aurora_p_u21 - qtef_aurora_p_l21)*factor_ht21) + qtef_aurora_p_l21
    if (qtef_aurora_p_21 < 0.0) qtef_aurora_p_21 = 0.0
-endif
+
+endif ! sw_input_Auroral_production_is_single_overall_rate
 
 
 elx_p_u21=therm_elx(iht_above,ilon_east,ilat_south)
 elx_p_l21=therm_elx(iht_below,ilon_east,ilat_south)
 elx_p_21 = ((elx_p_u21 - elx_p_l21)*factor_ht21) + elx_p_l21
+
 ely_p_u21=therm_ely(iht_above,ilon_east,ilat_south)
 ely_p_l21=therm_ely(iht_below,ilon_east,ilat_south)
 ely_p_21 = ((ely_p_u21 - ely_p_l21)*factor_ht21) + ely_p_l21
@@ -1040,42 +1180,56 @@ if (sw_External_model_provides_NO_N4S_densities) then
    N2D_den_p_1 = ((N2D_den_p_12_log - N2D_den_p_11_log) * factor_lat) + N2D_den_p_11_log
 endif
 
-
+! temperature
 Tn_p_2 = ((Tn_p_22 - Tn_p_21) * factor_lat) + Tn_p_21
 Tn_p_1 = ((Tn_p_12 - Tn_p_11) * factor_lat) + Tn_p_11
+
+! wind
 Un_p_2 = ((Un_p_22 - Un_p_21) * factor_lat) + Un_p_21
 Un_p_1 = ((Un_p_12 - Un_p_11) * factor_lat) + Un_p_11
+
 Vn_p_2 = ((Vn_p_22 - Vn_p_21) * factor_lat) + Vn_p_21
 Vn_p_1 = ((Vn_p_12 - Vn_p_11) * factor_lat) + Vn_p_11
 
+Zn_p_2 = ((Zn_p_22 - Zn_p_21) * factor_lat) + Zn_p_21
+zn_p_1 = ((Zn_p_12 - Zn_p_11) * factor_lat) + Zn_p_11
+
 
 if (sw_input_Auroral_production_is_single_overall_rate) then
+
    qion3d_p_2 = ((qion3d_p_22 - qion3d_p_21) * factor_lat) + qion3d_p_21
    qion3d_p_1 = ((qion3d_p_12 - qion3d_p_11) * factor_lat) + qion3d_p_11
    if (qion3d_p_2 < 0.0) qion3d_p_2 = 0.0
    if (qion3d_p_1 < 0.0) qion3d_p_1 = 0.0
+
 else
+
    qo2p_aurora_p_2 = ((qo2p_aurora_p_22 - qo2p_aurora_p_21) * factor_lat) + qo2p_aurora_p_21
    qo2p_aurora_p_1 = ((qo2p_aurora_p_12 - qo2p_aurora_p_11) * factor_lat) + qo2p_aurora_p_11
    if (qo2p_aurora_p_2 < 0.0) qo2p_aurora_p_2 = 0.0
    if (qo2p_aurora_p_1 < 0.0) qo2p_aurora_p_1 = 0.0
+
    qop_aurora_p_2 = ((qop_aurora_p_22 - qop_aurora_p_21) * factor_lat) + qop_aurora_p_21
    qop_aurora_p_1 = ((qop_aurora_p_12 - qop_aurora_p_11) * factor_lat) + qop_aurora_p_11
    if (qop_aurora_p_2 < 0.0) qop_aurora_p_2 = 0.0
    if (qop_aurora_p_1 < 0.0) qop_aurora_p_1 = 0.0
+
    qn2p_aurora_p_2 = ((qn2p_aurora_p_22 - qn2p_aurora_p_21) * factor_lat) + qn2p_aurora_p_21
    qn2p_aurora_p_1 = ((qn2p_aurora_p_12 - qn2p_aurora_p_11) * factor_lat) + qn2p_aurora_p_11
    if (qn2p_aurora_p_2 < 0.0) qn2p_aurora_p_2 = 0.0
    if (qn2p_aurora_p_1 < 0.0) qn2p_aurora_p_1 = 0.0
+
    qnp_aurora_p_2 = ((qnp_aurora_p_22 - qnp_aurora_p_21) * factor_lat) + qnp_aurora_p_21
    qnp_aurora_p_1 = ((qnp_aurora_p_12 - qnp_aurora_p_11) * factor_lat) + qnp_aurora_p_11
    if (qnp_aurora_p_2 < 0.0) qnp_aurora_p_2 = 0.0
    if (qnp_aurora_p_1 < 0.0) qnp_aurora_p_1 = 0.0
+
    qtef_aurora_p_2 = ((qtef_aurora_p_22 - qtef_aurora_p_21) * factor_lat) + qtef_aurora_p_21
    qtef_aurora_p_1 = ((qtef_aurora_p_12 - qtef_aurora_p_11) * factor_lat) + qtef_aurora_p_11
    if (qtef_aurora_p_2 < 0.0) qtef_aurora_p_2 = 0.0
    if (qtef_aurora_p_1 < 0.0) qtef_aurora_p_1 = 0.0
-endif
+
+endif ! sw_input_Auroral_production_is_single_overall_rate
 
 
 elx_p_2 = ((elx_p_22 - elx_p_21) * factor_lat) + elx_p_21
@@ -1089,27 +1243,35 @@ ely_p_1 = ((ely_p_12 - ely_p_11) * factor_lat) + ely_p_11
    interface_o_density(iht,ilat,ilon) = ((O_den_p_2 - O_den_p_1) * factor_lon) + O_den_p_1
    interface_o2_density(iht,ilat,ilon) = ((O2_den_p_2 - O2_den_p_1) * factor_lon) + O2_den_p_1
    interface_n2_density(iht,ilat,ilon) = ((N2_den_p_2 - N2_den_p_1) * factor_lon) + N2_den_p_1
-   if(interface_o_density(iht,ilat,ilon).lt.1.e-20)interface_o_density(iht,ilat,ilon)=1.e-20
-   if(interface_o2_density(iht,ilat,ilon).lt.1.e-20)interface_o2_density(iht,ilat,ilon)=1.e-20
-   if(interface_n2_density(iht,ilat,ilon).lt.1.e-20)interface_n2_density(iht,ilat,ilon)=1.e-20
+   if (interface_o_density(iht,ilat,ilon) .lt. 1.e-20) interface_o_density(iht,ilat,ilon) = 1.e-20
+   if (interface_o2_density(iht,ilat,ilon) .lt. 1.e-20) interface_o2_density(iht,ilat,ilon) = 1.e-20
+   if (interface_n2_density(iht,ilat,ilon) .lt. 1.e-20) interface_n2_density(iht,ilat,ilon) = 1.e-20
+
 
 if (sw_External_model_provides_NO_N4S_densities) then
+
    interface_NO_density(iht,ilat,ilon) = ((NO_den_p_2 - NO_den_p_1) * factor_lon) + NO_den_p_1
    interface_N4S_density(iht,ilat,ilon) = ((N4S_den_p_2 - N4S_den_p_1) * factor_lon) + N4S_den_p_1
    interface_N2D_density(iht,ilat,ilon) = ((N2D_den_p_2 - N2D_den_p_1) * factor_lon) + N2D_den_p_1
-   if(interface_NO_density(iht,ilat,ilon).lt.1.e-20)interface_NO_density(iht,ilat,ilon)=1.e-20
-   if(interface_N4S_density(iht,ilat,ilon).lt.1.e-20)interface_N4S_density(iht,ilat,ilon)=1.e-20
-   if(interface_N2D_density(iht,ilat,ilon).lt.1.e-20)interface_N2D_density(iht,ilat,ilon)=1.e-20
+   if(interface_NO_density(iht,ilat,ilon).lt.1.e-20)interface_NO_density(iht,ilat,ilon) = 1.e-20
+   if(interface_N4S_density(iht,ilat,ilon).lt.1.e-20)interface_N4S_density(iht,ilat,ilon) = 1.e-20
+   if(interface_N2D_density(iht,ilat,ilon).lt.1.e-20)interface_N2D_density(iht,ilat,ilon) = 1.e-20
+
 endif
 
    interface_Tn(iht,ilat,ilon) = ((Tn_p_2 - Tn_p_1) * factor_lon) + Tn_p_1
    interface_Un(iht,ilat,ilon) = ((Un_p_2 - Un_p_1) * factor_lon) + Un_p_1
    interface_Vn(iht,ilat,ilon) = ((Vn_p_2 - Vn_p_1) * factor_lon) + Vn_p_1
+   interface_Zn(iht,ilat,ilon) = ((Zn_p_2 - Zn_p_1) * factor_lon) + Zn_p_1
+
 
 if (sw_input_Auroral_production_is_single_overall_rate) then
+
    interface_qion3d(iht,ilat,ilon) = ((qion3d_p_2 - qion3d_p_1) * factor_lon) + qion3d_p_1
    if (interface_qion3d(iht,ilat,ilon) < 0.0) interface_qion3d(iht,ilat,ilon) = 0.0
+
 else
+
    interface_qo2p_aurora(iht,ilat,ilon) = ((qo2p_aurora_p_2 - qo2p_aurora_p_1) * factor_lon) +qo2p_aurora_p_1
    if (interface_qo2p_aurora(iht,ilat,ilon) < 0.0) interface_qo2p_aurora(iht,ilat,ilon) = 0.0
    interface_qop_aurora(iht,ilat,ilon) = ((qop_aurora_p_2 - qop_aurora_p_1) * factor_lon) + qop_aurora_p_1
@@ -1120,7 +1282,8 @@ else
    if (interface_qnp_aurora(iht,ilat,ilon) < 0.0) interface_qnp_aurora(iht,ilat,ilon) = 0.0
    interface_qtef_aurora(iht,ilat,ilon) = ((qtef_aurora_p_2 - qtef_aurora_p_1) * factor_lon) + qtef_aurora_p_1
    if (interface_qtef_aurora(iht,ilat,ilon) < 0.0) interface_qtef_aurora(iht,ilat,ilon) = 0.0
-endif
+
+endif ! sw_input_Auroral_production_is_single_overall_rate
 
    interface_elx(iht,ilat,ilon) = ((elx_p_2 - elx_p_1) * factor_lon)+ elx_p_1
    interface_ely(iht,ilat,ilon) = ((ely_p_2 - ely_p_1) * factor_lon)+ ely_p_1
@@ -1140,12 +1303,18 @@ if (sw_External_model_provides_NO_N4S_densities) then
     N2D_density_fixed_ht(:,:,:) = interface_N2D_density(:,:,:)
 endif
 
+! wind
 Vx_fixed_ht(:,:,:) = interface_Vn(:,:,:)
 Vy_fixed_ht(:,:,:) = interface_Un(:,:,:)
-print *,'INTERFACE__thermosphere_to_FIXED_GEO : **************************************'
-print *,'INTERFACE__thermosphere_to_FIXED_GEO : wvz_fixed_ht IS SET TO 0 ***********'
-print *,'INTERFACE__thermosphere_to_FIXED_GEO : **************************************'
-wvz_fixed_ht(:,:,:) = 0.0 !   NEED TO FIX THIS ************************** 
+
+
+!print *,'INTERFACE__thermosphere_to_FIXED_GEO : **************************************'
+!print *,'INTERFACE__thermosphere_to_FIXED_GEO : wvz_fixed_ht IS SET TO 0 ***********'
+!print *,'INTERFACE__thermosphere_to_FIXED_GEO : **************************************'
+!wvz_fixed_ht(:,:,:) = 0.0 !   NEED TO FIX THIS ************************** 
+wvz_fixed_ht = interface_Zn  ! lrm20121109
+
+! temperature
 tts_fixed_ht(:,:,:) = interface_Tn(:,:,:)
 
 if (sw_input_Auroral_production_is_single_overall_rate) then
@@ -1181,7 +1350,7 @@ return
 end SUBROUTINE INTERFACE__thermosphere_to_FIXED_GEO
 
 
-
+!-----------------------------------------------------------------------------------------
 !-----------------------------------------------------------------------------------------
 
 
@@ -1198,7 +1367,7 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
         !! N4S_density, &  not needed now
         !! N2D_density, &  not needed now
 
-        VX, VY, WVZ, TTS, &
+        VX, VY, WVZ, TTS, &  ! wind, temperature
 
         !! telec, & not needed now
 
@@ -1246,10 +1415,10 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
   REAL(kind=8) :: O2_density(N_heights, N_Latitudes, N_longitudes)
   REAL(kind=8) :: N2_density(N_heights, N_Latitudes, N_longitudes) 
 
-  REAL(kind=8) :: VX(N_heights, N_Latitudes, N_longitudes) 
-  REAL(kind=8) :: VY(N_heights, N_Latitudes, N_longitudes) 
-  REAL(kind=8) :: WVZ(N_heights, N_Latitudes, N_longitudes)
-  REAL(kind=8) :: TTS(N_heights, N_Latitudes, N_longitudes)
+  REAL(kind=8) :: VX(N_heights, N_Latitudes, N_longitudes) ! meridional wind
+  REAL(kind=8) :: VY(N_heights, N_Latitudes, N_longitudes)  ! zonal wind
+  REAL(kind=8) :: WVZ(N_heights, N_Latitudes, N_longitudes)  ! vertical wind
+  REAL(kind=8) :: TTS(N_heights, N_Latitudes, N_longitudes)  ! temperature
 
   ! Not being passed in right now :
   REAL(kind=8) :: telec(N_heights, N_Latitudes, N_longitudes)
@@ -1263,9 +1432,9 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
   REAL(kind=8) ::  glat_3d(npts,nmp), glond_3d(npts,nmp)
   REAL(kind=8), INTENT(IN) ::  pz_3d(npts,nmp)
 
-  REAL(kind=8), INTENT(OUT) :: um_plasma_input_3d(npts, nmp), &
-                  uz_plasma_input_3d(npts, nmp), &
-                  uv_plasma_input_3d(npts, nmp)
+  REAL(kind=8), INTENT(OUT) :: um_plasma_input_3d(npts, nmp), &  ! meridional wind
+                  uz_plasma_input_3d(npts, nmp), &               ! zonal wind
+                  uv_plasma_input_3d(npts, nmp)                  ! vertical wind
 
 
   ! Not being passed in right now :
@@ -1320,8 +1489,11 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
   REAL(kind=8) :: tnl11 , tnl12 , tnl21 , tnl22 ,  tnu11 , tnu12 , tnu21 , tnu22 , tn11 , tn12 , tn21 , tn22  , tn1 , tn2
   REAL(kind=8) :: tel11 , tel12 , tel21 , tel22 ,  teu11 , teu12 , teu21 , teu22 , te11 , te12 , te21 , te22 , te1 , te2
 
+  ! meridional wind
   REAL(kind=8) :: uml11 , uml12 , uml21 , uml22 ,  umu11 , umu12 , umu21 , umu22 , um11 , um12 , um21 , um22 , um1 , um2
+  ! zonal wind
   REAL(kind=8) :: uzl11 , uzl12 , uzl21 , uzl22 ,  uzu11 , uzu12 , uzu21 , uzu22 , uz11 , uz12 , uz21 , uz22 , uz1 , uz2
+  ! vertical wind
   REAL(kind=8) :: uvl11 , uvl12 , uvl21 , uvl22 ,  uvu11 , uvu12 , uvu21 , uvu22 , uv11 , uv12 , uv21 , uv22 , uv1 , uv2
 
  !---------------------------------------------------------------------------------------
@@ -1357,9 +1529,9 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
   REAL(kind=8) ::  N4S(npts)
   REAL(kind=8) ::  N2D(npts)
 
-  REAL(kind=8) ::  uz(NPTS)
-  REAL(kind=8) ::  um(NPTS)
-  REAL(kind=8) ::  uv(NPTS)
+  REAL(kind=8) ::  uz(NPTS)  ! zonal wind
+  REAL(kind=8) ::  um(NPTS)  ! meridional wind
+  REAL(kind=8) ::  uv(NPTS)  ! vertical wind
 
   REAL(kind=8) ::  TN(NPTS) , O(NPTS) , O2(NPTS) , N2(NPTS) , GLAt(NPTS) , &
                    PZ(NPTS) , GLOnd(NPTS)
