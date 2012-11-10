@@ -18,8 +18,7 @@
       USE module_precision
       USE efield,ONLY: nmlat,ylatm,dlonm,potent,ylonm,nmlon
       USE module_physical_constants,ONLY:pi,rtd,dtr,earth_radius,zero
-      USE module_eldyn,ONLY:j0,j1,theta90_rad,ed1_90,ed2_90,coslam_m,    &
-     &                      lpconj
+      USE module_eldyn,ONLY:j0,j1,theta90_rad,ed1_90,ed2_90,coslam_m
       USE module_IPE_dimension,ONLY: NMP,NLP
       USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS &
      &,mlon_rad,ht90,Be3,apexE,VEXBup,up
@@ -48,7 +47,7 @@
       REAL(KIND=real_prec),DIMENSION(0:nmlon) :: mlon130_rad
       REAL(KIND=real_prec) :: mlon130_0
       REAL(KIND=real_prec) :: cos2Lambda_m,sinLambda_m(2),sinI_m(2)
-      INTEGER (KIND=int_prec ) :: lp0,midpoint
+      INTEGER (KIND=int_prec ) :: midpoint
       REAL    (KIND=real_prec) :: v_e(2)   !1:ed2/be3 (4.18) ;2: -ed1/be3 (4.19)
 !
 ! array initialization
@@ -61,7 +60,6 @@
 ! array initialization
         theta90_rad = zero
         coslam_m    = zero
-        lpconj      = 0
 
 !NOTE: ylatm-90: magnetic latitude [deg] --> ylatm:degrees from SP
 ! find out grid point at r0=90km(ht1) (theta90,phi90) of ylonm(ii),ylatm(jj) using dipole assumption
@@ -89,9 +87,6 @@
 ! NH
 !memo: mlat90_deg=(90.-plasma_grid_3d(IN,mp)%GL*rtd)
           IN = JMIN_IN(lp)
-          lpconj(lp) = NLP - lp + NLP + 1
-          write(unit=2006,FMT='(i4,f10.4)')lpconj(lp)                   &
-     &                        ,(90.-plasma_grid_GL(IN,lp)*rtd)
           coslam_m(1,lp)=COS(pi*0.5-plasma_grid_GL(IN,lp))
 
           if(coslam_m(1,lp)<=0.or.coslam_m(1,lp)>=1.)then
@@ -252,11 +247,11 @@
           pot_i1=( potent(i1,jj0)+potent(i1,jj1) )*0.50 
           pot_i0=( potent(i0,jj0)+potent(i0,jj1) )*0.50
           if (r<=0..or.coslam_m(1,lp)==0..or.d_phi_m==0.)then
-            print *,'sub-get_e:NH!STOP! INVALID',lp,lpconj(lp),mp,r     &
+            print *,'sub-get_e:NH!STOP! INVALID',lp,ihem,mp,r           &
      &             ,coslam_m(1,lp),d_phi_m
             STOP
           endif
-          ed1_90(lpconj(lp),mp)=-1.0/r/coslam_m(1,lp)                   &
+          ed1_90(1,lp,mp)=-1.0/r/coslam_m(1,lp)                         &
      &                         *(pot_i1-pot_i0)/d_phi_m
 !         SH
 !         d          potent_i0=LINEAR_INTERPOLATION(theta90_rad(j0(1,lp)) 
@@ -276,7 +271,7 @@
      &             ,coslam_m(2,lp),d_phi_m
             STOP
           endif
-          ed1_90(lp,mp)=-1.0/r/coslam_m(2,lp)*(pot_i1-pot_i0)/d_phi_m
+          ed1_90(2,lp,mp)=-1.0/r/coslam_m(2,lp)*(pot_i1-pot_i0)/d_phi_m
 !         computing ed2_90(lp,mp) continues
 !         calculate sinIm !eq(3.7)
           cos2Lambda_m = coslam_m(2,lp) * coslam_m(2,lp)      ! 0<cos2<1
@@ -294,8 +289,7 @@
             print *,'sub-get_ed2:NH!STOP! INVALID',lp,d_lam_m
             STOP
           endif
-          ed2_90(lpconj(lp),mp)=+1.0/r/sinI_m(ihem)                     &
-     &                         *(pot_j1-pot_j0) /d_lam_m
+          ed2_90(1,lp,mp)=+1.0/r/sinI_m(ihem)*(pot_j1-pot_j0)/d_lam_m
 !         dbg20111108     &*(-1.)*sinI_m(ihem)     !E_m_lambda (5.10)
 !         SH
           ihem=2
@@ -304,7 +298,7 @@
           d_lam_m = theta90_rad( jj1 ) - theta90_rad( jj0 )
           pot_j1=( potent(i0,jj1)+potent(i1,jj1) )*0.50
           pot_j0=( potent(i0,jj0)+potent(i1,jj0) )*0.50
-          ed2_90(lp,mp)=+1.0/r/sinI_m(ihem)*(pot_j1-pot_j0) /d_lam_m
+          ed2_90(2,lp,mp)=+1.0/r/sinI_m(ihem)*(pot_j1-pot_j0) /d_lam_m
 !         dbg20111108     &*(-1.)*sinI_m(ihem)  !E_m_lambda (5.10)
 
           IF(sw_exb_up<=1.and.sw_perp_transport>=1.and.                 &
@@ -314,20 +308,14 @@
 !           (1) WACCM E empirical model
 !           Ed1/2[V/m] at ( phi_t1(mp), theta_t1(lp) ), Be3[T]
 !           note: Be3 should be constant along a magnetic field!!! 
-!           lp0 is used for array(NLP*2)
             ihem=1! For now
-            IF ( ihem==1 ) THEN
-              lp0 = lpconj(lp) !NH
-            ELSE IF ( ihem==2 ) THEN
-              lp0 = lp !SH
-            END IF
             midpoint = JMIN_IN(lp) + (JMAX_IS(lp) - JMIN_IN(lp))/2
 
-            v_e(1) =   Ed2_90(lp0,mp) / Be3(ihem,lp,mp) !(4.18) +mag-east(d1?) 
-            v_e(2) = - Ed1_90(lp0,mp) / Be3(ihem,lp,mp) !(4.19) +down/equatorward(d2?)
+            v_e(1) =   Ed2_90(ihem,lp,mp) / Be3(ihem,lp,mp) !(4.18) +mag-east(d1?) 
+            v_e(2) = - Ed1_90(ihem,lp,mp) / Be3(ihem,lp,mp) !(4.19) +down/equatorward(d2?)
             if(sw_debug) then
               print *,'sub-StR:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]',    &
-     &               Ed1_90(lp0,mp)*1.0E+3,' be3[tesla]',Be3(ihem,lp,mp) 
+     &           Ed1_90(ihem,lp,mp)*1.0E+3,' be3[tesla]',Be3(ihem,lp,mp) 
             endif
             VEXBup(lp,mp)=(v_e(1)*apexE(midpoint,lp,mp,up,1))           &
      &                   +(v_e(2)*apexE(midpoint,lp,mp,up,2))

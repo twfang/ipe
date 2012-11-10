@@ -12,7 +12,7 @@
 ! ADDRESS: 325 Broadway, Boulder, CO 80305
 !--------------------------------------------  
 
-      SUBROUTINE plasma_vexb (utime,mp,lp,midpoint,r_apex,lp0,ihem )         
+      SUBROUTINE plasma_vexb (utime,mp,lp,midpoint,r_apex,ihem )         
       USE module_precision
       USE module_input_parameters,ONLY: sw_exb_up,sw_debug,sw_perp_transport
       USE module_plasma,ONLY: VEXB3D
@@ -24,7 +24,7 @@
       INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]
       INTEGER (KIND=int_prec), INTENT(IN) :: mp  !mag-lon index
       INTEGER (KIND=int_prec), INTENT(IN) :: lp  !mag-lat index
-      INTEGER (KIND=int_prec), INTENT(IN) :: midpoint,lp0,ihem 
+      INTEGER (KIND=int_prec), INTENT(IN) :: midpoint,ihem 
       REAL (KIND=real_prec),   INTENT(IN) :: r_apex
 ! OUTPUT
 
@@ -45,10 +45,10 @@
 ! (1) WACCM E empirical model
 ! Ed1/2[V/m] at ( phi_t1(mp), theta_t1(lp) ), Be3[T]
 !note: Be3 should be constant along a magnetic field!!! 
-        v_e(1) =   Ed2_90(lp0,mp) / Be3(ihem,lp,mp) !(4.18) +mag-east(d1?) 
-        v_e(2) = - Ed1_90(lp0,mp) / Be3(ihem,lp,mp) !(4.19) +down/equatorward(d2?)
+        v_e(1) =   Ed2_90(ihem,lp,mp) / Be3(ihem,lp,mp) !(4.18) +mag-east(d1?) 
+        v_e(2) = - Ed1_90(ihem,lp,mp) / Be3(ihem,lp,mp) !(4.19) +down/equatorward(d2?)
 if(sw_debug)&
-& print *,'sub-vexb:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]', Ed1_90(lp0,mp)*1.0E+3,' be3[tesla]',Be3(ihem,lp,mp) 
+& print *,'sub-vexb:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]', Ed1_90(ihem,lp,mp)*1.0E+3,' be3[tesla]',Be3(ihem,lp,mp) 
 
 
         i_loop: DO i=IN,IS

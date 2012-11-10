@@ -56,12 +56,9 @@
       INTEGER(KIND=int_prec ),allocatable,public :: j0      (:,:) !1:NH; 2:SH
       INTEGER(KIND=int_prec ),allocatable,public :: j1      (:,:) !1:NH; 2:SH
 !SMS$DISTRIBUTE END
-      REAL   (KIND=real_prec),allocatable,public :: Ed1_90  (:,:)
-      REAL   (KIND=real_prec),allocatable,public :: Ed2_90  (:,:)
+      REAL   (KIND=real_prec),allocatable,public :: Ed1_90  (:,:,:)
+      REAL   (KIND=real_prec),allocatable,public :: Ed2_90  (:,:,:)
       REAL   (KIND=real_prec),allocatable,public :: coslam_m(:,:)
-!SMS$DISTRIBUTE(dh,1) BEGIN
-      INTEGER(KIND=int_prec ),allocatable,public :: lpconj  (:)   !4 NH
-!SMS$DISTRIBUTE END
 
 !nm20121003:subroutine init_eldyn, eldyn are separated into module_sub_eldyn.f
 

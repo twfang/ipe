@@ -35,7 +35,7 @@
       PUBLIC :: init_eldyn
       CONTAINS
       SUBROUTINE init_eldyn ( )
-      USE module_eldyn,only : j0,j1,Ed1_90,Ed2_90,coslam_m,lpconj
+      USE module_eldyn,only : j0,j1,Ed1_90,Ed2_90,coslam_m
       IMPLICIT NONE
       integer :: status
 !20120304:      CHARACTER(len=*),PARAMETER :: path='~/sandbox/efield/'
@@ -44,10 +44,9 @@
 
       allocate( j0      (2,NLP    ),
      &          j1      (2,NLP    ),
-     &          Ed1_90  (2*NLP,NMP),
-     &          Ed2_90  (2*NLP,NMP),
+     &          Ed1_90  (2,NLP,NMP),
+     &          Ed2_90  (2,NLP,NMP),
      &          coslam_m(2,NLP    ),
-     &          lpconj  (  NLP    ),
      &          STAT=status       )
       if(status /=0) then
         print*,'Allocation failed in module_init_eldyn',status

@@ -15,7 +15,7 @@
 !d     &, theta_t1 &
      &, phi_t0 , theta_t0 )
       USE module_precision
-      USE module_eldyn,ONLY: Ed1_90,Ed2_90,coslam_m,lpconj
+      USE module_eldyn,ONLY: Ed1_90,Ed2_90,coslam_m
       USE module_FIELD_LINE_GRID_MKS,ONLY: Be3,mlon_rad,plasma_grid_GL,JMIN_IN,JMAX_IS,ht90,plasma_grid_Z !,apexE, geographic_coords
       USE module_physical_constants,ONLY: earth_radius,rtd,pi
 !      USE cons_module,ONLY: h0 !potential solver reference height[cm] =90km
@@ -40,7 +40,7 @@
       REAL(KIND=real_prec) :: v_e2magsouth !EXB converted to positive:mag-southward
       REAL(KIND=real_prec) :: r !meter
       INTEGER (KIND=int_prec) :: ihem !1:NH; 2:SH
-      INTEGER (KIND=int_prec) :: lp0,ift
+!     INTEGER (KIND=int_prec) :: ift
       REAL(KIND=real_prec) :: r_apex,sintheta,sin2theta,r_apex_dipole,r0_apex
       INTEGER (KIND=int_prec) :: midpoint
 !---------------
@@ -61,22 +61,19 @@ theta_t1(2) = plasma_grid_GL( JMAX_IS(lp),lp ) !SH
       r = earth_radius + ht90 ![m]
 
       which_hemisphere: DO ihem=1,2 !ihem_max
-!lp0 is used for array(NLP*2)
-        IF ( ihem==1 ) THEN
-          lp0 = lpconj(lp) !NH
-          ift = JMIN_IN(lp)
-        ELSE IF ( ihem==2 ) THEN
-          lp0 = lp !SH
-          ift = JMAX_IS(lp)
-        END IF
+!        IF ( ihem==1 ) THEN
+!          ift = JMIN_IN(lp)
+!        ELSE IF ( ihem==2 ) THEN
+!          ift = JMAX_IS(lp)
+!        END IF
 
 ! Ed1/2[V/m] at ( phi_t1(mp), theta_t1(lp) ), Be3[T]
-        v_e(1) =   Ed2_90(lp0,mp) / Be3(ihem,lp,mp) !(4.18) +mag-east(d1?) 
-        v_e(2) = - Ed1_90(lp0,mp) / Be3(ihem,lp,mp) !(4.19) +down/equatorward(d2?)
+        v_e(1) =   Ed2_90(ihem,lp,mp) / Be3(ihem,lp,mp) !(4.18) +mag-east(d1?) 
+        v_e(2) = - Ed1_90(ihem,lp,mp) / Be3(ihem,lp,mp) !(4.19) +down/equatorward(d2?)
         
 !dbg
 if(sw_debug) &
-& print *,'sub-St:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]', Ed1_90(lp0,mp)*1.0E+3,' be3[tesla]',Be3(ihem,lp,mp) 
+& print *,'sub-St:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]', Ed1_90(ihem,lp,mp)*1.0E+3,' be3[tesla]',Be3(ihem,lp,mp) 
 !dbg ,' BM-N',plasma_grid_3d( JMIN_IN(lp,mp) ,mp)%BM,' BM-S',plasma_grid_3d( JMAX_IS(lp,mp) ,mp)%BM
 
 
@@ -147,7 +144,6 @@ end if
       SUBROUTINE stepback_mag_R (utime,mp,lp,phi_t0,theta_t0,r0_apex)
       USE module_precision
       USE module_IPE_dimension,ONLY: NLP
-      USE module_eldyn,ONLY: Ed1_90,Ed2_90,lpconj
       USE module_FIELD_LINE_GRID_MKS,ONLY: mlon_rad,plasma_grid_Z,JMIN_IN,JMAX_IS,ht90,plasma_grid_GL,plasma_grid_3d,east,north,up,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,VEXBup
       USE module_physical_constants,ONLY: earth_radius,rtd,pi
       USE module_input_parameters,ONLY: time_step,sw_exb_up,sw_debug,start_time,lpmin_perp_trans
