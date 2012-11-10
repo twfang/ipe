@@ -36,13 +36,11 @@
 !---
       SUBROUTINE eldyn ( utime )
       USE module_precision
-      USE module_input_parameters,ONLY:NYEAR,NDAY,start_time
-     &, ip_freq_output, sw_debug
-     &, kp_eld
-     &, F107D_ipe => F107D  !,AP
+      USE module_input_parameters,ONLY:NYEAR,NDAY,start_time            &
+     &, ip_freq_output, sw_debug, kp_eld, F107D_ipe => F107D            !,AP
       USE module_physical_constants,ONLY:rtd
 !nm20121003:
-      USE module_eldyn,ONLY:theta90_rad,j0,j1,Ed1_90,Ed2_90
+      USE module_eldyn,ONLY:theta90_rad,j0,Ed1_90,Ed2_90
       IMPLICIT NONE
       INTEGER (KIND=int_prec),INTENT(IN)   :: utime !universal time [sec]
 !---local
@@ -62,7 +60,7 @@
       f107d = F107D_ipe         !f107
       ut = REAL(utime,real_prec)/3600.0
       kp = kp_eld  !=1.                   !???
-      bz = .433726 - kp*(.0849999*kp + .0810363)  
+      bz = .433726 - kp*(.0849999*kp + .0810363)                        &
      &        + f107d*(.00793738 - .00219316*kp)
       by=0.
 
@@ -84,19 +82,24 @@
 
 
 ! get ED1/2(nmp=80 X nlp=170) at 90km from potent(181x91)at 130km
-      IF ( utime==start_time ) j0(:,:)=-999
+      IF ( utime==start_time ) then
+        j0=-999
+      endif
       CALL GET_EFIELD90km ( utime )
       if ( sw_debug )  print *,'GET_EFIELD90km finished'
-      IF ( utime==start_time ) write(unit=2007,FMT='(20f10.4)')
-     &   (90.-theta90_rad*rtd)    
+      IF ( utime==start_time ) THEN 
+        write(unit=2007,FMT='(20f10.4)') (90.-theta90_rad*rtd)    
+      ENDIF
 
       IF ( MOD( (utime-start_time),ip_freq_output)==0 ) THEN
+!SMS$SERIAL(<ed1_90,ed2_90,IN>:default=ignore) BEGIN
         write(unit=2000,FMT='(20E12.4)')potent !V
         write(unit=2001,FMT='(20E12.4)')ed1 *1.0E+03 !V/m-->mV/m
         write(unit=2002,FMT='(20E12.4)')ed2 *1.0E+03 !V/m-->mV/m
         write(unit=2008,FMT='(20E12.4)')ed1_90 *1.0E+03 !V/m-->mV/m
         write(unit=2009,FMT='(20E12.4)')ed2_90 *1.0E+03 !V/m-->mV/m
         write(unit=2010,FMT='(I12)')utime !sec
+!SMS$SERIAL END
       END IF
 !c
       return

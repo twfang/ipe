@@ -18,9 +18,14 @@ module_ELDYN        ../eldyn/module_eldyn.f
 efield              ../eldyn/efield.f
 module_magfield     ../eldyn/magfield.f
 module_sunloc       ../eldyn/module_sunloc.f
+module_efield_init  ../eldyn/module_efield_init.f
+module_get_efield   ../eldyn/module_get_efield.f
 
 module_NEUTRAL_MKS  ../neutral/module_neutral.f90
 module_heating_rate ../neutral/module_heating_rate.f90
 
 module_PLASMA       ../plasma/module_plasma.f90
 module_sub_PLASMA   ../plasma/module_sub_plasma.f90
+module_eldyn ./module_eldyn_sms.f.tmp
+module_init_eldyn ./module_init_eldyn_sms.f.tmp
+module_sub_eldyn ./module_sub_eldyn_sms.f.tmp

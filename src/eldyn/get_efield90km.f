@@ -73,7 +73,7 @@
           endif
         END DO mlat_loop130km0
 
-
+!SMS$PARALLEL(dh, lp, mp) BEGIN
 
 ! ed1(:,:) = Ed1 = - 1/[R cos lam_m] d PHI/d phi_m
 
@@ -81,7 +81,6 @@
 
 ! note that mlat90km is the constant in m-lon
         mp=1 
-!SMS$SERIAL(<JMIN_IN,JMAX_IS,plasma_grid_GL,IN>:default=IGNORE) BEGIN
         mlat_loop90km0: DO lp=1,NLP
 
 ! NH
@@ -158,7 +157,6 @@
           END IF                   ! ( plasma_grid_3d(IN,mp)%GL>theta90_rad(nmlat/2) ) THEN
 
         END DO mlat_loop90km0!: DO lp=1,NLP
-!SMS$SERIAL END
 
       END IF !( j0(1,1)>0 ) THEN
 
@@ -181,7 +179,6 @@
         IF( mlon130_rad(i)>=pi*2.0) mlon130_rad(i)=mlon130_rad(i)-pi*2.0
       END DO mlon130_loop0 !: DO i=0,nmlon
 
-!SMS$SERIAL(<JMIN_IN,JMAX_IS,plasma_grid_GL,mlon_rad,Be3,apexE,IN>,<VEXBup,INOUT>:default=IGNORE) BEGIN
       mlon_loop90km0: DO mp=1,NMP
 !       mlon_rad: from 0 to 355.5 with dlon_ipe=4.5 deg resolution
 !       mlon90_deg = mlon_rad(mp)*rtd
@@ -328,7 +325,7 @@
 
         END DO mlat_loop90km1 !: DO lp=1,NLP
       END DO mlon_loop90km0     !: DO mp=1,nmp
-!SMS$SERIAL END
+!SMS$PARALLEL END
 
       END SUBROUTINE GET_EFIELD90km
 !

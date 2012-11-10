@@ -137,14 +137,14 @@ SRC6S	=\
 	${DR6}/module_efield_init.f \
 	${DR6}/module_GlobalElPotential.f \
 	${DR6}/module_get_efield.f \
-	${DR6}/module_eldyn.f \
-	${DR6}/module_sub_eldyn.f \
-	${DR6}/module_init_eldyn.f \
 	${DR6}/module_magfield.f \
 	${DR6}/module_sunloc.f \
 	${DR6}/apex_sunloc.f \
 	${DR6}/supim_exb.f
 SRC6P	=\
+	${DR6}/module_eldyn.f      \
+	${DR6}/module_init_eldyn.f \
+	${DR6}/module_sub_eldyn.f  \
 	${DR6}/get_efield90km.f 
 # DR4: main driver
 SRC4P	=\

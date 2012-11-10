@@ -82,8 +82,9 @@ END IF
 ! initialization of electrodynamic module:
 ! read in E-field
       ret = gptlstart ('init_eldyn')
-      IF ( sw_perp_transport>=1 ) &
-     & CALL init_eldyn ( )
+      IF ( sw_perp_transport>=1 ) THEN
+        CALL init_eldyn ( )
+      ENDIF
       ret = gptlstop  ('init_eldyn')
 
       ret = gptlstart ('time_loop')
@@ -95,8 +96,9 @@ END IF
 
 !nm20110907:moved here because empirical Efield is needed for both neutral &plasma
       ret = gptlstart ('eldyn')
-      IF ( sw_perp_transport>=1 ) & 
-     &   CALL eldyn ( utime )
+      IF ( sw_perp_transport>=1 ) THEN
+        CALL eldyn ( utime )
+      ENDIF
       ret = gptlstop  ('eldyn')
 
 ! update neutral 3D structure: use MSIS/HWM to get the values in the flux tube grid

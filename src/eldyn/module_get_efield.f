@@ -45,10 +45,10 @@
 ! Author: A. Maute Dec 2003  am 12/30/03 
 !------------------------------------------------------------------------------ 
 
-c     use shr_kind_mod,  only: r8 => shr_kind_r8
-c     use physconst,     only: pi
-c     use abortutils,    only: endrun
-c     use cam_logfile,   only: iulog
+!     use shr_kind_mod,  only: r8 => shr_kind_r8
+!     use physconst,     only: pi
+!     use abortutils,    only: endrun
+!     use cam_logfile,   only: iulog
    
       implicit none
 
@@ -70,11 +70,11 @@ c     use cam_logfile,   only: iulog
 ! Author: A. Maute Dec 2003  am 12/17/03    
 !-----------------------------------------------------------------------
 
-c     use time_manager,   only : get_curr_calday, get_curr_date
-c     use mo_solar_parms, only : get_solar_parms
-c     use mag_parms,      only : get_mag_parms
-c     use cam_control_mod, only: magfield_fix_year
-c     use spmd_utils,      only: masterproc
+!     use time_manager,   only : get_curr_calday, get_curr_date
+!     use mo_solar_parms, only : get_solar_parms
+!     use mag_parms,      only : get_mag_parms
+!     use cam_control_mod, only: magfield_fix_year
+!     use spmd_utils,      only: masterproc
 !nm20121003
       USE efield !,ONLY:
       USE module_DerivPotential ,ONLY: DerivPotential
@@ -89,40 +89,40 @@ c     use spmd_utils,      only: masterproc
 ! get current calendar day of year & date components 
 ! valid at end of current timestep
 !-----------------------------------------------------------------------
-c     iday = get_curr_calday()                   ! day of year
-c     call get_curr_date (iyear,imo,iday_m,tod)! year, time of day [sec]
-c     iyear = magfield_fix_year
-c     iyear = 1995
+!     iday = get_curr_calday()                   ! day of year
+!     call get_curr_date (iyear,imo,iday_m,tod)! year, time of day [sec]
+!     iyear = magfield_fix_year
+!     iyear = 1995
 
-c     if( iyear < 1900 ) then
-c       write(iulog,"(/,'>>> get_efield: year < 1900 not possible: 
-c    &year=',i5)") iyear
-c       call endrun
-c     end if
+!     if( iyear < 1900 ) then
+!       write(iulog,"(/,'>>> get_efield: year < 1900 not possible: 
+!    &year=',i5)") iyear
+!       call endrun
+!     end if
 
       tod=ut*3600.
-c     ut = tod/3600.                   ! UT of day [sec]
+!     ut = tod/3600.                   ! UT of day [sec]
 
 !-----------------------------------------------------------------------
 ! get solar parms
 !-----------------------------------------------------------------------
-c     call get_solar_parms( f107_s = f107d )
+!     call get_solar_parms( f107_s = f107d )
 !-----------------------------------------------------------------------
 ! get mag parms
 !-----------------------------------------------------------------------
-c     call get_mag_parms( by = by, bz = bz )
-c     by=0.
-c     bz=.433726-kp*(0.0849*kp+0.0810363)+
-c    &f107d*(0.0079373-0.00219316*kp)
-c     print*,kp,bz
-c     bz=-2.5
+!     call get_mag_parms( by = by, bz = bz )
+!     by=0.
+!     bz=.433726-kp*(0.0849*kp+0.0810363)+
+!    &f107d*(0.0079373-0.00219316*kp)
+!     print*,kp,bz
+!     bz=-2.5
       if ( sw_debug ) 
      & print*,'By=',by,' Bz=',bz,' F107d=',f107d,' UT[hr]',ut
-c#ifdef EFIELD_DIAGS
-c      if( masterproc ) then
-c         write(iulog,*) 'get_efield: f107d,by,bz = ', f107d,by,bz 
-c      end if
-c#endif
+!#ifdef EFIELD_DIAGS
+!      if( masterproc ) then
+!         write(iulog,*) 'get_efield: f107d,by,bz = ', f107d,by,bz 
+!      end if
+!#endif
 !-----------------------------------------------------------------------
 ! ajust S_a
 !-----------------------------------------------------------------------
