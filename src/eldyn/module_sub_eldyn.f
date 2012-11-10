@@ -36,7 +36,7 @@
 !---
       SUBROUTINE eldyn ( utime )
       USE module_precision
-      USE module_input_parameters,ONLY:NYEAR,NDAY,start_time            &
+      USE module_input_parameters,ONLY:NYEAR,NDAY,start_time,mype       &
      &, ip_freq_output, sw_debug, kp_eld, F107D_ipe => F107D            !,AP
       USE module_physical_constants,ONLY:rtd
 !nm20121003:

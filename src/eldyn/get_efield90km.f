@@ -23,7 +23,8 @@
       USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS &
      &,mlon_rad,ht90,Be3,apexE,VEXBup,up
       USE module_input_parameters,ONLY: sw_debug,NYEAR,NDAY,sw_exb_up    &
-     &,sw_perp_transport,lpmin_perp_trans,lpmax_perp_trans
+     &,sw_perp_transport,lpmin_perp_trans,lpmax_perp_trans,mype          &
+     &,start_time
       USE module_magfield,ONLY:sunlons
       USE module_sunloc,ONLY:sunloc
       IMPLICIT NONE
@@ -49,14 +50,12 @@
       REAL(KIND=real_prec) :: cos2Lambda_m,sinLambda_m(2),sinI_m(2)
       INTEGER (KIND=int_prec ) :: midpoint
       REAL    (KIND=real_prec) :: v_e(2)   !1:ed2/be3 (4.18) ;2: -ed1/be3 (4.19)
-!
+
 ! array initialization
       Ed1_90=zero
       Ed2_90=zero
 
-! only utime==start_time
-      IF ( j0(1,1)<0 ) THEN
-
+      IF(utime == start_time) THEN
 ! array initialization
         theta90_rad = zero
         coslam_m    = zero
@@ -80,7 +79,6 @@
         write(unit=2006,FMT=*) "GL"
 
 ! note that mlat90km is the constant in m-lon
-        mp=1 
         mlat_loop90km0: DO lp=1,NLP
 
 ! NH
@@ -89,8 +87,11 @@
           coslam_m(1,lp)=COS(pi*0.5-plasma_grid_GL(IN,lp))
 
           if(coslam_m(1,lp)<=0.or.coslam_m(1,lp)>=1.)then
-            print *,'sub-get_e:NH!STOP! INVALID coslam!',mp,lp          &
-     &             ,coslam_m(1,lp),(90.-plasma_grid_GL(IN,lp)*rtd)
+!SMS$IGNORE BEGIN
+            print*,'sub-get_e:NH!STOP! INVALID coslam!',lp,IN,mype
+            print*, coslam_m(1,lp),(90.-plasma_grid_GL(IN,lp)*rtd),     &
+     &              plasma_grid_GL(IN,lp) 
+!SMS$IGNORE end
             STOP
           end if
 
@@ -99,17 +100,20 @@
      &         ,(90.-plasma_grid_GL(IS,lp)*rtd)
           coslam_m(2,lp) = COS( pi*0.5-plasma_grid_GL(IS,lp) )
 
-          if(coslam_m(1,lp)<=0.or.coslam_m(1,lp)>=1.)then
-            print *,'sub-get_e:SH!STOP! INVALID coslam!',mp,lp          &
-     &             ,coslam_m(2,lp),(90.-plasma_grid_GL(IS,lp)*rtd)
+          if(coslam_m(2,lp)<=0.or.coslam_m(2,lp)>=1.)then
+!SMS$IGNORE BEGIN
+            print*,'sub-get_e:SH!STOP! INVALID coslam!',lp,IS,mype
+            print*, coslam_m(2,lp),(90.-plasma_grid_GL(IS,lp)*rtd),     & 
+     &              plasma_grid_GL(IS,lp) 
+!SMS$IGNORE end
             STOP
           end if
 
 !EQ: potential difference is constant below 4.4988 < APEX=130km
           IF ( plasma_grid_GL(IN,lp)>theta90_rad(nmlat/2) ) THEN
             if(sw_debug) then
-              print *,'check EQ',mp,lp,(90.-plasma_grid_GL(IN,lp)*rtd)  &
-     &                                ,(90.-theta90_rad(nmlat/2) *rtd)
+              print *,'check EQ',lp,(90.-plasma_grid_GL(IN,lp)*rtd)     &
+     &                             ,(90.-theta90_rad(nmlat/2) *rtd)
             endif
             j0(1,lp)=nmlat/2+1   !1:NH
             j1(1,lp)=nmlat/2
@@ -137,7 +141,7 @@
                 EXIT mlat_loop130km1
               ELSE
                 IF ( j==nmlat/2 ) THEN
-                  print *,'sub-get_e:!STOP! could not find j!',mp,IN,j  &
+                  print *,'sub-get_e:!STOP! could not find j!',lp,IN,j  &
      &                   ,plasma_grid_GL(IN,lp),theta90_rad(j)
                   STOP
                 END IF
@@ -244,8 +248,10 @@
           pot_i1=( potent(i1,jj0)+potent(i1,jj1) )*0.50 
           pot_i0=( potent(i0,jj0)+potent(i0,jj1) )*0.50
           if (r<=0..or.coslam_m(1,lp)==0..or.d_phi_m==0.)then
-            print *,'sub-get_e:NH!STOP! INVALID',lp,ihem,mp,r           &
-     &             ,coslam_m(1,lp),d_phi_m
+!SMS$IGNORE BEGIN
+            print*,'sub-get_e:NH!STOP! INVALID',lp,ihem,mp,mype
+            print*, r,coslam_m(1,lp),d_phi_m
+!SMS$IGNORE END
             STOP
           endif
           ed1_90(1,lp,mp)=-1.0/r/coslam_m(1,lp)                         &
@@ -264,8 +270,10 @@
           pot_i1=( potent(i1,jj0)+potent(i1,jj1) )*0.50
           pot_i0=( potent(i0,jj0)+potent(i0,jj1) )*0.50
           if (r<=0..or.coslam_m(2,lp)==0..or.d_phi_m==0.)then
-            print *,'sub-get_e:SH!STOP! INVALID',lp,mp,r                &
-     &             ,coslam_m(2,lp),d_phi_m
+!SMS$IGNORE BEGIN
+            print*,'sub-get_e:SH!STOP! INVALID',lp,ihem,mp,mype
+            print*, r,coslam_m(2,lp),d_phi_m
+!SMS$IGNORE END
             STOP
           endif
           ed1_90(2,lp,mp)=-1.0/r/coslam_m(2,lp)*(pot_i1-pot_i0)/d_phi_m
