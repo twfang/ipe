@@ -16,7 +16,7 @@
       USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,Pvalue,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,plasma_3d,ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k,un_ms1,mp_save,lp_save
       USE module_input_parameters,ONLY: time_step,F107D,F107AV,DTMIN_flip  &
      &, sw_INNO,FPAS_flip,HPEQ_flip,HEPRAT_flip,COLFAC_flip,sw_IHEPLS,sw_INPLS,sw_debug,iout, start_time, sw_wind_flip, sw_depleted_flip, start_time_depleted, sw_output_fort167 &
-     &, sw_neutral_heating_flip, ip_freq_output, parallelBuild
+     &, sw_neutral_heating_flip, ip_freq_output, parallelBuild,mype
       USE module_PLASMA,ONLY: plasma_1d !dbg20120501
 !dbg20110927      USE module_heating_rate,ONLY: NHEAT_cgs
       USE module_physical_constants,ONLY: pi,zero
@@ -72,10 +72,6 @@
       INTEGER (KIND=int_prec),PARAMETER :: ip_freq_output_fort=900      
       INTEGER (KIND=int_prec) :: jth !dbg20120501
 !----------------------------------
-
-
-
-
 
 ! frequency of output to fort167/8 170/1 within CTIP-int
 !d      IF ( lp==170.and.mp==1.and.MOD( (utime-start_time), ip_freq_output_fort)==0 ) THEN

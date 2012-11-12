@@ -39,9 +39,7 @@ MODULE module_heating_rate
       USE module_FIELD_LINE_GRID_MKS,ONLY: plasma_grid_Z,MaxFluxTube,hrate_mks3d,ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,JMIN_IN,JMAX_IS
       IMPLICIT NONE
 !------------------------
-!nm20121020!SMS$DISTRIBUTE(dh,NLP) BEGIN
       DOUBLE PRECISION, DIMENSION(22,MaxFluxTube), INTENT(IN) :: hrate_cgs !.. each component of the Neutral heating rate (eV/kg/s) 
-!nm20121020!SMS$DISTRIBUTE END
       INTEGER(KIND=int_prec),INTENT(IN) :: mp
       INTEGER(KIND=int_prec),INTENT(IN) :: lp
       REAL(KIND=real_prec) :: total_rho

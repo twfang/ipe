@@ -24,7 +24,7 @@
      &,mlon_rad,ht90,Be3,apexE,VEXBup,up
       USE module_input_parameters,ONLY: sw_debug,NYEAR,NDAY,sw_exb_up    &
      &,sw_perp_transport,lpmin_perp_trans,lpmax_perp_trans,mype          &
-     &,start_time
+     &,lps
       USE module_magfield,ONLY:sunlons
       USE module_sunloc,ONLY:sunloc
       IMPLICIT NONE
@@ -55,7 +55,7 @@
       Ed1_90=zero
       Ed2_90=zero
 
-      IF(utime == start_time) THEN
+      IF ( j0(1,lps)<0 ) THEN
 ! array initialization
         theta90_rad = zero
         coslam_m    = zero

@@ -31,7 +31,7 @@
       SUBROUTINE plasma ( utime )
       USE module_input_parameters,ONLY:mpstop,ip_freq_output,start_time,stop_time,&
 &     sw_neutral_heating_flip,sw_perp_transport,lpmin_perp_trans,lpmax_perp_trans,sw_para_transport,sw_debug,        &
-&     sw_dbg_perp_trans,sw_exb_up,parallelBuild
+&     sw_dbg_perp_trans,sw_exb_up,parallelBuild,mype
       USE module_physical_constants,ONLY:rtd,zero
       USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,plasma_grid_3d,plasma_grid_GL,mp_save,lp_save,plasma_grid_Z,JMAX_IS,hrate_mks3d
       USE module_PLASMA,ONLY:utime_save,plasma_1d
@@ -92,16 +92,16 @@ if(sw_dbg_perp_trans.and.utime==start_time.and.lp==1)then
     print*,'Stopping module_sub_plasma'
     stop
   endif
-  DO j=1,NLP
-    DO i=JMIN_IN(j),JMAX_IS(j)
-      DO jth=1,ISTOT
+!  DO j=1,NLP
+!    DO i=JMIN_IN(j),JMAX_IS(j)
+!      DO jth=1,ISTOT
 !JFM     plasma_3d(jth,i,lp,mp)=100.0
 !dbg20120501      plasma_3d(mp,j)%N_m3( 1:ISPEC,i)=100.0
 !dbg20120501      plasma_3d(mp,j)%Te_k(         i)=100.0
 !dbg20120501      plasma_3d(mp,j)%Ti_k( 1:ISPET,i)=100.0
-      END DO !jth
-    END DO !i
-  END DO !j
+!      END DO !jth
+!    END DO !i
+!  END DO !j
 end if
 !if(sw_dbg_perp_trans) print *, '1!dbg max o+',MAXVAL( plasma_3d(mp,lp)%N_m3( 1,1:IPDIM) ),MINVAL( plasma_3d(mp,lp)%N_m3( 1,1:IPDIM) )
 
@@ -153,7 +153,7 @@ end if
             ELSE  !IF ( lp>lpmin_perp_trans ) THEN
 if(utime==start_time) then
 midpoint=JMIN_IN(lp) + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
-print "('NO PERP. TRANS: mp=',I3,' lp=',I4,' mlatNd',F8.3,' apht',F8.2)", mp,lp,(90.-plasma_grid_GL(JMIN_IN(lp),lp)*rtd) &
+print "('NO PERP. TRANS: mp=',I3,' lp=',I4,' mlatNd',F8.3,' apht',F10.2)", mp,lp,(90.-plasma_grid_GL(JMIN_IN(lp),lp)*rtd) &
 & ,plasma_grid_Z(midpoint,lp)*1.0e-3
 endif
             END IF
@@ -171,7 +171,6 @@ endif
 ! call flux tube solver
           ret = gptlstart ('flux_tube_solver')
           IF ( sw_para_transport==1 ) THEN 
-
             CALL flux_tube_solver ( utime,mp,lp )
           ELSE IF ( sw_para_transport==0 ) THEN 
 

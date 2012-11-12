@@ -17,12 +17,13 @@
       IMPLICIT NONE
 
 !--- IPE wide run parameters
-      INTEGER (KIND=int_prec), PUBLIC   :: start_time  !=0  !UT[sec]
-      INTEGER (KIND=int_prec), PUBLIC   :: stop_time   !=60 !UT[sec]
-      INTEGER (KIND=int_prec), PUBLIC   :: time_step   !=60 ![sec]
-      INTEGER (KIND=int_prec), PUBLIC   :: nprocs=1    !Number of processors
-      INTEGER (KIND=int_prec), PUBLIC   :: mype=0      !Processor number
-      INTEGER (KIND=int_prec), PUBLIC   :: HaloSize=99 !Halo size (big number=NOP for serial)
+      INTEGER (KIND=int_prec), PUBLIC   :: start_time      !=0  !UT[sec]
+      INTEGER (KIND=int_prec), PUBLIC   :: stop_time       !=60 !UT[sec]
+      INTEGER (KIND=int_prec), PUBLIC   :: time_step       !=60 ![sec]
+      INTEGER (KIND=int_prec), PUBLIC   :: nprocs=1        !Number of processors
+      INTEGER (KIND=int_prec), PUBLIC   :: mype=0          !Processor number
+      INTEGER (KIND=int_prec), PUBLIC   :: lps,lpe,mps,mpe !Per processor start and stop indexes for lp,mp
+      INTEGER (KIND=int_prec), PUBLIC   :: HaloSize=99     !Halo size (big number=NOP for serial)
 
       REAL (KIND=real_prec), PUBLIC :: F107D   !.. Daily F10.7
       REAL (KIND=real_prec), PUBLIC :: F107AV  !.. 81 day average F10.7
@@ -261,6 +262,17 @@ WRITE(*,*)"                                            "
 
 !SMS$insert call NNT_NPROCS(nprocs)
 !SMS$insert call NNT_ME    (mype  )
+!SMS$TO_LOCAL(dh:<1,lps:lbound>,<1,NLP:ubound>) BEGIN
+lps = 1
+lpe = NLP
+!SMS$TO_LOCAL END
+!SMS$TO_LOCAL(dh:<2,mps:lbound>,<2,NMP:ubound>) BEGIN
+mps = 1
+mpe = NMP
+!SMS$TO_LOCAL END
+!SMS$ignore begin
+print*,'JFM', lps,lpe,mps,mpe
+!SMS$ignore end
 print *,'finished reading namelist:',filename
 print *,' '
 print"(' NLP:                 ',I6)",NLP
