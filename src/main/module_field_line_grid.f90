@@ -21,7 +21,8 @@
 !
 ! --- PUBLIC ---
       INTEGER (KIND=int_prec ),PUBLIC :: mp_save,lp_save,MaxFluxTube
-      REAL    (KIND=real_prec),PUBLIC :: minTheta,maxTheta
+      REAL    (KIND=int_prec ),PUBLIC :: minAltitude,maxAltitude
+      REAL    (KIND=real_prec),PUBLIC :: minTheta   ,maxTheta
       REAL(KIND=real_prec),PARAMETER,PUBLIC :: ht90  = 90.0E+03  !reference height in meter
 !... read in parameters
 !SMS$DISTRIBUTE(dh,2,1) BEGIN

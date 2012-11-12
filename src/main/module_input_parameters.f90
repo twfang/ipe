@@ -270,9 +270,6 @@ lpe = NLP
 mps = 1
 mpe = NMP
 !SMS$TO_LOCAL END
-!SMS$ignore begin
-print*,'JFM', lps,lpe,mps,mpe
-!SMS$ignore end
 print *,'finished reading namelist:',filename
 print *,' '
 print"(' NLP:                 ',I6)",NLP

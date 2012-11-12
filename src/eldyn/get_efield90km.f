@@ -74,10 +74,6 @@
 
 !SMS$PARALLEL(dh, lp, mp) BEGIN
 
-! ed1(:,:) = Ed1 = - 1/[R cos lam_m] d PHI/d phi_m
-
-        write(unit=2006,FMT=*) "GL"
-
 ! note that mlat90km is the constant in m-lon
         mlat_loop90km0: DO lp=1,NLP
 
@@ -96,8 +92,6 @@
           end if
 
           IS = JMAX_IS(lp)
-          write(unit=2006,FMT='(i4,f10.4)') lp                          &
-     &         ,(90.-plasma_grid_GL(IS,lp)*rtd)
           coslam_m(2,lp) = COS( pi*0.5-plasma_grid_GL(IS,lp) )
 
           if(coslam_m(2,lp)<=0.or.coslam_m(2,lp)>=1.)then

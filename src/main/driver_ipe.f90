@@ -63,9 +63,6 @@ IF ( sw_output_plasma_grid ) THEN
   ret = gptlstop  ('output_plasma_grid')
 END IF
 
-
-
-
 ! initialise the flux tubes from previous runs
       IF ( HPEQ_flip==0.0 ) THEN
         print *,'before CALL io_plasma_bin finished! READ: start_time=', start_time,stop_time
