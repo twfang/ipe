@@ -214,6 +214,7 @@ C... ZWR= altitude for printing spectrum.
       IE=IEMAX
 
 C////////////main calculations  begin here ////////////
+      ret = gptlstop ('PE2S calc2')
  23   CONTINUE
 
       !-- Pitch angle trapping from Khazanov et al. 1992
@@ -223,7 +224,6 @@ C////////////main calculations  begin here ////////////
         IF(FPAS.LT.0.0) FPAS=0.0
         IF(VTOT*BM(M2).GT.0.0) PASK=FPAS/(VTOT*2.038E+8*BM(M2))
       ENDIF
-      ret = gptlstop ('PE2S calc2')
 
       !.. Evaluate ionization branching ratios for O+
       ret = gptlstart ('PE2S OXRAT')
