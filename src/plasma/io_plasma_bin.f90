@@ -48,7 +48,7 @@ dumm=zero
 IF ( switch==1 ) THEN !1:Output the 16 plasma* files
 
   record_number_plasma = record_number_plasma+1
-!SMS$SERIAL(<plasma_3d,JMIN_IN,JMAX_IS,JMIN_ING,JMAX_ISG,IN>:default=ignore) BEGIN
+!SMS$SERIAL(<plasma_3d,IN>:default=ignore) BEGIN
   j_loop1: DO jth=1,ISTOT !=(ISPEC+3+ISPEV)
     mp_loop1:do mp=1,mpstop
       lp_loop1:do lp=1,nlp

@@ -14,14 +14,12 @@
         USE module_input_parameters,ONLY:read_input_parameters,sw_debug,sw_neutral_heating_flip,nprocs,mype
         USE module_IO,ONLY: filename,LUN_pgrid
         USE module_FIELD_LINE_GRID_MKS,ONLY: &
-&  JMIN_IN_all,JMAX_IS_all &
-&, JMIN_ING, JMAX_ISG &
-&, JMIN_IN, JMAX_IS &
-&, r_meter2D, plasma_grid_GL,plasma_grid_3d,apexD,apexE,Be3,plasma_grid_Z &
-&, ISL,IBM,IGR,IQ,IGCOLAT,IGLON &
-&, east,north,up &
-&, MaxFluxTube,minTheta,maxTheta,minAltitude,maxAltitude,midpnt &
-&, plasma_3d
+&           JMIN_IN_all,JMAX_IS_all          &
+&,          JMIN_ING   ,JMAX_ISG             &
+&,          JMIN_IN    ,JMAX_IS              &
+&,          r_meter2D, plasma_grid_GL,plasma_grid_3d,apexD,apexE,Be3,plasma_grid_Z &
+&,          ISL,IBM,IGR,IQ,IGCOLAT,IGLON,east,north,up                             &
+&,          MaxFluxTube,minTheta,maxTheta,minAltitude,maxAltitude,midpnt,plasma_3d
         USE module_open_file,ONLY: open_file
         IMPLICIT NONE
 
@@ -89,10 +87,8 @@
         STOP
       END IF
 
-!SMS$PARALLEL(dh, lp, mp) BEGIN
-
 !JMIN_IN_all and JMAX_IS_all are OUT variables to workaround an SMS bug
-!SMS$SERIAL(<JMIN_IN,JMAX_IS,IN>,<JMIN_ING,JMAX_ISG,MaxFluxTube,JMIN_IN_all,JMAX_IS_all,OUT> : default=ignore) BEGIN
+!SMS$SERIAL(<JMIN_ING,JMAX_ISG,MaxFluxTube,JMIN_IN_all,JMAX_IS_all,OUT> : default=ignore) BEGIN
       filename =filepath_pgrid//filename_pgrid
       FORM_dum ='formatted' 
       STATUS_dum ='old'
@@ -119,7 +115,7 @@
         midpnt(lp) = JMIN_IN(lp) + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
       END DO
 
-!SMS$EXCHANGE(JMIN_IN,JMAX_IS,midpnt)
+!SMS$PARALLEL(dh, lp, mp) BEGIN
 
 ! array initialization
       Be3            = zero
@@ -132,7 +128,7 @@
       r_meter2D      = zero
 
 !JFM dum0,dum1,dum2,dum3 are treated as OUT variables to workaround an SMS bug
-!SMS$SERIAL(<JMIN_IN,JMAX_IS,JMIN_ING,JMAX_ISG,IN>,<r_meter2D,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,dum0,dum1,dum2,dum3,minTheta,maxTheta,minAltitude,maxAltitude,OUT> : default=ignore) BEGIN
+!SMS$SERIAL(<r_meter2D,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,dum0,dum1,dum2,dum3,minTheta,maxTheta,minAltitude,maxAltitude,OUT> : default=ignore) BEGIN
       READ (UNIT=LUN_pgrid, FMT=*) dum0, dum1, dum2, dum3 !gr_2d, gcol_2d, glon_2d, q_coordinate_2d
 do lp=1,NLP
   r_meter2D    (JMIN_IN(lp):JMAX_IS(lp),lp) = dum0(JMIN_ING(lp):JMAX_ISG(lp),1)                !r_meter
@@ -168,7 +164,7 @@ enddo
 !SMS$SERIAL END
 
 !JFM dum4,dum5,dum6 are treated as OUT variables to workaround an SMS bug
-!SMS$SERIAL(<JMIN_IN,JMAX_IS,JMIN_ING,JMAX_ISG,IN>,<apexD,dum4,dum5,dum6,OUT> : default=ignore) BEGIN
+!SMS$SERIAL(<apexD,dum4,dum5,dum6,OUT> : default=ignore) BEGIN
       READ (UNIT=LUN_pgrid, FMT=*) dum4, dum5, dum6      !Apex_D1_2d
 !D2
 !dbg20110923  apexD(1,1:NPTS2D,1:NMP)%east  =  dum4(1,1:NPTS2D,1:NMP) !D1
@@ -188,7 +184,7 @@ enddo
 !SMS$SERIAL END
 
 !JFM dum4,dum5 are OUT variables to workaround an SMS bug
-!SMS$SERIAL(<JMIN_IN,JMAX_IS,JMIN_ING,JMAX_ISG,IN>,<apexE,dum4,dum5,OUT> : default=ignore) BEGIN
+!SMS$SERIAL(<apexE,dum4,dum5,OUT> : default=ignore) BEGIN
       READ (UNIT=LUN_pgrid, FMT=*) dum4, dum5          !Apex_E1_2d
 !E1
 do lp=1,NLP

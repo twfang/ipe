@@ -29,7 +29,7 @@ IMPLICIT NONE
       filename ='plasma_grid'
       FORM_dum ='unformatted' 
       STATUS_dum ='unknown'
-!SMS$SERIAL(<JMIN_IN,JMAX_IS,mlon_rad,plasma_grid_Z,plasma_grid_GL,IN> : default=ignore) BEGIN
+!SMS$SERIAL(<plasma_grid_Z,plasma_grid_GL,IN> : default=ignore) BEGIN
       CALL open_file ( filename, LUN, FORM_dum, STATUS_dum ) 
 
     WRITE(UNIT=lun) NMP
@@ -43,7 +43,7 @@ IMPLICIT NONE
 !SMS$SERIAL END
 
 !JFM dumm is an out variable to workaround an SMS bug
-!SMS$SERIAL(<plasma_grid_3d,JMIN_ING,JMAX_ISG,JMIN_IN,JMAX_IS,IN>,<dumm,OUT> : default=ignore) BEGIN
+!SMS$SERIAL(<plasma_grid_3d,IN>,<dumm,OUT> : default=ignore) BEGIN
 do lp=1,NLP
   dumm(JMIN_ING(lp):JMAX_ISG(lp),1:NMP) = plasma_grid_3d(JMIN_IN(lp):JMAX_IS(LP), lp,1:NMP,IGCOLAT)
 enddo

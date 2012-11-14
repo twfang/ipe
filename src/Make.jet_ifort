@@ -96,12 +96,12 @@ endif
 SMSFLAGS = -I $(SMS)/include
 PINCLUDES = $(INCLUDES:.inc=.inc.SMS )
 PPP = $(SMS)/bin/ppp
-#HaloSize=300 is a guess
+#HaloSize=10 is a guess
 # --Fmodule=module_decomp tells SMS to insert "use module_decomp" in every file it processes.
 # This is needed to 1) not require the user to add it everywhere; 2) it is not needed in serial code;
 # 3) module decomp contains all the decomp info that SMS needs in the routines it processes.
-PPP_FLAGS  = --Fmodule=module_decomp --Free --comment --HaloSize=300
-PPP_FLAGS1 =                         --Free --comment --HaloSize=300
+PPP_FLAGS  = --Fmodule=module_decomp --Free --comment --HaloSize=10
+PPP_FLAGS1 =                         --Free --comment --HaloSize=10
 PPP_HEADER_FLAGS = --header --comment
 CPP       = /lib/cpp
 DEFINES   =

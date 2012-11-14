@@ -28,11 +28,9 @@
 !SMS$DISTRIBUTE(dh,2,1) BEGIN
       INTEGER(KIND=int_prec),ALLOCATABLE :: JMIN_IN_all(:,:),JMAX_IS_all(:,:)!.. first and last indices on field line grid
 !SMS$DISTRIBUTE END
-!SMS$DISTRIBUTE(dh,1) BEGIN
       INTEGER(KIND=int_prec),ALLOCATABLE,PUBLIC :: JMIN_IN (:),JMAX_IS (:)   !.. first and last indices on field line grid
       INTEGER(KIND=int_prec),ALLOCATABLE,PUBLIC :: JMIN_ING(:),JMAX_ISG(:)   !.. first and last indices on field line grid
       INTEGER(KIND=int_prec),ALLOCATABLE,PUBLIC :: midpnt  (:)
-!SMS$DISTRIBUTE END
       TYPE :: plasma_grid
 !dbg20110927         REAL(KIND=real_prec) :: Z  !.. altitude [meter]
          REAL(KIND=real_prec) :: SL !.. distance of point from northern hemisphere foot point [meter]
