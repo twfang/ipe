@@ -79,9 +79,7 @@
 !------------
 !...calculated parameters
 !      REAL(KIND=real_prec), ALLOCATABLE,     PUBLIC ::  Z_meter(:,:) !.. altitude [meter]
-!SMS$DISTRIBUTE(dh,1) BEGIN
       REAL(KIND=real_prec), ALLOCATABLE,     PUBLIC ::  Pvalue(:)  !.. p coordinate (L-shell)
-!SMS$DISTRIBUTE END
 !      REAL(KIND=real_prec), ALLOCATABLE,     PUBLIC ::  GR_mks(:,:)  !.. Gravity [m2 s-1]
 
 

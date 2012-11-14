@@ -3,49 +3,51 @@
       CONTAINS
 !---------------------------
 ! initialise plasma grids
-        SUBROUTINE init_plasma_grid ( )
-        USE module_read_plasma_grid_global,only: read_plasma_grid_global
-        USE module_precision
-        USE module_IPE_dimension,ONLY: NMP,NLP,ISTOT
-        USE module_physical_constants,ONLY: earth_radius, pi, G0,zero
-        USE module_input_parameters,ONLY: sw_debug,sw_grid,parallelBuild
-!dbg, fac_BM
-        USE module_FIELD_LINE_GRID_MKS,ONLY: &
-&  Pvalue &
+SUBROUTINE init_plasma_grid ( )
+USE module_read_plasma_grid_global,only: read_plasma_grid_global
+USE module_precision
+USE module_IPE_dimension,ONLY: NMP,NLP,ISTOT
+USE module_physical_constants,ONLY: earth_radius, pi, G0,zero
+USE module_input_parameters,ONLY: sw_debug,sw_grid,parallelBuild
+USE module_FIELD_LINE_GRID_MKS,ONLY: Pvalue &
 &, JMIN_IN,JMAX_IS, r_meter2D, plasma_grid_GL,plasma_grid_3d,apexD,apexE,Be3,plasma_grid_Z &
 &, ISL,IBM,IGR,IQ,IGCOLAT,IGLON,east,north,up,mlon_rad,dlonm90km
-        IMPLICIT NONE
+IMPLICIT NONE
 
-        INTEGER (KIND=int_prec) :: i, mp,lp
-        REAL (KIND=real_prec) :: sinI
-        INTEGER (KIND=int_prec), parameter :: sw_sinI=0  !0:flip; 1:APEX
-        INTEGER (KIND=int_prec) :: in,is
-        INTEGER (KIND=int_prec) :: midpoint
-!---------
+INTEGER (KIND=int_prec)           :: i,mp,lp,in,is
+REAL    (KIND=real_prec)          :: sinI
+INTEGER (KIND=int_prec),parameter :: sw_sinI=0  !0:flip; 1:APEX
+INTEGER (KIND=int_prec)           :: midpoint
+
 ! array initialization
 
 !if the new GLOBAL 3D version
-      CALL read_plasma_grid_global
+CALL read_plasma_grid_global
 
 ! make sure to use the MKS units.
-      print *,"Z_meter calculation completed"
+print *,"Z_meter calculation completed"
 
-      Pvalue(:) = zero
+Pvalue = zero
+!Remove the serial as soon as everything is non-decomposed.
+!SMS$SERIAL BEGIN
+do lp=1,NLP
+  IN = JMIN_IN(lp)
+  CALL Get_Pvalue_Dipole ( r_meter2D(IN,lp), plasma_grid_GL(IN,lp), Pvalue(lp) )
+enddo
+!SMS$SERIAL END
+
 !SMS$PARALLEL(dh, lp, mp) BEGIN
-      apex_longitude_loop: DO mp = 1,NMP
-      IF ( sw_debug ) print *,"sub-init_plasma_grid: mp=",mp
-
+apex_longitude_loop: DO mp = 1,NMP
+  IF ( sw_debug ) print *,"sub-init_plasma_grid: mp=",mp
 
 !.. p coordinate (L-shell) is a single value along a flux tube 
 !NOTE: in FLIP, PCO is only used in setting up the rough plasmasphere H+ initial profiles (See PROFIN). It does not have to be accurate.
 
 !dbg20120112:      Pvalue(:) = zero
-      apex_latitude_height_loop:   DO lp = 1,NLP
+    apex_latitude_height_loop:   DO lp = 1,NLP
 
-        IN = JMIN_IN(lp)
-        IS = JMAX_IS(lp)
-
-        IF (mp==1)  CALL Get_Pvalue_Dipole ( r_meter2D(IN,lp), plasma_grid_GL(IN,lp), Pvalue(lp) )
+      IN = JMIN_IN(lp)
+      IS = JMAX_IS(lp)
 
 !debug write
 IF ( sw_debug) THEN
