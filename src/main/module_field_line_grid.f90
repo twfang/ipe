@@ -58,13 +58,10 @@
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,DIMENSION(:,:) :: VEXBup !DIMENSION(NMP,NLP)
 !SMS$DISTRIBUTE END
 
-!SMS$DISTRIBUTE(dh,2) BEGIN
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: plasma_grid_Z (:,:)  !.. altitude [meter] (MaxFluxTube,NLP)
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: plasma_grid_GL(:,:)  !.. magnetic co-latitude Eq(6.1) [rad]
       REAL(KIND=real_prec),ALLOCATABLE               :: r_meter2D     (:,:)  !.. distance from the center of the Earth[meter]
-!SMS$DISTRIBUTE END
-!JFM mlon_rad is not distributed becasue it is dimensioned NMP+1
-      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: mlon_rad(:)          !mag longitude in [rad]
+      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: mlon_rad      (:)    !mag longitude in [rad]
 
       REAL(KIND=real_prec),PARAMETER  ,PUBLIC        :: dlonm90km = 4.5 ![deg]
 !      REAL(KIND=real_prec), ALLOCATABLE, PUBLIC ::  GCOLAT(:,:)    !.. geographic co-latitude [rad]

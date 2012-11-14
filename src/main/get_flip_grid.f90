@@ -73,7 +73,7 @@ BLON=mlon_rad(mp)*180.0/pi
 
 !      midpoint = 1 + (JMAX_IS/2)+1 -1 
       midpoint = IN + ( IS - IN )/2
-print *,'midpoint',midpoint,plasma_grid_Z(midpoint,lp)
+      print *,'midpoint',midpoint,plasma_grid_Z(midpoint,lp)
 
 ! make sure to use the RIGHT SI UNIT!!!
 plasma_grid_Z (in:is,lp)  =  Z(1:JMAX)* 1.0E+3    !convert from km to m

@@ -115,9 +115,8 @@
         midpnt(lp) = JMIN_IN(lp) + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
       END DO
 
-!SMS$PARALLEL(dh, lp, mp) BEGIN
-
-! array initialization
+!array initialization
+!SMS$IGNORE BEGIN
       Be3            = zero
       plasma_grid_3d = zero
       plasma_grid_Z  = zero
@@ -126,10 +125,11 @@
       apexD          = zero
       apexE          = zero
       r_meter2D      = zero
+!SMS$IGNORE END
 
 !JFM dum0,dum1,dum2,dum3 are treated as OUT variables to workaround an SMS bug
-!SMS$SERIAL(<r_meter2D,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,dum0,dum1,dum2,dum3,minTheta,maxTheta,minAltitude,maxAltitude,OUT> : default=ignore) BEGIN
-      READ (UNIT=LUN_pgrid, FMT=*) dum0, dum1, dum2, dum3 !gr_2d, gcol_2d, glon_2d, q_coordinate_2d
+!SMS$SERIAL(<r_meter2D,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,dum0,dum1,dum2,dum3,OUT> : default=ignore) BEGIN
+READ (UNIT=LUN_pgrid, FMT=*) dum0, dum1, dum2, dum3 !gr_2d, gcol_2d, glon_2d, q_coordinate_2d
 do lp=1,NLP
   r_meter2D    (JMIN_IN(lp):JMAX_IS(lp),lp) = dum0(JMIN_ING(lp):JMAX_ISG(lp),1)                !r_meter
   plasma_grid_Z(JMIN_IN(lp):JMAX_IS(lp),lp) = dum0(JMIN_ING(lp):JMAX_ISG(lp),1) - earth_radius ![meter]
@@ -141,27 +141,28 @@ do mp=1,NMP
     plasma_grid_3d(JMIN_IN(lp):JMAX_IS(lp),lp,mp,IQ     ) = dum3(JMIN_ING(lp):JMAX_ISG(lp),mp) !Q
   enddo
 enddo
-      print *,"reading r_meter etc completed"
+print *,"reading r_meter etc completed"
 
-      READ (UNIT=LUN_pgrid, FMT=*) dum0          !bcol_2d
+READ (UNIT=LUN_pgrid, FMT=*) dum0          !bcol_2d
 do lp=1,NLP
   plasma_grid_GL(JMIN_IN(lp):JMAX_IS(lp),lp) = dum0(JMIN_ING(lp):JMAX_ISG(lp),1) !GL
 enddo
-      minTheta=plasma_grid_GL(JMIN_IN(  1),  1)
-      maxTheta=plasma_grid_GL(JMIN_IN(NLP),NLP) 
-!dbbg20120301: temporary solution in stepback_mag_R to keep flux tube within the sim region, instead of stopping
-      midpoint_min = JMIN_IN(NLP) + ( JMAX_IS(NLP) - JMIN_IN(NLP) )/2
-      midpoint_max = JMIN_IN(  1) + ( JMAX_IS(  1) - JMIN_IN(  1) )/2
-      minAltitude  = plasma_grid_Z(midpoint_min,NLP)
-      maxAltitude  = plasma_grid_Z(midpoint_max,  1)
-      print *,"reading GL_rad etc completed"
-      READ (UNIT=LUN_pgrid, FMT=*) dum0, dum1 !integral_ds_2d, apex_BMAG_2d
+print *,"reading GL_rad etc completed"
+READ (UNIT=LUN_pgrid, FMT=*) dum0, dum1 !integral_ds_2d, apex_BMAG_2d
 do lp=1,NLP
   plasma_grid_3d(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,ISL) = dum0(JMIN_ING(lp):JMAX_ISG(lp),1:NMP) !SL
   plasma_grid_3d(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,IBM) = dum1(JMIN_ING(lp):JMAX_ISG(lp),1:NMP) !BM
 enddo
-      print *,"reading SL_meter etc completed"
+print *,"reading SL_meter etc completed"
 !SMS$SERIAL END
+
+minTheta=plasma_grid_GL(JMIN_IN(  1),  1)
+maxTheta=plasma_grid_GL(JMIN_IN(NLP),NLP) 
+!dbbg20120301: temporary solution in stepback_mag_R to keep flux tube within the sim region, instead of stopping
+midpoint_min = JMIN_IN(NLP) + ( JMAX_IS(NLP) - JMIN_IN(NLP) )/2
+midpoint_max = JMIN_IN(  1) + ( JMAX_IS(  1) - JMIN_IN(  1) )/2
+minAltitude  = plasma_grid_Z(midpoint_min,NLP)
+maxAltitude  = plasma_grid_Z(midpoint_max,  1)
 
 !JFM dum4,dum5,dum6 are treated as OUT variables to workaround an SMS bug
 !SMS$SERIAL(<apexD,dum4,dum5,dum6,OUT> : default=ignore) BEGIN
@@ -215,8 +216,6 @@ enddo
       CLOSE(UNIT=LUN_pgrid)
       print *,"global grid reading finished, file closed..."
 !SMS$SERIAL END
-
-!SMS$PARALLEL END
 
 !dbg20110811:
 !dbg IF ( sw_test_grid==1 ) THEN
