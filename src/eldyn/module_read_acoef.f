@@ -45,10 +45,10 @@
 ! Author: A. Maute Dec 2003  am 12/30/03 
 !------------------------------------------------------------------------------ 
 
-c     use shr_kind_mod,  only: r8 => shr_kind_r8
-c     use physconst,     only: pi
-c     use abortutils,    only: endrun
-c     use cam_logfile,   only: iulog
+!     use shr_kind_mod,  only: r8 => shr_kind_r8
+!     use physconst,     only: pi
+!     use abortutils,    only: endrun
+!     use cam_logfile,   only: iulog
    
       implicit none
 
@@ -75,8 +75,8 @@ c     use cam_logfile,   only: iulog
 ! Author: A. Maute Nov 2003  am 11/19/03
 !---------------------------------------------------------------
 
-c     use ioFileMod,     only : getfil
-c     use units,         only : getunit, freeunit
+!     use ioFileMod,     only : getfil
+!     use units,         only : getunit, freeunit
 !nm20121003
       USE efield !,ONLY:
 
@@ -86,85 +86,88 @@ c     use units,         only : getunit, freeunit
       integer  :: i,ios,unit,istat
       character (len=256):: locfn
 
+!SMS$SERIAL(<a_lf,OUT> : default=ignore) BEGIN
 !------------------------------------------------------------------    
 !  get coefficients file for solar minimum: 
 !-----------------------------------------------------------------                                                                   
-c     unit     = getunit()
+!     unit     = getunit()
       unit     = 11
-c     call getfil( efield_lflux_file, locfn, 0 )
+!     call getfil( efield_lflux_file, locfn, 0 )
       locfn=efield_lflux_file
 
 !------------------------------------------------------------------    
 ! open datafile with coefficients A_klnm
 !------------------------------------------------------------------     
-c     write(iulog,*) 'read_acoef: open file ',trim(locfn),
-c    &' unit ',unit
+!     write(iulog,*) 'read_acoef: open file ',trim(locfn),
+!    &' unit ',unit
 !dbg20110906
       print *,'unit',unit
-      open(unit=unit,file=trim(locfn), 
-     &     status = 'old',iostat = ios)
-c     if(ios.gt.0) then
-c     write(iulog,*) 
-c    &'read_acoef: error in opening coeff_lf file',
-c    &' unit ',unit
-c       call endrun
-c     end if
+      open(unit=unit,file=trim(locfn),status = 'old',iostat = ios)
+!     if(ios.gt.0) then
+!     write(iulog,*) 
+!    &'read_acoef: error in opening coeff_lf file',
+!    &' unit ',unit
+!       call endrun
+!     end if
 
 !----------------------------------------------------------------------------                                                                   
 ! read datafile with coefficients A_klnm
 !--------------------------------------------------------------------   
-c     write(iulog,*) 'read_acoef: read file ',trim(locfn),' unit ',unit
+!     write(iulog,*) 'read_acoef: read file ',trim(locfn),' unit ',unit
       read(unit,*,iostat = ios) a_lf
-c     if(ios.gt.0) then
-c     write(iulog,*) 
-c    &'read_acoef: error in reading coeff_lf file',' unit ',unit
-c       call endrun
-c     end if
+!     if(ios.gt.0) then
+!     write(iulog,*) 
+!    &'read_acoef: error in reading coeff_lf file',' unit ',unit
+!       call endrun
+!     end if
 
 !--------------------------------------------------------------------  
 ! close & free unit      
 !--------------------------------------------------------------------  
       close(unit)
-c     call freeunit(unit)
-c     write(iulog,*) 'read_acoef: free unit ',unit
+!     call freeunit(unit)
+!     write(iulog,*) 'read_acoef: free unit ',unit
+!SMS$SERIAL END
+
+!SMS$SERIAL(<a_hf,OUT> : default=ignore) BEGIN
 
 !--------------------------------------------------------------------  
 !  get coefficients file for solar maximum: 
 !--------------------------------------------------------------------
-c     unit     = getunit()
+!     unit     = getunit()
       unit     = 10
-c     call getfil( efield_hflux_file, locfn, 0 )
+!     call getfil( efield_hflux_file, locfn, 0 )
       locfn= efield_hflux_file
 
 !-------------------------------------------------------------------
 ! open datafile with coefficients A_klnm
 !------------------------------------------------------------------
-c     write(iulog,*) 'read_acoef: open file ',trim(locfn),' unit ',unit
-      open(unit=unit,file=trim(locfn), 
-     &     status = 'old',iostat = ios)
-c     if(ios.gt.0) then
-c      write(iulog,*) 
-c    &'read_acoef: error in opening coeff_hf file',' unit ',unit
-c       call endrun
-c     end if
+!     write(iulog,*) 'read_acoef: open file ',trim(locfn),' unit ',unit
+      open(unit=unit,file=trim(locfn),status = 'old',iostat = ios)
+!     if(ios.gt.0) then
+!      write(iulog,*) 
+!    &'read_acoef: error in opening coeff_hf file',' unit ',unit
+!       call endrun
+!     end if
 
 !-----------------------------------------------------------------
 ! read datafile with coefficients A_klnm
 !----------------------------------------------------------------
-c     write(iulog,*) 'read_acoef: read file ',trim(locfn)
+!     write(iulog,*) 'read_acoef: read file ',trim(locfn)
       read(unit,*,iostat = ios) a_hf
-c     if(ios.gt.0) then
-c      write(iulog,*) 
-c    &'read_acoef: error in reading coeff_hf file',' unit ',unit
-c       call endrun
-c     end if
+!     if(ios.gt.0) then
+!      write(iulog,*) 
+!    &'read_acoef: error in reading coeff_hf file',' unit ',unit
+!       call endrun
+!     end if
 
 !---------------------------------------------------------------
 ! close & free unit      
 !-------------------------------------------------------------- 
       close(unit)
-c     call freeunit(unit)
-c     write(iulog,*) 'read_acoef: free unit ',unit
+!     call freeunit(unit)
+!     write(iulog,*) 'read_acoef: free unit ',unit
+!SMS$SERIAL END
 
       end subroutine read_acoef
 !-----------------------------------------------------------------------

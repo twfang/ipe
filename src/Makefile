@@ -108,7 +108,6 @@ SRC6S	=\
 	${DR6}/module_pnm.f \
 	${DR6}/module_prep_pnm.f \
 	${DR6}/module_index_quiet.f \
-	${DR6}/module_read_acoef.f \
 	${DR6}/module_adj_S_a.f \
 	${DR6}/module_constants.f \
 	${DR6}/module_prep_fk.f \
@@ -133,7 +132,6 @@ SRC6S	=\
 	${DR6}/module_highlat_getbnd.f \
 	${DR6}/module_svbksb.f \
 	${DR6}/module_bnd_sinus.f \
-	${DR6}/module_efield_init.f \
 	${DR6}/module_GlobalElPotential.f \
 	${DR6}/module_get_efield.f \
 	${DR6}/module_magfield.f \
@@ -141,6 +139,8 @@ SRC6S	=\
 	${DR6}/apex_sunloc.f \
 	${DR6}/supim_exb.f
 SRC6P	=\
+	${DR6}/module_read_acoef.f \
+	${DR6}/module_efield_init.f \
 	${DR6}/module_eldyn.f      \
 	${DR6}/module_init_eldyn.f \
 	${DR6}/module_sub_eldyn.f  \

@@ -58,8 +58,8 @@
 
       contains
 
-      subroutine efield_init(efield_lflux_file, efield_hflux_file, 
-     &efield_wei96_file)
+      subroutine efield_init(efield_lflux_file, efield_hflux_file,      &
+     &                       efield_wei96_file)
       USE efield !,ONLY:
       USE module_prep_pnm,ONLY:prep_pnm
       USE module_index_quiet ,ONLY:index_quiet
