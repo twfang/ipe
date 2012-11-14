@@ -37,7 +37,4 @@
 !nm20120311
       INTEGER (KIND=int_prec), PUBLIC :: luntmp1,luntmp2,luntmp3
 
-!nm20121003:subroutines open_output_files,output,close_files are separated into module_sub_io.f90.
-
-!---------------------------
 END MODULE module_IO

@@ -49,7 +49,6 @@ SRC0S	=\
 SRC0P	=\
 	${DR0}/module_decomp.f90 \
 	${DR0}/module_input_parameters.f90 \
-	${DR0}/module_sub_io.f90 \
 	${DR0}/module_open_output_files.f90 \
 	${DR0}/module_field_line_grid.f90 \
 	${DR0}/allocate_arrays.f90 \
