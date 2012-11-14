@@ -48,7 +48,9 @@
 
 ! open Input/Output files
       ret = gptlstart ('open_output_files')
+!SMS$SERIAL BEGIN
       CALL open_output_files ( )
+!SMS$SERIAL END
       ret = gptlstop  ('open_output_files')
 
 ! set up plasma grids by reading file

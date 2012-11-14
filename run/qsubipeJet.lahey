@@ -1,8 +1,8 @@
 #!/bin/csh
 #
-mkdir ipe_${$}
-echo Created ipe_${$}
-set  rundir = "ipe_${$}"
+set  rundir = "ipe_L_${$}"
+mkdir $rundir
+echo Created $rundir
 cd  $rundir
 cp ../../bin/ipe_v18.lf95.exe .
 cp ../coef*              .
@@ -46,7 +46,7 @@ EOF
 chmod 755 ./runscript
 
 set queue_time=00:30:00
-qsub -N ipe \
+qsub -N ipe_L \
      -A acb-gpu \
      -r y \
      -pe tgpu 1 \
