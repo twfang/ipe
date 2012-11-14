@@ -21,9 +21,7 @@ IMPLICIT NONE
 CHARACTER (LEN=11) :: FORM_dum
 CHARACTER (LEN=7)  :: STATUS_dum
 INTEGER (KIND=int_prec) :: lun ,mp,lp,stat_alloc
-!SMS$DISTRIBUTE(dh,,2) BEGIN
 REAL (KIND=real_prec) :: dumm(NPTS2D,NMP)
-!SMS$DISTRIBUTE END
 
 LUN=1006
 filename ='plasma_grid'
@@ -42,8 +40,7 @@ WRITE(UNIT=lun) (plasma_grid_Z (JMIN_IN(lp):JMAX_IS(lp),lp),lp=1,NLP)  !meter
 WRITE(UNIT=lun) (plasma_grid_GL(JMIN_IN(lp):JMAX_IS(lp),lp),lp=1,NLP)  !rad
 !SMS$SERIAL END
 
-!JFM dumm is an out variable to workaround an SMS bug
-!SMS$SERIAL(<plasma_grid_3d,IN>,<dumm,OUT> : default=ignore) BEGIN
+!SMS$SERIAL(<plasma_grid_3d,IN> : default=ignore) BEGIN
 do lp=1,NLP
   dumm(JMIN_ING(lp):JMAX_ISG(lp),1:NMP) = plasma_grid_3d(JMIN_IN(lp):JMAX_IS(LP), lp,1:NMP,IGCOLAT)
 enddo

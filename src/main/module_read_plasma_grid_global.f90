@@ -45,7 +45,6 @@
 !... read in parameters
       INTEGER(KIND=int_prec) lp,mp,stat_alloc,midpoint_min,midpoint_max
 
-!SMS$DISTRIBUTE(dh,NLP,NMP) BEGIN
       REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  dum0    !.. distance from the center of the Earth[meter]
       REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  dum1    !.. geographic co-latitude [rad]
       REAL(KIND=real_prec), DIMENSION(NPTS2D,NMP) ::  dum2    !.. geographic longitude [rad]
@@ -60,6 +59,7 @@
 !dbg20110927      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP) ::  E1_all    !.. Eq(3.11) Richmond 1995
 !dbg20110927      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP) ::  E2_all    !.. Eq(3.12) Richmond 1995
 !JFM  REAL(KIND=real_prec), DIMENSION(2,NMP,NLP) ::  Be3_all         ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]
+!SMS$DISTRIBUTE(dh,NLP,NMP) BEGIN
       REAL(KIND=real_prec), DIMENSION(NMP,NLP) ::  Be3_all1,Be3_all2 ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]
 !SMS$DISTRIBUTE END
 
@@ -127,8 +127,7 @@
       r_meter2D      = zero
 !SMS$IGNORE END
 
-!JFM dum0,dum1,dum2,dum3 are treated as OUT variables to workaround an SMS bug
-!SMS$SERIAL(<r_meter2D,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,dum0,dum1,dum2,dum3,OUT> : default=ignore) BEGIN
+!SMS$SERIAL(<r_meter2D,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,OUT> : default=ignore) BEGIN
 READ (UNIT=LUN_pgrid, FMT=*) dum0, dum1, dum2, dum3 !gr_2d, gcol_2d, glon_2d, q_coordinate_2d
 do lp=1,NLP
   r_meter2D    (JMIN_IN(lp):JMAX_IS(lp),lp) = dum0(JMIN_ING(lp):JMAX_ISG(lp),1)                !r_meter
@@ -164,8 +163,7 @@ midpoint_max = JMIN_IN(  1) + ( JMAX_IS(  1) - JMIN_IN(  1) )/2
 minAltitude  = plasma_grid_Z(midpoint_min,NLP)
 maxAltitude  = plasma_grid_Z(midpoint_max,  1)
 
-!JFM dum4,dum5,dum6 are treated as OUT variables to workaround an SMS bug
-!SMS$SERIAL(<apexD,dum4,dum5,dum6,OUT> : default=ignore) BEGIN
+!SMS$SERIAL(<apexD,OUT> : default=ignore) BEGIN
       READ (UNIT=LUN_pgrid, FMT=*) dum4, dum5, dum6      !Apex_D1_2d
 !D2
 !dbg20110923  apexD(1,1:NPTS2D,1:NMP)%east  =  dum4(1,1:NPTS2D,1:NMP) !D1
@@ -184,8 +182,7 @@ enddo
       print *,"reading D1-3 etc completed"
 !SMS$SERIAL END
 
-!JFM dum4,dum5 are OUT variables to workaround an SMS bug
-!SMS$SERIAL(<apexE,dum4,dum5,OUT> : default=ignore) BEGIN
+!SMS$SERIAL(<apexE,OUT> : default=ignore) BEGIN
       READ (UNIT=LUN_pgrid, FMT=*) dum4, dum5          !Apex_E1_2d
 !E1
 do lp=1,NLP
@@ -200,7 +197,7 @@ enddo
       print *,"reading E1/2 etc completed"
 !SMS$SERIAL END
 
-!JFM Be3_all1 and Be3_all2 are OUT variables to workaround an SMS bug
+!JFM Be3_all1 and Be3_all2 are OUT variables to workaround an SMS limitation.
 !SMS$SERIAL(<Be3,Be3_all1,Be3_all2,OUT> : default=ignore) BEGIN
 !JFM  READ (UNIT=LUN_pgrid, FMT=*) Be3_all(1,1:NMP,1:NLP),Be3_all(2,1:NMP,1:NLP) !Apex_BE3_N
 !JFM  READ (UNIT=LUN_pgrid, FMT=*) Be3_all(1,:,:),Be3_all(2,:,:) !Apex_BE3_N

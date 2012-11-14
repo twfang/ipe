@@ -28,13 +28,10 @@ CALL read_plasma_grid_global
 print *,"Z_meter calculation completed"
 
 Pvalue = zero
-!Remove the serial as soon as everything is non-decomposed.
-!SMS$SERIAL BEGIN
 do lp=1,NLP
   IN = JMIN_IN(lp)
   CALL Get_Pvalue_Dipole ( r_meter2D(IN,lp), plasma_grid_GL(IN,lp), Pvalue(lp) )
 enddo
-!SMS$SERIAL END
 
 !SMS$PARALLEL(dh, lp, mp) BEGIN
 apex_longitude_loop: DO mp = 1,NMP
