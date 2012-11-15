@@ -1124,40 +1124,40 @@ if (sw_input_Auroral_production_is_single_overall_rate) then
 
 else
 
-   qo2p_aurora_p_u21=therm_qo2p_aurora(iht_above,ilon_east,ilat_south)
-   qo2p_aurora_p_l21=therm_qo2p_aurora(iht_below,ilon_east,ilat_south)
+   qo2p_aurora_p_u21 = therm_qo2p_aurora(iht_above,ilon_east,ilat_south)
+   qo2p_aurora_p_l21 = therm_qo2p_aurora(iht_below,ilon_east,ilat_south)
    qo2p_aurora_p_21 = ((qo2p_aurora_p_u21 - qo2p_aurora_p_l21)*factor_ht21) + qo2p_aurora_p_l21
    if (qo2p_aurora_p_21 < 0.0) qo2p_aurora_p_21 = 0.0
 
-   qop_aurora_p_u21=therm_qop_aurora(iht_above,ilon_east,ilat_south)
-   qop_aurora_p_l21=therm_qop_aurora(iht_below,ilon_east,ilat_south)
+   qop_aurora_p_u21 = therm_qop_aurora(iht_above,ilon_east,ilat_south)
+   qop_aurora_p_l21 = therm_qop_aurora(iht_below,ilon_east,ilat_south)
    qop_aurora_p_21 = ((qop_aurora_p_u21 - qop_aurora_p_l21)*factor_ht21) + qop_aurora_p_l21
    if (qop_aurora_p_21 < 0.0) qop_aurora_p_21 = 0.0
 
-   qn2p_aurora_p_u21=therm_qn2p_aurora(iht_above,ilon_east,ilat_south)
-   qn2p_aurora_p_l21=therm_qn2p_aurora(iht_below,ilon_east,ilat_south)
+   qn2p_aurora_p_u21 = therm_qn2p_aurora(iht_above,ilon_east,ilat_south)
+   qn2p_aurora_p_l21 = therm_qn2p_aurora(iht_below,ilon_east,ilat_south)
    qn2p_aurora_p_21 = ((qn2p_aurora_p_u21 - qn2p_aurora_p_l21)*factor_ht21) + qn2p_aurora_p_l21
    if (qn2p_aurora_p_21 < 0.0) qn2p_aurora_p_21 = 0.0
 
-   qnp_aurora_p_u21=therm_qnp_aurora(iht_above,ilon_east,ilat_south)
-   qnp_aurora_p_l21=therm_qnp_aurora(iht_below,ilon_east,ilat_south)
+   qnp_aurora_p_u21 = therm_qnp_aurora(iht_above,ilon_east,ilat_south)
+   qnp_aurora_p_l21 = therm_qnp_aurora(iht_below,ilon_east,ilat_south)
    qnp_aurora_p_21 = ((qnp_aurora_p_u21 - qnp_aurora_p_l21)*factor_ht21) + qnp_aurora_p_l21
    if (qnp_aurora_p_21 < 0.0) qnp_aurora_p_21 = 0.0
 
-   qtef_aurora_p_u21=therm_qtef_aurora(iht_above,ilon_east,ilat_south)
-   qtef_aurora_p_l21=therm_qtef_aurora(iht_below,ilon_east,ilat_south)
+   qtef_aurora_p_u21 = therm_qtef_aurora(iht_above,ilon_east,ilat_south)
+   qtef_aurora_p_l21 = therm_qtef_aurora(iht_below,ilon_east,ilat_south)
    qtef_aurora_p_21 = ((qtef_aurora_p_u21 - qtef_aurora_p_l21)*factor_ht21) + qtef_aurora_p_l21
    if (qtef_aurora_p_21 < 0.0) qtef_aurora_p_21 = 0.0
 
 endif ! sw_input_Auroral_production_is_single_overall_rate
 
 
-elx_p_u21=therm_elx(iht_above,ilon_east,ilat_south)
-elx_p_l21=therm_elx(iht_below,ilon_east,ilat_south)
+elx_p_u21 = therm_elx(iht_above,ilon_east,ilat_south)
+elx_p_l21 = therm_elx(iht_below,ilon_east,ilat_south)
 elx_p_21 = ((elx_p_u21 - elx_p_l21)*factor_ht21) + elx_p_l21
 
-ely_p_u21=therm_ely(iht_above,ilon_east,ilat_south)
-ely_p_l21=therm_ely(iht_below,ilon_east,ilat_south)
+ely_p_u21 = therm_ely(iht_above,ilon_east,ilat_south)
+ely_p_l21 = therm_ely(iht_below,ilon_east,ilat_south)
 ely_p_21 = ((ely_p_u21 - ely_p_l21)*factor_ht21) + ely_p_l21
 
 
@@ -1299,8 +1299,8 @@ n2_density_fixed_ht(:,:,:) = interface_n2_density(:,:,:)
 
 if (sw_External_model_provides_NO_N4S_densities) then
     ! NO_density_fixed_ht(:,:,:) = interface_NO_density(:,:,:) not used lrm20121108
-    N4S_density_fixed_ht(:,:,:) = interface_N4S_density(:,:,:)
-    N2D_density_fixed_ht(:,:,:) = interface_N2D_density(:,:,:)
+    !N4S_density_fixed_ht(:,:,:) = interface_N4S_density(:,:,:) not used lrm20121115
+    !N2D_density_fixed_ht(:,:,:) = interface_N2D_density(:,:,:) not used lrm20121115
 endif
 
 ! wind
@@ -1320,11 +1320,11 @@ tts_fixed_ht(:,:,:) = interface_Tn(:,:,:)
 if (sw_input_Auroral_production_is_single_overall_rate) then
     qion3d_fixed_ht(:,:,:) = interface_qion3d(:,:,:)
 else
-    qo2p_aurora_fixed_ht(:,:,:) = interface_qo2p_aurora(:,:,:)
-    qop_aurora_fixed_ht(:,:,:)  = interface_qop_aurora(:,:,:)
-    qn2p_aurora_fixed_ht(:,:,:) = interface_qn2p_aurora(:,:,:)
-    qnp_aurora_fixed_ht(:,:,:)  = interface_qnp_aurora(:,:,:)
-    qtef_aurora_fixed_ht(:,:,:) = interface_qtef_aurora(:,:,:)
+    !qo2p_aurora_fixed_ht(:,:,:) = interface_qo2p_aurora(:,:,:)  never used lrm20121115
+    !qop_aurora_fixed_ht(:,:,:)  = interface_qop_aurora(:,:,:)  never used lrm20121115
+    !qn2p_aurora_fixed_ht(:,:,:) = interface_qn2p_aurora(:,:,:)  never used lrm20121115
+    !qnp_aurora_fixed_ht(:,:,:)  = interface_qnp_aurora(:,:,:)  never used lrm20121115
+    !qtef_aurora_fixed_ht(:,:,:) = interface_qtef_aurora(:,:,:)  never used lrm20121115
 endif
 
 
@@ -1372,7 +1372,7 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
         !! telec, & not needed now
 
         IN, IS, &
-        IWRite2, &
+        ! IWRite2, &  not used lrm20121115
         TN_plasma_input_3d, &
         O_plasma_input_3d, &
         O2_plasma_input_3d, &
@@ -1421,10 +1421,11 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
   REAL(kind=8) :: TTS(N_heights, N_Latitudes, N_longitudes)  ! temperature
 
   ! Not being passed in right now :
-  REAL(kind=8) :: telec(N_heights, N_Latitudes, N_longitudes)
+  !REAL(kind=8) :: telec(N_heights, N_Latitudes, N_longitudes)  ! not needed yet lrm20121115
 
   integer :: in(nmp, nlp), is(nmp, nlp)
-  INTEGER :: iwrite2 
+
+  !INTEGER :: iwrite2 not used lrm20121115
 
   REAL(kind=8), INTENT(OUT) :: TN_plasma_input_3d(npts, nmp), O_plasma_input_3d(npts, nmp), &
                   O2_plasma_input_3d(npts, nmp), N2_plasma_input_3d(npts, nmp)
@@ -1438,7 +1439,7 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
 
 
   ! Not being passed in right now :
-  REAL(kind=8) :: te_plasma_input_3d(npts, nmp)
+  !REAL(kind=8) :: te_plasma_input_3d(npts, nmp) not needed yet lrm20121115
 
   INTEGER, INTENT(INOUT) :: ilon1_3d_fixed_ht(npts,nmp), ilon2_3d_fixed_ht(npts,nmp)
   INTEGER, INTENT(INOUT) :: ilat1_3d_fixed_ht(npts,nmp), ilat2_3d_fixed_ht(npts,nmp)
@@ -1456,9 +1457,9 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
   REAL(kind=8) :: N4S_density(N_heights, N_Latitudes, N_longitudes) 
   REAL(kind=8) :: N2D_density(N_heights, N_Latitudes, N_longitudes) 
 
-  REAL(kind=8) :: NO_plasma_input_3d(npts, nmp), &
-                  N4S_plasma_input_3d(npts, nmp), &
-                  N2D_plasma_input_3d(npts, nmp)
+  !REAL(kind=8) :: NO_plasma_input_3d(npts, nmp), &  not used lrm20121115
+  !                N4S_plasma_input_3d(npts, nmp), & not used lrm20121115
+  !                N2D_plasma_input_3d(npts, nmp)    not used lrm20121115
 
 ! Local variables -----------------------------------------------------
 
@@ -1487,7 +1488,10 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
   REAL(kind=8) :: ool11 , ool12 , ool21 , ool22 ,  oou11 , oou12 , oou21 , oou22 , oo11 , oo12 , oo21 , oo22  , doo1 , doo2
 
   REAL(kind=8) :: tnl11 , tnl12 , tnl21 , tnl22 ,  tnu11 , tnu12 , tnu21 , tnu22 , tn11 , tn12 , tn21 , tn22  , tn1 , tn2
-  REAL(kind=8) :: tel11 , tel12 , tel21 , tel22 ,  teu11 , teu12 , teu21 , teu22 , te11 , te12 , te21 , te22 , te1 , te2
+
+  !REAL(kind=8) :: tel11 , tel12 , tel21 , tel22    not used lrm20121115
+  !REAL(kind=8) :: te1 , te2, te21, te22,  te11 , te12, , teu21 , teu22,  teu11 , teu12      not used lrm20121115
+
 
   ! meridional wind
   REAL(kind=8) :: uml11 , uml12 , uml21 , uml22 ,  umu11 , umu12 , umu21 , umu22 , um11 , um12 , um21 , um22 , um1 , um2
@@ -1509,9 +1513,14 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
   !                to2pu21 , to2pu22 , to2p11 , to2p12 , to2p21 , to2p22 , to2p1 , to2p2
   !----------------------------------------------------------------------------------------
 
-  INTEGER :: i , ih , ihl , ihu, ii , ilat , ilat1 , ilat2 , ilon , ilon1 , ilon2 , iprob
+  INTEGER :: i , ih , ihl , ihu, ii , ilat , ilat1 , ilat2 , ilon , ilon1 , ilon2 
 
-  INTEGER :: ispecial , IWRite , l , m , n ,  ifault , itube , iwrite1 , istop
+  !INTEGER :: iprob not used lrm20121115
+
+
+  INTEGER :: ispecial , IWRite, istop
+
+  !INTEGER ::  l , m , n , itube, ifault, iwrite1  not used lrm20121115
 
 
 
@@ -1523,7 +1532,7 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
 
   integer :: mp, lp
 
-  REAL(kind=8) :: te_dum(npts)
+  !REAL(kind=8) :: te_dum(npts)  not used lrm20121115
 
   REAL(kind=8) ::  NO(npts)
   REAL(kind=8) ::  N4S(npts)
@@ -1537,7 +1546,7 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
                    PZ(NPTS) , GLOnd(NPTS)
 
 
-  REAL(kind=8) :: pz_1000(npts)
+  !REAL(kind=8) :: pz_1000(npts) not used lrm20121115
 
 
 
@@ -1582,7 +1591,7 @@ sw_External_model_provides_NO_N4S_densities = GIP_switches(5)
 
 
 !g
-iwrite1 = 0
+!iwrite1 = 0 not used lrm20121115
 iwrite = 0
 istop = 0
 if (istop == 1) stop
@@ -1607,7 +1616,7 @@ do mp = 1 , nmp
           glat(i) = glat_3d(i,mp)
           glond(i) = glond_3d(i,mp)
           pz(i) = pz_3d(i,mp)
-          pz_1000(i) = pz(i)*1000.  ! altitude in meters
+          !pz_1000(i) = pz(i)*1000.  ! altitude in meters  not used lrm20121115
        enddo ! i
   
 
@@ -1802,9 +1811,15 @@ do mp = 1 , nmp
 
           if (sw_External_model_provides_NO_N4S_densities) then
 
+              print *,'INTERFACE__FIXED_GEO_to_IONOSPHERE : ***********************************************************'
+              print *,'INTERFACE__FIXED_GEO_to_IONOSPHERE : ***********************************************************'
+              print *,'INTERFACE__FIXED_GEO_to_IONOSPHERE : NO_density, N4S_density, N2D_density USED BUT NOT SET !!!!'
+              print *,'INTERFACE__FIXED_GEO_to_IONOSPHERE : ***********************************************************'
+              print *,'INTERFACE__FIXED_GEO_to_IONOSPHERE : ***********************************************************'
+
               ! NO density on the eight surrounding points......
 
-              dNOu11 = log10(NO_density(ihu,ilat1,ilon1))
+              dNOu11 = log10(NO_density(ihu,ilat1,ilon1)) ! NO_density used by never set ! *******  lrm20121115
               dNOl11 = log10(NO_density(ihl,ilat1,ilon1))
               dNOu12 = log10(NO_density(ihu,ilat1,ilon2))
               dNOl12 = log10(NO_density(ihl,ilat1,ilon2))
@@ -1815,7 +1830,7 @@ do mp = 1 , nmp
 
               ! N4S density on the eight surrounding points......
 
-              dN4Su11 = log10(N4S_density(ihu,ilat1,ilon1))
+              dN4Su11 = log10(N4S_density(ihu,ilat1,ilon1)) ! N4S_density used by never set ! *******  lrm20121115
               dN4Sl11 = log10(N4S_density(ihl,ilat1,ilon1))
               dN4Su12 = log10(N4S_density(ihu,ilat1,ilon2))
               dN4Sl12 = log10(N4S_density(ihl,ilat1,ilon2))
@@ -1826,7 +1841,7 @@ do mp = 1 , nmp
 
               ! N2D density on the eight surrounding points......
 
-              dN2Du11 = log10(N2D_density(ihu,ilat1,ilon1))
+              dN2Du11 = log10(N2D_density(ihu,ilat1,ilon1)) ! N2D_density used by never set ! *******  lrm20121115
               dN2Dl11 = log10(N2D_density(ihl,ilat1,ilon1))
               dN2Du12 = log10(N2D_density(ihu,ilat1,ilon2))
               dN2Dl12 = log10(N2D_density(ihl,ilat1,ilon2))
@@ -2160,9 +2175,9 @@ do mp = 1 , nmp
               N2_plasma_input_3d(i,mp) = n2(i)
 
               if (sw_External_model_provides_NO_N4S_densities) then
-                 NO_plasma_input_3d(i,mp) = NO(i)
-                 N4S_plasma_input_3d(i,mp) = N4S(i)
-                 N2D_plasma_input_3d(i,mp) = N2D(i)
+                 !NO_plasma_input_3d(i,mp) = NO(i)  ! not used lrm20121115
+                 !N4S_plasma_input_3d(i,mp) = N4S(i) ! not used lrm20121115
+                 !N2D_plasma_input_3d(i,mp) = N2D(i) ! not used lrm20121115
               endif
 
               um_plasma_input_3d(i,mp) = um(i)

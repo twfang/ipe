@@ -143,7 +143,7 @@ LOGICAL, parameter :: debugIonoInterp = .FALSE.
 !---------------------------------------------------------------
 ! Write out the Ionospheric pressure grid interpolated values??
 !---------------------------------------------------------------
-LOGICAL, parameter :: debugIonoFixedtoPressure = .TRUE.
+LOGICAL, parameter :: debugIonoFixedtoPressure = .FALSE.
 
 !----------------------------------------
 ! File unit number for IPE startup files
@@ -336,7 +336,7 @@ REAL(kind=8) :: glat_plasma_3d(npts,nmp), glond_plasma_3d(npts,nmp), pz_plasma_3
 !---------------------
 ! For IPE grid read :
 !---------------------
-INTEGER :: iwrite_plasma_interface
+!INTEGER :: iwrite_plasma_interface not used lrm20121115
 
 
 REAL(kind=8) :: TN_plasma_input_3d(npts, nmp), O_plasma_input_3d(npts, nmp), &
@@ -1476,7 +1476,7 @@ end if
 !--------------------------------------------
 ! Convert fixed height grid to flux tube grid
 !--------------------------------------------
-iwrite_plasma_interface = 0
+!iwrite_plasma_interface = 0  not used lrm20121115
 
   call INTERFACE__FIXED_GEO_to_IONOSPHERE( &
         therm_model_geo_long_deg, & ! was : geo_grid_longitudes_degrees, &
@@ -1494,7 +1494,7 @@ iwrite_plasma_interface = 0
         !! telec_fixed_ht, &  not needed now
 
         inGIP, isGIP, &  ! was : IN, IS, &
-        iwrite_plasma_interface, &
+        ! iwrite_plasma_interface, & not used lrm20121115
         TN_plasma_input_3d, &
         O_plasma_input_3d, &
         O2_plasma_input_3d, &
