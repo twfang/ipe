@@ -319,8 +319,8 @@ C.... Written by P. Richards June-September 2010.
      >     XIONNX,XIONVX,  !.. OUT: 2D array, Storage for ion densities and velocities 
      >             NHEAT,  !.. OUT: array, Neutral heating rate (eV/cm^3/s) 
      >             EFLAG,  !.. OUT: 2D array, Error Flags
-     &           mp_save, 
-     &           lp_save,
+     &                mp, 
+     &                lp,
      &         hrate_cgs ) !.. OUTPUT: (eV/cm^3/s) !nm20121020
 
       USE THERMOSPHERE       !.. ON HN N2N O2N HE TN UN EHT COLFAC
@@ -340,7 +340,7 @@ C.... Written by P. Richards June-September 2010.
 !nm20110923      INTEGER JTI             !.. Dummy variable to count the number of calls to this routine
       INTEGER I,J,JMINX,JMAXX !.. lcv + spatial grid indices
       INTEGER EFLAG(11,11)    !.. error flags, check =0 on return from FLIP
-      INTEGER mp_save,lp_save
+      INTEGER, INTENT(IN):: mp,lp
       INTEGER INNO            !.. switch to turn on FLIP NO calculation if <0
 !nm20110810      INTEGER DEBUG           !.. switch to turn on debug writes 0=off, 1=on
       !.. IHEPLS,INPLS turn on diffusive solutions if > 0. no solution if 0, 
@@ -626,7 +626,7 @@ c      ENDIF
       !.. N+ solution
 !dbg20120301:
       IF ( sw_DEBUG_flip==1 )  print *,'!dbg! apex ht=',z(midpoint)
-     &, midpoint,lp_save,mp_save
+     &, midpoint,lp,mp
       ret = gptlstart ('CTIPINT XION')
       IF(EFLAG(2,1).EQ.0.AND.INPLS.GT.0) CALL XION(TI,DT,DTMIN,11,EFLAG)
       ret = gptlstop  ('CTIPINT XION')
@@ -721,14 +721,14 @@ C... This routine prints the information about error flags
 C... Written by P. Richards September 2010
       SUBROUTINE WRITE_EFLAG(PRUNIT,   !.. Unit number to print results
      >                        EFLAG,   !.. Error flag array
-     >                      mp_save, 
-     >                      lp_save)
+     >                           mp, 
+     >                           lp)
       USE module_input_parameters,ONLY:sw_output_fort167,sw_ERSTOP_flip
       IMPLICIT NONE
       INTEGER PRUNIT,EFLAG(11,11)         !.. error flags
-      INTEGER mp_save,lp_save
+      INTEGER, INTENT(IN):: mp,lp
       IF(EFLAG(1,1).NE.0) THEN
-        WRITE(PRUNIT,11)mp_save,lp_save
+        WRITE(PRUNIT,11)mp,lp
         IF ( sw_ERSTOP_flip==1 )  STOP
       END IF
  11   FORMAT(/'  Convergence failure in Temperature solution (TLOOPS).'
@@ -736,14 +736,14 @@ C... Written by P. Richards September 2010
       IF(EFLAG(1,2).NE.0) then
 !dbg110210:
         WRITE(PRUNIT,*)'EFLAG(1,2)',EFLAG(1,2)
-        WRITE(PRUNIT,12)mp_save,lp_save
+        WRITE(PRUNIT,12)mp,lp
         IF ( sw_ERSTOP_flip==1 )  STOP
       endif
  12   FORMAT(/'  Convergence failure in Temperature solution (TLOOPS).'
      >  ,2X,'Incorrect input to the band solver BDSLV.mp=',i4,'lp=',i4)     
 
       IF(EFLAG(2,1).NE.0) THEN
-         WRITE(PRUNIT,21)mp_save,lp_save
+         WRITE(PRUNIT,21)mp,lp
          IF ( sw_ERSTOP_flip==1 )  STOP
 !!!20120125UNDERCONSTRUCTION!!!
 !dbg20120125         sw_output_fort167=.TRUE.
@@ -751,7 +751,7 @@ C... Written by P. Richards September 2010
  21   FORMAT(/'  Convergence failure in O+ - H+ solution (DLOOPS).'
      >  ,2X,'Time step less than minimum.mp=',i3,'lp=',i4)
       IF(EFLAG(2,2).NE.0) THEN
-         WRITE(PRUNIT,22)mp_save,lp_save
+         WRITE(PRUNIT,22)mp,lp
          IF ( sw_ERSTOP_flip==1 )  STOP
 !!!20120125UNDERCONSTRUCTION!!!
 !dbg20120125         sw_output_fort167=.TRUE.
@@ -760,13 +760,13 @@ C... Written by P. Richards September 2010
      >  ,2X,'Incorrect input to the band solver BDSLV.mp',i3,'lp',i4)
 
       IF(EFLAG(3,1).NE.0) THEN
-         WRITE(PRUNIT,31)mp_save,lp_save
+         WRITE(PRUNIT,31)mp,lp
          IF ( sw_ERSTOP_flip==1 )  STOP
       END IF
  31   FORMAT(/'  Convergence failure in He+ solution (XION).'
      >  ,2X,'Time step less than minimum.')
       IF(EFLAG(3,2).NE.0) THEN
-         WRITE(PRUNIT,32)mp_save,lp_save
+         WRITE(PRUNIT,32)mp,lp
          IF ( sw_ERSTOP_flip==1 )  STOP
 !dbg20120125         sw_output_fort167=.TRUE.
       END IF
@@ -774,13 +774,13 @@ C... Written by P. Richards September 2010
      >  ,2X,'Incorrect input to the band solver BDSLV.mp',i3,'lp',i4)
 
       IF(EFLAG(4,1).NE.0) THEN
-         WRITE(PRUNIT,41)mp_save,lp_save
+         WRITE(PRUNIT,41)mp,lp
          IF ( sw_ERSTOP_flip==1 )  STOP
       END IF
  41   FORMAT(/'  Convergence failure in N+ solution (XION).'
      >  ,2X,'Time step less than minimum.mp',i3,'lp',i4)
       IF(EFLAG(4,2).NE.0) THEN
-         WRITE(PRUNIT,42)mp_save,lp_save
+         WRITE(PRUNIT,42)mp,lp
          IF ( sw_ERSTOP_flip==1 )  STOP
 !dbg20120125         sw_output_fort167=.TRUE.
       END IF

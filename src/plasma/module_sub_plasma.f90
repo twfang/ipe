@@ -33,7 +33,7 @@
 &     sw_neutral_heating_flip,sw_perp_transport,lpmin_perp_trans,lpmax_perp_trans,sw_para_transport,sw_debug,        &
 &     sw_dbg_perp_trans,sw_exb_up,parallelBuild,mype
       USE module_physical_constants,ONLY:rtd,zero
-      USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,plasma_grid_3d,plasma_grid_GL,mp_save,lp_save,plasma_grid_Z,JMAX_IS,hrate_mks3d
+      USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,plasma_grid_3d,plasma_grid_GL,plasma_grid_Z,JMAX_IS,hrate_mks3d
       USE module_PLASMA,ONLY:utime_save,plasma_1d
       IMPLICIT NONE
 !------------------------
@@ -66,7 +66,7 @@ end if
 !SMS$EXCHANGE(plasma_3d_old)
 !     apex_longitude_loop: DO mp = mpstrt,mpstop,mpstep !1,NMP
       apex_longitude_loop: DO mp = 1,mpstop
-        mp_save=mp
+!nm20121115        mp_save=mp
         IF ( sw_neutral_heating_flip==1 )  hrate_mks3d(:,:,mp,:)=zero
         if ( sw_debug )  WRITE (0,"('sub-p: mp=',I4)")mp
 !d        n0_2dbg(:)=zero
@@ -82,7 +82,7 @@ end if
 !!!dbg20120125:
 !       apex_latitude_height_loop: DO lp = lpstrt,lpstop,lpstep
         apex_latitude_height_loop: DO lp = 1,NLP
-          lp_save=lp
+!nm20121115          lp_save=lp
 
 
 !dbg20120228: debug how2validate the transport
