@@ -122,15 +122,19 @@ SRC6S	=\
 	${DR6}/module_pot_latsmo.f \
 	${DR6}/module_pot_latsmo2.f \
 	${DR6}/module_pot_lonsmo.f \
+	${DR6}/module_efield_sunloc.f \
+	${DR6}/module_fun_MLT.f \
+	${DR6}/module_fun_MagLong.f \
 	${DR6}/module_highlat_adjust.f \
 	${DR6}/module_interp_poten.f \
 	${DR6}/module_DerivPotential.f \
 	${DR6}/module_LEGENDRE.f \
 	${DR6}/module_EpotVal.f \
+	${DR6}/module_GECMP.f \
 	${DR6}/module_ReadCoef.f \
-	${DR6}/sub_efield.f \
 	${DR6}/module_highlat_getbnd.f \
 	${DR6}/module_svbksb.f \
+	${DR6}/module_svdcmp.f \
 	${DR6}/module_bnd_sinus.f \
 	${DR6}/module_GlobalElPotential.f \
 	${DR6}/module_get_efield.f \
