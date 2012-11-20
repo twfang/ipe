@@ -124,8 +124,6 @@ IF( sw_debug )  print *,'sub-neut: mp=',lp,mp,IN,IS,npts
           glat_deg(1:NPTS) = 90. - plasma_grid_3d(IN:IS,lp,mp,IGCOLAT)*180./pi
           alt_km  (1:NPTS) = plasma_grid_Z(IN:IS,lp) * M_TO_KM  !/ 1000. 
 
-!print *,'get_ther:npts=',npts
-
           call get_thermosphere (npts, &
                          iyear, iday, ut_hour, f107D_dum, f107A_dum, AP_dum, &
                          glon_deg, glat_deg, alt_km, &
@@ -139,13 +137,9 @@ IF( sw_debug )  print *,'sub-neut: mp=',lp,mp,IN,IS,npts
      &                 , tinf_k(IN:IS,lp,mp) &
      &              ,Vn_ms1(1:3,1:NPTS   )   )
 
-!print *,'midpoint :npts=',npts
-
           midpoint = IN + (IS-IN)/2
           flux_tube: DO i=IN,IS
             ipts = i-IN+1 !1:NPTS
-
-!print *,'flux_tube loop :npts=',npts
 
             IF ( sw_grid==0 ) THEN !APEX
 !dbg20110728: un_ms1(1:2) components are not used for the moment, so commented out!!! they will be needed when calculating the field line integrals
@@ -192,14 +186,10 @@ IF( sw_debug )  print *,'sub-neut: mp=',lp,mp,IN,IS,npts
 !dbg20110131: the midpoint values become NaN otherwise because of inappropriate D1/3 values...
                IF ( lp>=1 .AND. lp<=6 .AND. i==midpoint )   Un_ms1(i,lp,mp,:) = Un_ms1(i-1,lp,mp,:) 
 
-!print *,'apex :npts=',npts
-
             ELSE IF ( sw_grid==1 ) THEN !FLIP
 
-!print *,'flip grid :npts=',npts
                GLONGi=glon_deg(ipts) !GEOGRAPHIC longitude[deg]
                GLATi=glat_deg(ipts) !GEOGRAPHic latitude[deg]
-print *,'glati',glati,'glongi',glongi
                CALL MAGDEC(GLATi,GLONGi,DECMAG) !-- magnetic declination for winds
                DECMAG=DECMAG/57.296
                !.. Horizontal component
@@ -210,8 +200,6 @@ print *,'glati',glati,'glongi',glongi
 ! unit: meter s-1: unit conversion to cm/s will be done in CTIP-INT.f
                Un_ms1(i,lp,mp,3) = ABS( apexD(i,lp,mp,north,3) )*BCOMPU    !.. The wind along B
 
-print *,'flip grid2 :npts=',npts
-
 if( 350.<=alt_km(ipts).and.alt_km(ipts)<=450.) then
 print *,i,ipts,alt_km(ipts),Vn_ms1(1,ipts),Un_ms1(i,lp,mp,3),glongi,glati,(decmag*57.296),BCOMPU
 endif
@@ -219,7 +207,6 @@ endif
 END IF !( sw_grid==0 ) THEN !APEX
 
           END DO flux_tube !: DO i=IN,IS
-!d print *,'flux tube end :npts=',npts
 
 IF ( sw_debug ) THEN
       print "('mp=',i6,'  lp=',i6,'  IN=',i6,'  IS=',i6,'  NPTS=',i8)", lp,mp,IN, IS, npts
@@ -261,6 +248,8 @@ if ( sw_neutral==2  ) then
 !write (6000,fmt=*) utime, Un_ms1(1:NPTS2D,mp,3) 
   if(parallelBuild) then
     print*,'module_neutral: sw_neutral=2 disabled for parallel runs'
+    print*,'stopping in module_neutral'
+    stop
   else
     if ( utime==start_time ) then
       luntmp3=6003

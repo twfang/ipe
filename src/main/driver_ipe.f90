@@ -15,7 +15,7 @@
       PROGRAM  test_plasma
       USE module_precision
       USE module_input_parameters,ONLY: read_input_parameters,start_time,stop_time,time_step,HPEQ_flip,ip_freq_msis,sw_output_plasma_grid,sw_debug,sw_perp_transport,parallelBuild,mype
-!nm20121003      USE module_FIELD_LINE_GRID_MKS,ONLY: init_plasma_grid
+      USE module_FIELD_LINE_GRID_MKS,ONLY: plasma_3d
       USE module_init_plasma_grid,ONLY: init_plasma_grid
       USE module_NEUTRAL_MKS,ONLY: neutral 
       USE module_sub_PLASMA,ONLY: plasma
@@ -58,12 +58,14 @@
       CALL init_plasma_grid ( )
       ret = gptlstop  ('init_plasma_grid')
 
+!sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-1")
 IF ( sw_output_plasma_grid ) THEN
   ret = gptlstart ('output_plasma_grid')
   print *, 'sub-init_p: output plasma_grid'
   CALL output_plasma_grid ( )
   ret = gptlstop  ('output_plasma_grid')
 END IF
+!sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-2")
 
 ! initialise the flux tubes from previous runs
       IF ( HPEQ_flip==0.0 ) THEN
@@ -74,9 +76,9 @@ END IF
         print *,'after CALL io_plasma_bin finished! READ: start_time=', start_time,stop_time
 
       END IF
+!sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-3")
 !20120215: CALL io_plasma_bin_readinit ( start_time )
 !20120215: print *,'CALL io_plasma_bin_readinit finished!'
-
 
 ! initialization of electrodynamic module:
 ! read in E-field
@@ -85,10 +87,12 @@ END IF
         CALL init_eldyn ( )
       ENDIF
       ret = gptlstop  ('init_eldyn')
+!sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-4")
 
       ret = gptlstart ('time_loop')
       time_loop: DO utime = start_time, stop_time, time_step
       print*,'utime=',utime
+!sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-5")
 ! updates auroral precipitation
 
 ! interplate from plasma to neutral grid: Nei,Tei,Vi,NHEAT, auroral heating?
@@ -99,6 +103,7 @@ END IF
         CALL eldyn ( utime )
       ENDIF
       ret = gptlstop  ('eldyn')
+!sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-6")
 
 ! update neutral 3D structure: use MSIS/HWM to get the values in the flux tube grid
         IF ( MOD( (utime-start_time),ip_freq_msis)==0 ) THEN 
@@ -107,6 +112,7 @@ END IF
           CALL neutral ( utime )
           ret = gptlstop  ('neutral')
         END IF
+!sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-7")
 
 ! interpolate from neutral to plasma grid:Tn,Un,[O,N2,O2],EHT(1,k), auroral heating?
 
@@ -114,7 +120,7 @@ END IF
         ret = gptlstart ('plasma')
         CALL plasma ( utime )
         ret = gptlstop  ('plasma')
-
+!sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-8")
 
 ! update self-consistent electrodynamics
 !t        CALL eldyn ( utime )
@@ -123,6 +129,7 @@ END IF
         ret = gptlstart ('output')
         CALL output ( utime )
         ret = gptlstop  ('output')
+!sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-9")
 
       END DO  time_loop !: DO utime = start_time, stop_time, time_step
       ret = gptlstop  ('time_loop')

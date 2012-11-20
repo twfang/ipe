@@ -63,7 +63,9 @@ end if
       ret = gptlstart ('apex_lon_loop') !24772.857
 !SMS$PARALLEL(dh, lp, mp) BEGIN
       plasma_3d_old = plasma_3d
+!sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-1")
 !SMS$EXCHANGE(plasma_3d_old)
+!sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-2")
 !     apex_longitude_loop: DO mp = mpstrt,mpstop,mpstep !1,NMP
       apex_longitude_loop: DO mp = 1,mpstop
 !nm20121115        mp_save=mp
@@ -211,6 +213,7 @@ endif
       END DO apex_longitude_loop !: DO mp = 
 !SMS$PARALLEL END
       ret = gptlstop ('apex_lon_loop')
+!sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-4")
 
 !dbg20120228: debug how2validate the transport
 !dbg20120501 if(sw_dbg_perp_trans) call dbg_estimate_trans_error (utime)
@@ -220,7 +223,9 @@ endif
       IF ( MOD( (utime-start_time),ip_freq_output)==0 ) THEN 
 if(sw_debug) print *,'before call to output plasma',utime,start_time,ip_freq_output
 !dbg20110923segmentation fault??? memory allocation run time error???
+!sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-5")
         CALL io_plasma_bin ( 1, utime )
+!sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-6")
 
 !dbg20110927: o+ only
 !d IF ( sw_perp_transport>=1 ) THEN
@@ -231,6 +236,7 @@ if(sw_debug) print *,'before call to output plasma',utime,start_time,ip_freq_out
 
       END IF      !IF ( MOD( (utime-start_time),ip_freq_output)==0 ) THEN 
       ret = gptlstop ('io_plasma_bin')
+!sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-7")
 
       END SUBROUTINE plasma
       END MODULE module_sub_PLASMA

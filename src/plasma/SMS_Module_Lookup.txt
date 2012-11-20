@@ -20,9 +20,9 @@ module_magfield     ../eldyn/magfield.f
 module_sunloc       ../eldyn/module_sunloc.f
 
 module_NEUTRAL_MKS  ../neutral/module_neutral.f90
-module_heating_rate ../neutral/module_heating_rate.f90
 
 module_PLASMA       ../plasma/module_plasma.f90
 module_sub_PLASMA   ../plasma/module_sub_plasma.f90
+module_heating_rate ../plasma/module_heating_rate_sms.f.tmp
 module_plasma ./module_plasma_sms.f.tmp
 module_sub_plasma ./module_sub_plasma_sms.f.tmp

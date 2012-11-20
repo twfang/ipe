@@ -44,7 +44,7 @@
 !             and sw(10) equal to 0.  to just remove tidal variations   
 !             set sw(7),sw(8), and sw(14) equal to 0.                   
       parameter (mn1=5,mn2=14) 
-      dimension ap(1),w(2),windf(2),ww(2),sv(25) 
+      dimension ap(2),w(2),windf(2),ww(2),sv(25) 
       dimension wzl(2),wdzl(2) 
       dimension zn1(mn1),un1(mn1,2),ugn1(2,2) 
       dimension zn2(mn2),un2(mn2,2),ugn2(2,2) 
@@ -235,7 +235,7 @@
       subroutine glbw5e(yrd,sec,lat,long,stl,f107a,f107,ap,pb,pc,ww) 
       real lat,long 
       dimension wb(2,15),wc(2,15),pb(1),pc(1),ww(2) 
-      dimension ap(1) 
+      dimension ap(2) 
       common/csw/sw(25),isw,swc(25) 
       common/hwmc/wbt(2),wct(2) 
 !      common/vpoly/bt(20,20),bp(20,20),cstl,sstl,c2stl,s2stl,          
@@ -294,14 +294,14 @@
       dayl=day 
       pb14=pb(14) 
       pb18=pb(18) 
-      if(xll.ne.long) then 
+!JFM  if(xll.ne.long) then 
         slong=sin(dgtr*long) 
         clong=cos(dgtr*long) 
         s2long=sin(2.*dgtr*long) 
         c2long=cos(2.*dgtr*long) 
         xll=long 
         ngvl=2 
-      endif 
+!JFM  endif 
 !       f10.7 effect                                                    
       df=f107-f107a 
       dfa=f107a-150. 
@@ -757,7 +757,7 @@
       subroutine glbw5m(yrd,sec,lat,long,stl,f107a,f107,ap,pb,pc,ww) 
       real lat,long 
       dimension wb(2,15),wc(2,15),pb(1),pc(1),ww(2) 
-      dimension ap(1) 
+      dimension ap(2) 
       common/csw/sw(25),isw,swc(25) 
       common/hwmc/wbt(2),wct(2) 
 !      common/vpoly/bt(20,20),bp(20,20),cstl,sstl,c2stl,s2stl,          
@@ -1120,12 +1120,12 @@
       pc87=pc(87) 
 !                                                                       
       ngv=1 
-      if(xll.ne.long.or.ngv.gt.ngvl) then 
+!JFM  if(xll.ne.long.or.ngv.gt.ngvl) then 
         slong=sin(dgtr*long) 
         clong=cos(dgtr*long) 
         xll=long 
         ngvl=ngv 
-      endif 
+!JFM  endif 
 !       time independent                                                
       f1b=1. 
       if(ww(1).ne.9898) then 
