@@ -64,7 +64,9 @@ end if
 !SMS$PARALLEL(dh, lp, mp) BEGIN
       plasma_3d_old = plasma_3d
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-1")
+      ret = gptlstart ('EXCHANGE')
 !SMS$EXCHANGE(plasma_3d_old)
+      ret = gptlstop  ('EXCHANGE')
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-2")
 !     apex_longitude_loop: DO mp = mpstrt,mpstop,mpstep !1,NMP
       apex_longitude_loop: DO mp = 1,mpstop
