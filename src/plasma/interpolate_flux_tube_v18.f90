@@ -22,7 +22,7 @@
       USE module_precision
 !     plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,plasma_3d_old are all IN arrays
       USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,ht90,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,plasma_3d_old
-      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,sw_ksi
+      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,sw_ksi,mype,lps,lpe,mps,mpe
       USE module_plasma,ONLY:plasma_1d !dbg20120501 n0_1d   !d, n0_2dbg
       USE module_IPE_dimension,ONLY: ISPEC,ISPET,IPDIM
       USE module_physical_constants,ONLY: earth_radius,pi,zero
@@ -112,7 +112,8 @@ if(sw_debug)  print *,'ip=',ip,' ip1d=',ip1d
 !check the foot point values
 !ispecial=2: interpolation at/below IN
 
-! Will this be in the halo? JFM
+!JFM  Will this be in the halo? plasma_grid_3d has it's halo set in module_read_plasma_grid_global by the SERIAL directive.
+!     And the distance from lp and mp is checked against the hal size in perpendicular_transport.
       IF ( plasma_grid_3d( JMIN_IN(lp0) , lp0,mp0,IQ) < plasma_grid_3d(ip ,lp,mp,IQ) ) THEN
        ispecial=2
        isouth=JMIN_IN(lp0)+1  !not used!!!

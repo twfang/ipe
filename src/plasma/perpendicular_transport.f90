@@ -12,7 +12,7 @@
 !--------------------------------------------  
       SUBROUTINE perpendicular_transport ( utime, mp,lp )
       USE module_precision
-      USE module_input_parameters,ONLY: sw_debug
+      USE module_input_parameters,ONLY: sw_debug,mype
       IMPLICIT NONE
 !--- INPUT ---
       INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]
@@ -64,7 +64,8 @@ if(sw_debug) print *,'interpolate_flux_tube finished!'
       USE module_physical_constants,ONLY: rtd
       USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,dlonm90km,minTheta
       USE module_IPE_dimension,ONLY: NMP,NLP
-      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,HaloSize
+      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,HaloSize,MaxLpHaloUsed,MaxMpHaloUsed,mype
+
      IMPLICIT NONE
 !--- INPUT ---
       INTEGER (KIND=int_prec ),INTENT(IN) :: mp
@@ -95,11 +96,12 @@ which_hemisphere: DO ihem=1,1  !ihem_max
 !!!dbg20120125:  mp_t0(ihem,2) = mp_t0(ihem,1)+1
   mpx_loop: DO mpx=0,NMP
     if(mpx+1 > HaloSize) then
-      print*,'mpx+1 > HaloSize in find_neighbor_grid_R',mpx,HaloSize,mp
+      print*,'mpx+1 > HaloSize in find_neighbor_grid',mpx,HaloSize,mp
       print*,'Increase the halo size or take smaller time steps.'
       print*,'Stopping in find_neighbor_grid'
       STOP
     endif
+    MaxMpHaloUsed = max(MaxMpHaloUsed,mpx+1)
     mpp=mp+mpx
     if(mpp > NMP) mpp= mpp-NMP
     mpm=mp-mpx
@@ -132,11 +134,12 @@ IF (ihem==1) THEN
 
   lpx_loop: DO lpx=0,NLP-1  !nearest point-->EQ
     IF(lpx+1 > HaloSize) THEN
-      print*,'lpx+1 > HaloSize in find_neighbor_grid_R',lpx,HaloSize,lp
+      print*,'lpx+1 > HaloSize in find_neighbor_grid',lpx,HaloSize,lp
       print*,'Increase the halo size or take smaller time steps.'
       print*,'Stopping in find_neighbor_grid'
       STOP
     ENDIF
+    MaxLpHaloUsed = max(MaxLpHaloUsed,lpx+1)
     lpp=lp+lpx
     IF(lpp > NLP-1) lpp= lpp-NLP+1
     lpm=lp-lpx
@@ -178,7 +181,7 @@ END DO which_hemisphere!:  DO ihem=1,ihem_max
       USE module_physical_constants,ONLY: rtd,earth_radius
       USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,dlonm90km,plasma_grid_Z,minTheta,maxTheta,midpnt
       USE module_IPE_dimension,ONLY: NMP,NLP
-      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,HaloSize
+      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,HaloSize,MaxLpHaloUsed,MaxMpHaloUsed,mype
      IMPLICIT NONE
 !--- INPUT ---
       INTEGER (KIND=int_prec),INTENT(IN) :: mp
@@ -217,6 +220,7 @@ which_hemisphere: DO ihem=1,1  !ihem_max
       print*,'Stopping in find_neighbor_grid_R'
       STOP
     endif
+    MaxMpHaloUsed = max(MaxMpHaloUsed,mpx+1)
     mpp=mp+mpx
     if(mpp > NMP) mpp= mpp-NMP
     mpm=mp-mpx
@@ -277,6 +281,7 @@ lpx_loop: DO lpx=0,NLP-1  !nearest point-->EQ
     print*,'Stopping in find_neighbor_grid_R'
     STOP
   ENDIF
+  MaxLpHaloUsed = max(MaxLpHaloUsed,lpx+1)
   lpp=lp+lpx
   IF(lpp > NLP-1) lpp= lpp-NLP+1
   lpm=lp-lpx
