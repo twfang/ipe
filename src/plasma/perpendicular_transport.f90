@@ -64,7 +64,7 @@ if(sw_debug) print *,'interpolate_flux_tube finished!'
       USE module_physical_constants,ONLY: rtd
       USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,dlonm90km,minTheta
       USE module_IPE_dimension,ONLY: NMP,NLP
-      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,HaloSize,MaxLpHaloUsed,MaxMpHaloUsed,mype
+      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,lpHaloSize,mpHaloSize,MaxLpHaloUsed,MaxMpHaloUsed,mype
 
      IMPLICIT NONE
 !--- INPUT ---
@@ -95,8 +95,8 @@ which_hemisphere: DO ihem=1,1  !ihem_max
 !!!dbg20120125:  mp_t0(ihem,1) = INT( (mlon_deg/dlonm90km) , int_prec )+1
 !!!dbg20120125:  mp_t0(ihem,2) = mp_t0(ihem,1)+1
   mpx_loop: DO mpx=0,NMP
-    if(mpx+1 > HaloSize) then
-      print*,'mpx+1 > HaloSize in find_neighbor_grid',mpx,HaloSize,mp
+    if(mpx+1 > mpHaloSize) then
+      print*,'mpx+1 > mpHaloSize in find_neighbor_grid',mpx,mpHaloSize,mp
       print*,'Increase the halo size or take smaller time steps.'
       print*,'Stopping in find_neighbor_grid'
       STOP
@@ -133,8 +133,8 @@ IF (ihem==1) THEN
   END IF! ( plasma_grid_3d(IN,lp)%GL <= theta_t0(ihem) ) THEN 
 
   lpx_loop: DO lpx=0,NLP-1  !nearest point-->EQ
-    IF(lpx+1 > HaloSize) THEN
-      print*,'lpx+1 > HaloSize in find_neighbor_grid',lpx,HaloSize,lp
+    IF(lpx+1 > lpHaloSize) THEN
+      print*,'lpx+1 > lpHaloSize in find_neighbor_grid',lpx,lpHaloSize,lp
       print*,'Increase the halo size or take smaller time steps.'
       print*,'Stopping in find_neighbor_grid'
       STOP
@@ -181,7 +181,7 @@ END DO which_hemisphere!:  DO ihem=1,ihem_max
       USE module_physical_constants,ONLY: rtd,earth_radius
       USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,dlonm90km,plasma_grid_Z,minTheta,maxTheta,midpnt
       USE module_IPE_dimension,ONLY: NMP,NLP
-      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,HaloSize,MaxLpHaloUsed,MaxMpHaloUsed,mype
+      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,lpHaloSize,mpHaloSize,MaxLpHaloUsed,MaxMpHaloUsed,mype
      IMPLICIT NONE
 !--- INPUT ---
       INTEGER (KIND=int_prec),INTENT(IN) :: mp
@@ -214,8 +214,8 @@ which_hemisphere: DO ihem=1,1  !ihem_max
 !!!dbg20120125:  mp_t0(ihem,1) = INT( (mlon_deg/dlonm90km) , int_prec )+1
 !!!dbg20120125:  mp_t0(ihem,2) = mp_t0(ihem,1)+1
   mpx_loop: DO mpx=0,NMP
-    if(mpx+1 > HaloSize) then
-      print*,'mpx+1 > HaloSize in find_neighbor_grid_R',mpx,HaloSize,mp
+    if(mpx+1 > mpHaloSize) then
+      print*,'mpx+1 > mpHaloSize in find_neighbor_grid_R',mpx,mpHaloSize,mp
       print*,'Increase the halo size or take smaller time steps.'
       print*,'Stopping in find_neighbor_grid_R'
       STOP
@@ -275,8 +275,8 @@ z_t0 = r0_apex - earth_radius
 !d print *,JMIN_IN(l),JMAX_IS(l), midpnt(l),z_t0
 
 lpx_loop: DO lpx=0,NLP-1  !nearest point-->EQ
-  IF(lpx+1 > HaloSize) THEN
-    print*,'Searching for inner,outer flux tube: lpx+1 > HaloSize',lpx,HaloSize,lp !JFM This failed for HaloSize=4
+  IF(lpx+1 > lpHaloSize) THEN
+    print*,'Searching for inner,outer flux tube: lpx+1 > lpHaloSize',lpx,lpHaloSize,lp
     print*,'Increase the halo size or take smaller time steps.'
     print*,'Stopping in find_neighbor_grid_R'
     STOP

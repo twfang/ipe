@@ -23,7 +23,8 @@
       INTEGER (KIND=int_prec), PUBLIC   :: nprocs=1        !Number of processors
       INTEGER (KIND=int_prec), PUBLIC   :: mype=0          !Processor number
       INTEGER (KIND=int_prec), PUBLIC   :: lps,lpe,mps,mpe !Per processor start and stop indexes for lp,mp
-      INTEGER (KIND=int_prec), PUBLIC   :: HaloSize=99     !Halo size (big number=NOP for serial)
+      INTEGER (KIND=int_prec), PUBLIC   :: lpHaloSize=99   !lp halo size (big number=NOP for serial)
+      INTEGER (KIND=int_prec), PUBLIC   :: mpHaloSize=99   !mp halo size (big number=NOP for serial)
       INTEGER (KIND=int_prec), PUBLIC   :: MaxLpHaloUsed=0 !Max lp halo size used for the entire run
       INTEGER (KIND=int_prec), PUBLIC   :: MaxMpHaloUsed=0 !Max mp halo size used for the entire run
 
@@ -214,8 +215,9 @@
         READ(LUN_nmlt,NML=NMIPE    ,ERR=222,IOSTAT=IOST_RD)
 !SMS$IGNORE END
 
-!SMS$INSERT HaloSize=5
-!SMS$CREATE_DECOMP(dh,<NLP,NMP>,<HaloSize,HaloSize>)
+!SMS$INSERT lpHaloSize=5
+!SMS$INSERT mpHaloSize=1
+!SMS$CREATE_DECOMP(dh,<NLP,NMP>,<lpHaloSize,mpHaloSize>)
 
 !SMS$SERIAL BEGIN
         READ(LUN_nmlt,NML=NMFLIP   ,ERR=222,IOSTAT=IOST_RD)
@@ -279,7 +281,8 @@ print"(' NMP:                 ',I6)",NMP
 print"(' mpstop:              ',I6)",mpstop
 print"(' stop_time            ',I6)",stop_time
 print"(' Number of Processors:',I6)",nprocs
-print"(' HaloSize:            ',I6)",HaloSize
+print"(' lpHaloSize:          ',I6)",lpHaloSize
+print"(' mpHaloSize:          ',I6)",mpHaloSize
 print *,' '
 print *,' '
 
