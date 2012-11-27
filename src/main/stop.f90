@@ -46,4 +46,6 @@ end do
 ! Print timing results to file named timing.0
 ret = gptlpr (0)
 
+print*,'IPE completed successfully'
+
 end subroutine stop
