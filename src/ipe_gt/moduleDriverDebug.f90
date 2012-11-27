@@ -303,6 +303,8 @@ WRITE (unitNumber, '(A, 20F15.5)' ) 'ht_FROM_GT(11,51,:) = ',ht_FROM_GT(11,51,:)
 WRITE (unitNumber, '(A, 20F15.5)' ) 'ht_FROM_GT(15,91,:) = ',ht_FROM_GT(15,91,:)
 
 
+
+
 END SUBROUTINE checkThermoArrays
 
 
@@ -473,8 +475,8 @@ SUBROUTINE checkFixedGeo(directory, fileName, unitNumber, &
                          npts, nmp, &
                          TN_plasma_input_3d, O_plasma_input_3d, O2_plasma_input_3d, &
                          N2_plasma_input_3d, GLAt_plasma_3d, GLOnd_plasma_3d, &
-                         pz_plasma_3d, um_plasma_input_3d, uz_plasma_input_3d, &
-                         uv_plasma_input_3d, ilon1_3d_fixed_ht, ilon2_3d_fixed_ht, &
+                         pz_plasma_3d, V_east_plasma, V_south_plasma, &
+                         V_upward_plasma, ilon1_3d_fixed_ht, ilon2_3d_fixed_ht, &
                          ilat1_3d_fixed_ht, ilat2_3d_fixed_ht, ispecial_3d_fixed_ht, &
                          ihl_3d_fixed_ht, ihu_3d_fixed_ht, isFirstCallFixedHeight)
 
@@ -492,9 +494,9 @@ REAL(kind=8), intent(in) :: TN_plasma_input_3d(npts, nmp), O_plasma_input_3d(npt
 
 REAL(kind=8), intent(in)  :: glat_plasma_3d(npts,nmp), glond_plasma_3d(npts,nmp), pz_plasma_3d(npts,nmp)
 
-REAL(kind=8), intent(in) :: um_plasma_input_3d(npts, nmp), &
-                            uz_plasma_input_3d(npts, nmp), &
-                            uv_plasma_input_3d(npts, nmp)
+REAL(kind=8), intent(in) :: V_east_plasma(npts, nmp), &
+                            V_south_plasma(npts, nmp), &
+                            V_upward_plasma(npts, nmp)
 
 INTEGER, intent(in) :: ilon1_3d_fixed_ht(npts,nmp), ilon2_3d_fixed_ht(npts,nmp)
 INTEGER, intent(in) :: ilat1_3d_fixed_ht(npts,nmp), ilat2_3d_fixed_ht(npts,nmp)
@@ -559,21 +561,21 @@ ENDIF
     WRITE (unitNumber, '(A, 80ES20.10)' ) 'pz_plasma_3d(NPTS,:) = ', pz_plasma_3d(NPTS,:)
 
     WRITE (unitNumber, '(A)' ) ' '
-    WRITE (unitNumber, '(A, 80ES20.10)' ) 'um_plasma_input_3d(1,:) = ', um_plasma_input_3d(1,:)
-    WRITE (unitNumber, '(A, 80ES20.10)' ) 'um_plasma_input_3d(700,:) = ', um_plasma_input_3d(700,:)
-    WRITE (unitNumber, '(A, 80ES20.10)' ) 'um_plasma_input_3d(NPTS,:) = ', um_plasma_input_3d(NPTS,:)
+    WRITE (unitNumber, '(A, 80ES20.10)' ) 'V_east_plasma(1,:) = ', V_east_plasma(1,:)
+    WRITE (unitNumber, '(A, 80ES20.10)' ) 'V_east_plasma(700,:) = ', V_east_plasma(700,:)
+    WRITE (unitNumber, '(A, 80ES20.10)' ) 'V_east_plasma(NPTS,:) = ', V_east_plasma(NPTS,:)
 
 
     WRITE (unitNumber, '(A)' ) ' '
-    WRITE (unitNumber, '(A, 80ES20.10)' ) 'uz_plasma_input_3d(1,:) = ', uz_plasma_input_3d(1,:)
-    WRITE (unitNumber, '(A, 80ES20.10)' ) 'uz_plasma_input_3d(700,:) = ', uz_plasma_input_3d(700,:)
-    WRITE (unitNumber, '(A, 80ES20.10)' ) 'uz_plasma_input_3d(NPTS,:) = ', uz_plasma_input_3d(NPTS,:)
+    WRITE (unitNumber, '(A, 80ES20.10)' ) 'V_south_plasma(1,:) = ', V_south_plasma(1,:)
+    WRITE (unitNumber, '(A, 80ES20.10)' ) 'V_south_plasma(700,:) = ', V_south_plasma(700,:)
+    WRITE (unitNumber, '(A, 80ES20.10)' ) 'V_south_plasma(NPTS,:) = ', V_south_plasma(NPTS,:)
 
 
     WRITE (unitNumber, '(A)' ) ' '
-    WRITE (unitNumber, '(A, 80ES20.10)' ) 'uv_plasma_input_3d(1,:) = ', uv_plasma_input_3d(1,:)
-    WRITE (unitNumber, '(A, 80ES20.10)' ) 'uv_plasma_input_3d(700,:) = ', uv_plasma_input_3d(700,:)
-    WRITE (unitNumber, '(A, 80ES20.10)' ) 'uv_plasma_input_3d(NPTS,:) = ', uv_plasma_input_3d(NPTS,:)
+    WRITE (unitNumber, '(A, 80ES20.10)' ) 'V_upward_plasma(1,:) = ', V_upward_plasma(1,:)
+    WRITE (unitNumber, '(A, 80ES20.10)' ) 'V_upward_plasma(700,:) = ', V_upward_plasma(700,:)
+    WRITE (unitNumber, '(A, 80ES20.10)' ) 'V_upward_plasma(NPTS,:) = ', V_upward_plasma(NPTS,:)
 
     WRITE (unitNumber, '(A)' ) ' '
     WRITE (unitNumber, '(A, 80I7)' ) 'ilon1_3d_fixed_ht(1,:) = ', ilon1_3d_fixed_ht(1,:)

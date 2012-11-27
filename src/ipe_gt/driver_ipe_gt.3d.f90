@@ -95,7 +95,8 @@ INTEGER(KIND=int_prec), POINTER :: IN, IS  !  take this out later lrm20120531
 !------------------------------------------------------
 ! File unit number for checking thermosphere values :
 !------------------------------------------------------
-INTEGER, parameter :: unitCheckThermo = 13
+INTEGER, parameter :: unitCheckThermo =7700
+
 !------------------------------------
 ! Debug the Thermospheric values???
 !------------------------------------
@@ -106,13 +107,15 @@ CHARACTER(LEN=*), PARAMETER :: debugThermoFileName = 'CheckGTGIP.dat'
 !--------------------------------------------------------------------
 ! File unit number for checking Thermospheric interpolation values :
 !--------------------------------------------------------------------
-INTEGER, parameter :: unitCheckThermoInterp = 14
+INTEGER, parameter :: unitCheckThermoInterp = 7800
 !---------------------------------------------------
 ! Write out the Thermospheric interpolated values??
 !---------------------------------------------------
-LOGICAL, parameter :: debugThermoInterp = .falsE.
+LOGICAL, parameter :: debugThermoInterp = .truE.
 CHARACTER(LEN=*), PARAMETER :: debugThermoInterpFileName = 'interpOut.dat'
-
+INTEGER, parameter :: unitCheckThermoInterpBefore = 7600  ! for writing out thermosphere values
+INTEGER, parameter :: unitCheckThermoInterpAfter = 7500  ! for writing out thermosphere values
+INTEGER, parameter :: unitCheckPressureHeightThermo = 8800
 
 !-----------------------------------------------------------------
 ! File unit number for checking Ionospheric interpolation values :
@@ -303,9 +306,9 @@ real*8 :: qion3d_FOR_IPE(GT_ht_dim, GT_lon_dim, GT_lat_dim)
 REAL(kind=8) :: O_density_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
 REAL(kind=8) :: O2_density_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
 REAL(kind=8) :: N2_density_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
-REAL(kind=8) :: Vx_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
-REAL(kind=8) :: Vy_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
-REAL(kind=8) :: Wvz_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
+REAL(kind=8) :: V_East_FixedHeight(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
+REAL(kind=8) :: V_South_FixedHeight(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
+REAL(kind=8) :: V_Upward_FixedHeight(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
 REAL(kind=8) :: tts_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
 REAL(kind=8) :: qion3d_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
 REAL(kind=8) :: elx_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
@@ -342,9 +345,9 @@ REAL(kind=8) :: glat_plasma_3d(npts,nmp), glond_plasma_3d(npts,nmp), pz_plasma_3
 REAL(kind=8) :: TN_plasma_input_3d(npts, nmp), O_plasma_input_3d(npts, nmp), &
                 O2_plasma_input_3d(npts, nmp), N2_plasma_input_3d(npts, nmp)
 
-REAL(kind=8) :: um_plasma_input_3d(npts, nmp), &
-                uz_plasma_input_3d(npts, nmp), &
-                uv_plasma_input_3d(npts, nmp)
+REAL(kind=8) :: V_east_plasma(npts, nmp), &
+                V_south_plasma(npts, nmp), &
+                V_upward_plasma(npts, nmp)
 
 !-----------------------
 ! Output from fixed_geo 
@@ -704,6 +707,40 @@ IF ( sw_neutral == 'GT' ) then
 
 
   end if ! (debugIonoFixedtoPressure) 
+
+   !--------------------------------------------------------------
+   ! Open files for writing out interpreted variables b/f & after
+   !--------------------------------------------------------------
+   If (debugThermoInterp) then 
+       OPEN (unitCheckThermoInterpBefore, FILE=TRIM(debugDir)//TRIM('SouthWindBefore.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpAfter, FILE=TRIM(debugDir)//TRIM('SouthWindAfter.txt'), STATUS='REPLACE')
+
+       OPEN (unitCheckThermoInterpBefore+1, FILE=TRIM(debugDir)//TRIM('EastWindBefore.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpAfter+1, FILE=TRIM(debugDir)//TRIM('EastWindAfter.txt'), STATUS='REPLACE')
+
+       OPEN (unitCheckThermoInterpBefore+2, FILE=TRIM(debugDir)//TRIM('WVZBefore.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpAfter+2, FILE=TRIM(debugDir)//TRIM('WVZAfter.txt'), STATUS='REPLACE')
+
+       OPEN (unitCheckThermoInterpBefore+3, FILE=TRIM(debugDir)//TRIM('RMTBefore.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpAfter+3, FILE=TRIM(debugDir)//TRIM('RMTAfter.txt'), STATUS='REPLACE')
+
+       OPEN (unitCheckThermoInterpBefore+4, FILE=TRIM(debugDir)//TRIM('TemperatureBefore.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpAfter+4, FILE=TRIM(debugDir)//TRIM('TemperatureAfter.txt'), STATUS='REPLACE')
+
+       OPEN (unitCheckThermoInterpBefore+5, FILE=TRIM(debugDir)//TRIM('OBefore.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpAfter+5, FILE=TRIM(debugDir)//TRIM('OAfter.txt'), STATUS='REPLACE')
+
+       OPEN (unitCheckThermoInterpBefore+6, FILE=TRIM(debugDir)//TRIM('O2Before.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpAfter+6, FILE=TRIM(debugDir)//TRIM('O2After.txt'), STATUS='REPLACE')
+
+       OPEN (unitCheckThermoInterpBefore+7, FILE=TRIM(debugDir)//TRIM('N2Before.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpAfter+7, FILE=TRIM(debugDir)//TRIM('N2After.txt'), STATUS='REPLACE')
+
+       OPEN (unitCheckThermoInterpBefore+8, FILE=TRIM(debugDir)//TRIM('QionBefore.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpAfter+8, FILE=TRIM(debugDir)//TRIM('QionAfter.txt'), STATUS='REPLACE')
+
+
+   end if !  (debugThermoInterp)
 
     !------------------------------------------------------------------------------
     ! Need to change 1d inGIP, isGIP, to 2d to match up with the old GIP subroutine 
@@ -1229,7 +1266,6 @@ CALL INTERFACE__FIXED_GRID_to_THERMO ( &
 !--------------------------------------------------------
 if ((debugIonoFixedtoPressure) .and. (idump_gt == 1)) then
 
-      ! Uncomment this when I get the height part working **********************
       write(unitCheckPressureInterp,*) Oplus_density_for_GT
       write(unitCheckPressureInterp + 1,*) Hplus_density_for_GT
       write(unitCheckPressureInterp + 2,*) Nplus_density_for_GT
@@ -1326,23 +1362,23 @@ end if
                       Foster_power, &  ! gw
                       f107, &
                       emaps, cmaps, profile, &
-                      wind_southwards_ms1_FROM_GT, &
-                      wind_eastwards_ms1_FROM_GT, &
-                      wvz_FROM_GT, &
-                      rmt_FROM_GT, &
-                      Temperature_K_FROM_GT, &
-                      ht_FROM_GT, &
-                      O_density_FROM_GT, &
-                      O2_density_FROM_GT, &
-                      N2_density_FROM_GT, &
-                      qion3d)
+                      wind_southwards_ms1_FROM_GT, &  ! output
+                      wind_eastwards_ms1_FROM_GT, &  ! output
+                      wvz_FROM_GT, &                  ! output
+                      rmt_FROM_GT, &  ! output
+                      Temperature_K_FROM_GT, &  ! output
+                      ht_FROM_GT, &  ! output
+                      O_density_FROM_GT, &  ! output
+                      O2_density_FROM_GT, &  ! output
+                      N2_density_FROM_GT, &  ! output
+                      qion3d)  ! output
 
 
        !-------------------------------------------------------------------
-       ! If in Thermospheric debug mode, write out values to the a file
+       ! If in Thermospheric debug mode, write out values to a file
        ! & do some prints to the screen
        !-------------------------------------------------------------------
-       if (debugThermo) then
+       if ((debugThermo).and. (idump_gt == 1)) then
 
           WRITE (unitCheckThermo, '(A)' ) ' '
           WRITE(unitCheckThermo,'(A)') 'driver_ipe_gt.3d : '
@@ -1358,7 +1394,35 @@ end if
                                  wind_eastwards_ms1_FROM_GT, wvz_FROM_GT, rmt_FROM_GT, &
                                  Temperature_K_FROM_GT, ht_FROM_GT)
 
+
+
+
         endif ! debugThermo
+
+
+        if (debugThermoInterp) then
+           ! write out arrays to file for plotting
+           write(unitCheckThermoInterpBefore,*) wind_southwards_ms1_FROM_GT
+           write(unitCheckThermoInterpBefore + 1,*) wind_eastwards_ms1_FROM_GT
+           write(unitCheckThermoInterpBefore + 2,*) wvz_FROM_GT
+           write(unitCheckThermoInterpBefore + 3,*) rmt_FROM_GT
+           write(unitCheckThermoInterpBefore + 4,*) Temperature_K_FROM_GT
+           write(unitCheckThermoInterpBefore + 5,*) O_density_FROM_GT
+           write(unitCheckThermoInterpBefore + 6,*) O2_density_FROM_GT
+           write(unitCheckThermoInterpBefore + 7,*) N2_density_FROM_GT
+           write(unitCheckThermoInterpBefore + 8,*) qion3d
+
+          !--------------------------------------------------------------------
+          ! Calculate and write out the average height for each pressure level
+          !--------------------------------------------------------------------
+          write(unitCheckPressureHeightThermo, FMT="(I12)" ) gtLoopTime
+         do ii = 1, GT_ht_dim
+
+            write(unitCheckPressureHeightThermo, FMT="(E12.4)") SUM(Ht_FROM_GT(ii,:,:))/(GT_lat_dim*GT_lon_dim)
+
+         enddo
+
+      endif ! debugThermoInterp
 
 
 
@@ -1444,7 +1508,9 @@ end if
            !! N2D_density_fixed_ht, &   ! output, not needed now
 
 
-           Vx_fixed_ht, Vy_fixed_ht, wvz_fixed_ht, tts_fixed_ht, &             ! output
+           V_East_FixedHeight, V_South_FixedHeight, V_Upward_FixedHeight, tts_fixed_ht, &             ! output
+
+
            qion3d_fixed_ht, elx_fixed_ht, ely_fixed_ht)                        ! output
 
            !! AURORA VARIABLES NOT NEEDED FOR IPE YET lrm20110929
@@ -1462,13 +1528,28 @@ end if
               CALL checkInterp(debugDir, debugThermoInterpFileName, unitCheckThermoInterp, &
                        nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim, &
                        O_density_fixed_ht, O2_density_fixed_ht, N2_density_fixed_ht, &
-                       Vx_fixed_ht, Vy_fixed_ht, wvz_fixed_ht, &
+                       V_East_FixedHeight, V_South_FixedHeight, V_Upward_FixedHeight, &
                        tts_fixed_ht, qion3d_fixed_ht, elx_fixed_ht, &
                        ely_fixed_ht)
 
                print *,'driver_ipe_gt.3d : STOPPING.............'
                STOP
            endif
+
+           !------------------------------------------------------
+           ! Write out pressure to fixed grid results
+           !------------------------------------------
+  If (debugThermoInterp) then 
+      write(unitCheckThermoInterpAfter,*) V_South_FixedHeight
+      write(unitCheckThermoInterpAfter+1,*) V_East_FixedHeight
+      write(unitCheckThermoInterpAfter+2,*) V_Upward_FixedHeight
+      write(unitCheckThermoInterpAfter+3,*) 
+      write(unitCheckThermoInterpAfter+4,*) 
+      write(unitCheckThermoInterpAfter+5,*) O_density_fixed_ht
+      write(unitCheckThermoInterpAfter+6,*) O2_density_fixed_ht
+      write(unitCheckThermoInterpAfter+7,*) N2_density_fixed_ht
+      write(unitCheckThermoInterpAfter+8,*) qion3d_fixed_ht
+  end if
 
 
 
@@ -1489,7 +1570,7 @@ end if
         !! N4S_density_fixed_ht, &   not needed now
         !! N2D_density_fixed_ht, &   not needed now
 
-        Vx_fixed_ht, Vy_fixed_ht, wvz_fixed_ht, tts_fixed_ht, &   ! inputs
+        V_East_FixedHeight, V_South_FixedHeight, V_Upward_FixedHeight, tts_fixed_ht, &   ! inputs
 
         !! telec_fixed_ht, &  not needed now
 
@@ -1505,7 +1586,7 @@ end if
         GLAt_plasma_3d, &
         GLOnd_plasma_3d, &
         PZ_plasma_3d, &
-        um_plasma_input_3d, uz_plasma_input_3d, uv_plasma_input_3d, &
+        V_east_plasma, V_south_plasma, V_upward_plasma, &  ! wind
 
         !! te_dum_plasma_input_3d, & not needed now
 
@@ -1528,8 +1609,8 @@ end if
                          npts, nmp, &
                          TN_plasma_input_3d, O_plasma_input_3d, O2_plasma_input_3d, &
                          N2_plasma_input_3d, GLAt_plasma_3d, GLOnd_plasma_3d, &
-                         pz_plasma_3d, um_plasma_input_3d, uz_plasma_input_3d, &
-                         uv_plasma_input_3d, ilon1_3d_fixed_ht, ilon2_3d_fixed_ht, &
+                         pz_plasma_3d, V_east_plasma, V_south_plasma, &
+                         V_upward_plasma, ilon1_3d_fixed_ht, ilon2_3d_fixed_ht, &
                          ilat1_3d_fixed_ht, ilat2_3d_fixed_ht, ispecial_3d_fixed_ht, &
                          ihl_3d_fixed_ht, ihu_3d_fixed_ht, isFirstCallFixedHeight)
 
@@ -1573,7 +1654,9 @@ enddo ! ii
 !-------------------------------------------------------
 ! if we're in thermospheric debug mode, close the file
 !-------------------------------------------------------
-if (debugThermo) CLOSE (unitCheckThermo)
+if (debugThermo) then
+   CLOSE (unitCheckThermo)
+endif
 
 if (debugThermoInterp) CLOSE (unitCheckThermoInterp)
 

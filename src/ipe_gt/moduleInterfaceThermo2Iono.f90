@@ -57,9 +57,9 @@ SUBROUTINE INTERFACE__thermosphere_to_FIXED_GEO ( &
            !! therm_N4S_density, &  ! not needed now
            !! therm_N2D_density, &  ! not needed now
            therm_Tn, &   ! input : temperature from GT
-           therm_Un, &   ! input : eastward wind from GT
-           therm_Vn, &   ! input : southward wind from GT
-           therm_Zn, &   ! input : upward wind from GT
+           Vn_east, &   ! input : eastward wind from GT
+           Vn_South, &   ! input : southward wind from GT
+           Vn_Upward, &   ! input : upward wind from GT
            therm_qion3d, &   ! input
            therm_elx, &   ! input
            therm_ely, &   ! input
@@ -72,14 +72,19 @@ SUBROUTINE INTERFACE__thermosphere_to_FIXED_GEO ( &
            therm_lat, &
            therm_Z, &
 
-           o_density_fixed_ht, o2_density_fixed_ht, n2_density_fixed_ht, &  ! output
+           !o_density_fixed_ht, o2_density_fixed_ht, n2_density_fixed_ht, &  ! output
+           interface_o_density, interface_o2_density, interface_n2_density, &  ! output
 
            !! NO_density_fixed_ht, &                                           ! output
            !! N4S_density_fixed_ht, &
            !! N2D_density_fixed_ht, &                    ! output
 
-           Vx_fixed_ht, Vy_fixed_ht, wvz_fixed_ht, & ! wind  ! output
-           tts_fixed_ht, &    ! output
+           !Vx_fixed_ht, Vy_fixed_ht, wvz_fixed_ht, & ! wind  ! output
+           interface_East, interface_South, interface_Upward, & ! wind  ! output changed names lrm20121126
+
+           !tts_fixed_ht, &    ! output
+           interface_Tn, &    ! output  changed names lrm20121126
+
            qion3d_fixed_ht, elx_fixed_ht, ely_fixed_ht)         ! output
 
            ! AURORA VARIABLES NOT NEEDED FOR IPE YET lrm20110929
@@ -100,9 +105,9 @@ REAL(kind=8) :: therm_N2D_density(ht_dim,lon_dim,lat_dim)
 REAL(kind=8) :: therm_Tn(ht_dim,lon_dim,lat_dim)
 
 ! wind
-REAL(kind=8) :: therm_Un(ht_dim,lon_dim,lat_dim)
-REAL(kind=8) :: therm_Vn(ht_dim,lon_dim,lat_dim)
-REAL(kind=8) :: therm_Zn(ht_dim,lon_dim,lat_dim)
+REAL(kind=8) :: Vn_east(ht_dim,lon_dim,lat_dim)
+REAL(kind=8) :: Vn_South(ht_dim,lon_dim,lat_dim)
+REAL(kind=8) :: Vn_Upward(ht_dim,lon_dim,lat_dim)
 
 REAL(kind=8) :: therm_qion3d(ht_dim,lon_dim,lat_dim)
 REAL(kind=8) :: therm_elx(ht_dim,lon_dim,lat_dim)
@@ -117,19 +122,40 @@ REAL(kind=8) :: therm_lat(lat_dim)
 REAL(kind=8) :: therm_Z(ht_dim,lon_dim,lat_dim)
 
 ! Outputs ----------------------------
-REAL(kind=8), INTENT(OUT) :: o_density_fixed_ht(interface_hts,91,20)
-REAL(kind=8), INTENT(OUT) :: o2_density_fixed_ht(interface_hts,91,20)
-REAL(kind=8), INTENT(OUT) :: n2_density_fixed_ht(interface_hts,91,20)
+!REAL(kind=8), INTENT(OUT) :: o_density_fixed_ht(interface_hts,91,20)
+REAL(kind=8), INTENT(OUT) :: interface_o_density(interface_hts,91,20)
+
+!REAL(kind=8), INTENT(OUT) :: o2_density_fixed_ht(interface_hts,91,20)
+REAL(kind=8), INTENT(OUT) ::  interface_o2_density(interface_hts,91,20)
+
+!REAL(kind=8), INTENT(OUT) :: n2_density_fixed_ht(interface_hts,91,20)
+REAL(kind=8), INTENT(OUT) ::  interface_n2_density(interface_hts,91,20)
+
 !REAL(kind=8) :: NO_density_fixed_ht(interface_hts,91,20) ! was set but never used lrm20121108
 REAL(kind=8) :: N4S_density_fixed_ht(interface_hts,91,20)
 REAL(kind=8) :: N2D_density_fixed_ht(interface_hts,91,20)
-REAL(kind=8) :: Vx_fixed_ht(interface_hts,91,20)
-REAL(kind=8) :: Vy_fixed_ht(interface_hts,91,20)
-REAL(kind=8) :: wvz_fixed_ht(interface_hts,91,20)
-REAL(kind=8) :: tts_fixed_ht(interface_hts,91,20)
+
+
+! Wind
+!REAL(kind=8) :: Vx_fixed_ht(interface_hts,91,20)
+!REAL(kind=8) :: Vy_fixed_ht(interface_hts,91,20)
+!REAL(kind=8) :: wvz_fixed_ht(interface_hts,91,20)
+! wind
+REAL(kind=8), INTENT(OUT) :: interface_East(interface_hts,91,20)
+REAL(kind=8), INTENT(OUT) :: interface_South(interface_hts,91,20)
+REAL(kind=8), INTENT(OUT) :: interface_Upward(interface_hts,91,20)
+
+
+!REAL(kind=8) :: tts_fixed_ht(interface_hts,91,20)
+! temperature
+REAL(kind=8), INTENT(OUT) ::  interface_Tn(interface_hts,91,20)
+
+
+
 REAL(kind=8) :: qion3d_fixed_ht(interface_hts,91,20)
 REAL(kind=8) :: elx_fixed_ht(interface_hts,91,20)
 REAL(kind=8) :: ely_fixed_ht(interface_hts,91,20)
+
 REAL(kind=8) :: qo2p_aurora_fixed_ht(interface_hts,91,20)
 REAL(kind=8) :: qop_aurora_fixed_ht(interface_hts,91,20)
 REAL(kind=8) :: qn2p_aurora_fixed_ht(interface_hts,91,20)
@@ -139,29 +165,20 @@ REAL(kind=8) :: qtef_aurora_fixed_ht(interface_hts,91,20)
 
 ! Local variables -----------------------------------------
 
-INTEGER ilon  , ilat , iht
-INTEGER ilon_therm , ilat_therm , iht_therm 
-INTEGER ispecial 
+INTEGER :: ilon, ilat, iht
+INTEGER :: ilon_therm , ilat_therm , iht_therm 
+INTEGER :: ispecial 
 
 LOGICAL :: sw_External_model_provides_NO_N4S_densities
 LOGICAL :: sw_input_Auroral_production_is_single_overall_rate
 
 REAL(kind=8) therm_height(ht_dim)
 
-REAL(kind=8) interface_o_density(interface_hts,91,20)
-REAL(kind=8) interface_o2_density(interface_hts,91,20)
-REAL(kind=8) interface_n2_density(interface_hts,91,20)
+
 REAL(kind=8) interface_NO_density(interface_hts,91,20)
 REAL(kind=8) interface_N4S_density(interface_hts,91,20)
 REAL(kind=8) interface_N2D_density(interface_hts,91,20)
 
-! temperature
-REAL(kind=8) interface_Tn(interface_hts,91,20)
-
-! wind
-REAL(kind=8) interface_Un(interface_hts,91,20)
-REAL(kind=8) interface_Vn(interface_hts,91,20)
-REAL(kind=8) interface_Zn(interface_hts,91,20)
 
 REAL(kind=8) interface_qion3d(interface_hts,91,20)
 REAL(kind=8) interface_elx(interface_hts,91,20)
@@ -238,17 +255,17 @@ REAL(kind=8) Tn_p_l12
 REAL(kind=8) Tn_p_12
 
 ! wind
-REAL(kind=8) Un_p_u12
-REAL(kind=8) Un_p_l12
-REAL(kind=8) Un_p_12
+REAL(kind=8) Vn_E_u12
+REAL(kind=8) Vn_E_l12
+REAL(kind=8) Vn_E_12
 
-REAL(kind=8) Vn_p_u12
-REAL(kind=8) Vn_p_l12
-REAL(kind=8) Vn_p_12
+REAL(kind=8) Vn_S_u12
+REAL(kind=8) Vn_S_l12
+REAL(kind=8) Vn_S_12
 
-REAL(kind=8) Zn_p_u12
-REAL(kind=8) Zn_p_l12
-REAL(kind=8) Zn_p_12
+REAL(kind=8) Vn_Up_u12
+REAL(kind=8) Vn_Up_l12
+REAL(kind=8) Vn_Up_12
 
 
 REAL(kind=8) qion3d_p_u12
@@ -308,17 +325,17 @@ REAL(kind=8) Tn_p_l22
 REAL(kind=8) Tn_p_22
 
 ! wind
-REAL(kind=8) Un_p_u22
-REAL(kind=8) Un_p_l22
-REAL(kind=8) Un_p_22
+REAL(kind=8) Vn_E_u22
+REAL(kind=8) Vn_E_l22
+REAL(kind=8) Vn_E_22
 
-REAL(kind=8) Vn_p_u22
-REAL(kind=8) Vn_p_l22
-REAL(kind=8) Vn_p_22
+REAL(kind=8) Vn_S_u22
+REAL(kind=8) Vn_S_l22
+REAL(kind=8) Vn_S_22
 
-REAL(kind=8) Zn_p_u22
-REAL(kind=8) Zn_p_l22
-REAL(kind=8) Zn_p_22
+REAL(kind=8) Vn_Up_u22
+REAL(kind=8) Vn_Up_l22
+REAL(kind=8) Vn_Up_22
 
 REAL(kind=8) qion3d_p_u22
 REAL(kind=8) qion3d_p_l22
@@ -377,17 +394,17 @@ REAL(kind=8) Tn_p_l11
 REAL(kind=8) Tn_p_11
 
 ! wind
-REAL(kind=8) Un_p_u11
-REAL(kind=8) Un_p_l11
-REAL(kind=8) Un_p_11
+REAL(kind=8) Vn_E_u11
+REAL(kind=8) Vn_E_l11
+REAL(kind=8) Vn_E_11
 
-REAL(kind=8) Vn_p_u11
-REAL(kind=8) Vn_p_l11
-REAL(kind=8) Vn_p_11
+REAL(kind=8) Vn_S_u11
+REAL(kind=8) Vn_S_l11
+REAL(kind=8) Vn_S_11
 
-REAL(kind=8) Zn_p_u11
-REAL(kind=8) Zn_p_l11
-REAL(kind=8) Zn_p_11
+REAL(kind=8) Vn_Up_u11
+REAL(kind=8) Vn_Up_l11
+REAL(kind=8) Vn_Up_11
 
 REAL(kind=8) qion3d_p_u11
 REAL(kind=8) qion3d_p_l11
@@ -446,17 +463,17 @@ REAL(kind=8) Tn_p_l21
 REAL(kind=8) Tn_p_21
 
 ! wind
-REAL(kind=8) Un_p_u21
-REAL(kind=8) Un_p_l21
-REAL(kind=8) Un_p_21
+REAL(kind=8) Vn_E_u21
+REAL(kind=8) Vn_E_l21
+REAL(kind=8) Vn_E_21
 
-REAL(kind=8) Vn_p_u21
-REAL(kind=8) Vn_p_l21
-REAL(kind=8) Vn_p_21
+REAL(kind=8) Vn_S_u21
+REAL(kind=8) Vn_S_l21
+REAL(kind=8) Vn_S_21
 
-REAL(kind=8) Zn_p_u21
-REAL(kind=8) Zn_p_l21
-REAL(kind=8) Zn_p_21
+REAL(kind=8) Vn_Up_u21
+REAL(kind=8) Vn_Up_l21
+REAL(kind=8) Vn_Up_21
 
 
 
@@ -508,12 +525,12 @@ REAL(kind=8) Tn_p_2
 REAL(kind=8) Tn_p_1
 
 ! wind
-REAL(kind=8) Un_p_2 
-REAL(kind=8) Un_p_1
-REAL(kind=8) Vn_p_2 
-REAL(kind=8) Vn_p_1
-REAL(kind=8) Zn_p_2 
-REAL(kind=8) Zn_p_1
+REAL(kind=8) Vn_E_2 
+REAL(kind=8) Vn_E_1
+REAL(kind=8) Vn_S_2 
+REAL(kind=8) Vn_S_1
+REAL(kind=8) Vn_Up_2 
+REAL(kind=8) Vn_Up_1
 
 REAL(kind=8) qion3d_p_2 
 REAL(kind=8) qion3d_p_1
@@ -799,17 +816,17 @@ endif
    Tn_p_12  = ((Tn_p_u12 - Tn_p_l12)*factor_ht12) + Tn_p_l12
 
    ! wind
-   Un_p_u12 = therm_Un(iht_above,ilon_west,ilat_north)
-   Un_p_l12 = therm_Un(iht_below,ilon_west,ilat_north)
-   Un_p_12  = ((Un_p_u12 - Un_p_l12)*factor_ht12) + Un_p_l12
+   Vn_E_u12 = Vn_east(iht_above,ilon_west,ilat_north)
+   Vn_E_l12 = Vn_east(iht_below,ilon_west,ilat_north)
+   Vn_E_12  = ((Vn_E_u12 - Vn_E_l12)*factor_ht12) + Vn_E_l12
 
-   Vn_p_u12 = therm_Vn(iht_above,ilon_west,ilat_north)
-   Vn_p_l12 = therm_Vn(iht_below,ilon_west,ilat_north)
-   Vn_p_12  = ((Vn_p_u12 - Vn_p_l12)*factor_ht12) + Vn_p_l12
+   Vn_S_u12 = Vn_South(iht_above,ilon_west,ilat_north)
+   Vn_S_l12 = Vn_South(iht_below,ilon_west,ilat_north)
+   Vn_S_12  = ((Vn_S_u12 - Vn_S_l12)*factor_ht12) + Vn_S_l12
 
-   Zn_p_u12 = therm_Zn(iht_above,ilon_west,ilat_north)
-   Zn_p_l12 = therm_Zn(iht_below,ilon_west,ilat_north)
-   Zn_p_12  = ((Zn_p_u12 - Zn_p_l12)*factor_ht12) + Zn_p_l12
+   Vn_Up_u12 = Vn_Upward(iht_above,ilon_west,ilat_north)
+   Vn_Up_l12 = Vn_Upward(iht_below,ilon_west,ilat_north)
+   Vn_Up_12  = ((Vn_Up_u12 - Vn_Up_l12)*factor_ht12) + Vn_Up_l12
 
 
 if (sw_input_Auroral_production_is_single_overall_rate) then
@@ -900,17 +917,17 @@ endif
    Tn_p_22  = ((Tn_p_u22 - Tn_p_l22)*factor_ht22) + Tn_p_l22
 
    ! wind
-   Un_p_u22 = therm_Un(iht_above,ilon_east,ilat_north)
-   Un_p_l22 = therm_Un(iht_below,ilon_east,ilat_north)
-   Un_p_22  = ((Un_p_u22 - Un_p_l22)*factor_ht22) + Un_p_l22
+   Vn_E_u22 = Vn_east(iht_above,ilon_east,ilat_north)
+   Vn_E_l22 = Vn_east(iht_below,ilon_east,ilat_north)
+   Vn_E_22  = ((Vn_E_u22 - Vn_E_l22)*factor_ht22) + Vn_E_l22
 
-   Vn_p_u22 = therm_Vn(iht_above,ilon_east,ilat_north)
-   Vn_p_l22 = therm_Vn(iht_below,ilon_east,ilat_north)
-   Vn_p_22  = ((Vn_p_u22 - Vn_p_l22)*factor_ht22) + Vn_p_l22
+   Vn_S_u22 = Vn_South(iht_above,ilon_east,ilat_north)
+   Vn_S_l22 = Vn_South(iht_below,ilon_east,ilat_north)
+   Vn_S_22  = ((Vn_S_u22 - Vn_S_l22)*factor_ht22) + Vn_S_l22
 
-   Zn_p_u22 = therm_Zn(iht_above,ilon_east,ilat_north)
-   Zn_p_l22 = therm_Zn(iht_below,ilon_east,ilat_north)
-   Zn_p_22  = ((Zn_p_u22 - Zn_p_l22)*factor_ht22) + Zn_p_l22
+   Vn_Up_u22 = Vn_Upward(iht_above,ilon_east,ilat_north)
+   Vn_Up_l22 = Vn_Upward(iht_below,ilon_east,ilat_north)
+   Vn_Up_22  = ((Vn_Up_u22 - Vn_Up_l22)*factor_ht22) + Vn_Up_l22
 
 
 if (sw_input_Auroral_production_is_single_overall_rate) then
@@ -999,17 +1016,17 @@ Tn_p_l11 = therm_Tn(iht_below,ilon_west,ilat_south)
 Tn_p_11  = ((Tn_p_u11 - Tn_p_l11)*factor_ht11) + Tn_p_l11
 
 ! wind
-Un_p_u11 = therm_Un(iht_above,ilon_west,ilat_south)
-Un_p_l11 = therm_Un(iht_below,ilon_west,ilat_south)
-Un_p_11  = ((Un_p_u11 - Un_p_l11)*factor_ht11) + Un_p_l11
+Vn_E_u11 = Vn_east(iht_above,ilon_west,ilat_south)
+Vn_E_l11 = Vn_east(iht_below,ilon_west,ilat_south)
+Vn_E_11  = ((Vn_E_u11 - Vn_E_l11)*factor_ht11) + Vn_E_l11
 
-Vn_p_u11 = therm_Vn(iht_above,ilon_west,ilat_south)
-Vn_p_l11 = therm_Vn(iht_below,ilon_west,ilat_south)
-Vn_p_11  = ((Vn_p_u11 - Vn_p_l11)*factor_ht11) + Vn_p_l11
+Vn_S_u11 = Vn_South(iht_above,ilon_west,ilat_south)
+Vn_S_l11 = Vn_South(iht_below,ilon_west,ilat_south)
+Vn_S_11  = ((Vn_S_u11 - Vn_S_l11)*factor_ht11) + Vn_S_l11
 
-zn_p_u11 = therm_Zn(iht_above,ilon_west,ilat_south)
-Zn_p_l11 = therm_Zn(iht_below,ilon_west,ilat_south)
-Zn_p_11  = ((Zn_p_u11 - Zn_p_l11)*factor_ht11) + Zn_p_l11
+Vn_Up_u11 = Vn_Upward(iht_above,ilon_west,ilat_south)
+Vn_Up_l11 = Vn_Upward(iht_below,ilon_west,ilat_south)
+Vn_Up_11  = ((Vn_Up_u11 - Vn_Up_l11)*factor_ht11) + Vn_Up_l11
 
 
 if (sw_input_Auroral_production_is_single_overall_rate) then
@@ -1101,17 +1118,17 @@ Tn_p_l21 = therm_Tn(iht_below,ilon_east,ilat_south)
 Tn_p_21  = ((Tn_p_u21 - Tn_p_l21)*factor_ht21) + Tn_p_l21
 
 ! wind
-Un_p_u21 = therm_Un(iht_above,ilon_east,ilat_south)
-Un_p_l21 = therm_Un(iht_below,ilon_east,ilat_south)
-Un_p_21  = ((Un_p_u21 - Un_p_l21)*factor_ht21) + Un_p_l21
+Vn_E_u21 = Vn_east(iht_above,ilon_east,ilat_south)
+Vn_E_l21 = Vn_east(iht_below,ilon_east,ilat_south)
+Vn_E_21  = ((Vn_E_u21 - Vn_E_l21)*factor_ht21) + Vn_E_l21
 
-Vn_p_u21 = therm_Vn(iht_above,ilon_east,ilat_south)
-Vn_p_l21 = therm_Vn(iht_below,ilon_east,ilat_south)
-Vn_p_21  = ((Vn_p_u21 - Vn_p_l21)*factor_ht21) + Vn_p_l21
+Vn_S_u21 = Vn_South(iht_above,ilon_east,ilat_south)
+Vn_S_l21 = Vn_South(iht_below,ilon_east,ilat_south)
+Vn_S_21  = ((Vn_S_u21 - Vn_S_l21)*factor_ht21) + Vn_S_l21
 
-Zn_p_u21 = therm_Zn(iht_above,ilon_east,ilat_south)
-Zn_p_l21 = therm_Zn(iht_below,ilon_east,ilat_south)
-Zn_p_21  = ((Zn_p_u21 - Zn_p_l21)*factor_ht21) + Zn_p_l21
+Vn_Up_u21 = Vn_Upward(iht_above,ilon_east,ilat_south)
+Vn_Up_l21 = Vn_Upward(iht_below,ilon_east,ilat_south)
+Vn_Up_21  = ((Vn_Up_u21 - Vn_Up_l21)*factor_ht21) + Vn_Up_l21
 
 
 
@@ -1185,14 +1202,14 @@ Tn_p_2 = ((Tn_p_22 - Tn_p_21) * factor_lat) + Tn_p_21
 Tn_p_1 = ((Tn_p_12 - Tn_p_11) * factor_lat) + Tn_p_11
 
 ! wind
-Un_p_2 = ((Un_p_22 - Un_p_21) * factor_lat) + Un_p_21
-Un_p_1 = ((Un_p_12 - Un_p_11) * factor_lat) + Un_p_11
+Vn_E_2 = ((Vn_E_22 - Vn_E_21) * factor_lat) + Vn_E_21
+Vn_E_1 = ((Vn_E_12 - Vn_E_11) * factor_lat) + Vn_E_11
 
-Vn_p_2 = ((Vn_p_22 - Vn_p_21) * factor_lat) + Vn_p_21
-Vn_p_1 = ((Vn_p_12 - Vn_p_11) * factor_lat) + Vn_p_11
+Vn_S_2 = ((Vn_S_22 - Vn_S_21) * factor_lat) + Vn_S_21
+Vn_S_1 = ((Vn_S_12 - Vn_S_11) * factor_lat) + Vn_S_11
 
-Zn_p_2 = ((Zn_p_22 - Zn_p_21) * factor_lat) + Zn_p_21
-zn_p_1 = ((Zn_p_12 - Zn_p_11) * factor_lat) + Zn_p_11
+Vn_Up_2 = ((Vn_Up_22 - Vn_Up_21) * factor_lat) + Vn_Up_21
+Vn_Up_1 = ((Vn_Up_12 - Vn_Up_11) * factor_lat) + Vn_Up_11
 
 
 if (sw_input_Auroral_production_is_single_overall_rate) then
@@ -1243,6 +1260,7 @@ ely_p_1 = ((ely_p_12 - ely_p_11) * factor_lat) + ely_p_11
    interface_o_density(iht,ilat,ilon) = ((O_den_p_2 - O_den_p_1) * factor_lon) + O_den_p_1
    interface_o2_density(iht,ilat,ilon) = ((O2_den_p_2 - O2_den_p_1) * factor_lon) + O2_den_p_1
    interface_n2_density(iht,ilat,ilon) = ((N2_den_p_2 - N2_den_p_1) * factor_lon) + N2_den_p_1
+
    if (interface_o_density(iht,ilat,ilon) .lt. 1.e-20) interface_o_density(iht,ilat,ilon) = 1.e-20
    if (interface_o2_density(iht,ilat,ilon) .lt. 1.e-20) interface_o2_density(iht,ilat,ilon) = 1.e-20
    if (interface_n2_density(iht,ilat,ilon) .lt. 1.e-20) interface_n2_density(iht,ilat,ilon) = 1.e-20
@@ -1253,16 +1271,19 @@ if (sw_External_model_provides_NO_N4S_densities) then
    interface_NO_density(iht,ilat,ilon) = ((NO_den_p_2 - NO_den_p_1) * factor_lon) + NO_den_p_1
    interface_N4S_density(iht,ilat,ilon) = ((N4S_den_p_2 - N4S_den_p_1) * factor_lon) + N4S_den_p_1
    interface_N2D_density(iht,ilat,ilon) = ((N2D_den_p_2 - N2D_den_p_1) * factor_lon) + N2D_den_p_1
-   if(interface_NO_density(iht,ilat,ilon).lt.1.e-20)interface_NO_density(iht,ilat,ilon) = 1.e-20
-   if(interface_N4S_density(iht,ilat,ilon).lt.1.e-20)interface_N4S_density(iht,ilat,ilon) = 1.e-20
-   if(interface_N2D_density(iht,ilat,ilon).lt.1.e-20)interface_N2D_density(iht,ilat,ilon) = 1.e-20
+
+   if(interface_NO_density(iht,ilat,ilon) .lt. 1.e-20)  interface_NO_density(iht,ilat,ilon)  = 1.e-20
+   if(interface_N4S_density(iht,ilat,ilon) .lt. 1.e-20) interface_N4S_density(iht,ilat,ilon) = 1.e-20
+   if(interface_N2D_density(iht,ilat,ilon) .lt. 1.e-20) interface_N2D_density(iht,ilat,ilon) = 1.e-20
 
 endif
 
    interface_Tn(iht,ilat,ilon) = ((Tn_p_2 - Tn_p_1) * factor_lon) + Tn_p_1
-   interface_Un(iht,ilat,ilon) = ((Un_p_2 - Un_p_1) * factor_lon) + Un_p_1
-   interface_Vn(iht,ilat,ilon) = ((Vn_p_2 - Vn_p_1) * factor_lon) + Vn_p_1
-   interface_Zn(iht,ilat,ilon) = ((Zn_p_2 - Zn_p_1) * factor_lon) + Zn_p_1
+
+   ! wind
+   interface_East(iht,ilat,ilon) = ((Vn_E_2 - Vn_E_1) * factor_lon) + Vn_E_1
+   interface_South(iht,ilat,ilon) = ((Vn_S_2 - Vn_S_1) * factor_lon) + Vn_S_1
+   interface_Upward(iht,ilat,ilon) = ((Vn_Up_2 - Vn_Up_1) * factor_lon) + Vn_Up_1
 
 
 if (sw_input_Auroral_production_is_single_overall_rate) then
@@ -1272,7 +1293,7 @@ if (sw_input_Auroral_production_is_single_overall_rate) then
 
 else
 
-   interface_qo2p_aurora(iht,ilat,ilon) = ((qo2p_aurora_p_2 - qo2p_aurora_p_1) * factor_lon) +qo2p_aurora_p_1
+   interface_qo2p_aurora(iht,ilat,ilon) = ((qo2p_aurora_p_2 - qo2p_aurora_p_1) * factor_lon) + qo2p_aurora_p_1
    if (interface_qo2p_aurora(iht,ilat,ilon) < 0.0) interface_qo2p_aurora(iht,ilat,ilon) = 0.0
    interface_qop_aurora(iht,ilat,ilon) = ((qop_aurora_p_2 - qop_aurora_p_1) * factor_lon) + qop_aurora_p_1
    if (interface_qop_aurora(iht,ilat,ilon) < 0.0) interface_qop_aurora(iht,ilat,ilon) = 0.0
@@ -1292,30 +1313,32 @@ enddo
 enddo
 enddo
 
+! maybe able to remove this lrm20121126  - took these out lrm20121126
+!o_density_fixed_ht(:,:,:) = interface_o_density(:,:,:) 
+!o2_density_fixed_ht(:,:,:) = interface_o2_density(:,:,:)
+!n2_density_fixed_ht(:,:,:) = interface_n2_density(:,:,:)
 
-o_density_fixed_ht(:,:,:) = interface_o_density(:,:,:) 
-o2_density_fixed_ht(:,:,:) = interface_o2_density(:,:,:)
-n2_density_fixed_ht(:,:,:) = interface_n2_density(:,:,:)
-
-if (sw_External_model_provides_NO_N4S_densities) then
+!if (sw_External_model_provides_NO_N4S_densities) then
     ! NO_density_fixed_ht(:,:,:) = interface_NO_density(:,:,:) not used lrm20121108
     !N4S_density_fixed_ht(:,:,:) = interface_N4S_density(:,:,:) not used lrm20121115
     !N2D_density_fixed_ht(:,:,:) = interface_N2D_density(:,:,:) not used lrm20121115
-endif
+!endif
 
 ! wind
-Vx_fixed_ht(:,:,:) = interface_Vn(:,:,:)
-Vy_fixed_ht(:,:,:) = interface_Un(:,:,:)
+!  Why is this done?   does not seem needed **** lrm20121121
+!Vx_fixed_ht(:,:,:) = interface_South(:,:,:) commented out, not needed lrm20121126
+!Vy_fixed_ht(:,:,:) = interface_East(:,:,:)  commented out, not needed lrm20121126
 
 
 !print *,'INTERFACE__thermosphere_to_FIXED_GEO : **************************************'
 !print *,'INTERFACE__thermosphere_to_FIXED_GEO : wvz_fixed_ht IS SET TO 0 ***********'
 !print *,'INTERFACE__thermosphere_to_FIXED_GEO : **************************************'
 !wvz_fixed_ht(:,:,:) = 0.0 !   NEED TO FIX THIS ************************** 
-wvz_fixed_ht = interface_Zn  ! lrm20121109
+!wvz_fixed_ht = interface_Upward  ! lrm20121109  commented out, not needed lrm20121126
+
 
 ! temperature
-tts_fixed_ht(:,:,:) = interface_Tn(:,:,:)
+!tts_fixed_ht(:,:,:) = interface_Tn(:,:,:)  don't need to do this lrm20121126
 
 if (sw_input_Auroral_production_is_single_overall_rate) then
     qion3d_fixed_ht(:,:,:) = interface_qion3d(:,:,:)
@@ -1334,9 +1357,9 @@ ely_fixed_ht(:,:,:) = interface_ely(:,:,:)
 do iht = 1 , interface_hts
    do ilat = 1 , 91
       do ilon = 1 , 20
-         if (o2_density_fixed_ht(iht,ilat,ilon) < 0.0 ) then
+         if (interface_o2_density(iht,ilat,ilon) < 0.0 ) then
            write(6,*) 'o2_density negative ', iht, ilat, ilon, &
-                       o2_density_fixed_ht(iht,ilat,ilon)
+                       interface_o2_density(iht,ilat,ilon)
            stop
          endif
       enddo
@@ -1367,7 +1390,7 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
         !! N4S_density, &  not needed now
         !! N2D_density, &  not needed now
 
-        VX, VY, WVZ, TTS, &  ! wind, temperature
+        V_East , V_South, V_Upward, TTS, &  ! wind, temperature
 
         !! telec, & not needed now
 
@@ -1383,7 +1406,7 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
         GLAt_3d, &
         GLOnd_3d, &
         PZ_3d, &
-        um_plasma_input_3d, uz_plasma_input_3d, uv_plasma_input_3d, &
+        east_plasma_input_3d, south_plasma_input_3d, upward_plasma_input_3d, &
 
         !! te_plasma_input_3d, & not needed now
 
@@ -1415,9 +1438,9 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
   REAL(kind=8) :: O2_density(N_heights, N_Latitudes, N_longitudes)
   REAL(kind=8) :: N2_density(N_heights, N_Latitudes, N_longitudes) 
 
-  REAL(kind=8) :: VX(N_heights, N_Latitudes, N_longitudes) ! meridional wind
-  REAL(kind=8) :: VY(N_heights, N_Latitudes, N_longitudes)  ! zonal wind
-  REAL(kind=8) :: WVZ(N_heights, N_Latitudes, N_longitudes)  ! vertical wind
+  REAL(kind=8) :: V_East (N_heights, N_Latitudes, N_longitudes) ! meridional wind
+  REAL(kind=8) :: V_South(N_heights, N_Latitudes, N_longitudes)  ! zonal wind
+  REAL(kind=8) :: V_Upward(N_heights, N_Latitudes, N_longitudes)  ! vertical wind
   REAL(kind=8) :: TTS(N_heights, N_Latitudes, N_longitudes)  ! temperature
 
   ! Not being passed in right now :
@@ -1433,9 +1456,9 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
   REAL(kind=8) ::  glat_3d(npts,nmp), glond_3d(npts,nmp)
   REAL(kind=8), INTENT(IN) ::  pz_3d(npts,nmp)
 
-  REAL(kind=8), INTENT(OUT) :: um_plasma_input_3d(npts, nmp), &  ! meridional wind
-                  uz_plasma_input_3d(npts, nmp), &               ! zonal wind
-                  uv_plasma_input_3d(npts, nmp)                  ! vertical wind
+  REAL(kind=8), INTENT(OUT) :: east_plasma_input_3d(npts, nmp), &  ! meridional wind
+                  south_plasma_input_3d(npts, nmp), &               ! zonal wind
+                  upward_plasma_input_3d(npts, nmp)                  ! vertical wind
 
 
   ! Not being passed in right now :
@@ -1494,11 +1517,11 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
 
 
   ! meridional wind
-  REAL(kind=8) :: uml11 , uml12 , uml21 , uml22 ,  umu11 , umu12 , umu21 , umu22 , um11 , um12 , um21 , um22 , um1 , um2
+  REAL(kind=8) :: eastl11 , eastl12 , eastl21 , eastl22 ,  eastu11 , eastu12 , eastu21 , eastu22 , east11 , east12 , east21 , east22 , east1 , east2
   ! zonal wind
-  REAL(kind=8) :: uzl11 , uzl12 , uzl21 , uzl22 ,  uzu11 , uzu12 , uzu21 , uzu22 , uz11 , uz12 , uz21 , uz22 , uz1 , uz2
+  REAL(kind=8) :: southl11 , southl12 , southl21 , southl22 ,  southu11 , southu12 , southu21 , southu22 , south11 , south12 , south21 , south22 , south1 , south2
   ! vertical wind
-  REAL(kind=8) :: uvl11 , uvl12 , uvl21 , uvl22 ,  uvu11 , uvu12 , uvu21 , uvu22 , uv11 , uv12 , uv21 , uv22 , uv1 , uv2
+  REAL(kind=8) :: upwardl11 , upwardl12 , upwardl21 , upwardl22 ,  upwardu11 , upwardu12 , upwardu21 , upwardu22 , upward11 , upward12 , upward21 , upward22 , upward1 , upward2
 
  !---------------------------------------------------------------------------------------
  ! This is not used, but Naomi will double check - was used for tiegcm oplus density
@@ -1538,9 +1561,9 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
   REAL(kind=8) ::  N4S(npts)
   REAL(kind=8) ::  N2D(npts)
 
-  REAL(kind=8) ::  uz(NPTS)  ! zonal wind
-  REAL(kind=8) ::  um(NPTS)  ! meridional wind
-  REAL(kind=8) ::  uv(NPTS)  ! vertical wind
+  REAL(kind=8) ::  south(NPTS)  ! zonal wind
+  REAL(kind=8) ::  east(NPTS)  ! meridional wind
+  REAL(kind=8) ::  upward(NPTS)  ! vertical wind
 
   REAL(kind=8) ::  TN(NPTS) , O(NPTS) , O2(NPTS) , N2(NPTS) , GLAt(NPTS) , &
                    PZ(NPTS) , GLOnd(NPTS)
@@ -1745,36 +1768,36 @@ do mp = 1 , nmp
 
           ! zonal wind on the eight surrounding points......
 
-              uzu11 = VY(ihu,ilat1,ilon1)
-              uzl11 = VY(ihl,ilat1,ilon1)
-              uzu12 = VY(ihu,ilat1,ilon2)
-              uzl12 = VY(ihl,ilat1,ilon2)
-              uzu21 = VY(ihu,ilat2,ilon1)
-              uzl21 = VY(ihl,ilat2,ilon1)
-              uzu22 = VY(ihu,ilat2,ilon2)
-              uzl22 = VY(ihl,ilat2,ilon2)
+              southu11 = V_South(ihu,ilat1,ilon1)
+              southl11 = V_South(ihl,ilat1,ilon1)
+              southu12 = V_South(ihu,ilat1,ilon2)
+              southl12 = V_South(ihl,ilat1,ilon2)
+              southu21 = V_South(ihu,ilat2,ilon1)
+              southl21 = V_South(ihl,ilat2,ilon1)
+              southu22 = V_South(ihu,ilat2,ilon2)
+              southl22 = V_South(ihl,ilat2,ilon2)
 
           ! meridional wind on the eight surrounding points......
 
-              umu11 = VX(ihu,ilat1,ilon1)
-              uml11 = VX(ihl,ilat1,ilon1)
-              umu12 = VX(ihu,ilat1,ilon2)
-              uml12 = VX(ihl,ilat1,ilon2)
-              umu21 = VX(ihu,ilat2,ilon1)
-              uml21 = VX(ihl,ilat2,ilon1)
-              umu22 = VX(ihu,ilat2,ilon2)
-              uml22 = VX(ihl,ilat2,ilon2)
+              eastu11 = V_East (ihu,ilat1,ilon1)
+              eastl11 = V_East (ihl,ilat1,ilon1)
+              eastu12 = V_East (ihu,ilat1,ilon2)
+              eastl12 = V_East (ihl,ilat1,ilon2)
+              eastu21 = V_East (ihu,ilat2,ilon1)
+              eastl21 = V_East (ihl,ilat2,ilon1)
+              eastu22 = V_East (ihu,ilat2,ilon2)
+              eastl22 = V_East (ihl,ilat2,ilon2)
 
           ! vertical wind on the eight surrounding points......
 
-              uvu11 = WVZ(ihu,ilat1,ilon1)
-              uvl11 = WVZ(ihl,ilat1,ilon1)
-              uvu12 = WVZ(ihu,ilat1,ilon2)
-              uvl12 = WVZ(ihl,ilat1,ilon2)
-              uvu21 = WVZ(ihu,ilat2,ilon1)
-              uvl21 = WVZ(ihl,ilat2,ilon1)
-              uvu22 = WVZ(ihu,ilat2,ilon2)
-              uvl22 = WVZ(ihl,ilat2,ilon2)
+              upwardu11 = V_Upward(ihu,ilat1,ilon1)
+              upwardl11 = V_Upward(ihl,ilat1,ilon1)
+              upwardu12 = V_Upward(ihu,ilat1,ilon2)
+              upwardl12 = V_Upward(ihl,ilat1,ilon2)
+              upwardu21 = V_Upward(ihu,ilat2,ilon1)
+              upwardl21 = V_Upward(ihl,ilat2,ilon1)
+              upwardu22 = V_Upward(ihu,ilat2,ilon2)
+              upwardl22 = V_Upward(ihl,ilat2,ilon2)
 
           ! atomic oxygen density on the eight surrounding points......
 
@@ -1864,42 +1887,42 @@ do mp = 1 , nmp
 
           IF ( fach > 1. ) THEN
                   tn11 = tnu11
-                  uz11 = uzu11
-                  um11 = umu11
-                  uv11 = 0.
+                  south11 = southu11
+                  east11 = eastu11
+                  upward11 = 0.
                   tn12 = tnu12
-                  uz12 = uzu12
-                  um12 = umu12
-                  uv12 = 0.
+                  south12 = southu12
+                  east12 = eastu12
+                  upward12 = 0.
                   tn21 = tnu21
-                  uz21 = uzu21
-                  um21 = umu21
-                  uv21 = 0.
+                  south21 = southu21
+                  east21 = eastu21
+                  upward21 = 0.
                   tn22 = tnu22
-                  uz22 = uzu22
-                  um22 = umu22
-                  uv22 = 0.
+                  south22 = southu22
+                  east22 = eastu22
+                  upward22 = 0.
 !                 te11 = teu11+pz(i)-pzh(ihu)
 !                 te12 = teu12+pz(i)-pzh(ihu)
 !                 te21 = teu21+pz(i)-pzh(ihu)
 !                 te22 = teu22+pz(i)-pzh(ihu)
           ELSE
                   tn11 = ((tnu11-tnl11)*fach) + tnl11
-                  uz11 = ((uzu11-uzl11)*fach) + uzl11
-                  um11 = ((umu11-uml11)*fach) + uml11
-                  uv11 = ((uvu11-uvl11)*fach) + uvl11
+                  south11 = ((southu11-southl11)*fach) + southl11
+                  east11 = ((eastu11-eastl11)*fach) + eastl11
+                  upward11 = ((upwardu11-upwardl11)*fach) + upwardl11
                   tn12 = ((tnu12-tnl12)*fach) + tnl12
-                  uz12 = ((uzu12-uzl12)*fach) + uzl12
-                  um12 = ((umu12-uml12)*fach) + uml12
-                  uv12 = ((uvu12-uvl12)*fach) + uvl12
+                  south12 = ((southu12-southl12)*fach) + southl12
+                  east12 = ((eastu12-eastl12)*fach) + eastl12
+                  upward12 = ((upwardu12-upwardl12)*fach) + upwardl12
                   tn21 = ((tnu21-tnl21)*fach) + tnl21
-                  uz21 = ((uzu21-uzl21)*fach) + uzl21
-                  um21 = ((umu21-uml21)*fach) + uml21
-                  uv21 = ((uvu21-uvl21)*fach) + uvl21
+                  south21 = ((southu21-southl21)*fach) + southl21
+                  east21 = ((eastu21-eastl21)*fach) + eastl21
+                  upward21 = ((upwardu21-upwardl21)*fach) + upwardl21
                   tn22 = ((tnu22-tnl22)*fach) + tnl22
-                  uz22 = ((uzu22-uzl22)*fach) + uzl22
-                  um22 = ((umu22-uml22)*fach) + uml22
-                  uv22 = ((uvu22-uvl22)*fach) + uvl22
+                  south22 = ((southu22-southl22)*fach) + southl22
+                  east22 = ((eastu22-eastl22)*fach) + eastl22
+                  upward22 = ((upwardu22-upwardl22)*fach) + upwardl22
 !                 te11 = ((teu11-tel11)*fach) + tel11
 !                 te12 = ((teu12-tel12)*fach) + tel12
 !                 te21 = ((teu21-tel21)*fach) + tel21
@@ -2095,12 +2118,12 @@ do mp = 1 , nmp
               tn1 = ((tn12-tn11)*faclon) + tn11
 !             te2 = ((te22-te21)*faclon) + te21
 !             te1 = ((te12-te11)*faclon) + te11
-              uz2 = ((uz22-uz21)*faclon) + uz21
-              uz1 = ((uz12-uz11)*faclon) + uz11
-              um2 = ((um22-um21)*faclon) + um21
-              um1 = ((um12-um11)*faclon) + um11
-              uv2 = ((uv22-uv21)*faclon) + uv21
-              uv1 = ((uv12-uv11)*faclon) + uv11
+              south2 = ((south22-south21)*faclon) + south21
+              south1 = ((south12-south11)*faclon) + south11
+              east2 = ((east22-east21)*faclon) + east21
+              east1 = ((east12-east11)*faclon) + east11
+              upward2 = ((upward22-upward21)*faclon) + upward21
+              upward1 = ((upward12-upward11)*faclon) + upward11
               do2 = ((o22-o21)*faclon) + o21
               do1 = ((o12-o11)*faclon) + o11
               doo2 = ((oo22-oo21)*faclon) + oo21
@@ -2133,9 +2156,9 @@ do mp = 1 , nmp
               ! write(6,*) 'TE_DUM ',i,mp,lp,te_dum(i)
               !   te_dum(i) = 5000.
               !endif
-              uz(i) = ((uz2-uz1)*faclat) + uz1
-              um(i) = ((um2-um1)*faclat) + um1
-              uv(i) = ((uv2-uv1)*faclat) + uv1
+              south(i) = ((south2-south1)*faclat) + south1
+              east(i) = ((east2-east1)*faclat) + east1
+              upward(i) = ((upward2-upward1)*faclat) + upward1
               O(i) = ((do2-do1)*faclat) + do1
               if(o(i) < small_number) o(i) = small_number
               O2(i) = ((doo2-doo1)*faclat) + doo1
@@ -2180,9 +2203,9 @@ do mp = 1 , nmp
                  !N2D_plasma_input_3d(i,mp) = N2D(i) ! not used lrm20121115
               endif
 
-              um_plasma_input_3d(i,mp) = um(i)
-              uz_plasma_input_3d(i,mp) = uz(i)
-              uv_plasma_input_3d(i,mp) = uv(i)
+              east_plasma_input_3d(i,mp) = east(i)
+              south_plasma_input_3d(i,mp) = south(i)
+              upward_plasma_input_3d(i,mp) = upward(i)
 !             te_plasma_input_3d(i,mp) = te_dum(i)
 
           enddo
