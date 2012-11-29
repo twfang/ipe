@@ -12,9 +12,11 @@ cp ../SMSnamelist        .
 cp ../IPE.inp.lahey      IPE.inp
 cp ../wei96.cofcnts      .
 cp ../stup_ut_rec        .
+cp ../qsubipeJet.lahey   .
 ln -s /pan2/projects/fim-njet/jacques/IPEdata/* .
 
-set compute_tasks = 1
+# Need at least 2 compute tasks to provide enough memory.
+set compute_tasks = 2
 # Make rundir a full path for runscript
 set rundir = $cwd
 
