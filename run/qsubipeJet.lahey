@@ -1,5 +1,6 @@
 #!/bin/csh
 #
+set name = ipe_L
 set  rundir = "ipe_L_${$}"
 mkdir $rundir
 echo Created $rundir
@@ -21,16 +22,19 @@ cat << EOF >! runscript
 #!/bin/csh
   cd $rundir
   pwd
-  module switch intel lahey
-  module list
+  module purge
+  module load lahey
   limit
   set par = "parallel"
   set par = "serial"
   if (\$par == 'parallel') then
-    set cmd = "time mpirun -np $compute_tasks ./ipe_v18.lf95.exe"
+    module load mvapich2
+    module list
+    set cmd = "time mpiexec -np $compute_tasks ./ipe_v18.lf95.exe"
   else
     set cmd = "time ./ipe_v18.lf95.exe"
   endif
+  module list
   echo "running \$cmd" > output
   (\$cmd) >> output
 
@@ -46,12 +50,12 @@ EOF
 chmod 755 ./runscript
 
 set queue_time=00:30:00
-qsub -N ipe_L \
+qsub -N $name \
      -A acb-gpu \
-     -r y \
-     -pe tgpu 1 \
-     -cwd \
-     -l h_rt=$queue_time \
+     -q batch \
+     -l partition=tgpu \
+     -l procs=$compute_tasks \
+     -l walltime=$queue_time \
      ./runscript || echo "qsub failed" && exit 1
 
 exit 0

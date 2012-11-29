@@ -29,17 +29,13 @@ cat << EOF >! runscript
 #!/bin/csh
   cd $rundir
   pwd
+  module list
   limit
-  module purge
-  module load intel
-  cat /proc/cpuinfo
   if ($par == 'parallel') then
-    module load mvapich2
-    set cmd = "time mpiexec -np $compute_tasks ./ipe_v18.ifort.exe"
+    set cmd = "time mpirun -np $compute_tasks ./ipe_v18.ifort.exe"
   else
     set cmd = "time ./ipe_v18.ifort.exe"
   endif
-  module list
   echo "running \$cmd" > output
   (\$cmd) >> output
 
@@ -53,14 +49,7 @@ exit 0
 EOF
 
 chmod 755 ./runscript
-set queue_time=00:30:00
 
-qsub -N $name \
-     -A acb-gpu \
-     -q batch \
-     -l partition=tgpu \
-     -l procs=$compute_tasks \
-     -l walltime=$queue_time \
-     ./runscript || echo "qsub failed" && exit 1
+qsub -I -X -A acb-gpu -q batch -l partition=tgpu,procs=6,walltime=08:00:00
 
 exit 0

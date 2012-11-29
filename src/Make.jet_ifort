@@ -23,7 +23,7 @@ DEBUG1=###-traceback -check all -ftrapuv #####-fpe0
 DEBUG =###-g -pg  $(DEBUG1)
 DEBUG=-g -O0 -ftz -traceback -check bounds -fpe0
 DEBUG=
-OPT_FLAG=-O3
+OPT_FLAG=-O3 -fp-model precise
 #OPT_FLAG=
 PARALLEL_FLAG=####-openmp
 MEM_FLAG=###########-heap-arrays 10
@@ -87,9 +87,9 @@ endif
 # SMS library location
 ifeq ($(USE_GPTL),yes)
 # If available, use SMS version compiled with auto-profiling flag
-  SMS = /whome/jacquesm/SMS/SMS_r322_intel-11.1-mvapich2-1.4.1F2C4.3
+  SMS = /mnt/pan2/projects/fim-njet/jacques/OldSMS/SMS_r322_intel-12.1.4-mvapich2-1.8.1F2C4.3
 else
-  SMS = /whome/jacquesm/SMS/SMS_r322_intel-11.1-mvapich2-1.4.1F2C4.3
+  SMS = /mnt/pan2/projects/fim-njet/jacques/OldSMS/SMS_r322_intel-12.1.4-mvapich2-1.8.1F2C4.3
 endif
 
 # SMS
