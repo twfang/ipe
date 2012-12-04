@@ -11,17 +11,17 @@ pro ctr_lon_lat $
 ,sw_debug
 
 
-for VarType=3,3 do begin
+for VarType=0,0,5 do begin
 
 print,'VarType=',VarType
-ht_plot =250.;91.;380.;180.;900.;380.;280.;380.00 ;[km]
+ht_plot =350.;95.;130.;250.;91.;380.;180.;900.;380.;280.;380.00 ;[km]
 ;ht_plot =500.;280.;380.00 ;[km]
 ;ht_plot =600.00 ;[km]
 
 
-sw_range=0L
+sw_range=1L
 nano=1.0E-9
-unit=['[m-3]','K','K','[m-3]','m/s'];[nA/m2]'];[nA/m2]'
+unit=['[m-3]','K','K','[m-3]','[m-3]','[m-3]','m/s'];[nA/m2]'];[nA/m2]'
 
  sw_plot_grid=0 ;1:retangular, 2:polar
 ; get n_read_max, ny_max
@@ -53,7 +53,7 @@ plot_zz=fltarr(nx_max,ny_max)
 plot_yy=fltarr(nx_max,ny_max)
 plot_xx=fltarr(nx_max,ny_max)
 
-VarTitle=['Ne','Te','Ti','N(O+)','Vpar_o+']
+VarTitle=['Ne','Te','Ti','O+','NO+','O2+','Vpar_o+']
 ;VarTitle=['Ne','Te','Ti','N(NO+)','Vpar_o+']
 ;VarTitle=['Ne','Te','Ti','N(O2+)','Vpar_o+']
 ;VarTitle=['Ne','Te','Ti','N(N2+)','Vpar_o+']
@@ -70,7 +70,7 @@ for lp=0,NLP-1 do begin
     if ( z_km[i] le ht_plot ) AND ( z_km[i+istep] gt ht_plot ) then begin
 ;print,'NH: mp',mp,' lp',lp,' i',i,' z_km',z_km[i] , ht_plot,XIONN_m3[VarType,i-20:i+20,mp] 
       if ( VarType eq 0 ) then $ 
-        for jth=0,ISPEC-1 do  plot_zz[mp,lp]=plot_zz[mp,lp]+XIONN_m3[jth,i,mp] $
+        for jth=0,ISPEC-1 do  plot_zz[mp,lp]=plot_zz[mp,lp]+XIONN_m3[jth,i,mp]*1.0E-10 $
       else if ( VarType eq 1 ) then $
         plot_zz[mp,lp] = TE_TI_k[3-1,i,mp] $;[K]
       else if ( VarType eq 2 ) then $
@@ -78,6 +78,10 @@ for lp=0,NLP-1 do begin
       else if ( VarType eq 3 ) then $
         plot_zz[mp,lp] = XIONN_m3[1-1,i,mp]*1.0E-10  $
       else if ( VarType eq 4 ) then $
+        plot_zz[mp,lp] = XIONN_m3[4,i,mp]*1.0E-10  $ ;no+
+      else if ( VarType eq 5 ) then $
+        plot_zz[mp,lp] = XIONN_m3[5,i,mp]*1.0E-10  $ ;o2+
+      else if ( VarType eq 6 ) then $
         plot_zz[mp,lp] = XIONV_ms1[1-1,i,mp] ;V//o+[m/s]
  
        if ( sw_frame eq 0 ) then begin ;magnetic
@@ -103,7 +107,7 @@ for lp=0,NLP-1 do begin
 
 ;       plot_zz[mp,lps] = XIONN_m3[VarType,i,mp] ;[m-3]  je_3d[VarType,i,mp]/nano
       if ( VarType eq 0 ) then $ 
-        for jth=0,ISPEC-1 do  plot_zz[mp,lps]=plot_zz[mp,lps]+XIONN_m3[jth,i,mp] $
+        for jth=0,ISPEC-1 do  plot_zz[mp,lps]=plot_zz[mp,lps]+XIONN_m3[jth,i,mp]*1.0E-10 $
       else if ( VarType eq 1 ) then $
         plot_zz[mp,lps] = TE_TI_k[3-1,i,mp] $;[K]
       else if ( VarType eq 2 ) then $
@@ -111,6 +115,10 @@ for lp=0,NLP-1 do begin
       else if ( VarType eq 3 ) then $
         plot_zz[mp,lps] = XIONN_m3[1-1,i,mp]*1.0E-10 $
       else if ( VarType eq 4 ) then $
+        plot_zz[mp,lps] = XIONN_m3[4,i,mp]*1.0E-10 $
+      else if ( VarType eq 5 ) then $
+        plot_zz[mp,lps] = XIONN_m3[5,i,mp]*1.0E-10 $
+      else if ( VarType eq 6 ) then $
         plot_zz[mp,lps] = XIONV_ms1[1-1,i,mp] ;V//o+[m/s]
 
        if ( sw_frame eq 0 ) then begin ;magnetic
@@ -135,10 +143,11 @@ endfor ;mp=0,NMP-1 do begin
 if ( sw_range eq 1 ) then begin
       if ( VarType eq 0 ) then begin 
 ;f107-180
-        zmin=5.e+11
+        zmin=1.
 ;        zmin=1.e+10
 ;        zmax=7.5e+11
-        zmax=7.e+12
+;        zmax=2.5e+1 ;E-region
+        zmax=2.5e+2 ;F-region
 ;        zmax=5.58e+12
 ;92km
 ;        zmax=2.00e+11
@@ -147,14 +156,14 @@ if ( sw_range eq 1 ) then begin
 ;        zmin=1.e+10
 ;        zmax=1.77e+12
       endif else if ( VarType ge 1 ) AND (VarType le 2 ) then begin 
-        zmin=500.
-        zmax=3000.
-      endif else if ( VarType eq 3 ) then begin 
+        zmin=440.
+        zmax=640.
+      endif else if ( VarType ge 3 ) AND ( VarType le 5 ) then begin 
 ;        zmin=0.
 ;        zmax=8.
-        zmin=5.e+11
-        zmax=7.e+12
-      endif else if ( VarType eq 4 ) then begin 
+        zmin=1.
+        zmax=2.5e+1
+      endif else if ( VarType eq 6 ) then begin 
         zmin=-200.
         zmax=+200.
       endif

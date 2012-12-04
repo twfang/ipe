@@ -4,7 +4,7 @@ pro read_grid,LUN,JMIN_IN,JMAX_IS,Z_km,mlat_deg,sw_debug,glat_deg,glon_deg,title
 
 ;20121025: .save did not save too much time as compared to the
 ;original binary file.....
-sw_save_grid=1
+sw_save_grid=0
 filename_grid_sav='grd/plasma_grid.'+title_res+'.sav'
 
 if ( sw_save_grid eq 2 ) then  begin
@@ -58,7 +58,7 @@ if sw_debug eq 1 then print,lpj,'JMIN_IN(1)',JMIN_IN[lpj]
     readu, LUN[1], JMAX_IS ;(1:NLP_all)
 if sw_debug eq 1 then print,'JMAX_IS(1)',JMAX_IS[lpj],JMIN_IN[lpj+1]
 
-lpj=129L ;low
+;lpj=129L ;low
 ;lpj=34L ;dyn
 ipts=JMIN_IN(lpj)-1
 

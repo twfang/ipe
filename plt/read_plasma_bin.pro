@@ -49,7 +49,7 @@ if ( sw_dif eq 0 ) then begin
    if ( sw_lun[10] eq 1 ) then begin
      jth=4                        ;no+
      readu, LUN[10], dum
-print, 'debug dum =',dum[60,0]
+;dbg print, 'debug dum =',dum[60,0]
      XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
      if sw_debug eq 1 then  print, 'NO+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
    endif ;( sw_lun

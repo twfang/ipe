@@ -5,7 +5,7 @@ pro add_colorbar $
 ,charsize,format
 ;print, "!p.multi", !p.multi
 
-print,charsize,format
+;dbg  print,charsize,format
 
 ;if ( iwindow eq 0 ) then  charsize=3.25 else $
 ;if ( iwindow eq 1 ) then  charsize=3.4 else $
