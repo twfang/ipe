@@ -13,6 +13,9 @@ real          :: valuemin4, valuemax4 ! For SMS (4-byte quantities)
 character(64) :: name                 ! region name
 character(80) :: string
 
+! Print timing results to file named timing.mype
+ret = gptlpr (mype)
+
 if(parallelBuild) then
   print*
   MAXlpHalo = MaxLpHaloUsed
@@ -43,8 +46,7 @@ do n=0,nregions-1
   print"(1x,A20,F13.3,F15.3)", trim (name), valuemin4, valuemax4
 end do
 
-! Print timing results to file named timing.0
-ret = gptlpr (0)
+!ret = gptlprint_memusage ('Memory usage:')
 
 print*,'IPE completed successfully'
 

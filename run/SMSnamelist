@@ -1,7 +1,11 @@
-!------------------------------------------------------------------------------
+!---------------------------------------------------------------------------
 ! SMSnamelist is an optional file used to control SMS run-time options.  If 
 ! it is not present SMS will use default values for all options.  
-!------------------------------------------------------------------------------
+!---------------------------------------------------------------------------
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! NOTE:  The comments below were moved outside of the &SMSnamelist because 
+!!        the Lahey lf95 compiler did not like it.  
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !---------------------------------------------------------------------------
    ! When compare_var_on==.true., execute two copies of the SMS program.  The 
    ! first copy uses compare_var_ntasks_1 tasks.  The second copy uses 
@@ -10,12 +14,52 @@
    ! cross-checked whenever a COMPARE_VAR directive is encountered.  If a 
    ! difference is found, the program will exit with an error message.  
    !---------------------------------------------------------------------------
+   !---------------------------------------------------------------------------
+   ! Set exact_parallel_sum to .true. to use bitwise-exact serial summation in 
+   ! place of faster parallel reduction sums (MPI_REDUCE) whose results will 
+   ! usually vary slightly with number of tasks due to differing order of 
+   ! floating-point operations.  This setting only applies to sums implemented 
+   ! via SMS REDUCE directives that use "BEGIN-END" syntax.  This form of the 
+   ! SMS REDUCE directive is only needed when testing for bit-wise-exact match 
+   ! of runs made on differing numbers of tasks in cases where the result of a 
+   ! parallel sum feeds back into model state.  It is not needed when results 
+   ! of a parallel sum are only used for diagnotic purposes.  
+   !---------------------------------------------------------------------------
+   !---------------------------------------------------------------------------
+   ! When check_halo_on==.true., enable CHECK_HALO directives.  These 
+   ! directives check halo points and exit with an error message if any are 
+   ! inconsistent.  
+   !---------------------------------------------------------------------------
+   !---------------------------------------------------------------------------
+   ! When load_balance_on==.true. for dim=1 and/or 2 then load_balance_size(dim)
+   ! and load_balance_method(dim) must be also be set. In addition the file
+   ! load_balance_groups1 and/or load_balance_groups2 must be present and have
+   ! load_balance_size(dim) integer entries to be read with the "*" format. 
+   ! Each entry is the final value of a group of the indexes in the dim dimension.
+   ! The initial value is the previous entry +1 where the previous entry of the 
+   ! first entry is taken to be 0. load_balance_groups1(load_balance_size(1))
+   ! must be equal to the number of points in the first decomposed dimension, 
+   ! and the same for load_balance_groups2. 
+   ! load_balance_method(dim) can be 1 or 2
+   !    1 => Factor the load balance group for decomposition
+   !    2 => Use the factors of the full decomposed dimension
+   !---------------------------------------------------------------------------
+   !---------------------------------------------------------------------------
+   ! When set_process_layout==.true. process_layout must also be set.
+   ! process_layout is a 2D array containing the 2D layout to be used.
+   ! process_layout(1) x process_layout(2) must equal to the product of both
+   ! decomposed dimensions.
+   !---------------------------------------------------------------------------
+   !---------------------------------------------------------------------------
  &SMSnamelist
-   compare_var_on = .false.,
-   compare_var_ntasks_1 = 1,
-   compare_var_ntasks_2 = 10
+   compare_var_on       = .false.
+   compare_var_ntasks_1 = 0
+   compare_var_ntasks_2 = 0
+   exact_parallel_sum   = .false.
+   check_halo_on        = .false.
+   load_balance_on      = .true.,.false.
+   load_balance_size    = 40,0
+   load_balance_method  = 1,1
+   set_process_layout   =.true.
+   process_layout       = 1,80
 /
-!------------------------------------------------------------------------------
-! See the SMSnamelist file in the SMS source for additional options not 
-! normally used by NIM.  
-!------------------------------------------------------------------------------

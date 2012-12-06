@@ -8,12 +8,14 @@ C.... Cleaned up and commented by P. Richards in April 2000
      >             DTMIN,    !.. Minimum time step
      >            IHEPNP,    !.. He+ - N+ switch
      >             EFLAG)    !.. OUTPUT: Error flag array
+      USE module_input_parameters,ONLY: mype
       USE FIELD_LINE_GRID    !.. FLDIM JMIN JMAX FLDIM Z BM GR SL GL SZA
       USE SOLVARR        !... DELTA RHS WORK S, Variables for solver
       USE ION_DEN_VEL    !.. O+ H+ He+ N+ NO+ O2+ N2+ O+(2D) O+(2P)
       !..EUVION PEXCIT PEPION OTHPR1 OTHPR2 SUMION SUMEXC PAUION PAUEXC NPLSPRD
       USE PRODUCTION !.. EUV, photoelectron, and auroral production
       IMPLICIT NONE
+      include "gptl.inc"
       INTEGER NION,IHEPNP,J,ITER,IRHS,IBW,I
       INTEGER EFLAG(11,11),NFLAG                  !.. solution procedure error flags
       INTEGER JBNN,JBNS,JEQ,JC                    !.. boundary indices
@@ -26,6 +28,7 @@ C.... Cleaned up and commented by P. Richards in April 2000
       DOUBLE PRECISION ZLBHE,ZLBNP         !.. He+ & N+ lower boundary
       DOUBLE PRECISION XMAS,XMASS(9)       !.. Ion mass
       DOUBLE PRECISION NMORIG(2,FLDIM)     !.. Original density at previous time step
+      integer ret
       DATA XMASS/23.4164D-24,26.7616D-24,6.6904D-24,6*0.0/
       DATA NION/1/      ! # species: do not change
 
@@ -73,19 +76,23 @@ C.... Cleaned up and commented by P. Richards in April 2000
 !dbg20110815
       !.. Use local equilibrium for He+ densities if apex height < ZLBHE
       IF(IHEPNP.EQ.9.AND.Z(JEQ).LE.ZLBHE) THEN
+        ret = gptlstart ('XION_1')
         DO J=JMIN,JMAX
           CALL MCHEMQ(J,DUM,N,TI,FLDIM)
           XIONN(3,J)=DUM(1)      !.. He+
         ENDDO
+        ret = gptlstop  ('XION_1')
         RETURN
       ENDIF
 
       !.. Use local equilibrium for N+ densities if apex height < ZLBNP
       IF(IHEPNP.EQ.11.AND.Z(JEQ).LE.ZLBNP) THEN
+        ret = gptlstart ('XION_2')
         DO J=JMIN,JMAX
           CALL NCHEMQ(J,DUM,N,TI,FLDIM)
           XIONN(4,J)=DUM(1)      !.. N+
         ENDDO
+        ret = gptlstop  ('XION_2')
         RETURN
       ENDIF 
 !dbg20110815
@@ -93,8 +100,10 @@ C.... Cleaned up and commented by P. Richards in April 2000
 
       !... calculate average values for quantities that don't
       !... change in Newton iteration
+      ret = gptlstart ('XION_3')
       CALL DENAVE(JMAX-1,TI)
       CALL AVDEN2(JMAX-1,TI,IHEPNP)
+      ret = gptlstop  ('XION_3')
 
 C- OUTER LOOP Return here on Non-Convergence with reduced time step
   10  CONTINUE
@@ -117,6 +126,7 @@ C- OUTER LOOP Return here on Non-Convergence with reduced time step
         !************* Main Newton Solver Iteration Loop begins *****************
         DO 220 ITER=1,20
           !.. set boundary conditions on density
+          ret = gptlstart ('XION_4')
           DO J=JMIN,JMAX
             IF(J.LE.JBNN.OR.J.GE.JBNS) THEN
               IF(IABS(IHEPNP).EQ.9) CALL 
@@ -126,8 +136,10 @@ C- OUTER LOOP Return here on Non-Convergence with reduced time step
               N(1,J)=DUM(1)
             ENDIF
           ENDDO
+          ret = gptlstop  ('XION_4')
 
           !.. call MDFIJ to get unperturbed value to calculate dFij/dn
+          ret = gptlstart ('XION_5')
           DO J=2,MIT-1
             KR=NION*(J-2)
             JC=J+JBNN-1
@@ -136,16 +148,22 @@ C- OUTER LOOP Return here on Non-Convergence with reduced time step
               RHS(KR+IRHS)=F(IRHS)
             ENDDO
           ENDDO
+          ret = gptlstop  ('XION_5')
           !.. Now set up the Jacobian Matrix dFij/dn
+!         print*,'XION_6',mype,iter
+          ret = gptlstart ('XION_6')
           CALL HMATRX(FLDIM,S,RHS,IEQ,DT,N,TI,JBNN,JBNS,MIT,IHEPNP,
      >      XMAS,NION,NMSAVE)
+          ret = gptlstop  ('XION_6')
 
           !.. invert the jacobian matriX *s* in the inversion routine *bdslv*.
           !.. the increments are stored in array delta in this order
           !.. X(1...n,j),X(1...n,j+1),X(1...n,j+2),....X(1...n,jmaX-1)
           IBW=2*NION-1
+          ret = gptlstart ('XION_7')
           CALL BDSLV(IEQ,IBW,S,0,RHS,DELTA,WORK,NFLAG)
-     
+          ret = gptlstop  ('XION_7')
+
           !.. Check for problems in band solver
           EFLAG(3,2)=0     
           EFLAG(4,2)=0     
@@ -158,6 +176,7 @@ C- OUTER LOOP Return here on Non-Convergence with reduced time step
             RETURN
           ENDIF
 
+          ret = gptlstart ('XION_8')
           IDIV=0             !... convergence indicator
           DCR=1.0            !... convergence indicator
 
@@ -187,6 +206,7 @@ C- OUTER LOOP Return here on Non-Convergence with reduced time step
               N(I,JC)=N(I,JC)-DINC*ADCR
               IF(ABS(DINC/N(I,JC)).GT.1E-3)  IDIV=IDIV+1
  42       CONTINUE
+          ret = gptlstop  ('XION_8')
 
           !.. test to see if convergence has occured.
           IF(IDIV.EQ.0)  GO TO 230
