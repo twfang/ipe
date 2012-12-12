@@ -17,7 +17,7 @@
 #(2) machine=$(machine)_$(COMPILER)
 include  Make.$(machine)
 TEST=v18
-PACKAGE=../bin/ipe_${TEST}.$(COMPILER).exe
+PACKAGE=../bin/ipe_${TEST}.$(COMPILER)$(PAR).exe
 # DR0: modules
 DR0=${HOME_dev}/main
 FFLAG0=${FFLAGS90} ${GPTL_CPPFLAGS} ${GPTL_LDFLAGS}
@@ -292,17 +292,16 @@ $(FINAL_OBJS): $(HEADS) Makefile
 ### useful commands ###
 
 cln:
-	$(RM) $(PACKAGE) $(FINAL_OBJS)
+	$(RM) $(FINAL_OBJS)
 	$(RM) ${DR0}/*.mod ${DR0}/*.tmp* ${DR0}/*.f ${DR0}/*~
-	$(RM) ${DR0}/*_sms.f90 ${DR0}/*ppptmp*
+	$(RM) ${DR0}/*_sms.f90 ${DR0}/*ppptmp* ${DR0}/*.1* ${DR0}/*.2*
 	$(RM) ${DR1}/*.mod ${DR2}/*.mod ${DR3}/*.mod ${DR4}/*.mod ${DR6}/*.mod 
 	$(RM) ${DR1}/*.mod ${DR1}/*.tmp* ${DR1}/*.f ${DR1}/*~
-	$(RM) ${DR1}/*_sms.f90 ${DR1}/*ppptmp*
-	$(RM) ${DR3}/*.mod ${DR3}/*.tmp* ${DR3}/*.f ${DR3}/*~
-	$(RM) ${DR3}/*_sms.f90 ${DR3}/*ppptmp*
+	$(RM) ${DR1}/*_sms.f90 ${DR1}/*ppptmp* ${DR1}/*.1* ${DR1}/*.2*
+	$(RM) ${DR3}/*.mod ${DR3}/*.tmp* ${DR3}/*.f ${DR3}/*~ ${DR3}/module_decomp.* ${DR3}/module_input_parameters.*
+	$(RM) ${DR3}/*_sms.f90 ${DR3}/*ppptmp* ${DR3}/*.1* ${DR3}/*.2*
 	$(RM) ${DR6}/*.mod ${DR6}/*.tmp* ${DR6}/*~
-	$(RM) ${DR6}/*_sms.f90 ${DR6}/*ppptmp*
-
+	$(RM) ${DR6}/*_sms.f90 ${DR6}/*ppptmp* ${DR6}/*.1* ${DR6}/*.2*
 tar:
 	@echo $(PACKAGE)-$(VER) > .package
 	@$(RM) -r `cat .package`
@@ -320,3 +319,5 @@ prof: run
 
 run: all
 	./$(PACKAGE) < sample-data | less
+
+

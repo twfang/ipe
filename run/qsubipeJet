@@ -2,19 +2,29 @@
 #
 if ( $#argv == 0) then
   set par = "serial"
-# Need at least 2 compute tasks to provide enough memory.
-  set compute_tasks = 2
+  set compute_tasks = 1
+# Need at least 2 run tasks to provide enough memory.
+  set run_tasks = 2
   set name = ipe_S
 else 
   set par = "parallel"
   set compute_tasks = $1
   set name = ipe_${compute_tasks}
+  set run_tasks = $compute_tasks
+  if ( $compute_tasks < 2) then
+# Need at least 2 run tasks to provide enough memory.
+    set run_tasks = 2
+  endif
 endif
 set  rundir = "${name}_${$}"
 mkdir $rundir
 echo Created $rundir
 cd  $rundir
-cp ../../bin/ipe_v18.ifort.exe .
+if ( $par == 'parallel' ) then
+  cp ../../bin/ipe_v18.ifortsms.exe .
+else
+  cp ../../bin/ipe_v18.ifort.exe .
+endif
 cp ../coef*                    .
 cp ../GPTLnamelist             .
 cp ../SMSnamelist              .
@@ -38,7 +48,7 @@ cat << EOF >! runscript
   cat /proc/cpuinfo
   if ($par == 'parallel') then
     module load mvapich2
-    set cmd = "time mpiexec -np $compute_tasks ./ipe_v18.ifort.exe"
+    set cmd = "time mpiexec -np $compute_tasks ./ipe_v18.ifortsms.exe"
   else
     set cmd = "time ./ipe_v18.ifort.exe"
   endif
@@ -64,7 +74,7 @@ qsub -N $name \
      -l partition=sjet \
 #    -l partition=tgpu \
 #    -l nodes=1:ppn=2 \
-     -l procs=$compute_tasks \
+     -l procs=$run_tasks \
      -l walltime=$queue_time \
      ./runscript || echo "qsub failed" && exit 1
 
