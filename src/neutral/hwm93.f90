@@ -234,7 +234,7 @@
 !-----------------------------------------------------------------------
       subroutine glbw5e(yrd,sec,lat,long,stl,f107a,f107,ap,pb,pc,ww) 
       real lat,long 
-      dimension wb(2,15),wc(2,15),pb(1),pc(1),ww(2) 
+      dimension wb(2,15),wc(2,15),pb(200),pc(200),ww(2) 
       dimension ap(2) 
       common/csw/sw(25),isw,swc(25) 
       common/hwmc/wbt(2),wct(2) 
@@ -756,7 +756,7 @@
 !-----------------------------------------------------------------------
       subroutine glbw5m(yrd,sec,lat,long,stl,f107a,f107,ap,pb,pc,ww) 
       real lat,long 
-      dimension wb(2,15),wc(2,15),pb(1),pc(1),ww(2) 
+      dimension wb(2,15),wc(2,15),pb(150),pc(150),ww(2) 
       dimension ap(2) 
       common/csw/sw(25),isw,swc(25) 
       common/hwmc/wbt(2),wct(2) 
@@ -1042,7 +1042,7 @@
 !-----------------------------------------------------------------------
       subroutine glbw5s(iyd,lat,long,stl,pb,pc,ww) 
       real lat,long 
-      dimension wb(2,15),wc(2,15),pb(1),pc(1),ww(2) 
+      dimension wb(2,15),wc(2,15),pb(100),pc(100),ww(2) 
       common/csw/sw(25),isw,swc(25) 
       common/hwmc/wbt(2),wct(2) 
       common/vpoly2/xvl,lvl,mvl,clat,slat,bt(20,20),bp(20,20) 

@@ -87,9 +87,9 @@ endif
 # SMS library location
 ifeq ($(USE_GPTL),yes)
 # If available, use SMS version compiled with auto-profiling flag
-  SMS = /whome/hpc/SMS/SMS_r338_sjet_intel-12.1-mvapich2-1.8
+  SMS = /whome/hpc/SMS/SMS_r342_sjet_intel-12.1-mvapich2-1.8
 else
-  SMS = /whome/hpc/SMS/SMS_r338_sjet_intel-12.1-mvapich2-1.8
+  SMS = /whome/hpc/SMS/SMS_r342_sjet_intel-12.1-mvapich2-1.8
 endif
 
 # SMS

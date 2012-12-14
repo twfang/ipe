@@ -962,7 +962,7 @@
 !       calculate g(l) function                                         
 !       upper thermosphere parameters                                   
       real lat, long 
-      dimension p(1),sv(25),ap(1) 
+      dimension p(150),sv(25),ap(7) 
       common/ttest/tinf,gb,rout,t(15) 
       common/csw/sw(25),isw,swc(25) 
       common/lpoly/plg(9,4),ctloc,stloc,c2tloc,s2tloc,c3tloc,s3tloc,    &
@@ -1216,7 +1216,7 @@
       common/lpoly/plg(9,4),ctloc,stloc,c2tloc,s2tloc,c3tloc,s3tloc,    &
      & iyr,day,df,dfa,apd,apdf,apt(4),long                              
       common/csw/sw(25),isw,swc(25) 
-      dimension p(1),t(14) 
+      dimension p(100),t(14) 
       save 
       data dr/1.72142e-2/,dgtr/1.74533e-2/,pset/2./ 
       data dayl/-1./,p32,p18,p14,p39/4*-1000./ 

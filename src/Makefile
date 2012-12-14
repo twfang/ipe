@@ -191,7 +191,7 @@ ifeq ($(PAR),sms)
 	which mpif90
 	$(FCparallel) $(LDFLAGS) $(FINAL_OBJS) -o $@ $(LDLIBS) $(GPTL_LDFLAGS) $(SMS_LDFLAGS)
 else
-	$(FC)         $(LDFLAGS) $(FINAL_OBJS) -o $@ $(LDLIBS) $(GPTL_LDFLAGS) $(SMS_LDFLAGS)
+	$(FC)         $(LDFLAGS) $(FINAL_OBJS) -o $@ $(LDLIBS) $(GPTL_LDFLAGS)
 endif
 
 $(FINAL_OBJS): $(HEADS) Makefile
@@ -294,14 +294,14 @@ $(FINAL_OBJS): $(HEADS) Makefile
 cln:
 	$(RM) $(FINAL_OBJS)
 	$(RM) ${DR0}/*.mod ${DR0}/*.tmp* ${DR0}/*.f ${DR0}/*~
-	$(RM) ${DR0}/*_sms.f90 ${DR0}/*ppptmp* ${DR0}/*.1* ${DR0}/*.2*
+	$(RM) ${DR0}/*_sms.f90 ${DR0}/*ppptmp*
 	$(RM) ${DR1}/*.mod ${DR2}/*.mod ${DR3}/*.mod ${DR4}/*.mod ${DR6}/*.mod 
 	$(RM) ${DR1}/*.mod ${DR1}/*.tmp* ${DR1}/*.f ${DR1}/*~
-	$(RM) ${DR1}/*_sms.f90 ${DR1}/*ppptmp* ${DR1}/*.1* ${DR1}/*.2*
+	$(RM) ${DR1}/*_sms.f90 ${DR1}/*ppptmp*
 	$(RM) ${DR3}/*.mod ${DR3}/*.tmp* ${DR3}/*.f ${DR3}/*~ ${DR3}/module_decomp.* ${DR3}/module_input_parameters.*
-	$(RM) ${DR3}/*_sms.f90 ${DR3}/*ppptmp* ${DR3}/*.1* ${DR3}/*.2*
+	$(RM) ${DR3}/*_sms.f90 ${DR3}/*ppptmp*
 	$(RM) ${DR6}/*.mod ${DR6}/*.tmp* ${DR6}/*~
-	$(RM) ${DR6}/*_sms.f90 ${DR6}/*ppptmp* ${DR6}/*.1* ${DR6}/*.2*
+	$(RM) ${DR6}/*_sms.f90 ${DR6}/*ppptmp*
 tar:
 	@echo $(PACKAGE)-$(VER) > .package
 	@$(RM) -r `cat .package`

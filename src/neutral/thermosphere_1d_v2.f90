@@ -7,7 +7,6 @@
                                vn_ms1_dum)
 
       USE module_precision
-      USE module_input_parameters,ONLY: sw_debug
       USE module_unit_conversion,ONLY: M3_TO_CM3
       implicit none
 
