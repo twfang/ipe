@@ -45,10 +45,16 @@ cat << EOF >! runscript
   limit
   module purge
   module load intel
+#The following setenv commands are to fix the warning:
+# MPI WARNING: Could not allocate an internal buffer in the last 30 seconds
+# on rank 1.  Try increasing MPI_BUFS_PER_PROC and/or MPI_BUFS_PER_HOST.
+# And speed up the initialization.
+  setenv MPI_BUFS_PER_HOST 1024
+  setenv MPI_BUFS_PER_PROC 128
   cat /proc/cpuinfo
   if ($par == 'parallel') then
     module load mpt
-    set cmd = "time mpirun -np $compute_tasks ./ipe_v18.ifortsms.exe"
+    set cmd = "time mpiexec_mpt -np $compute_tasks ./ipe_v18.ifortsms.exe"
   else
     set cmd = "time ./ipe_v18.ifort.exe"
   endif
@@ -66,7 +72,7 @@ exit 0
 EOF
 
 chmod 755 ./runscript
-set queue_time=00:30:00
+set queue_time=00:20:00
 
 qsub -N $name \
      -A nim \
@@ -79,5 +85,3 @@ qsub -N $name \
      ./runscript || echo "qsub failed" && exit 1
 
 exit 0
-
-
