@@ -22,7 +22,6 @@ HOME_dev=$(CURDIR)
 DEBUG1=###-traceback -check all -ftrapuv #####-fpe0
 DEBUG =###-g -pg  $(DEBUG1)
 DEBUG=--chk -g --trap --trace --info
-DEBUG=
 OPT_FLAG=-O3
 OPT_FLAG=
 PARALLEL_FLAG=####-openmp
@@ -80,7 +79,7 @@ ifeq ($(USE_GPTL),yes)
     GPTL_LDFLAGS += -L/path/to/papi/lib -lpapi -lpfm
   endif
 else
-  GPTL_LDFLAGS = -L../dummygptl -lgptl -I../dummygptl
+  GPTL_LDFLAGS = -Ldummygptl -lgptl -I../dummygptl
 endif
 
 # SMS library location

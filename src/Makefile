@@ -36,6 +36,9 @@ FFLAG6=${FFLAGS_e}    ${INCLUDE_PATH}${DR0}
 # DR4: main driver
 DR4=${HOME_dev}/main
 FFLAG4=${FFLAGS90} ${INCLUDE_PATH}${DR1} ${INCLUDE_PATH}${DR3} ${INCLUDE_PATH}${DR6} ${GPTL_CPPFLAGS} ${GPTL_LDFLAGS}
+#DR7: dummy gptl
+DR7=${HOME_dev}/dummygptl
+FFLAGS7=
 
 SRC0S	=\
 	${DR0}/module_precision.f90 \
@@ -185,7 +188,7 @@ FINAL_OBJS=\
 	$(OBJ2) \
 	$(OBJ4P)
 
-$(PACKAGE): D0_OBJ  D1_OBJ  D6_OBJ  D3_OBJ  D2_OBJ  D4_OBJ
+$(PACKAGE):  D7_OBJ D0_OBJ D1_OBJ D6_OBJ D3_OBJ D2_OBJ D4_OBJ
 
 ifeq ($(PAR),sms)
 	which mpif90
@@ -288,6 +291,9 @@ $(FINAL_OBJS): $(HEADS) Makefile
 	"PPP_FLAGS1=${PPP_FLAGS1}" \
 	"SMSFLAGS=${SMSFLAGS}" \
 	"PINCLUDES=${PINCLUDES}" 
+ D7_OBJ :
+	cd ${DR7} ; ${MAKE} "FC=${FC}" \
+
 
 ### useful commands ###
 
@@ -302,6 +308,7 @@ cln:
 	$(RM) ${DR3}/*_sms.f90 ${DR3}/*ppptmp*
 	$(RM) ${DR6}/*.mod ${DR6}/*.tmp* ${DR6}/*~
 	$(RM) ${DR6}/*_sms.f90 ${DR6}/*ppptmp*
+	cd ${DR7} ; ${MAKE} clean
 tar:
 	@echo $(PACKAGE)-$(VER) > .package
 	@$(RM) -r `cat .package`
