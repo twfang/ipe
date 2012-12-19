@@ -85,9 +85,9 @@ endif
 # SMS library location
 ifeq ($(USE_GPTL),yes)
 # If available, use SMS version compiled with auto-profiling flag
-  SMS = /scratch2/portfolios/BMC/acb/jacques/SMS/SMSr342lahey
+  SMS = /home/Jacques.Middlecoff/SMS/SMSr342lahey
 else
-  SMS = /scratch2/portfolios/BMC/acb/jacques/SMS/SMSr342lahey
+  SMS = /home/Jacques.Middlecoff/SMS/SMSr342lahey
 endif
 
 # SMS
