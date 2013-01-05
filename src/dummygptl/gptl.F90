@@ -87,3 +87,11 @@ integer function gptlget_memusage (size, rss, share, text, datastack)
   gptlget_memusage = 0
   return
 end function gptlget_memusage
+
+integer function gptlpr_summary (mpicomm)
+  implicit none
+
+  integer, intent(in) :: mpicomm
+  gptlpr_summary = 0
+  return
+end function gptlpr_summary

@@ -16,6 +16,9 @@
 #(1) COMPILER=pgf95, lf648, ifort, or xlf90
 #(2) machine=$(machine)_$(COMPILER)
 include  Make.$(machine)
+ifneq ($(PAR),sms)
+  GPTL_LDFLAGS = -Ldummygptl -lgptl -I../dummygptl
+endif  
 TEST=v18
 PACKAGE=../bin/ipe_${TEST}.$(COMPILER)$(PAR).exe
 # DR0: modules
@@ -154,7 +157,7 @@ SRC6P	=\
 	${DR6}/get_efield90km.f 
 # DR4: main driver
 SRC4P	=\
-	${DR4}/driver_ipe.f90
+	${DR4}/driver_ipe.f90 
 
 #HEADS	= $(PACKAGE).h
 OBJ0S	= $(SRC0S:.f90=.o)

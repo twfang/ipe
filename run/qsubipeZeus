@@ -61,8 +61,8 @@ cat << EOF >! runscript
 # MPI WARNING: Could not allocate an internal buffer in the last 30 seconds
 # on rank 1.  Try increasing MPI_BUFS_PER_PROC and/or MPI_BUFS_PER_HOST.
 # And speed up the initialization.
-  setenv MPI_BUFS_PER_HOST 1024
-  setenv MPI_BUFS_PER_PROC 128
+  setenv MPI_BUFS_PER_HOST 2048
+  setenv MPI_BUFS_PER_PROC 256
   cat /proc/cpuinfo
   if ($par == 'parallel') then
     module load mpt

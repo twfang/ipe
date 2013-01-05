@@ -56,17 +56,21 @@ INCLUDE_PATH=-I
 USE_GPTL = yes
 ifeq ($(USE_GPTL),yes)
 # Set include path for GPTL
-  GPTL_CPPFLAGS = -I/home/James.Rosinski/gptl-4.1/intel/include
+  GPTL_CPPFLAGS = -I/scratch1/portfolios/BMC/fim/GPTL/gptl-4.3.1/include
 # For auto-profiling of MPI functions, set USE_PMPI=yes. The name of the GPTL
 # library in this case is libgptl_pmpi.a. Otherwise the name is libgptl.a
   USE_PMPI = no
   ifeq ($(USE_PMPI),yes)
-    GPTL_LDFLAGS = -L/home/James.Rosinski/gptl-4.1/intel/lib -lgptl_pmpi
+    GPTL_LDFLAGS = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-4.3.1/lib -lgptl_pmpi
 # When auto-profiling the MPI layer, set HAVE_IARGCGETARG=yes if the Fortran
 # compiler supports functions iargc and getarg.
     HAVE_IARGCGETARG = no
   else
-    GPTL_LDFLAGS = -L/home/James.Rosinski/gptl-4.1/intel/lib -lgptl
+    ifeq ($(PAR),sms)
+      GPTL_LDFLAGS = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-4.3.1/lib -lgptl
+    else
+      GPTL_LDFLAGS = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-4.3.1/lib -lgptlserial
+    endif
   endif
 # AUTOINST=yes enables function-level compiler-generated auto-profiling,
   AUTOINST = no
