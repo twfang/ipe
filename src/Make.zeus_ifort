@@ -67,9 +67,9 @@ ifeq ($(USE_GPTL),yes)
     HAVE_IARGCGETARG = no
   else
     ifeq ($(PAR),sms)
-      GPTL_LDFLAGS = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-4.3.1/lib -lgptl
+      GPTL_LDFLAGS = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-4.3.2/intel_mpi/lib -lgptl
     else
-      GPTL_LDFLAGS = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-4.3.1/lib -lgptlserial
+      GPTL_LDFLAGS = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-4.3.2/intel_nompi/lib -lgptl
     endif
   endif
 # AUTOINST=yes enables function-level compiler-generated auto-profiling,

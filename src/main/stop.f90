@@ -1,15 +1,12 @@
 subroutine stop
-USE module_input_parameters,ONLY: MaxLpHaloUsed,MaxMpHaloUsed,mype,lps,lpe,mps,mpe,nprocs,parallelBuild
+USE module_input_parameters,ONLY: MaxLpHaloUsed,MaxMpHaloUsed,mype,lps,lpe,mps,mpe,parallelBuild
 implicit none
 include "gptl.inc"
-integer                   :: nregions ! number of gptl regions
-integer                   :: n,ret    ! index over regions
-integer                   :: MAXlpHalo! Max (over all PEs) lp halo size used
-integer                   :: MAXmpHalo! Max (over all PEs) mp halo size used
-integer                   :: comm
-real*8                    :: time
-character(64)             :: name     ! region name
+integer       :: MAXlpHalo! Max (over all PEs) lp halo size used
+integer       :: MAXmpHalo! Max (over all PEs) mp halo size used
+integer       :: comm
 character(80) :: string
+integer       :: ret
 
 if(parallelBuild) then
   print*
@@ -33,18 +30,9 @@ endif
 
 if(parallelBuild) then
 !SMS$INSERT call GET_SMS_MPI_COMMUNICATOR(COMM)
-!SMS$INSERT ret = gptlpr_summary(COMM)
+  ret = gptlpr_summary(COMM)
 else
-  open(20,FILE='timing.summary')
-  write(20,'(20x,"REGION NAME     MIN TIME     MAX TIME")')
-  ret = gptlget_nregions (0, nregions)
-  do n=0,nregions-1
-    name = ' '
-    ret = gptlget_regionname (0, n, name)
-    ret = gptlget_wallclock (trim (name), 0, time)
-    write(20,'(1x,A30,F13.3)') trim (name), time
-  end do
-  close(20)
+  ret = gptlpr_summary()
 endif
 
 !ret = gptlprint_memusage ('Memory usage:')
