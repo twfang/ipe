@@ -151,10 +151,18 @@ C- OUTER LOOP Return here on Non-Convergence with reduced time step
           ret = gptlstop  ('XION_5')
           !.. Now set up the Jacobian Matrix dFij/dn
 !         print*,'XION_6',mype,iter
-          ret = gptlstart ('XION_6')
-          CALL HMATRX(FLDIM,S,RHS,IEQ,DT,N,TI,JBNN,JBNS,MIT,IHEPNP,
+          ret = gptlstart ('XION_hep')
+!nm20130111: distinguished he+ v.s. n+ according to phil's suggestion
+          IF(IABS(IHEPNP).EQ.9) !he+  
+     >     CALL HMATRX(FLDIM,S,RHS,IEQ,DT,N,TI,JBNN,JBNS,MIT,IHEPNP,
      >      XMAS,NION,NMSAVE)
-          ret = gptlstop  ('XION_6')
+          ret = gptlstop  ('XION_hep')
+          ret = gptlstart ('XION_np')
+          IF(IABS(IHEPNP).EQ.11)  !n+ 
+     >     CALL NMATRX(FLDIM,S,RHS,IEQ,DT,N,TI,JBNN,JBNS,MIT,IHEPNP,
+     >      XMAS,NION,NMSAVE)
+          ret = gptlstop  ('XION_np')
+
 
           !.. invert the jacobian matriX *s* in the inversion routine *bdslv*.
           !.. the increments are stored in array delta in this order
@@ -736,6 +744,92 @@ C.... Consult file RSLPSD-Algorithm.doc for detailed explanation
      >                   NSPC,   !.. # of species
      >                 NMSAVE)   !.. saved density N at time t (for dn/dt)
       IMPLICIT NONE
+      include "gptl.inc"
+      INTEGER FLDIM,INEQ,JBNN,JBNS,MIT,IHEPNP,NSPC   !.. see I/O comments above
+      INTEGER KZS,JZS,JF,J1,J2,IV,JV,L,M,KRV,JVC,JFC,IS !.. Loop control variables
+      DOUBLE PRECISION F(20)   !.. Function values at time t + delt
+      DOUBLE PRECISION RHS(INEQ),S(INEQ,8),N(4,FLDIM),TI(3,FLDIM),XMA
+      DOUBLE PRECISION NMSAVE(2,FLDIM),DT,H
+!nm20130111
+      integer ret
+
+      ret = gptlstart ('HMATRX_1')
+      DO JZS=1,INEQ        !.. loop over # of equations
+      DO KZS=1,4*NSPC-1    !.. loop over band width
+        S(JZS,KZS)=0.0
+      ENDDO
+      ENDDO
+      ret = gptlstop  ('HMATRX_1')
+
+      !.. Loop to fill up the band matrix with the numerical derivative
+      !.. outer loop is over the grid points
+      ret = gptlstart ('HMATRX_2')
+      DO JF=2,MIT-1
+        J1=MAX0(2,JF-1)     !.. first column index in band
+        J2=MIN0(JF+1,MIT-1) !.. last column index in band
+        !.. loop over species
+      ret = gptlstart ('HMATRX_3')
+        DO IV=1,NSPC
+          !.. loop over densities at grid points j-1, j, and j+1
+      ret = gptlstart ('HMATRX_4')
+          DO JV=J1,J2
+            L=NSPC*(JF-2)    !.. band matrix row index
+            !.. Band matrix column index
+            IF(JF.LE.3) M=NSPC*(JV-2)+IV
+            IF(JF.GT.3) M=NSPC*(JV-JF)+IV+2*NSPC
+            KRV=2*(JV-2)+IV  !.. not used
+
+            JVC=JBNN+JV-1   !.. grid index of the density 
+            JFC=JBNN+JF-1   !.. grid index of the function
+
+            H=1.E-4*N(IV,JVC)     !.. delta for the derivative
+            N(IV,JVC)=N(IV,JVC)+H !.. increment density
+
+            !.. Obtain the function at the new density
+      ret = gptlstart ('HMATRX_5')
+            CALL MDFIJ(JFC,1,NSPC,DT,N,TI,F,JBNN,JBNS,IHEPNP,XMA,NMSAVE)
+      ret = gptlstop  ('HMATRX_5')
+            N(IV,JVC)=N(IV,JVC)-H   !.. restore density
+
+            !.. Store derivatives in the band matrix
+      ret = gptlstart ('HMATRX_6')
+            DO IS=1,NSPC
+              IF(JF.LE.3) S(L+IS,M)=(F(IS)-RHS(L+IS))/H
+              IF(JF.GT.3) S(L+IS,M-IS)=(F(IS)-RHS(L+IS))/H
+            ENDDO
+      ret = gptlstop  ('HMATRX_6')
+          ENDDO
+      ret = gptlstop  ('HMATRX_4')
+        ENDDO
+      ret = gptlstop  ('HMATRX_3')
+      ENDDO
+      ret = gptlstop  ('HMATRX_2')
+
+      RETURN
+      END
+Cnm20130111: copied from HMATRX to distinguish between he+ v.s. n+
+C::::::::::::::::::::::: NMATRX ::::::::::::::::::::::::::::::::::::
+C.... NMATRX evaluates df/dn using Stephansons method for He+ and N+.
+C.... S(L,M) = DEL(FIJ) / DEL(N)
+C.... where N is the density of ion IV at grid point JV. L and M
+C.... are computed from JF...IV. the array RHS contains values of
+C.... FIJ saved from previous computation
+C.... Consult file RSLPSD-Algorithm.doc for detailed explanation
+      SUBROUTINE NMATRX(FLDIM,   !.. field line grid dimension
+     >                      S,   !.. Array to store the Jacobian
+     >                    RHS,   !.. Stored values of function at time t
+     >                   INEQ,   !.. # of equations
+     >                     DT,   !.. time step for dn/dt
+     >                      N,   !.. Ion density array
+     >                     TI,   !.. Ion and electron temperatures
+     >                   JBNN,   !.. Lower boundary index in north
+     >                   JBNS,   !.. Lower boundary index in south
+     >                    MIT,   !.. # of points on field line
+     >                 IHEPNP,   !.. Switch for He+ or N+
+     >                    XMA,   !.. mass of ion
+     >                   NSPC,   !.. # of species
+     >                 NMSAVE)   !.. saved density N at time t (for dn/dt)
+      IMPLICIT NONE
       INTEGER FLDIM,INEQ,JBNN,JBNS,MIT,IHEPNP,NSPC   !.. see I/O comments above
       INTEGER KZS,JZS,JF,J1,J2,IV,JV,L,M,KRV,JVC,JFC,IS !.. Loop control variables
       DOUBLE PRECISION F(20)   !.. Function values at time t + delt
@@ -783,6 +877,7 @@ C.... Consult file RSLPSD-Algorithm.doc for detailed explanation
       ENDDO
       RETURN
       END
+Cnm20130111
 C::::::::::::::::::::::::::: DENAVE :::::::::::::::::::::::::::::::::::::
 C   this program evaluates the interpolated densities at the midpoints
 C   it also evaluates the ion-neutral collision frequencies nux(i,j)
