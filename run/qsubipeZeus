@@ -45,7 +45,8 @@ cp ../wei96.cofcnts            .
 cp ../stup_ut_rec              .
 cp ../qsubipeZeus              .
 cp ../load_balance_groups1     .
-ln -s /scratch2/portfolios/BMC/acb/IPEdata/* .
+#ln -s /scratch2/portfolios/BMC/acb/IPEdata/* .
+ln -s /scratch2/portfolios/BMC/acb/IPEdata/IPEdata/* .
 
 # Make rundir a full path for runscript
 set rundir = $cwd
@@ -86,7 +87,7 @@ EOF
 chmod 755 ./runscript
 
 qsub -N $name \
-     -A nim \
+     -A gm \
      -q batch \
 #    -l partition=sjet \
 #    -l partition=tgpu \
