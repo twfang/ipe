@@ -1,0 +1,38 @@
+
+IPE Test Suite
+
+Quick Start
+
+  ipets [suite]               : run standard or named suite
+  ipets baseline [suite]      : run standard or named suite & store a baseline
+  ipets clean                 : remove most objects created by the test suite
+  ipets cleaner               : ipets clean + removes 'baseline' & data archive
+  ipets help                  : shows this usage information
+  ipets run <name>            : perform the single named run
+  ipets show run|suite <name> : show configuration of the named run or suite
+
+Baseline Creation / Comparison
+
+  To create a baseline, run 'ipets baseline [suite]'. If [suite] is unspecified,
+  the 'standard' suite will be used. A directory named 'baseline' (which must
+  not already exist) will be created in the current directory, and the output of
+  the test-suite runs stored there.
+
+  The test suite will automatically compare its runs' output to the contents of
+  the 'baseline' directory if one exists. You may copy or link a previously
+  generated baseline directory here, or make a new one with the 'baseline'
+  command (see above).
+
+A useful workflow might consist of these steps:
+
+  1. Check out a fresh IPE working copy from Subversion.
+  2. Run 'ipets baseline [suite]' to generate a baseline.
+  3. Make changes to the working copy as needed.
+  4. Run 'ipets [suite]' to verify your changes against the baseline.
+
+Logging
+
+  Each 'ipets' invocation that does not fail immediately generates a verbose
+  logfile named 'log.timestamp', where timestamp is the seconds-since-epoch
+  test-suite start time.
+

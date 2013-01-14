@@ -1,0 +1,2 @@
+build: zeus_intel_mpt
+cmd: tcsh -c "source setup_ipe.zeus.tcsh && make cln && make PAR=sms"

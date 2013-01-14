@@ -1,0 +1,6 @@
+extends: 'zeus_common'
+baseline: 'zeus_intel'
+build: 'zeus_intel_serial'
+inpfile: 'IPE.inp.100'
+qsubcmd: 'qsubipeZeus'
+tasks: ''

@@ -62,9 +62,9 @@
    compare_var_ntasks_2 = 0
    exact_parallel_sum   = .false.
    check_halo_on        = .false.
-   load_balance_on      = .false.,.false.
+   load_balance_on      = .true.,.false.
    load_balance_size    = 40,0
    load_balance_method  = 2,1
-   set_process_layout   = .false.
-   process_layout       = 1,10
+   set_process_layout   = .true.
+   process_layout       = 8,80
 /

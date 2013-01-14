@@ -1,0 +1,9 @@
+extends: 'zeus_common'
+baseline: 'zeus_intel'
+build: 'zeus_intel_mpt'
+inpfile: 'IPE.inp.100'
+qsubcmd: 'qsubipeZeus'
+tasks: '20'
+namelists:
+  smsnamelist:
+    load_balance_on: !unquoted '.true.,.false.'

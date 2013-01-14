@@ -43,6 +43,7 @@
       INTEGER (KIND=int_prec) :: lp
       INTEGER (KIND=int_prec) :: i,j,midpoint, i1d,k,ret  !dbg20120501
       INTEGER (KIND=int_prec) :: jth  !dbg20120501
+      integer :: status
 !d      INTEGER :: lun_dbg=999
 !t      REAL(KIND=real_prec) :: phi_t0   !magnetic longitude,phi at T0
 !t      REAL(KIND=real_prec) :: theta_t0 !magnetic latitude,theta at T0
@@ -64,6 +65,9 @@ end if
 !SMS$PARALLEL(dh, lp, mp) BEGIN
       plasma_3d_old = plasma_3d
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-1")
+      ret = gptlstart ('exchange_barrier')
+!sms$insert      call ppp_barrier(status)
+      ret = gptlstop ('exchange_barrier')
       ret = gptlstart ('EXCHANGE')
 !SMS$EXCHANGE(plasma_3d_old)
       ret = gptlstop  ('EXCHANGE')

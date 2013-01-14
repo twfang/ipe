@@ -45,8 +45,16 @@ cp ../wei96.cofcnts            .
 cp ../stup_ut_rec              .
 cp ../qsubipeZeus              .
 cp ../load_balance_groups1     .
-#ln -s /scratch2/portfolios/BMC/acb/IPEdata/* .
-ln -s /scratch2/portfolios/BMC/acb/IPEdata/IPEdata/* .
+
+set DATADIR="/scratch2/portfolios/BMC/acb/IPEdata/IPEdata"
+
+# Allow the test suite to override the data-files location.
+
+if ( $?IPEDATA ) then
+  set DATADIR="$IPEDATA"
+endif
+  
+ln -s $DATADIR/* .
 
 # Make rundir a full path for runscript
 set rundir = $cwd
@@ -86,14 +94,26 @@ EOF
 
 chmod 755 ./runscript
 
-qsub -N $name \
-     -A gm \
-     -q batch \
-#    -l partition=sjet \
-#    -l partition=tgpu \
-#    -l nodes=1:ppn=2 \
-     -l procs=$run_tasks \
-     -l walltime=$queue_time \
-     ./runscript || echo "qsub failed" && exit 1
+set QUEUE="batch"
+
+# Allow the test suite to override the batch queue.
+
+if ( $?IPEQUEUE ) then
+  set QUEUE="$IPEQUEUE"
+endif
+
+set jobid=`qsub -N $name -A nim -q $QUEUE -l procs=$run_tasks -l walltime=$queue_time -j oe ./runscript`
+
+if ( $status != 0 ) then
+  echo "qsub failed"
+  exit 1
+endif
+
+if ( "$jobid" == "" ) then
+  echo "Failed to get job ID"
+  exit 1
+endif
+  
+echo "The job $jobid has been submitted."
 
 exit 0
