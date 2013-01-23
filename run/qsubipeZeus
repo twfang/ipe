@@ -102,7 +102,7 @@ if ( $?IPEQUEUE ) then
   set QUEUE="$IPEQUEUE"
 endif
 
-set jobid=`qsub -N $name -A nim -q $QUEUE -l procs=$run_tasks -l walltime=$queue_time -j oe ./runscript`
+set jobid=`qsub -N $name -A gm -q $QUEUE -l procs=$run_tasks -l walltime=$queue_time -j oe ./runscript`
 
 if ( $status != 0 ) then
   echo "qsub failed"
