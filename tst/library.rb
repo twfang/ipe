@@ -99,7 +99,7 @@ module Library
     datadir=valid_dir(File.join(FileUtils.pwd,"data"))
     ipedata="IPEDATA=#{datadir}"
     ipequeue="IPEQUEUE=debug"
-    cmd="cd #{rundir} && #{ipedata} #{ipequeue} #{runspec['qsubcmd']} #{runspec['tasks']}"
+    cmd="cd #{rundir} && #{ipedata} #{ipequeue} ./#{runspec['qsubcmd']} #{runspec['tasks']}"
     logd "Submitting job with command: #{cmd}"
     output,status=ext(cmd,{:msg=>"ERROR: Job submission failed"})
     output.each do |e|
