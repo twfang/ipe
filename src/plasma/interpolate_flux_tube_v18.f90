@@ -1,3 +1,4 @@
+!nm20130201: separated the Q interpolation part to module_Qinterpolate.f90
 !dbg20120330: next version! should use the apex routine to precisely estimate x(0),r(0), b0(0) for the imaginary flux tube...(one change at a time...)
 !           :also density interpolation should be done with log???
 !v17: previous versions were all WRONG!!! regarding how to implement ksi factor...
@@ -26,6 +27,7 @@
       USE module_plasma,ONLY:plasma_1d !dbg20120501 n0_1d   !d, n0_2dbg
       USE module_IPE_dimension,ONLY: ISPEC,ISPET,IPDIM
       USE module_physical_constants,ONLY: earth_radius,pi,zero
+      USE module_Qinterpolation,ONLY:Qinterpolation
       IMPLICIT NONE
 !--- INPUT ---
       INTEGER (KIND=int_prec),INTENT(IN) :: mp
@@ -37,9 +39,9 @@
 !---local
       INTEGER (KIND=int_prec) :: imp_max,ihem_max, ihem
       INTEGER (KIND=int_prec) :: ilp,lp0,imp,mp0
-      INTEGER (KIND=int_prec) :: ip,i,jth
-      INTEGER (KIND=int_prec) :: ispecial,isouth,inorth,i1d,ip1d,midpoint ,kk
-      REAL(KIND=real_prec) :: factor2
+      INTEGER (KIND=int_prec) :: i,jth
+      INTEGER (KIND=int_prec) :: i1d,midpoint ,kk
+
 
       REAL(KIND=real_prec) :: factor
       REAL(KIND=real_prec), DIMENSION(2) :: ksi_fac  !dim:ilp
@@ -51,6 +53,7 @@
       INTEGER (KIND=int_prec),PARAMETER :: iB=iT+1 !add B
       INTEGER (KIND=int_prec),PARAMETER :: iR=iB+1 !add R
       REAL(KIND=real_prec) :: Qint(iR,IPDIM,2,2)  !1d:species; ; 4d:imp; 5d:ilp
+      REAL(KIND=real_prec) :: Qint_dum(iR,IPDIM)  !1d:species;
 !---
 
 !array initialization: may not be necessary because they are local parameters...
@@ -88,7 +91,6 @@ if(sw_debug) print *,'ihem',ihem
 !check if the flux tube needs special pole interpolation???
 IF ( lp_t0(ihem,1)>=1 ) THEN
 
- 
 
 ! grid point distributions are identical in all mp: between mp_t0(ihem,1)v.s.mp_t0(ihem,2)
 ! however Q values are not identical in all mp!!! 
@@ -98,6 +100,7 @@ if(sw_debug) print *,ihem,imp,'mp_t0',mp_t0(ihem,imp),' mp0',mp0
 
 !(1) Q interpolation: from Q_T0(mp_t0,lp_t0) --> Q_T1(mp,lp) for all 4 flux tubes
   lp_t0_loop: DO ilp=1,2 !outer/inner flux tubes
+
 if(sw_debug) print *,'ilp',ilp
 if(sw_debug) print *,'lp_t0',lp_t0(ihem,ilp)
 
@@ -106,185 +109,13 @@ if(sw_debug) print *,'lp_t0',lp_t0(ihem,ilp)
 if(sw_debug) print *,'lp0',lp0
 if(sw_debug) print *,'mp',mp,'lp',lp
 
-    flux_tube_loopT1_Q: DO ip=JMIN_IN(lp),JMAX_IS(lp)
-      ip1d=ip-JMIN_IN(lp)+1
-if(sw_debug)  print *,'ip=',ip,' ip1d=',ip1d
-!check the foot point values
-!ispecial=2: interpolation at/below IN
+!nm20130201: moved to a separate module
+    CALL Qinterpolation (mp,lp &
+         &, lp0, mp0 &
+         &, iR, Qint_dum )
 
-!JFM  Will this be in the halo? plasma_grid_3d has it's halo set in module_read_plasma_grid_global by the SERIAL directive.
-!     And the distance from lp and mp is checked against the hal size in perpendicular_transport.
-      IF ( plasma_grid_3d( JMIN_IN(lp0) , lp0,mp0,IQ) < plasma_grid_3d(ip ,lp,mp,IQ) ) THEN
-       ispecial=2
-       isouth=JMIN_IN(lp0)+1  !not used!!!
-       inorth=JMIN_IN(lp0)
-       i1d  =+1
+    Qint(1:iR,1:IPDIM,imp,ilp) = Qint_dum(1:iR,1:IPDIM)
 
-
-if ( sw_debug.and.lp0==149 .and. ip1d>=63 ) then 
-print *,'!dbg20120508! ispecial=',ispecial,ip,i,JMAX_IS(lp0),lp0,mp0, plasma_grid_3d(i,lp0,mp0,IQ) ,plasma_grid_3d(ip,lp,mp,IQ),lp,mp
-endif
-
-
-!ispecial=1: interpolation at/below IS
-      ELSE IF ( plasma_grid_3d( JMAX_IS(lp0) , lp0,mp0,IQ) >= plasma_grid_3d(ip,lp,mp,IQ) ) THEN
-       ispecial=1
-       isouth=JMAX_IS(lp0)   !not used!!!
-       inorth=JMAX_IS(lp0)-1
-       i1d  =JMAX_IS(lp0)-JMIN_IN(lp0)+1
-
-
-
-if ( sw_debug.and.lp0==149 .and. ip1d>=63 ) then 
-print *,'!dbg20120508! ispecial=',ispecial,ip,i,JMAX_IS(lp0),lp0,mp0, plasma_grid_3d(i,lp0,mp0,IQ) ,plasma_grid_3d(ip,lp,mp,IQ),lp,mp
-endif
-
-
-!dbg20120504!!???why this output never appear on ipeXXX.log??? 
-!???why there is never ispecial=1???
-if(sw_debug.and.lp==149)then
-print *,'!dbg20120504 Q=',plasma_grid_3d( JMAX_IS(lp0) , lp0,mp0,IQ) , plasma_grid_3d(ip,lp,mp,IQ) ,JMAX_IS(lp0) , lp0,mp0, ip,ip1d,lp,mp,isouth,inorth,i1d
-endif
-
-      ELSE
-
-!search for north & south grid point of i1
-        flux_tube_loopT0: DO i=JMIN_IN(lp0),JMAX_IS(lp0)
-
-         IF ( plasma_grid_3d(i,lp0,mp0,IQ) < plasma_grid_3d(ip,lp,mp,IQ) ) THEN
-! ispecial=0: normal interpolation
-           ispecial = 0
-           inorth = i-1
-           isouth = i
-           i1d   = i-JMIN_IN(lp0)+1
-         
-! factor2 IS NOT equal for all mp
-           factor2=(plasma_grid_3d(ip,lp,mp,IQ)-plasma_grid_3d(isouth,lp0,mp0,IQ))/(plasma_grid_3d(inorth,lp0,mp0,IQ)-plasma_grid_3d(isouth,lp0,mp0,IQ))
-if ( factor2<0.0.or.factor2>1.0) then
-WRITE(6,*) 'sub-Intrp:!STOP! invalid factor2',factor2 ,ip,lp,mp,isouth,lp0,mp0
-STOP
-endif       
-
-
-
-if ( sw_debug.and.lp0==149 .and. ip1d>=63 ) then 
-print *,'!dbg20120508!',ip,factor2,i,JMAX_IS(lp0),lp0,mp0, plasma_grid_3d(i,lp0,mp0,IQ) ,plasma_grid_3d(ip,lp,mp,IQ),lp,mp
-endif
-
-           EXIT flux_tube_loopT0
-         END IF 
-
-
-
-
-        END DO flux_tube_loopT0 !: DO i=IN,IS
-
-      END IF !( Q_t0(IN) < Q_t1(ip) ) THEN
-
-
-!ispecial=0: normal interpolation
-      if(ispecial == 0) then
-! calculate all the ionospheric parameters      
-!        ni1_in(ip)=(factor2*(ni(inorth,mp0,1) - ni(isouth,mp0,1))) + ni(isouth,mp0,1)
-
-
-!N 1:TSP: density
-!not sure if LOG is necessary for densities???
-jth_loop0:         DO jth=1,iT !=TSP+3
-
-IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop0
-!dbg20120501            IF(jth<=TSP) THEN
-               Qint(jth, ip1d,imp,ilp) = (factor2*(plasma_3d_old(inorth,lp0,mp0,jth) - plasma_3d_old(isouth,lp0,mp0,jth))) + plasma_3d_old(isouth,lp0,mp0,jth)
-
-!T TSP+1:TSP+3=iT
-!dbg20120501            ELSE IF(jth==TSP+1) THEN
-!dbg20120501               Qint(jth, ip1d,imp,ilp) = (factor2*(plasma_3d_old(mp0,lp0)%Te_k(i1d-1) - plasma_3d_old(mp0,lp0)%Te_k(i1d))) + plasma_3d_old(mp0,lp0)%Te_k(i1d)
-
-!dbg20120501            ELSE !Ti
-!dbg20120501               Qint(jth, ip1d,imp,ilp) = (factor2*(plasma_3d_old(mp0,lp0)%Ti_k( (jth-TSP-1),i1d-1) - plasma_3d_old(mp0,lp0)%Ti_k( (jth-TSP-1),i1d))) + plasma_3d_old(mp0,lp0)%Ti_k( (jth-TSP-1),i1d)
-!dbg20120501            END IF
-
-            if (&
-!&jth==1&
-&jth==5&
-&.and.Qint(jth, ip1d,imp,ilp)<=0.) then
-!dbg20120501            if (jth==1.and.Qint(jth, ip1d,imp,ilp)<=0.) then
-
-
-
-               WRITE(6,*)'sub-Intrp:!STOP! INVALID density',Qint(jth, ip1d,imp,ilp),factor2 &
-                    &,plasma_3d_old(inorth,lp0,mp0,jth)   & !dbg20120501
-                    &,plasma_3d_old(isouth,lp0,mp0,jth)   & !dbg20120501
-                    &,jth, ip1d,imp,ilp,mp0,lp0,i1d,inorth,isouth
-               STOP
-            endif
-         END DO jth_loop0 !jth=1,iT !=TSP+3
-
-!B iT+1=iB: B magnetic field intensity
-         Qint(iB, ip1d,imp,ilp) = (factor2*(plasma_grid_3d(inorth,lp0,mp0,IBM) - plasma_grid_3d(isouth,lp0,mp0,IBM))) + plasma_grid_3d(isouth,lp0,mp0,IBM)
-
-!NOTE: R should be the same for all mp!!!
-!R iB+1=iR: R = RE + Z
-         Qint(iR, ip1d,imp,ilp) =( (factor2*(plasma_grid_Z(inorth,lp0) - plasma_grid_Z(isouth,lp0))) + plasma_grid_Z(isouth,lp0) ) +earth_radius
-
-if ( sw_debug.and.lp0==149.and.ip1d>=63) then
-print *,'!dbg20120504 R=' &
-, Qint(iR, ip1d,imp,ilp) &
-, (factor2*(plasma_grid_Z(inorth,lp0) - plasma_grid_Z(isouth,lp0))) &
-&, plasma_grid_Z(inorth,lp0) &
-&, plasma_grid_Z(isouth,lp0) &
-&, factor2 &
-&,lp0,ip1d,inorth,isouth
-
-endif
-
-
-
-
-
-
-!ispecial=1: interpolation at/below IS_t0
-      ELSE if(ispecial == 1) then
-
-        jth_loop1: DO jth=1,iT
-IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop1
-          Qint(jth   ,ip1d,imp,ilp) = plasma_3d_old(isouth,lp0,mp0,jth)
-        END DO jth_loop1 !jth
-         !N:        ni1_in(ip)=ni(IS_t0,mp0,1)
-!dbg20120501        Qint(1:TSP   ,ip1d,imp,ilp) = plasma_3d_old(mp0,lp0)%N_m3( 1:TSP,i1d)
-        !Te:
-!dbg20120501         Qint(TSP+1   ,ip1d,imp,ilp) = plasma_3d_old(mp0,lp0)%Te_k(         i1d)
-        !Ti:
-!dbg20120501         Qint(TSP+2:iT,ip1d,imp,ilp) = plasma_3d_old(mp0,lp0)%Ti_k(1:ISPET,i1d)
-        !B:
-        Qint(iB      ,ip1d,imp,ilp) = plasma_grid_3d(isouth,lp0,mp0,IBM)
-        !R:
-        Qint(iR      ,ip1d,imp,ilp) = plasma_grid_Z(isouth,lp0) +earth_radius
-
-!dbg20120504!!???why this output never appear on ipeXXX.log??? 
-if(sw_debug.and.lp==149) then
-print *,'!dbg20120504',        Qint(iR      ,ip1d,imp,ilp),plasma_grid_Z(isouth,lp0) ,isouth,JMIN_IN(lp0),JMAX_IS(lp0),lp0,mp0,iR,ip1d,imp,ilp
-endif
-
-!ispecial=2: interpolation at/below IN_t0
-     ELSE if(ispecial == 2) then
-       jth_loop2: DO jth=1,iT
-IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop2
-          Qint(jth   ,ip1d,imp,ilp) = plasma_3d_old(inorth,lp0,mp0,jth)
-       END DO jth_loop2!jth
-        !N        ni1_in(ip)=ni(IN_t0,mp0,1) 
-!dbg20120501        Qint(1:TSP   ,ip1d,imp,ilp) = plasma_3d_old(mp0,lp0)%N_m3(1:TSP,i1d)
-         !Te
-!dbg20120501        Qint(TSP+1   ,ip1d,imp,ilp) = plasma_3d_old(mp0,lp0)%Te_k(        i1d)
-         !Ti
-!dbg20120501        Qint(TSP+2:iT,ip1d,imp,ilp) = plasma_3d_old(mp0,lp0)%Ti_k(1:ISPET,i1d)
-         !B
-        Qint(iB      ,ip1d,imp,ilp) = plasma_grid_3d(inorth,lp0,mp0,IBM)
-         !R
-        Qint(iR      ,ip1d,imp,ilp) = plasma_grid_Z(inorth,lp0) +earth_radius
-
-      END IF !(ispecial == 1) then
-    END DO flux_tube_loopT1_Q !: DO ip=IN,IS
   END DO lp_t0_loop !: DO ilp=1,2
 END DO mp_t0_loop!: DO imp=1,2
 

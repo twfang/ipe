@@ -26,3 +26,4 @@ module_sub_PLASMA   ../plasma/module_sub_plasma.f90
 module_heating_rate ../plasma/module_heating_rate_sms.f.tmp
 module_plasma ./module_plasma_sms.f.tmp
 module_sub_plasma ./module_sub_plasma_sms.f.tmp
+module_qinterpolation ./module_Qinterpolation_sms.f.tmp

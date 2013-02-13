@@ -98,6 +98,7 @@ SRC3	=\
 	${DR3}/flux_tube_solver.f90 \
 	${DR3}/perpendicular_transport.f90 \
 	${DR3}/stepback_mag.f90 \
+	${DR3}/module_Qinterpolation.f90 \
 	${DR3}/interpolate_flux_tube_${TEST}.f90 \
 	${DR3}/io_plasma_bin.f90 \
 	${DR3}/read_vexb.f90
