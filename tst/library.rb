@@ -69,6 +69,7 @@ module Library
     inpsrc=valid_file(File.join(rundir,runspec['inpfile']))
     inpdst=File.join(rundir,"IPE.inp")
     logd "Copying #{inpsrc} -> #{inpdst}"
+    FileUtils.rm_f(inpdst)
     FileUtils.cp(inpsrc,inpdst)
     nlfile=valid_file(File.join(rundir,'SMSnamelist'))
     mod_namelist_file(nlfile,runspec['namelists'])
