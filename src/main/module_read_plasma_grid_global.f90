@@ -177,6 +177,14 @@ maxAltitude  = plasma_grid_Z(midpoint_max,  1)
 !dbg20110923  apexD(2,1:NPTS2D,1:NMP)%up    =  dum5(3,1:NPTS2D,1:NMP)
 !D3
 do lp=1,NLP
+  apexD(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,east ,1) =  dum4(1,JMIN_ING(lp):JMAX_ISG(lp),1:NMP) !D1
+  apexD(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,north,1) =  dum4(2,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
+  apexD(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,up   ,1) =  dum4(3,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
+
+  apexD(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,east ,2) =  dum5(1,JMIN_ING(lp):JMAX_ISG(lp),1:NMP) !D2
+  apexD(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,north,2) =  dum5(2,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
+  apexD(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,up   ,2) =  dum5(3,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
+
   apexD(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,east ,3) =  dum6(1,JMIN_ING(lp):JMAX_ISG(lp),1:NMP) !D3
   apexD(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,north,3) =  dum6(2,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)
   apexD(JMIN_IN(lp):JMAX_IS(lp),lp,1:NMP,up   ,3) =  dum6(3,JMIN_ING(lp):JMAX_ISG(lp),1:NMP)

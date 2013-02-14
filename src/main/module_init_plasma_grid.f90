@@ -11,15 +11,22 @@ USE module_physical_constants,ONLY: earth_radius, pi, G0,zero
 USE module_input_parameters,ONLY: sw_debug,sw_grid,parallelBuild
 USE module_FIELD_LINE_GRID_MKS,ONLY: Pvalue &
 &, JMIN_IN,JMAX_IS, r_meter2D, plasma_grid_GL,plasma_grid_3d,apexD,apexE,Be3,plasma_grid_Z &
-&, ISL,IBM,IGR,IQ,IGCOLAT,IGLON,east,north,up,mlon_rad,dlonm90km
+&, ISL,IBM,IGR,IQ,IGCOLAT,IGLON,east,north,up,mlon_rad,dlonm90km &
+&, apexDscalar,l_mag
+!USE module_cal_apex_param,ONLY:cal_apex_param
 IMPLICIT NONE
 
 INTEGER (KIND=int_prec)           :: i,mp,lp,in,is
 REAL    (KIND=real_prec)          :: sinI
 INTEGER (KIND=int_prec),parameter :: sw_sinI=0  !0:flip; 1:APEX
 INTEGER (KIND=int_prec)           :: midpoint
+!local
+      REAL (KIND=real_prec) :: ufac
+      REAL (KIND=real_prec),DIMENSION(3) :: bhat !eq(3.14)
+      REAL (KIND=real_prec),DIMENSION(3)  :: a,b,c      
 
-! array initialization
+
+
 
 !if the new GLOBAL 3D version
 CALL read_plasma_grid_global
@@ -62,6 +69,9 @@ print "('Qvalue     =',2E12.4)", plasma_grid_3d(in,lp,mp,IQ), plasma_grid_3d(is,
 print "('BM [Tesla]    =',2E12.4)", plasma_grid_3d(in,lp,mp,IBM), plasma_grid_3d(is,lp,mp,IBM)
 !print "('D1         =',2E12.4)", apexD(1,in,mp)%east, apexD(1,is,mp)%east
 !print "('D2         =',2E12.4)", apexD(2,in,mp)%east, apexD(2,is,mp)%east
+print "('D1         =',6E12.4)", apexD(in,lp,mp,east,1),apexD(in,lp,mp,north,1),apexD(in,lp,mp,up,1), apexD(is,lp,mp,east,1),apexD(is,lp,mp,north,1),apexD(is,lp,mp,up,1)
+print "('D2         =',6E12.4)", apexD(in,lp,mp,east,2),apexD(in,lp,mp,north,2),apexD(in,lp,mp,up,2), apexD(is,lp,mp,east,2),apexD(is,lp,mp,north,2),apexD(is,lp,mp,up,2)
+
 print "('D3         =',6E12.4)", apexD(in,lp,mp,east,3),apexD(in,lp,mp,north,3),apexD(in,lp,mp,up,3), apexD(is,lp,mp,east,3),apexD(is,lp,mp,north,3),apexD(is,lp,mp,up,3)
 print "('E1         =',2E12.4)", apexE(in,lp,mp,east,1), apexE(is,lp,mp,east,1)
 print "('E2         =',2E12.4)", apexE(in,lp,mp,east,2), apexE(is,lp,mp,east,2)
@@ -77,6 +87,65 @@ IF ( sw_grid==0 ) THEN  !APEX
 ! assuming Newtonian gravity: G0 is gravity at the sea level (z=0) 
 !NOTE: positive in NORTHern hemisphere; negative in SOUTHern hemisphere
          flux_tube: DO i=IN,IS
+
+!nm20130201: need to calculate some more apex parameters 
+!           CALL cal_apex_param (i,lp,mp,sinI)
+!---
+! calculate D from eq 3.15: | d1 X d2 |
+a(1) = apexD(i,lp,mp,east,1)
+a(2) = apexD(i,lp,mp,north,1)
+a(3) = apexD(i,lp,mp,up,1)
+b(1) = apexD(i,lp,mp,east,2)
+b(2) = apexD(i,lp,mp,north,2)
+b(3) = apexD(i,lp,mp,up,2)
+
+!      call cross_product (a,b,c)
+!---
+! calculate cross product   a X b 
+
+
+      c(1) = a(2)*b(3) - a(3)*b(2) 
+      c(2) = a(3)*b(1) - a(1)*b(3) 
+      c(3) = a(1)*b(2) - a(2)*b(1) 
+!---
+
+      apexDscalar(i,lp,mp) = &
+!plasma_grid_3d(i,mp)%BM / Be3(1,mp,lp)
+&     ABS ( &
+& c(1)*c(1) + c(2)*c(2) + c(3)*c(3) &
+& )
+
+! calculate bhat
+      bhat(east)  = apexD(i,lp,mp,east, 3) * apexDscalar(i,lp,mp)
+      bhat(north) = apexD(i,lp,mp,north,3) * apexDscalar(i,lp,mp)
+      bhat(up)    = apexD(i,lp,mp,up,   3) * apexDscalar(i,lp,mp)
+
+      sinI = -bhat(up) !output
+
+      ufac  = SQRT(bhat(north)**2 + bhat(east)**2)
+! l_mag: unit vector
+!(1) magnetic eastward exactly horizontal
+!    l_e = bhat x k /|bhat x k|
+      l_mag(i,lp,mp,east ,1) =  bhat(north)/ufac
+      l_mag(i,lp,mp,north,1) = -bhat(east) /ufac
+      l_mag(i,lp,mp,up   ,1) =  zero
+      
+!i and j are longitude and latitude index, bhat is the unit vector
+!in direction of the geomagnetic filed line from subroutine apxmall,
+!k is unit vector in vertical
+
+!unit vector in upward direction
+!(2) magnetic upward exactly horizontal
+! l_u = l_e x bhat
+      l_mag(i,lp,mp,east, 2) = l_mag(i,lp,mp,north,1)*bhat(up)   - l_mag(i,lp,mp,up   ,1)*bhat(north)
+      l_mag(i,lp,mp,north,2) = l_mag(i,lp,mp,up   ,1)*bhat(east) - l_mag(i,lp,mp,east ,1)*bhat(up)
+      l_mag(i,lp,mp,up,   2) = l_mag(i,lp,mp,east ,1)*bhat(north)- l_mag(i,lp,mp,north,1)*bhat(east)
+!with the vector l you can use the formula in Art's paper.
+
+!inserted from
+!      END SUBROUTINE  cal_apex_param
+!      END MODULE module_cal_apex_param
+
 
 !dbg20110831
 !d print *,'calling sub-Get_sinI'&

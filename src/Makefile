@@ -90,14 +90,17 @@ SRC2	=\
 # DR3: plasma
 SRC3	=\
 	${DR3}/module_plasma.f90 \
+	${DR3}/module_stepback_mag_R.f90 \
+	${DR3}/module_stepback_mag_th.f90 \
+	${DR3}/module_find_neighbor_grid_R.f90 \
+	${DR3}/module_find_neighbor_grid_th.f90 \
+	${DR3}/module_perpendicular_transport.f90 \
 	${DR3}/module_sub_plasma.f90 \
 	${DR3}/get_pvalue_dipole.f90 \
 	${DR3}/get_sza.f90 \
 	${DR3}/get_sinim.f90 \
 	${DR3}/module_heating_rate.f90 \
 	${DR3}/flux_tube_solver.f90 \
-	${DR3}/perpendicular_transport.f90 \
-	${DR3}/stepback_mag.f90 \
 	${DR3}/module_Qinterpolation.f90 \
 	${DR3}/interpolate_flux_tube_${TEST}.f90 \
 	${DR3}/io_plasma_bin.f90 \

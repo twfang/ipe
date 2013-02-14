@@ -35,6 +35,7 @@
       USE module_physical_constants,ONLY:rtd,zero
       USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,plasma_grid_3d,plasma_grid_GL,plasma_grid_Z,JMAX_IS,hrate_mks3d
       USE module_PLASMA,ONLY:utime_save,plasma_1d
+      USE module_perpendicular_transport,ONLY:perpendicular_transport
       IMPLICIT NONE
 !------------------------
       INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]

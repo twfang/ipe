@@ -18,7 +18,8 @@
      & plasma_grid_3d,plasma_3d,r_meter2D,ON_m3,HN_m3,N2N_m3,O2N_m3&
      &,apexD,apexE,VEXBup,MaxFluxTube,HE_m3,N4S_m3,TN_k,TINF_K,Un_ms1 &
      &,Be3, Pvalue, JMIN_IN, JMAX_IS,hrate_mks3d,midpnt &
-     &,mlon_rad, plasma_grid_Z, plasma_grid_GL, plasma_3d_old
+     &,mlon_rad, plasma_grid_Z, plasma_grid_GL, plasma_3d_old &
+     &,apexDscalar, l_mag
   
       USE module_input_parameters,ONLY: sw_neutral_heating_flip
       IMPLICIT NONE
@@ -34,8 +35,10 @@
      &,           r_meter2D     (MaxFluxTube,NLP          ) &
      &,           plasma_3d     (MaxFluxTube,NLP,NMP,ISTOT) &
      &,           plasma_3d_old (MaxFluxTube,NLP,NMP,ISTOT) &
-     &,           apexD         (MaxFluxTube,NLP,NMP,3,3:3) &
-     &,           apexE         (MaxFluxTube,NLP,NMP,3,2  ) )
+     &,           apexD         (MaxFluxTube,NLP,NMP,3,1:3) &
+     &,           apexE         (MaxFluxTube,NLP,NMP,3,2  ) &
+     &,           apexDscalar   (MaxFluxTube,NLP,NMP      ) &
+     &,           l_mag         (MaxFluxTube,NLP,NMP,3,2  ) )
 
 !---neutral
 
