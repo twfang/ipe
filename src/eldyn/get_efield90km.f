@@ -21,7 +21,7 @@
       USE module_eldyn,ONLY:j0,j1,theta90_rad,ed1_90,ed2_90,coslam_m
       USE module_IPE_dimension,ONLY: NMP,NLP
       USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS &
-     &,mlon_rad,ht90,Be3,apexE,VEXBup,up
+     &,mlon_rad,ht90,Be3,apexE,VEXBup,east,north,up, VEXBe,l_mag
       USE module_input_parameters,ONLY: sw_debug,NYEAR,NDAY,sw_exb_up    &
      &,sw_perp_transport,lpmin_perp_trans,lpmax_perp_trans,mype          &
      &,lps
@@ -50,6 +50,8 @@
       REAL(KIND=real_prec) :: cos2Lambda_m,sinLambda_m(2),sinI_m(2)
       INTEGER (KIND=int_prec ) :: midpoint
       REAL    (KIND=real_prec) :: v_e(2)   !1:ed2/be3 (4.18) ;2: -ed1/be3 (4.19)
+      REAL    (KIND=real_prec) :: vexbgeo(east:up) !EXB in gegraphic frame
+
 
 ! array initialization
       Ed1_90=zero
@@ -316,12 +318,34 @@
               print *,'sub-StR:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]',    &
      &           Ed1_90(ihem,lp,mp)*1.0E+3,' be3[tesla]',Be3(ihem,lp,mp) 
             endif
-            VEXBup(lp,mp)=(v_e(1)*apexE(midpoint,lp,mp,up,1))           &
-     &                   +(v_e(2)*apexE(midpoint,lp,mp,up,2))
+!nm20130201
+! EXB in geographic frame
+            vexbgeo(east )=(v_e(1)*apexE(midpoint,lp,mp,east,1))        &
+     &                    +(v_e(2)*apexE(midpoint,lp,mp,east,2))
+            vexbgeo(north)=(v_e(1)*apexE(midpoint,lp,mp,north,1))       &
+     &                    +(v_e(2)*apexE(midpoint,lp,mp,north,2))
+            vexbgeo(up   )=(v_e(1)*apexE(midpoint,lp,mp,up   ,1))       &
+     &                    +(v_e(2)*apexE(midpoint,lp,mp,up   ,2))
             if(sw_debug) then
               print *,'sub-StR:',v_e(1),apexE(midpoint,lp,mp,up,1)      &
      &                          ,v_e(2),apexE(midpoint,lp,mp,up,2)
             endif
+! EXB in magnetic APEX frame
+! magnetic exact upward
+            VEXBup(lp,mp)=vexbgeo(up)
+!     &                    (v_e(1)*apexE(midpoint,lp,mp,up,1))           &
+!     &                   +(v_e(2)*apexE(midpoint,lp,mp,up,2))
+!nm20130201: the new, correct definition
+!     &       vexbgeo(east)  * l_mag(midpoint,lp,mp,east ,2)
+!     &
+!     &     + vexbgeo(north) * l_mag(midpoint,lp,mp,north,2)
+!     &
+!     &     + vexbgeo(up   ) * l_mag(midpoint,lp,mp,up   ,2)
+! exact magnetic eastward  
+            VEXBe(lp,mp)=vexbgeo(east)*l_mag(midpoint,lp,mp,east ,1)    &
+     &                  +vexbgeo(north)*l_mag(midpoint,lp,mp,north,1)   &
+     &                  +vexbgeo(up  ) *l_mag(midpoint,lp,mp,up   ,1)
+
 
           ENDIF !( sw_exb_up<=1.and. ... ) 
 

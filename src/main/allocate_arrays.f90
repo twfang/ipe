@@ -16,7 +16,7 @@
       USE module_IPE_dimension,ONLY: NMP,NLP,ISTOT
       USE module_FIELD_LINE_GRID_MKS,ONLY: &
      & plasma_grid_3d,plasma_3d,r_meter2D,ON_m3,HN_m3,N2N_m3,O2N_m3&
-     &,apexD,apexE,VEXBup,MaxFluxTube,HE_m3,N4S_m3,TN_k,TINF_K,Un_ms1 &
+     &,apexD,apexE,VEXBup,VEXBe,MaxFluxTube,HE_m3,N4S_m3,TN_k,TINF_K,Un_ms1 &
      &,Be3, Pvalue, JMIN_IN, JMAX_IS,hrate_mks3d,midpnt &
      &,mlon_rad, plasma_grid_Z, plasma_grid_GL, plasma_3d_old &
      &,apexDscalar, l_mag
@@ -64,6 +64,7 @@
 
         ALLOCATE ( Be3     (2,NLP,NMP  ) &
      &,            VEXBup  (  NLP,NMP  ) &
+     &,            VEXBe   (  NLP,NMP  ) &
      &,            Pvalue  (  NLP      ) &
      &,            JMIN_IN (  NLP      ) &
      &,            JMAX_IS (  NLP      ) &
@@ -79,6 +80,7 @@
       END IF
 !SMS$IGNORE BEGIN
       VEXBup = 0.0
+      VEXBe  = 0.0
 !SMS$IGNORE END
 
 ! (1) DEALLOCATE arrays
@@ -102,6 +104,7 @@ print *,'DE-ALLOCATing ARRAYS'
      &,  plasma_3d_old   &
 !dbg20120501     &,  plasma_3d4n &
      &,  VEXBup          &
+     &,  VEXBe           &
      &,STAT=stat_alloc     )
  
       IF ( stat_alloc==0 ) THEN

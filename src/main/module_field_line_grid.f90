@@ -63,6 +63,7 @@
 !V_ExB m/s at the apex height
 !SMS$DISTRIBUTE(dh,1,2) BEGIN
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,DIMENSION(:,:) :: VEXBup !DIMENSION(NMP,NLP)
+      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,DIMENSION(:,:) :: VEXBe  !DIMENSION(NMP,NLP)
 !SMS$DISTRIBUTE END
 
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: plasma_grid_Z (:,:)  !.. altitude [meter] (MaxFluxTube,NLP)

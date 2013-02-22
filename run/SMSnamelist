@@ -66,5 +66,5 @@
    load_balance_size    = 40,0
    load_balance_method  = 2,1
    set_process_layout   = .true.
-   process_layout       = 1,80
+   process_layout       = 8,80
 /
