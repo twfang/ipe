@@ -345,6 +345,8 @@
             VEXBe(lp,mp)=vexbgeo(east)*l_mag(midpoint,lp,mp,east ,1)    &
      &                  +vexbgeo(north)*l_mag(midpoint,lp,mp,north,1)   &
      &                  +vexbgeo(up  ) *l_mag(midpoint,lp,mp,up   ,1)
+!nm20130201: temporary solution to test the code
+            VEXBe(lp,mp)=0.0D0
 
 
           ENDIF !( sw_exb_up<=1.and. ... ) 

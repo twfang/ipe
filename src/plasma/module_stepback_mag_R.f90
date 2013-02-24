@@ -21,7 +21,7 @@
       SUBROUTINE stepback_mag_R (utime,mp,lp,phi_t0,theta_t0,r0_apex)
       USE module_precision
       USE module_IPE_dimension,ONLY: NLP
-      USE module_FIELD_LINE_GRID_MKS,ONLY: mlon_rad,plasma_grid_Z,JMIN_IN,JMAX_IS,ht90,plasma_grid_GL,plasma_grid_3d,east,north,up,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,VEXBup,minAltitude,maxAltitude
+      USE module_FIELD_LINE_GRID_MKS,ONLY: mlon_rad,plasma_grid_Z,JMIN_IN,JMAX_IS,ht90,plasma_grid_GL,plasma_grid_3d,east,north,up,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,VEXBup,minAltitude,maxAltitude, VEXBe
       USE module_physical_constants,ONLY: earth_radius,rtd,pi
       USE module_input_parameters,ONLY: time_step,sw_exb_up,sw_debug,start_time,lpmin_perp_trans
       IMPLICIT NONE
@@ -114,7 +114,15 @@ if(sw_debug) print *,'SIN',sin2theta,sintheta,theta,' mlat R0[deg]', (90.-  thet
         end if
 
 !temporary solution...
-        phi_t0(ihem)   = phi_t1
+!        phi_t0(ihem)   = phi_t1
+!nm20130201
+        phi_t0(ihem)   = phi_t1 - ( VEXBe(lp,mp) * time_step ) / r_apex
+        IF ( phi_t0(ihem)>=pi*2.0 ) THEN
+          phi_t0(ihem) = phi_t0(ihem) - pi*2.0
+        ELSE IF ( phi_t0(ihem)< 0.0    ) THEN
+          phi_t0(ihem) = phi_t0(ihem) + pi*2.0
+        END IF
+
 END DO      which_hemisphere !: DO ihem=1,ihem_max
 
 ihem=1 !only
