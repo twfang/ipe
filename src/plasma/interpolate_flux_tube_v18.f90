@@ -24,7 +24,7 @@
 !     plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,plasma_3d_old are all IN arrays
       USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,ht90,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,plasma_3d_old
       USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,sw_ksi,mype,lps,lpe,mps,mpe
-      USE module_plasma,ONLY:plasma_1d !dbg20120501 n0_1d   !d, n0_2dbg
+      USE module_plasma,ONLY:plasma_1d 
       USE module_IPE_dimension,ONLY: ISPEC,ISPET,IPDIM
       USE module_physical_constants,ONLY: earth_radius,pi,zero
       USE module_Qinterpolation,ONLY:Qinterpolation
@@ -48,7 +48,7 @@
       REAL(KIND=real_prec),DIMENSION(0:2) :: r,lambda_m,rapex,B0,x
       INTEGER (KIND=int_prec),PARAMETER :: TSP=3      !N(1:3) perp.transport
       INTEGER (KIND=int_prec),PARAMETER :: iT=ISPEC+3   !add T(1:3)
-      REAL(KIND=real_prec) :: n0(iT,2) !1d:species(N&T); 2dim:ilp
+!nm20130228      REAL(KIND=real_prec) :: n0(iT,2) !1d:species(N&T); 2dim:ilp
 
       INTEGER (KIND=int_prec),PARAMETER :: iB=iT+1 !add B
       INTEGER (KIND=int_prec),PARAMETER :: iR=iB+1 !add R
@@ -58,7 +58,7 @@
 
 !array initialization: may not be necessary because they are local parameters...
       Qint(:,:,:,:)=zero
-      n0(:,:)=zero
+!nm20130228      n0(:,:)=zero
 
 !dbg
 if(sw_debug) print *,'lp_t0',lp_t0
@@ -260,7 +260,7 @@ if(sw_debug) print "('ksi=',2E12.4)", ksi_fac(1:2)*ksi_fac(1:2)
 IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop3
 !dbg20120330      IF ( jth<=TSP ) THEN
         !N interpolate from Nin onto FT(phi0,theta0) by applying ksi factor^2 eq(9) p117 PGR thesis
-        n0(jth,1:2)=Qint(jth,i1d,imp,1:2) !dbg20120330* ksi_fac(1:2)*ksi_fac(1:2)
+!nm20130228        n0(jth,1:2)=Qint(jth,i1d,imp,1:2) !dbg20120330* ksi_fac(1:2)*ksi_fac(1:2)
 !dbg20120330      ELSE !IF ( jth>=TSP+1 ) THEN         
 !dbg20120330        !T: ksi factor^4/3: eq (9) page 117 in PGR thesis for T
 !dbg20120330        n0(jth,1:2)=Qint(jth,i1d,imp,1:2) * ksi_fac(1:2)**(4./3.)
@@ -285,60 +285,24 @@ IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop3
 IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop4
 
        IF ( (x(1)-x(2))/=0.) THEN
-!dbg20120501          IF ( jth<=TSP ) THEN
-!dbg20120501             n0_1d%N_m3(jth        ,i1d) = ( (x(1)-x(0))*n0(jth,2) + (x(0)-x(2))*n0(jth,1) ) / ( x(1)-x(2) )
-             plasma_1d(jth,i1d) = ( (x(1)-x(0))*n0(jth,2) + (x(0)-x(2))*n0(jth,1) ) / ( x(1)-x(2) )
+             plasma_1d(jth,i1d) = ( (x(1)-x(0))*Qint(jth,i1d,imp,2) + (x(0)-x(2))*Qint(jth,i1d,imp,1) ) / ( x(1)-x(2) )
 
        !error check
-!dbg20120501             IF (n0_1d%N_m3(jth,i1d)<=0.) THEN
              IF (plasma_1d(jth,i1d)<=0.) THEN
 
-if(sw_debug) print *,'!dbg20120503' &
-&, ( (x(1)-x(0))*n0(jth,2) + (x(0)-x(2))*n0(jth,1) ), ( x(1)-x(2) )&
-&, ( (x(1)-x(0))*n0(jth,2)) , ( (x(0)-x(2))*n0(jth,1) ) &
-&,  (x(1)-x(0)) , n0(jth,2),  (x(0)-x(2)), n0(jth,1) &
-&,   x(0), x(1),x(2) 
 
                 print "('sub-int:!STOP! INVALID density/temp',3E12.4,5i7)" & 
-                     &, n0(jth,1), plasma_1d(jth,i1d) , n0(jth,2),jth,i1d,i,mp,lp
+                     &, Qint(jth,i1d,imp,1), plasma_1d(jth,i1d) , Qint(jth,i1d,imp,2),jth,i1d,i,mp,lp
                 print "('!check X!=',3E12.4)",x(1),x(0),x(2)
                 print "('!check B!=',3E12.4)",B0(1),B0(0),B0(2)
                 STOP
              END IF
 
              IF ( jth<=TSP ) THEN
-!dbg20120330: new ksi_factor
                 plasma_1d(jth,i1d) = plasma_1d(jth,i1d) *(ksi_fac(1)*ksi_fac(1))
 
-!dbg20120501          ELSE IF ( jth==TSP+1 ) THEN 
-!dbg20120501             n0_1d%Te_k(            i1d) = ( (x(1)-x(0))*n0(jth,2) + (x(0)-x(2))*n0(jth,1) ) / ( x(1)-x(2) )
-
-
-       !error check with Te
-!dbg20120501             IF (n0_1d%Te_k(i1d)<=0.) THEN
-!dbg20120501                print "('sub-int:!STOP! INVALID Te',3E12.4,5i7)" & 
-!dbg20120501                     &, n0(jth,1), n0_1d%Te_k(i1d) , n0(jth,2),jth,i1d,i,mp,lp
-!dbg20120501                print "('!check X!=',3E12.4)",x(1),x(0),x(2)
-!dbg20120501                print "('!check B!=',3E12.4)",B0(1),B0(0),B0(2)
-!dbg20120501                STOP
-!dbg20120501             END IF
-
-!dbg20120330: new ksi_factor
-!dbg20120501 plasma_1d(jth,i1d) = plasma_1d(jth,i1d) *(ksi_fac(1)**(4./3.))
-
              ELSE !             IF ( jth>TSP ) THEN
-!dbg20120501             n0_1d%Ti_k(jth-TSP-1,i1d) = ( (x(1)-x(0))*n0(jth,2) + (x(0)-x(2))*n0(jth,1) ) / ( x(1)-x(2) )
 
-       !error check with Tion
-!dbg20120501             IF (n0_1d%Ti_k(jth-TSP-1,i1d)<=0.) THEN
-!dbg20120501                print "('sub-int:!STOP! INVALID Ti',3E12.4,5i7)" & 
-!dbg20120501                     &, n0(jth,1), n0_1d%Ti_k(jth-TSP-1,i1d) , n0(jth,2),jth,i1d,i,mp,lp
-!dbg20120501                print "('!check X!=',3E12.4)",x(1),x(0),x(2)
-!dbg20120501                print "('!check B!=',3E12.4)",B0(1),B0(0),B0(2)
-!dbg20120501                STOP
-!dbg20120501             END IF
-
-!dbg20120330: new ksi_factor
                 plasma_1d(jth,i1d) = plasma_1d(jth,i1d) *(ksi_fac(1)**(4./3.))
 
           END IF !             IF ( jth<=TSP ) THEN
