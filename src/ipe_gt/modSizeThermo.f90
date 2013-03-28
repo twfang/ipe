@@ -14,9 +14,9 @@ PUBLIC :: GT_ht_dim, &
 
 SAVE
 
-!----------------------------------
-! sizes of Thermospheric fixed grid 
-!----------------------------------
+!--------------------------------------
+! sizes of Thermospheric pressure grid 
+!--------------------------------------
 integer, parameter :: GT_ht_dim = 15
 integer, parameter :: GT_lat_dim = 91
 integer, parameter :: GT_lon_dim = 20

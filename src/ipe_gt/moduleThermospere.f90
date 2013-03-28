@@ -124,7 +124,7 @@ SUBROUTINE GT_thermosphere( &
       IMPLICIT NONE
 
      
-      CHARACTER*100, INTENT(IN) :: GT_output_dataset  ! Startup filename for the next run
+      CHARACTER*200, INTENT(IN) :: GT_output_dataset  ! Startup filename for the next run
       !INTEGER, INTENT(IN) :: i_no_day                 !M:I: nday (input from unit5)
       INTEGER, INTENT(IN) :: timestep_in_seconds    !M:I:  (input from unit5)
       !INTEGER, INTENT(IN)  :: i_graphics_out_start   !NE:I:  (input from unit5)

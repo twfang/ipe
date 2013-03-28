@@ -132,7 +132,7 @@ ionoVar_high_res_fixed = 0.0
   do iheight = 1, nheights
       do l = 1, lLons
          do m = mlow_interface(l), mhigh_interface(l)  ! latitudes
-          !!do m = 1, nFixedGridThermoLats  In the future we want to do all latitudes
+          !!do m = 1, nFixedGridIonoLats  In the future we want to do all latitudes
 
              !---------------------------------------------
              !  Initialize dtoinv
@@ -173,14 +173,14 @@ ionoVar_high_res_fixed = 0.0
           
               ionoVar_high_res_fixed(iheight,m,l) = ionoVar_high_res_fixed(iheight,m,l)/dtotinv
 
-              if (ionoVar_high_res_fixed(iheight,m,l) == 0 .and. iheight == 1) then
-                  print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : ionoVar_high_res_fixed(iheight,m,l) == 0', iheight, m, l
-                  print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : factor, mp, lp, in2, in1 = ', &
-                           factor, mp, lp, in2, in1
-                  print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : ionoVar(in1,mp) = ',ionoVar(in1,mp)
-                  !print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : ARTIFICIALLY SETTTING TO .1 ****'
-                  !ionoVar_high_res_fixed(iheight,m,l) = 0.1
-              endif
+              !if (ionoVar_high_res_fixed(iheight,m,l) == 0 .and. iheight == 1) then
+              !    print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : ionoVar_high_res_fixed(iheight,m,l) == 0', iheight, m, l
+              !    print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : factor, mp, lp, in2, in1 = ', &
+              !             factor, mp, lp, in2, in1
+              !    print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : ionoVar(in1,mp) = ',ionoVar(in1,mp)
+              !    !print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : ARTIFICIALLY SETTTING TO .1 ****'
+              !    !ionoVar_high_res_fixed(iheight,m,l) = 0.1
+              !endif
 
           ENDDO ! lats  m
 
@@ -216,8 +216,8 @@ ionoVar_high_res_fixed = 0.0
   !END WHERE
 
 
-  print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : MINVAL(ionoVar) = ',MINVAL(ionoVar)
-  print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : MINVAL(ionoVar_high_res_fixed) = ', MINVAL(ionoVar_high_res_fixed)
+  !print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : MINVAL(ionoVar) = ',MINVAL(ionoVar)
+  !print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : MINVAL(ionoVar_high_res_fixed) = ', MINVAL(ionoVar_high_res_fixed)
 
 !  print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : mlow_interface = ',mlow_interface
 !  print *,'INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO : mhigh_interface = ',mhigh_interface
@@ -252,10 +252,7 @@ SUBROUTINE INTERFACE__FIXED_GRID_to_THERMO ( &
 
 IMPLICIT NONE
 
-! From modSizeFixedGridThermo : -------------------------
-! nFixedGridThermoHeights = 31
-! nFixedGridThermoLats = 91
-! nFixedGridThermoLons = 90
+
 ! From modSizeFixedGridIono : -------------------------
 ! nFixedGridIonoHeights = 183
 ! nFixedGridIonoLats = 91
@@ -561,29 +558,22 @@ enddo
 !--------------------------------------
 ! Set up high resolution longitudes
 !--------------------------------------
-do ilon_int = 1, nFixedGridThermoLons
+do ilon_int = 1, nFixedGridIonoLons
    high_res_long(ilon_int) = (float(ilon_int-1)) * 4.
 enddo
 
 !-----------------------------------
 ! Set up  high resolution latitudes
 !-----------------------------------
-do ilat_int = 1, nFixedGridThermoLats
+do ilat_int = 1, nFixedGridIonoLats
    high_res_lat(ilat_int) = (float(ilat_int-46)) * 2.
 enddo
 
 !----------------------------------------------------------
-! Comment this out & replace with zkm_fixed_ht (rename to high-res)******************
-! - from GIP_ionosphere_plasmasphere.fromresthermo.f90 ******************
+! - from GIP_ionosphere_plasmasphere.fromresthermo.f90 
 !----------------------------------------------------------
-!do iht_int = 1 , nFixedGridThermoHeights
-!   high_res_height(iht_int) = fixedThermoHeights_km(iht_int)
-!enddo
-
 ! These arrays are the same size (nFixedGridIonoHeights)
 high_res_height = zkm_fixed_ht
-
-
 
 
 
@@ -600,7 +590,7 @@ do ilon = 1 , lon_dim
 
    ispecial = 0
 
-   do ilon_int = 1, nFixedGridThermoLons
+   do ilon_int = 1, nFixedGridIonoLons
 
       if (high_res_long(ilon_int) > therm_geo_long(ilon)) then
           ilon_east = ilon_int
@@ -611,14 +601,14 @@ do ilon = 1 , lon_dim
    enddo ! ilon_int
 
    ilon_east = 1
-   ilon_west = nFixedGridThermoLons
+   ilon_west = nFixedGridIonoLons
    ispecial = 1
        
 1500 continue
 
    if (ilon_east == 1) then
        ilon_east = 1
-       ilon_west = nFixedGridThermoLons
+       ilon_west = nFixedGridIonoLons
        ispecial = 1
    endif
 
@@ -649,7 +639,7 @@ do ilon = 1 , lon_dim
       !--------------------------------
       ! latitude interpolation....
       !--------------------------------
-      do ilat_int = 1 , nFixedGridThermoLats
+      do ilat_int = 1 , nFixedGridIonoLats
 
          if (high_res_lat(ilat_int) > therm_geo_lat_input(ilat)) then 
              ilat_north = ilat_int
@@ -679,9 +669,10 @@ do ilon = 1 , lon_dim
 
          therm_Z_km = therm_Z(iht, ilat, ilon) / 1000.
 
-         !-----------------------------------
+         !-----------------------------------------------------------------------------
          ! height interpolation....
-         !-----------------------------------
+         ! Find the index of the two vertical ionospheric grid cells we are in between
+         !-----------------------------------------------------------------------------
          do iht_int = 1, nFixedGridIonoHeights 
 
             if (high_res_height(iht_int) > therm_Z_km) then
@@ -692,9 +683,14 @@ do ilon = 1 , lon_dim
          enddo
 
          ! should be an else statement instead ***********
-  
-         iht_above = nFixedGridThermoHeights
-         iht_below = nFixedGridThermoHeights - 1
+
+         !print *,' HERE AT iht_above = nFixedGridIonoHeights .......'
+         !print *,'iht_int, iht_above, iht_below = ',iht_int, iht_above, iht_below
+         !print *,'therm_Z_km, high_res_height(iht_int) = ',therm_Z_km, high_res_height(iht_int)
+         !STOP
+
+         iht_above = nFixedGridIonoHeights         ! fixed lrm20130102
+         iht_below = nFixedGridIonoHeights - 1
   
 2500 continue
 

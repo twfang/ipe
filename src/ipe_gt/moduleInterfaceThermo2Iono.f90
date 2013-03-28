@@ -68,9 +68,9 @@ SUBROUTINE INTERFACE__thermosphere_to_FIXED_GEO ( &
            !! therm_qo2p_aurora, therm_qop_aurora, therm_qn2p_aurora, &
            !! therm_qnp_aurora, therm_qtef_aurora, &
 
-           therm_long, &
-           therm_lat, &
-           therm_Z, &
+           therm_long, &  ! input
+           therm_lat, &   ! input
+           therm_Z, &     ! input
 
            !o_density_fixed_ht, o2_density_fixed_ht, n2_density_fixed_ht, &  ! output
            interface_o_density, interface_o2_density, interface_n2_density, &  ! output
@@ -93,42 +93,47 @@ SUBROUTINE INTERFACE__thermosphere_to_FIXED_GEO ( &
 
 IMPLICIT NONE
 
-LOGICAL :: GIP_switches(20)
-character*10 :: thermospheric_model_name
-integer :: ht_dim , lat_dim , lon_dim
-REAL(kind=8) :: therm_o_density(ht_dim,lon_dim,lat_dim)
-REAL(kind=8) :: therm_o2_density(ht_dim,lon_dim,lat_dim)
-REAL(kind=8) :: therm_n2_density(ht_dim,lon_dim,lat_dim)
+!-----------
+! Inputs
+!-----------
+LOGICAL, INTENT(IN) :: GIP_switches(20)
+character*10, INTENT(IN)  :: thermospheric_model_name
+integer, INTENT(IN)  :: ht_dim , lat_dim , lon_dim
+
+REAL(kind=8), INTENT(IN) :: therm_o_density(ht_dim,lon_dim,lat_dim)
+REAL(kind=8), INTENT(IN) :: therm_o2_density(ht_dim,lon_dim,lat_dim)
+REAL(kind=8), INTENT(IN) :: therm_n2_density(ht_dim,lon_dim,lat_dim)
+
+! These are used but not set *****
 REAL(kind=8) :: therm_NO_density(ht_dim,lon_dim,lat_dim)
 REAL(kind=8) :: therm_N4S_density(ht_dim,lon_dim,lat_dim)
 REAL(kind=8) :: therm_N2D_density(ht_dim,lon_dim,lat_dim)
-REAL(kind=8) :: therm_Tn(ht_dim,lon_dim,lat_dim)
+
+REAL(kind=8), INTENT(IN) :: therm_Tn(ht_dim,lon_dim,lat_dim)
 
 ! wind
-REAL(kind=8) :: Vn_east(ht_dim,lon_dim,lat_dim)
-REAL(kind=8) :: Vn_South(ht_dim,lon_dim,lat_dim)
-REAL(kind=8) :: Vn_Upward(ht_dim,lon_dim,lat_dim)
+REAL(kind=8), INTENT(IN) :: Vn_east(ht_dim,lon_dim,lat_dim)
+REAL(kind=8), INTENT(IN) :: Vn_South(ht_dim,lon_dim,lat_dim)
+REAL(kind=8), INTENT(IN) :: Vn_Upward(ht_dim,lon_dim,lat_dim)
 
-REAL(kind=8) :: therm_qion3d(ht_dim,lon_dim,lat_dim)
-REAL(kind=8) :: therm_elx(ht_dim,lon_dim,lat_dim)
-REAL(kind=8) :: therm_ely(ht_dim,lon_dim,lat_dim)
+REAL(kind=8), INTENT(IN) :: therm_qion3d(ht_dim,lon_dim,lat_dim)
+REAL(kind=8), INTENT(IN) :: therm_elx(ht_dim,lon_dim,lat_dim)
+REAL(kind=8), INTENT(IN) :: therm_ely(ht_dim,lon_dim,lat_dim)
+
+REAL(kind=8), INTENT(IN) :: therm_long(lon_dim)
+REAL(kind=8), INTENT(IN) :: therm_lat(lat_dim)
+REAL(kind=8), INTENT(IN) :: therm_Z(ht_dim,lon_dim,lat_dim)
+
+! to be passed in the future.........
 REAL(kind=8) :: therm_qo2p_aurora(ht_dim,lon_dim,lat_dim)
 REAL(kind=8) :: therm_qop_aurora(ht_dim,lon_dim,lat_dim)
 REAL(kind=8) :: therm_qn2p_aurora(ht_dim,lon_dim,lat_dim)
 REAL(kind=8) :: therm_qnp_aurora(ht_dim,lon_dim,lat_dim)
 REAL(kind=8) :: therm_qtef_aurora(ht_dim,lon_dim,lat_dim)
-REAL(kind=8) :: therm_long(lon_dim)
-REAL(kind=8) :: therm_lat(lat_dim)
-REAL(kind=8) :: therm_Z(ht_dim,lon_dim,lat_dim)
 
 ! Outputs ----------------------------
-!REAL(kind=8), INTENT(OUT) :: o_density_fixed_ht(interface_hts,91,20)
 REAL(kind=8), INTENT(OUT) :: interface_o_density(interface_hts,91,20)
-
-!REAL(kind=8), INTENT(OUT) :: o2_density_fixed_ht(interface_hts,91,20)
 REAL(kind=8), INTENT(OUT) ::  interface_o2_density(interface_hts,91,20)
-
-!REAL(kind=8), INTENT(OUT) :: n2_density_fixed_ht(interface_hts,91,20)
 REAL(kind=8), INTENT(OUT) ::  interface_n2_density(interface_hts,91,20)
 
 !REAL(kind=8) :: NO_density_fixed_ht(interface_hts,91,20) ! was set but never used lrm20121108
@@ -137,20 +142,13 @@ REAL(kind=8) :: N2D_density_fixed_ht(interface_hts,91,20)
 
 
 ! Wind
-!REAL(kind=8) :: Vx_fixed_ht(interface_hts,91,20)
-!REAL(kind=8) :: Vy_fixed_ht(interface_hts,91,20)
-!REAL(kind=8) :: wvz_fixed_ht(interface_hts,91,20)
-! wind
 REAL(kind=8), INTENT(OUT) :: interface_East(interface_hts,91,20)
 REAL(kind=8), INTENT(OUT) :: interface_South(interface_hts,91,20)
 REAL(kind=8), INTENT(OUT) :: interface_Upward(interface_hts,91,20)
 
 
-!REAL(kind=8) :: tts_fixed_ht(interface_hts,91,20)
 ! temperature
 REAL(kind=8), INTENT(OUT) ::  interface_Tn(interface_hts,91,20)
-
-
 
 REAL(kind=8) :: qion3d_fixed_ht(interface_hts,91,20)
 REAL(kind=8) :: elx_fixed_ht(interface_hts,91,20)
@@ -164,6 +162,8 @@ REAL(kind=8) :: qtef_aurora_fixed_ht(interface_hts,91,20)
 
 
 ! Local variables -----------------------------------------
+
+
 
 INTEGER :: ilon, ilat, iht
 INTEGER :: ilon_therm , ilat_therm , iht_therm 
@@ -576,180 +576,214 @@ do iht = 1 , interface_hts
   interface_height(iht) = fixed_heights_km(iht)
 enddo
 
+!print *,'therm_long = ',therm_long
+!print *,'therm_lat = ',therm_lat
+!print *,'therm_Z(:,10,20) = ',therm_Z(:,10,20)
+!print *,'therm_Z(:,11,20) = ',therm_Z(:,11,20)
+!print *,'therm_Z(:,9,20) = ',therm_Z(:,9,20)
 
 
+!print *,'interface_long = ',interface_long
+!print *,'interface_lat = ',interface_lat
+!print *,'interface_height = ',interface_height
+
+!STOP
+
+
+
+!------------------------------------------
 ! Loop over interface longitudes....
-
+!------------------------------------------
 do ilon = 1 , 20
 
-!longitude interpolation
+    !longitude interpolation
 
-! loop over thermosphere longs to find points east and west....
+    ! loop over thermosphere longs to find points east and west....
    ispecial = 0
-do ilon_therm = 1 , lon_dim
- if ( therm_long(ilon_therm) > interface_long(ilon)) then
-   ilon_east = ilon_therm
-   ilon_west = ilon_therm - 1
-   goto 1500
- endif
-enddo
+   do ilon_therm = 1 , lon_dim
+      if ( therm_long(ilon_therm) > interface_long(ilon)) then
+          ilon_east = ilon_therm
+          ilon_west = ilon_therm - 1
+          goto 1500
+     endif
+   enddo
    ilon_east = 1
    ilon_west = lon_dim
    ispecial = 1
 1500 continue
 
-if (ispecial == 0) then
-factor_lon = (interface_long(ilon) - therm_long(ilon_west)) / (therm_long(ilon_east) - therm_long(ilon_west))
-else
-factor_lon = (interface_long(ilon) - therm_long(ilon_west)) / (therm_long(ilon_east)+360. - therm_long(ilon_west))
-endif
-factor_lon_array(ilon) = factor_lon
-ilon_west_array(ilon) = ilon_west
-ilon_east_array(ilon) = ilon_east
+   if (ispecial == 0) then
+      factor_lon = (interface_long(ilon) - therm_long(ilon_west)) / (therm_long(ilon_east) - therm_long(ilon_west))
+   else
+      factor_lon = (interface_long(ilon) - therm_long(ilon_west)) / (therm_long(ilon_east)+360. - therm_long(ilon_west))
+   endif
 
-! Loop over interface latitudes....
+   !print *,'factor_lon = ',factor_lon
 
-do ilat = 1 , 91
+   factor_lon_array(ilon) = factor_lon
+   ilon_west_array(ilon) = ilon_west
+   ilon_east_array(ilon) = ilon_east
 
-! latitude interpolation....
+   !---------------------------------------
+   ! Loop over interface latitudes....
+   !------------------------------------
+   do ilat = 1 , 91
 
-do ilat_therm = 1 , lat_dim
- if ( therm_lat(ilat_therm) > interface_lat(ilat) ) then 
-     ilat_north = ilat_therm
-     ilat_south = ilat_therm - 1
-   goto 2000
- endif
-enddo 
+      ! latitude interpolation....
+
+      do ilat_therm = 1 , lat_dim
+         if ( therm_lat(ilat_therm) > interface_lat(ilat) ) then 
+            ilat_north = ilat_therm
+            ilat_south = ilat_therm - 1
+            goto 2000
+         endif
+     enddo 
+
 2000 continue
-if ( ilat_north == 1  ) then
-ilat_north = 2
-ilat_south = 1
-endif
 
-factor_lat = (interface_lat(ilat) - therm_lat(ilat_south)) / (therm_lat(ilat_north) - therm_lat(ilat_south))
+     if ( ilat_north == 1  ) then
+        ilat_north = 2
+        ilat_south = 1
+     endif
 
-if(factor_lat < 0.0) factor_lat = 0.0
-if(factor_lat > 1.0) factor_lat = 1.0
+     factor_lat = (interface_lat(ilat) - therm_lat(ilat_south)) / (therm_lat(ilat_north) - therm_lat(ilat_south))
 
-factor_lat_array(ilat) = factor_lat
-ilat_north_array(ilat) = ilat_north
-ilat_south_array(ilat) = ilat_south
+     if(factor_lat < 0.0) factor_lat = 0.0
+     if(factor_lat > 1.0) factor_lat = 1.0
+
+     !print *,'factor_lat = ', factor_lat
+
+     factor_lat_array(ilat) = factor_lat
+     ilat_north_array(ilat) = ilat_north
+     ilat_south_array(ilat) = ilat_south
 
 
+     !------------------------------------
+     ! Loop over interface heights....
+     !------------------------------------
+     do iht = 1 , interface_hts
 
-! Loop over interface heights....
+        ! height interpolation....
 
-do iht = 1 , interface_hts
-
-! height interpolation....
-
-do iht_therm = 1 , ht_dim
-therm_height(iht_therm) = therm_Z(iht_therm,ilon_west,ilat_north) / 1000.
-if ( therm_height(iht_therm) > interface_height(iht) ) then 
-  iht_above = iht_therm
-  iht_below = iht_therm - 1
-  goto 2500
-endif
-enddo 
+   do iht_therm = 1 , ht_dim
+      therm_height(iht_therm) = therm_Z(iht_therm,ilon_west,ilat_north) / 1000.
+      if ( therm_height(iht_therm) > interface_height(iht) ) then 
+         iht_above = iht_therm
+         iht_below = iht_therm - 1
+         goto 2500
+      endif
+   enddo 
 
 2500 continue
 
-if ( iht_above == 1 ) then 
-     iht_above = 2
-     iht_below = 1
-endif
+   if ( iht_above == 1 ) then 
+        iht_above = 2
+        iht_below = 1
+   endif
 
-factor_ht12 = (interface_height(iht) - therm_height(iht_below)) / &
+   factor_ht12 = (interface_height(iht) - therm_height(iht_below)) / &
               (therm_height(iht_above) - therm_height(iht_below))
 
-if( factor_ht12 < 0.0 ) factor_ht12 = 0.0
+   if( factor_ht12 < 0.0 ) factor_ht12 = 0.0
 
-factor_ht_west_north(iht,ilat,ilon) = factor_ht12
-iht_above_west_north(iht,ilat,ilon) = iht_above
-iht_below_west_north(iht,ilat,ilon) = iht_below
+   !print *,'factor_ht12 = ',factor_ht12
 
 
+   factor_ht_west_north(iht,ilat,ilon) = factor_ht12
+   iht_above_west_north(iht,ilat,ilon) = iht_above
+   iht_below_west_north(iht,ilat,ilon) = iht_below
 
-do iht_therm = 1 , ht_dim
-   therm_height(iht_therm) = therm_Z(iht_therm,ilon_east,ilat_north) / 1000.
-   if ( therm_height(iht_therm) > interface_height(iht) ) then
-        iht_above = iht_therm
-        iht_below = iht_therm - 1
-        goto 3000      
-   endif
-enddo 
+
+
+   do iht_therm = 1 , ht_dim
+      therm_height(iht_therm) = therm_Z(iht_therm,ilon_east,ilat_north) / 1000.
+      if ( therm_height(iht_therm) > interface_height(iht) ) then
+           iht_above = iht_therm
+           iht_below = iht_therm - 1
+           goto 3000      
+      endif
+   enddo 
 
 3000 continue
 
-if ( iht_above == 1  ) then
-     iht_above = 2
-     iht_below = 1
-endif
+   if ( iht_above == 1  ) then
+        iht_above = 2
+        iht_below = 1
+   endif
 
-factor_ht22 = (interface_height(iht) - therm_height(iht_below)) / &
+   factor_ht22 = (interface_height(iht) - therm_height(iht_below)) / &
               (therm_height(iht_above) - therm_height(iht_below))
 
-if( factor_ht22 < 0.0 ) factor_ht22 = 0.0
+   if( factor_ht22 < 0.0 ) factor_ht22 = 0.0
 
-factor_ht_east_north(iht,ilat,ilon) = factor_ht22
-iht_above_east_north(iht,ilat,ilon) = iht_above
-iht_below_east_north(iht,ilat,ilon) = iht_below
+   !print *,'factor_ht22 = ',factor_ht22
+
+   factor_ht_east_north(iht,ilat,ilon) = factor_ht22
+   iht_above_east_north(iht,ilat,ilon) = iht_above
+   iht_below_east_north(iht,ilat,ilon) = iht_below
 
 
 
-do iht_therm = 1 , ht_dim
-   therm_height(iht_therm) = therm_Z(iht_therm,ilon_west,ilat_south) / 1000.
-   if ( therm_height(iht_therm) > interface_height(iht) ) then
-       iht_above = iht_therm
-       iht_below = iht_therm - 1
-       goto 3500     
-   endif
-enddo 
+   do iht_therm = 1 , ht_dim
+      therm_height(iht_therm) = therm_Z(iht_therm,ilon_west,ilat_south) / 1000.
+      if ( therm_height(iht_therm) > interface_height(iht) ) then
+          iht_above = iht_therm
+          iht_below = iht_therm - 1
+          goto 3500     
+      endif
+   enddo 
 
 3500 continue
 
-if ( iht_above == 1 ) then
-iht_above = 2
-iht_below = 1
-endif
+   if ( iht_above == 1 ) then
+       iht_above = 2
+       iht_below = 1
+   endif
 
-factor_ht11 = (interface_height(iht) - therm_height(iht_below)) / &
+   factor_ht11 = (interface_height(iht) - therm_height(iht_below)) / &
               (therm_height(iht_above) - therm_height(iht_below))
 
-if( factor_ht11 < 0.0 ) factor_ht11 = 0.0
+   if( factor_ht11 < 0.0 ) factor_ht11 = 0.0
 
-factor_ht_west_south(iht,ilat,ilon) = factor_ht11
-iht_above_west_south(iht,ilat,ilon) = iht_above
-iht_below_west_south(iht,ilat,ilon) = iht_below
+   !print *,'factor_ht11 = ',factor_ht11
+
+   factor_ht_west_south(iht,ilat,ilon) = factor_ht11
+   iht_above_west_south(iht,ilat,ilon) = iht_above
+   iht_below_west_south(iht,ilat,ilon) = iht_below
 
 
-do iht_therm = 1 , ht_dim
-therm_height(iht_therm) = therm_Z(iht_therm,ilon_east,ilat_south) / 1000.
-if ( therm_height(iht_therm) > interface_height(iht) ) then
-  iht_above = iht_therm
-  iht_below = iht_therm - 1
-  goto 4000     
-endif
-enddo 
+   do iht_therm = 1 , ht_dim
+      therm_height(iht_therm) = therm_Z(iht_therm, ilon_east, ilat_south) / 1000.
+      if ( therm_height(iht_therm) > interface_height(iht) ) then
+         iht_above = iht_therm
+         iht_below = iht_therm - 1
+         goto 4000     
+      endif
+   enddo 
+
 4000 continue
-if ( iht_above == 1 ) then
-iht_above = 2
-iht_below = 1
-endif
 
-factor_ht21 = (interface_height(iht) - therm_height(iht_below)) / (therm_height(iht_above) - therm_height(iht_below))
+   if ( iht_above == 1 ) then
+       iht_above = 2
+       iht_below = 1
+   endif
 
-if( factor_ht21 < 0.0 ) factor_ht21 = 0.0
+   factor_ht21 = (interface_height(iht) - therm_height(iht_below)) / (therm_height(iht_above) - therm_height(iht_below))
 
-factor_ht_east_south(iht,ilat,ilon) = factor_ht21
-iht_above_east_south(iht,ilat,ilon) = iht_above
-iht_below_east_south(iht,ilat,ilon) = iht_below
+   if( factor_ht21 < 0.0 ) factor_ht21 = 0.0
+
+   !print *,'factor_ht11 = ',factor_ht11
+
+   factor_ht_east_south(iht,ilat,ilon) = factor_ht21
+   iht_above_east_south(iht,ilat,ilon) = iht_above
+   iht_below_east_south(iht,ilat,ilon) = iht_below
 
 
 
-enddo 
-enddo 
-enddo 
+enddo  ! heights
+enddo  ! lats
+enddo  ! lons
+
 
 
 ! Loop over interface longitudes....
@@ -786,10 +820,12 @@ do ilat = 1 , 91
    O_den_p_l12_log=log10(therm_o_density(iht_below,ilon_west,ilat_north))
    O_den_p_12_log = ((O_den_p_u12_log - O_den_p_l12_log)*factor_ht12) + O_den_p_l12_log
    O_den_p_12_log = 10**(O_den_p_12_log)
+
    O2_den_p_u12_log=log10(therm_o2_density(iht_above,ilon_west,ilat_north))
    O2_den_p_l12_log=log10(therm_o2_density(iht_below,ilon_west,ilat_north))
    O2_den_p_12_log = ((O2_den_p_u12_log - O2_den_p_l12_log)*factor_ht12) + O2_den_p_l12_log
    O2_den_p_12_log = 10**(O2_den_p_12_log)
+
    N2_den_p_u12_log=log10(therm_n2_density(iht_above,ilon_west,ilat_north))
    N2_den_p_l12_log=log10(therm_n2_density(iht_below,ilon_west,ilat_north))
    N2_den_p_12_log = ((N2_den_p_u12_log - N2_den_p_l12_log)*factor_ht12) + N2_den_p_l12_log
@@ -1183,8 +1219,10 @@ ely_p_21 = ((ely_p_u21 - ely_p_l21)*factor_ht21) + ely_p_l21
 !--------------------------------
    O_den_p_2 = ((O_den_p_22_log - O_den_p_21_log) * factor_lat) + O_den_p_21_log
    O_den_p_1 = ((O_den_p_12_log - O_den_p_11_log) * factor_lat) + O_den_p_11_log
+
    O2_den_p_2 = ((O2_den_p_22_log - O2_den_p_21_log) * factor_lat) + O2_den_p_21_log
    O2_den_p_1 = ((O2_den_p_12_log - O2_den_p_11_log) * factor_lat) + O2_den_p_11_log
+
    N2_den_p_2 = ((N2_den_p_22_log - N2_den_p_21_log) * factor_lat) + N2_den_p_21_log
    N2_den_p_1 = ((N2_den_p_12_log - N2_den_p_11_log) * factor_lat) + N2_den_p_11_log
 
@@ -1517,11 +1555,14 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
 
 
   ! meridional wind
-  REAL(kind=8) :: eastl11 , eastl12 , eastl21 , eastl22 ,  eastu11 , eastu12 , eastu21 , eastu22 , east11 , east12 , east21 , east22 , east1 , east2
+  REAL(kind=8) :: eastl11 , eastl12 , eastl21 , eastl22 ,  eastu11 , eastu12 , eastu21 , eastu22 , &
+                  east11 , east12 , east21 , east22 , east1 , east2
   ! zonal wind
-  REAL(kind=8) :: southl11 , southl12 , southl21 , southl22 ,  southu11 , southu12 , southu21 , southu22 , south11 , south12 , south21 , south22 , south1 , south2
+  REAL(kind=8) :: southl11 , southl12 , southl21 , southl22 ,  southu11 , southu12 , southu21 , southu22 , &
+                  south11 , south12 , south21 , south22 , south1 , south2
   ! vertical wind
-  REAL(kind=8) :: upwardl11 , upwardl12 , upwardl21 , upwardl22 ,  upwardu11 , upwardu12 , upwardu21 , upwardu22 , upward11 , upward12 , upward21 , upward22 , upward1 , upward2
+  REAL(kind=8) :: upwardl11 , upwardl12 , upwardl21 , upwardl22 ,  upwardu11 , upwardu12 , upwardu21 , upwardu22 , &
+                  upward11 , upward12 , upward21 , upward22 , upward1 , upward2
 
  !---------------------------------------------------------------------------------------
  ! This is not used, but Naomi will double check - was used for tiegcm oplus density
@@ -1540,16 +1581,11 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
 
   !INTEGER :: iprob not used lrm20121115
 
-
   INTEGER :: ispecial , IWRite, istop
 
   !INTEGER ::  l , m , n , itube, ifault, iwrite1  not used lrm20121115
 
-
-
   REAL(kind=8) :: fixed_hts_in_km(N_heights)
-
-
 
   REAL(kind=8) :: pzh(N_heights)
 

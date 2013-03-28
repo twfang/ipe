@@ -111,10 +111,11 @@ INTEGER, parameter :: unitCheckThermoInterp = 7800
 !---------------------------------------------------
 ! Write out the Thermospheric interpolated values??
 !---------------------------------------------------
-LOGICAL, parameter :: debugThermoInterp = .truE.
+LOGICAL, parameter :: debugThermoInterp = .FALSE.
 CHARACTER(LEN=*), PARAMETER :: debugThermoInterpFileName = 'interpOut.dat'
 INTEGER, parameter :: unitCheckThermoInterpBefore = 7600  ! for writing out thermosphere values
 INTEGER, parameter :: unitCheckThermoInterpAfter = 7500  ! for writing out thermosphere values
+INTEGER, parameter :: unitCheckThermoInterpFluxT = 7400  ! for writing out thermosphere values
 INTEGER, parameter :: unitCheckPressureHeightThermo = 8800
 
 !-----------------------------------------------------------------
@@ -123,6 +124,7 @@ INTEGER, parameter :: unitCheckPressureHeightThermo = 8800
 ! THIS IS NOT BEING USED RIGHT NOW,  NEED TO WRITE TO THIS FILE
 INTEGER, parameter :: unitCheckIonoInterpBefore = 9800
 INTEGER, parameter :: unitCheckIonoInterpAfter = 9900
+
 INTEGER, parameter :: numIonoVars = 10
 !INTEGER :: unitCheckIonoInterp(numIonoVars)
 CHARACTER(LEN=30) :: ionoVarName(numIonoVars)
@@ -132,7 +134,8 @@ CHARACTER(LEN=30) :: ionoVarName(numIonoVars)
 ! and file unit number for getting the average height for each pressure level
 !-----------------------------------------------------------------------------
 INTEGER, parameter :: unitCheckPressureInterp = 8900
-INTEGER, parameter :: unitCheckPressureHeight = 8800
+INTEGER, parameter :: unitCheckPressureHeight = 7820
+INTEGER, parameter :: unitPressureGridHeight = 7810
 
 !------------------------------------------------
 ! Write out the Ionospheric interpolated values??
@@ -146,7 +149,7 @@ LOGICAL, parameter :: debugIonoInterp = .FALSE.
 !---------------------------------------------------------------
 ! Write out the Ionospheric pressure grid interpolated values??
 !---------------------------------------------------------------
-LOGICAL, parameter :: debugIonoFixedtoPressure = .FALSE.
+LOGICAL, parameter :: debugIonoFixedtoPressure = .TRUE.
 
 !----------------------------------------
 ! File unit number for IPE startup files
@@ -207,10 +210,12 @@ INTEGER :: nn=0 , nnloop=0 , &
 
 INTEGER :: ii, jj, kk, ll, mm
 
+!INTEGER :: iitime = 1 ! FOR TESTING gt->fixed grid interpolation
+
+INTEGER :: bigLoop = 1 ! for counting how many times we've been in outer loop
+INTEGER :: littleLoop = 1 ! for counting how many times we've been in inner loop
 
 INTEGER (KIND=int_prec) :: gtLoopTime
-
-!INTEGER, parameter :: i_no_day = 1 !  - don't think I need this 
 
 INTEGER :: idump_gt  ! dump out GT?
 
@@ -314,16 +319,6 @@ REAL(kind=8) :: qion3d_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
 REAL(kind=8) :: elx_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
 REAL(kind=8) :: ely_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
 
-
-! GIP grid :
-!INTEGER, PARAMETER :: NPTS = 13813 ! Total number of gridpoints along flux tubes
-!INTEGER, PARAMETER :: NMP  = 80  ! number of longitude sectors
-!INTEGER, PARAMETER :: NLP  = 67  ! number of tubes (N. pole to equator)
-
-! IPE grid :
-!INTEGER, PARAMETER :: NPTS = 44438 ! Total number of gridpoints along flux tubes
-!INTEGER, PARAMETER :: NMP  = 80  ! number of longitude sectors
-!INTEGER, PARAMETER :: NLP  = 170  ! number of tubes (N. pole to equator)
 
 INTEGER :: fileNPTS, fileNMP, fileNLP  ! read from IPE grid file, but not used
 REAL (KIND=8), DIMENSION(1:NMP+1) :: mlon_rad
@@ -447,6 +442,16 @@ integer, parameter :: numIonoStart = 11
 
 
 type (startUpType) :: startUpFiles(numIonoStart)
+
+!-------------------------
+! For timing the code :
+!-------------------------
+REAL :: startTime, endTime
+REAL :: timeFluxGridtoFixedGrid = 0.
+REAL :: timeFixedGridtoPressureGrid = 0.
+REAL :: timePressureGridtoFixedGrid = 0.
+REAL :: timeFixedGridtoFluxGrid = 0.
+
 
 !-----------------------------------
 ! Namelist for input parameters :
@@ -703,7 +708,7 @@ IF ( sw_neutral == 'GT' ) then
        OPEN (unitCheckPressureInterp+7, FILE=TRIM(debugDir)//TRIM('TePressureGrid.txt'), STATUS='REPLACE')
        OPEN (unitCheckPressureInterp+8, FILE=TRIM(debugDir)//TRIM('TiPressureGrid.txt'), STATUS='REPLACE')
 
-       OPEN (unitCheckPressureHeight, FILE=TRIM(debugDir)//TRIM('PressureHeightGrid.txt'), STATUS='REPLACE')
+       OPEN (unitCheckPressureHeight, FILE=TRIM(debugDir)//TRIM('averagePressureHeightGrid.txt'), STATUS='REPLACE')
 
 
   end if ! (debugIonoFixedtoPressure) 
@@ -714,31 +719,50 @@ IF ( sw_neutral == 'GT' ) then
    If (debugThermoInterp) then 
        OPEN (unitCheckThermoInterpBefore, FILE=TRIM(debugDir)//TRIM('SouthWindBefore.txt'), STATUS='REPLACE')
        OPEN (unitCheckThermoInterpAfter, FILE=TRIM(debugDir)//TRIM('SouthWindAfter.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpFluxT, FILE=TRIM(debugDir)//TRIM('SouthWindFluxTube.txt'), STATUS='REPLACE')
 
        OPEN (unitCheckThermoInterpBefore+1, FILE=TRIM(debugDir)//TRIM('EastWindBefore.txt'), STATUS='REPLACE')
        OPEN (unitCheckThermoInterpAfter+1, FILE=TRIM(debugDir)//TRIM('EastWindAfter.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpFluxT+1, FILE=TRIM(debugDir)//TRIM('EastWindFluxTube.txt'), STATUS='REPLACE')
 
        OPEN (unitCheckThermoInterpBefore+2, FILE=TRIM(debugDir)//TRIM('WVZBefore.txt'), STATUS='REPLACE')
        OPEN (unitCheckThermoInterpAfter+2, FILE=TRIM(debugDir)//TRIM('WVZAfter.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpFluxT+2, FILE=TRIM(debugDir)//TRIM('WVZFluxTube.txt'), STATUS='REPLACE')
+
 
        OPEN (unitCheckThermoInterpBefore+3, FILE=TRIM(debugDir)//TRIM('RMTBefore.txt'), STATUS='REPLACE')
        OPEN (unitCheckThermoInterpAfter+3, FILE=TRIM(debugDir)//TRIM('RMTAfter.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpFluxT+3, FILE=TRIM(debugDir)//TRIM('RMTFluxTube.txt'), STATUS='REPLACE')
+
 
        OPEN (unitCheckThermoInterpBefore+4, FILE=TRIM(debugDir)//TRIM('TemperatureBefore.txt'), STATUS='REPLACE')
        OPEN (unitCheckThermoInterpAfter+4, FILE=TRIM(debugDir)//TRIM('TemperatureAfter.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpFluxT+4, FILE=TRIM(debugDir)//TRIM('TemperatureFluxTube.txt'), STATUS='REPLACE')
+
 
        OPEN (unitCheckThermoInterpBefore+5, FILE=TRIM(debugDir)//TRIM('OBefore.txt'), STATUS='REPLACE')
        OPEN (unitCheckThermoInterpAfter+5, FILE=TRIM(debugDir)//TRIM('OAfter.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpFluxT+5, FILE=TRIM(debugDir)//TRIM('OFluxTube.txt'), STATUS='REPLACE')
+
 
        OPEN (unitCheckThermoInterpBefore+6, FILE=TRIM(debugDir)//TRIM('O2Before.txt'), STATUS='REPLACE')
        OPEN (unitCheckThermoInterpAfter+6, FILE=TRIM(debugDir)//TRIM('O2After.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpFluxT+6, FILE=TRIM(debugDir)//TRIM('O2FluxTube.txt'), STATUS='REPLACE')
+
 
        OPEN (unitCheckThermoInterpBefore+7, FILE=TRIM(debugDir)//TRIM('N2Before.txt'), STATUS='REPLACE')
        OPEN (unitCheckThermoInterpAfter+7, FILE=TRIM(debugDir)//TRIM('N2After.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpFluxT+7, FILE=TRIM(debugDir)//TRIM('N2FluxTube.txt'), STATUS='REPLACE')
+
 
        OPEN (unitCheckThermoInterpBefore+8, FILE=TRIM(debugDir)//TRIM('QionBefore.txt'), STATUS='REPLACE')
        OPEN (unitCheckThermoInterpAfter+8, FILE=TRIM(debugDir)//TRIM('QionAfter.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpFluxT+8, FILE=TRIM(debugDir)//TRIM('QionFluxTube.txt'), STATUS='REPLACE')
 
+       OPEN (unitCheckPressureHeightThermo, FILE=TRIM(debugDir)//TRIM('averagePressureHeightGridfromThermo.txt'), STATUS='REPLACE')
+
+       ! Write all heights out to a file 
+       OPEN (unitPressureGridHeight, FILE=TRIM(debugDir)//TRIM('PressureHeightGrid.txt'), STATUS='REPLACE')
 
    end if !  (debugThermoInterp)
 
@@ -1073,28 +1097,38 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
 
   end if
 
+  !---------------------------------------------------------------
+  ! Check the cpu time to get timing of the interface subroutine
+  !---------------------------------------------------------------
+  CALL CPU_TIME(startTime)
 
-  !print *,'driver_ipe_gt.3d :  Oplus ---------------------------------------------------------'
 
-  !-------------------------------------------------
-  ! Interpolate to fixed grid for all IPE species
-  !-------------------------------------------------
+  !-------------------------------------------------------
+  ! 1st interpolation :  Interpolate from flux tube grid
+  ! to the fixed height grid for all IPE species
+  !-------------------------------------------------------
   CALL INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
                                    NPTS, NMP, NLP, &     ! inputs
                                    nFixedGridIonoHeights, nFixedGridIonoLats, nFixedGridIonoLons, & ! inputs
                                    Oplus_density_from_IPE, &      ! inputs
                                    Oplus_high_res_fixed)   ! output
 
+  CALL CPU_TIME(endTime)
 
-  !print *,'driver_ipe_gt.3d :  Hplus ---------------------------------------------------------'
+  !------------------------------------------------------------------------
+  ! Add up how much time we've been spent in this routine, then avg at end
+  !------------------------------------------------------------------------
+  timeFluxGridtoFixedGrid = (endTime-startTime) + timeFluxGridtoFixedGrid
+  WRITE(*,*) "cpu_time for INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO, Oplus   : ",(endTime-startTime)
+
+
+
 
   CALL INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
                                    NPTS, NMP, NLP, &     ! inputs
                                    nFixedGridIonoHeights, nFixedGridIonoLats, nFixedGridIonoLons, & ! inputs
                                    Hplus_density_from_IPE, &      ! inputs
                                    Hplus_high_res_fixed)   ! output
-  
-  !print *,'driver_ipe_gt.3d :  Nplus ---------------------------------------------------------'
 
 
   CALL INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
@@ -1103,7 +1137,7 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
                                    Nplus_density_from_IPE, &      ! inputs
                                    Nplus_high_res_fixed)   ! output
 
-  !print *,'driver_ipe_gt.3d :  NOplus ---------------------------------------------------------'
+
 
   CALL INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
                                    NPTS, NMP, NLP, &     ! inputs
@@ -1111,7 +1145,7 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
                                    NOplus_density_from_IPE, &      ! inputs
                                    NOplus_high_res_fixed)   ! output
 
-  !print *,'driver_ipe_gt.3d :  O2plus ---------------------------------------------------------'
+
 
   CALL INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
                                    NPTS, NMP, NLP, &     ! inputs
@@ -1119,7 +1153,7 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
                                    O2plus_density_from_IPE, &      ! inputs
                                    O2plus_high_res_fixed)   ! output
 
-  !print *,'driver_ipe_gt.3d :  N2plus ---------------------------------------------------------'
+
 
   CALL INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
                                    NPTS, NMP, NLP, &     ! inputs
@@ -1127,7 +1161,7 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
                                    N2plus_density_from_IPE, &      ! inputs
                                    N2plus_high_res_fixed)   ! output
 
-  !print *,'driver_ipe_gt.3d :  Ne density ---------------------------------------------------------'
+
 				   
   CALL INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
                                    NPTS, NMP, NLP, &     ! inputs
@@ -1135,7 +1169,7 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
                                    Ne_density_from_IPE, &      ! inputs
                                    Ne_high_res_fixed)   ! output
 
-  !print *,'driver_ipe_gt.3d :  Te  ---------------------------------------------------------'
+
 
   CALL INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
                                    NPTS, NMP, NLP, &     ! inputs
@@ -1143,7 +1177,7 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
                                    Te_from_IPE, &      ! inputs
                                    Te_high_res_fixed)   ! output
 
-  !print *,'driver_ipe_gt.3d :  Ti  ---------------------------------------------------------'
+
 
   CALL INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
                                    NPTS, NMP, NLP, &     ! inputs
@@ -1151,7 +1185,7 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
                                    Ti_from_IPE, &      ! inputs
                                    Ti_high_res_fixed)   ! output		   
   If (debugIonoInterp) then 
-      print *,'driver_ipe_gt.3d : MINVAL(Oplus_high_res_fixed) = ', MINVAL(Oplus_high_res_fixed)
+      !print *,'driver_ipe_gt.3d : MINVAL(Oplus_high_res_fixed) = ', MINVAL(Oplus_high_res_fixed)
       !nm20120607dbg
       !write(9999,*) Oplus_high_res_fixed   ! output
       write(unitCheckIonoInterpAfter,*) Oplus_high_res_fixed
@@ -1171,7 +1205,8 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
    !------------------------------------------
    ! Loop here for the thermosphere time step
    !------------------------------------------
-   thermosphereLoop : DO gtLoopTime = utime, utime + (time_step-GT_timestep_in_seconds), GT_timestep_in_seconds
+   thermosphereLoop : DO gtLoopTime = utime, utime + (time_step-GT_timestep_in_seconds), &
+                                      GT_timestep_in_seconds !------------------------
 
       nnloop = MOD(nnloop + 1, number_of_GT_time_steps_in_24_hours)
       IF ( nnloop .EQ. 0 ) nnloop = number_of_GT_time_steps_in_24_hours
@@ -1222,32 +1257,37 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
       !    therm_model_n2plus_density, therm_model_nplus_density, &
       !    therm_model_Te, therm_model_Ti1, therm_model_Ti2)
 
-! from res-thermo-02 :
-!   call INTERFACE__GIP_to_thermosphere ( &
-!         thermospheric_model_name , therm_model_ht_dim , therm_model_lat_dim , therm_model_lon_dim, &
-!         ne_high_res_fixed,oplus_high_res_fixed,hplus_high_res_fixed, &
-!         noplus_high_res_fixed,o2plus_high_res_fixed, &
-!         n2plus_high_res_fixed,nplus_high_res_fixed, &
-!         Te_high_res_fixed,Ti1_high_res_fixed,Ti2_high_res_fixed, &
-!         therm_model_geo_long, therm_model_geo_lat, therm_model_ht_m, &
-!         therm_model_Ne_density,therm_model_oplus_density,therm_model_hplus_density, &
-!         therm_model_noplus_density,therm_model_o2plus_density, &
-!         therm_model_n2plus_density,therm_model_nplus_density, &
-!         therm_model_Te,therm_model_Ti1,therm_model_Ti2)
+      ! from res-thermo-02 :
+      !   call INTERFACE__GIP_to_thermosphere ( &
+      !         thermospheric_model_name , therm_model_ht_dim , therm_model_lat_dim , therm_model_lon_dim, &
+      !         ne_high_res_fixed,oplus_high_res_fixed,hplus_high_res_fixed, &
+      !         noplus_high_res_fixed,o2plus_high_res_fixed, &
+      !         n2plus_high_res_fixed,nplus_high_res_fixed, &
+      !         Te_high_res_fixed,Ti1_high_res_fixed,Ti2_high_res_fixed, &
+      !         therm_model_geo_long, therm_model_geo_lat, therm_model_ht_m, &
+      !         therm_model_Ne_density,therm_model_oplus_density,therm_model_hplus_density, &
+      !         therm_model_noplus_density,therm_model_o2plus_density, &
+      !         therm_model_n2plus_density,therm_model_nplus_density, &
+      !         therm_model_Te,therm_model_Ti1,therm_model_Ti2)
 
-!----------------
-! Placeholders :
-!----------------
-!Hplus_high_res_fixed = -999999.  ! This is not used yet ****  lrm20120509
-!N2plus_high_res_fixed = -999999.  ! This is not used yet ****  lrm20120509
-!Nplus_high_res_fixed = -999999.  ! This is not used yet ****  lrm20120509
-!Te_high_res_fixed = -999999.  ! This is not used yet ****  lrm20120509
+      !----------------
+      ! Placeholders :
+      !----------------
+      !Hplus_high_res_fixed = -999999.  ! This is not used yet ****  lrm20120509
+      !N2plus_high_res_fixed = -999999.  ! This is not used yet ****  lrm20120509
+      !Nplus_high_res_fixed = -999999.  ! This is not used yet ****  lrm20120509
+      !Te_high_res_fixed = -999999.  ! This is not used yet ****  lrm20120509
 
-!print *,'driver : Before INTERFACE__FIXED_GRID_to_THERMO '
-!print *,'driver : Ne_high_res_fixed(:,10,10) = ', Ne_high_res_fixed(:,10,10)
+      !print *,'driver : Before INTERFACE__FIXED_GRID_to_THERMO '
+      !print *,'driver : Ne_high_res_fixed(:,10,10) = ', Ne_high_res_fixed(:,10,10)
 
+      !------------------------------------------------------
+      ! Time the fixed grid to pressure grid interpolation
+      !------------------------------------------------------
+      CALL cpu_time(startTime)
 
-CALL INTERFACE__FIXED_GRID_to_THERMO ( &
+      ! This is in the loop b/c of changing heights of the pressure grid
+      CALL INTERFACE__FIXED_GRID_to_THERMO ( &
          thermospheric_model_name , GT_ht_dim , GT_lat_dim , GT_lon_dim , &  ! inputs
          Ne_high_res_fixed, Oplus_high_res_fixed, Hplus_high_res_fixed, &    ! inputs
          NOplus_high_res_fixed, O2plus_high_res_fixed, &                     ! inputs
@@ -1261,82 +1301,93 @@ CALL INTERFACE__FIXED_GRID_to_THERMO ( &
          N2plus_density_FOR_GT, Nplus_density_FOR_GT, &                      ! outputs
          Te_FOR_GT, Ti_Oplus_FOR_GT, Ti_Oplus_FOR_GT)                        ! outputs
 
-!--------------------------------------------------------
-! Write out the interpolated values on the pressure grid
-!--------------------------------------------------------
-if ((debugIonoFixedtoPressure) .and. (idump_gt == 1)) then
+      CALL cpu_time(endTime)
 
-      write(unitCheckPressureInterp,*) Oplus_density_for_GT
-      write(unitCheckPressureInterp + 1,*) Hplus_density_for_GT
-      write(unitCheckPressureInterp + 2,*) Nplus_density_for_GT
-      write(unitCheckPressureInterp + 3,*) NOplus_density_for_GT
-      write(unitCheckPressureInterp + 4,*) O2plus_density_for_GT
-      write(unitCheckPressureInterp + 5,*) N2plus_density_for_GT
-      write(unitCheckPressureInterp + 6,*) Ne_density_for_GT
-      write(unitCheckPressureInterp + 7,*) Te_for_GT
-      write(unitCheckPressureInterp + 8,*) Ti_Oplus_for_GT
-
-      !--------------------------------------------------------------------
-      ! Calculate and write out the average height for each pressure level
-      !--------------------------------------------------------------------
-      write(unitCheckPressureHeight, FMT="(I12)" ) gtLoopTime
-      do ii = 1, GT_ht_dim
-
-         !avgHeightofPressure = Ht_FROM_GT(ii,:,:)/(GT_lat_dim*GT_lon_dim)
-
-         write(unitCheckPressureHeight, FMT="(E12.4)") SUM(Ht_FROM_GT(ii,:,:))/(GT_lat_dim*GT_lon_dim)
-         !write(unitCheckPressureHeight, FMT="(A1)") " "
-
-      enddo
-
-end if
+      !------------------------------------------------------------------------
+      ! Add up how much time we've been spent in this routine, then avg at end
+      !------------------------------------------------------------------------
+      timeFixedGridtoPressureGrid = (endTime-startTime) + timeFixedGridtoPressureGrid
+      WRITE(*,*) "cpu_time for  INTERFACE__FIXED_GRID_to_THERMO  : ",(endTime-startTime)
 
 
+         !--------------------------------------------------------
+         ! Write out the interpolated values on the pressure grid
+         !--------------------------------------------------------
+         if ((debugIonoFixedtoPressure) .and. (idump_gt == 1)) then
 
-!----------------
-! Placeholders :
-!----------------
-!Hplus_density_FOR_GT = -999999.  ! This is not used yet ****  20120508lrm
-!N2plus_density_FOR_GT = -999999.  ! This is not used yet ****  20120508lrm
-!Nplus_density_FOR_GT = -999999.  ! This is not used yet ****  20120508lrm
-!Te_FOR_GT = -999999.  ! This is not used yet ****  20120508lrm
+            write(unitCheckPressureInterp,*) Oplus_density_for_GT
+            write(unitCheckPressureInterp + 1,*) Hplus_density_for_GT
+            write(unitCheckPressureInterp + 2,*) Nplus_density_for_GT
+            write(unitCheckPressureInterp + 3,*) NOplus_density_for_GT
+            write(unitCheckPressureInterp + 4,*) O2plus_density_for_GT
+            write(unitCheckPressureInterp + 5,*) N2plus_density_for_GT
+            write(unitCheckPressureInterp + 6,*) Ne_density_for_GT
+            write(unitCheckPressureInterp + 7,*) Te_for_GT
+            write(unitCheckPressureInterp + 8,*) Ti_Oplus_for_GT
+
+            ! write out the pressure grid heights
+            write(unitPressureGridHeight,*) ht_FROM_GT
+
+           !--------------------------------------------------------------------
+           ! Calculate and write out the average height for each pressure level
+           !--------------------------------------------------------------------
+           write(unitCheckPressureHeight, FMT="(I12)" ) gtLoopTime
+           do ii = 1, GT_ht_dim
+
+              !avgHeightofPressure = Ht_FROM_GT(ii,:,:)/(GT_lat_dim*GT_lon_dim)
+
+              write(unitCheckPressureHeight, FMT="(E12.4)") SUM(Ht_FROM_GT(ii,:,:))/(GT_lat_dim*GT_lon_dim)
+              !write(unitCheckPressureHeight, FMT="(A1)") " "
+
+           enddo
+
+        end if
 
 
-!--------------------------------------------
-! Variables for GT - 20120501lrm
-!--------------------------------------------
-!therm_geo_long_input : therm_model_geo_long_deg
-!therm_geo_lat : therm_model_geo_lat_deg
-!therm_Z : ht_FROM_GT(GT_ht_dim, GT_lat_dim, GT_lon_dim) : Altitude_m_FOR_IPE(GT_ht_dim, GT_lon_dim, GT_lat_dim)
-
-!therm_Ne_density : Ne_density_FOR_GT
-!therm_oplus_density : Oplus_density_FOR_GT
-!therm_hplus_density ????   keep  - not sure if we want to use this ???
-!therm_noplus_density : NOplus_density_FOR_GT
-!therm_o2plus_density : O2plus_density_FOR_GT
-!therm_n2plus_density : ???? keep
-!therm_nplus_density : ???? keep
-!therm_Te : ???? keep  - should be used later
-!therm_Ti1 : Ti_Oplus_FOR_GT - yes, use Ti
-!therm_Ti2 : only 1 Ti from IPE
-
-!print *,'driver : After INTERFACE__FIXED_GRID_to_THERMO '
-!print *,'driver : Ne_density_FOR_GT(:,1,1) = ',Ne_density_FOR_GT(:,1,1)
+        !----------------
+        ! Placeholders :
+        !----------------
+        !Hplus_density_FOR_GT = -999999.  ! This is not used yet ****  20120508lrm
+        !N2plus_density_FOR_GT = -999999.  ! This is not used yet ****  20120508lrm
+        !Nplus_density_FOR_GT = -999999.  ! This is not used yet ****  20120508lrm
+        !Te_FOR_GT = -999999.  ! This is not used yet ****  20120508lrm
 
 
-! will need to add heating rates from IPE - Tim will add heating rates to GT
+        !--------------------------------------------
+        ! Variables for GT - 20120501lrm
+        !--------------------------------------------
+        !therm_geo_long_input : therm_model_geo_long_deg
+        !therm_geo_lat : therm_model_geo_lat_deg
+        !therm_Z : ht_FROM_GT(GT_ht_dim, GT_lat_dim, GT_lon_dim) : Altitude_m_FOR_IPE(GT_ht_dim, GT_lon_dim, GT_lat_dim)
 
-      !----------------------------------------
-      ! Dump out the thermosphere values ???
-      !----------------------------------------
-      if (nnloop .eq. nnstop) idump_gt = 1
+        !therm_Ne_density : Ne_density_FOR_GT
+        !therm_oplus_density : Oplus_density_FOR_GT
+        !therm_hplus_density ????   keep  - not sure if we want to use this ???
+        !therm_noplus_density : NOplus_density_FOR_GT
+        !therm_o2plus_density : O2plus_density_FOR_GT
+        !therm_n2plus_density : ???? keep
+        !therm_nplus_density : ???? keep
+        !therm_Te : ???? keep  - should be used later
+        !therm_Ti1 : Ti_Oplus_FOR_GT - yes, use Ti
+        !therm_Ti2 : only 1 Ti from IPE
 
-      !---------------------------------------------
-      ! Now call the thermosphere ................
-      !---------------------------------------------
+        !print *,'driver : After INTERFACE__FIXED_GRID_to_THERMO '
+        !print *,'driver : Ne_density_FOR_GT(:,1,1) = ',Ne_density_FOR_GT(:,1,1)
 
-      ! This will reset the nn_smoothing_counter if it equals the smoothing frequency
-      call GT_thermosphere( &
+
+        ! will need to add heating rates from IPE - Tim will add heating rates to GT
+
+        !----------------------------------------
+        ! Dump out the thermosphere values ???
+        !----------------------------------------
+        if (nnloop .eq. nnstop) idump_gt = 1
+
+        !---------------------------------------------
+        ! Now call the thermosphere ................
+        !---------------------------------------------
+
+        ! This will reset the nn_smoothing_counter if it equals the smoothing frequency
+        call GT_thermosphere( &
                       GT_output_dataset, &
                       GT_timestep_in_seconds, &
                       idump_gt, &
@@ -1394,13 +1445,35 @@ end if
                                  wind_eastwards_ms1_FROM_GT, wvz_FROM_GT, rmt_FROM_GT, &
                                  Temperature_K_FROM_GT, ht_FROM_GT)
 
-
-
-
         endif ! debugThermo
 
 
+        littleLoop = littleLoop + 1
+
+      END DO thermosphereLoop ! --------------------------------------------------------------------------------------------------
+
+
+
         if (debugThermoInterp) then
+
+           !print *,'driver : setting GT densities to constants for testing ********************' 
+           !print *,'driver : setting GT densities to constants for testing ********************' 
+           !print *,'driver : setting GT densities to constants for testing ********************' 
+
+
+           !do ii = 1, gt_ht_dim
+           !   O_density_FROM_GT(ii,:,:) = ii
+           !end do
+
+           !O_density_FROM_GT = iitime
+
+           !iitime = iitime + 1
+
+
+           !O_density_FROM_GT = 1.0
+           !O2_density_FROM_GT = 2.0
+           !N2_density_FROM_GT = 3.0
+
            ! write out arrays to file for plotting
            write(unitCheckThermoInterpBefore,*) wind_southwards_ms1_FROM_GT
            write(unitCheckThermoInterpBefore + 1,*) wind_eastwards_ms1_FROM_GT
@@ -1426,7 +1499,7 @@ end if
 
 
 
-      END DO thermosphereLoop
+
 
 
       !-------------------------------------------------------------------------
@@ -1468,6 +1541,10 @@ end if
       !h_density_m3  (i) = d(7)/M3_TO_CM3
       !n4s_density_m3(i) = d(8)/M3_TO_CM3
 
+      !-------------------------------------------------------------------------
+      ! time how long it takes to do pressure grid to fixed grid interpolation
+      !-------------------------------------------------------------------------
+      CALL cpu_time(startTime)
 
       !------------------------------------------------------
       ! interpolate from pressure grid to fixed height grid
@@ -1488,7 +1565,7 @@ end if
            Vn_Eastwards_ms1_FOR_IPE, & ! wind_eastwards_ms1_FROM_GT, &  ! was : therm_model_Vy
            Vn_Southwards_ms1_FOR_IPE, &  ! wind_southwards_ms1_FROM_GT, &   ! was : therm_model_Vx
            Vn_Upwards_ms1_FOR_IPE, &  ! wind_upwards_ms1_from_gt,  added lrm20121108
-           qion3d_FOR_IPE, & ! qion3d, &                       ! was : therm_model_qion3d
+           qion3d_FOR_IPE, & ! was : therm_model_qion3d    ! input
            elx_FOR_IPE, & ! exns, &  ****                       ! was : therm_model_elx
            ely_FOR_IPE, & ! eyns, &  ****                      ! was : therm_model_ely
            
@@ -1509,14 +1586,16 @@ end if
 
 
            V_East_FixedHeight, V_South_FixedHeight, V_Upward_FixedHeight, tts_fixed_ht, &             ! output
-
-
            qion3d_fixed_ht, elx_fixed_ht, ely_fixed_ht)                        ! output
 
            !! AURORA VARIABLES NOT NEEDED FOR IPE YET lrm20110929
            !! qo2p_aurora_fixed_ht, qop_aurora_fixed_ht, qn2p_aurora_fixed_ht, &  ! output
            !! qnp_aurora_fixed_ht, qtef_aurora_fixed_ht)                          ! output
 
+
+           CALL cpu_time(endTime)
+           timePressureGridtoFixedGrid = (endTime - startTime) + timePressureGridtoFixedGrid 
+           WRITE(*,*) "cpu_time for INTERFACE__thermosphere_to_FIXED_GEO   : ",(endTime-startTime)
 
            !-------------------------------------------------------------------------
            ! Write out results of the interpolation to an ascii file for examination
@@ -1532,8 +1611,8 @@ end if
                        tts_fixed_ht, qion3d_fixed_ht, elx_fixed_ht, &
                        ely_fixed_ht)
 
-               print *,'driver_ipe_gt.3d : STOPPING.............'
-               STOP
+               !print *,'driver_ipe_gt.3d : STOPPING.............'
+               !STOP
            endif
 
            !------------------------------------------------------
@@ -1543,21 +1622,24 @@ end if
       write(unitCheckThermoInterpAfter,*) V_South_FixedHeight
       write(unitCheckThermoInterpAfter+1,*) V_East_FixedHeight
       write(unitCheckThermoInterpAfter+2,*) V_Upward_FixedHeight
-      write(unitCheckThermoInterpAfter+3,*) 
-      write(unitCheckThermoInterpAfter+4,*) 
+      write(unitCheckThermoInterpAfter+3,*) ! should be rmt , but the composition is not being used ***
+      write(unitCheckThermoInterpAfter+4,*) tts_fixed_ht
       write(unitCheckThermoInterpAfter+5,*) O_density_fixed_ht
       write(unitCheckThermoInterpAfter+6,*) O2_density_fixed_ht
       write(unitCheckThermoInterpAfter+7,*) N2_density_fixed_ht
       write(unitCheckThermoInterpAfter+8,*) qion3d_fixed_ht
   end if
 
+  !---------------------------------------------------------------------
+  ! Time how long it takes to interpolate fixed grid to flux tube grid
+  !---------------------------------------------------------------------
+  CALL cpu_time(startTime)
 
 
+  !--------------------------------------------
+  ! Convert fixed height grid to flux tube grid
+  !--------------------------------------------
 
-!--------------------------------------------
-! Convert fixed height grid to flux tube grid
-!--------------------------------------------
-!iwrite_plasma_interface = 0  not used lrm20121115
 
   call INTERFACE__FIXED_GEO_to_IONOSPHERE( &
         therm_model_geo_long_deg, & ! was : geo_grid_longitudes_degrees, &
@@ -1597,6 +1679,9 @@ end if
         isFirstCallFixedHeight, &
         GIP_switches)
 
+        CALL cpu_time(endTime)
+        timeFixedGridtoFluxGrid = (endTime - startTime) + timeFixedGridtoFluxGrid 
+        WRITE(*,*) "cpu_time for INTERFACE__FIXED_GEO_to_IONOSPHERE  : ",(endTime-startTime)
 
         !---------------------------------------
         ! print out results to check vs GT-IPE
@@ -1620,6 +1705,26 @@ end if
        endif ! debugFixedGeo
 
 
+       !---------------------------------------
+       ! Write out interpolated inputs to IPE
+       !---------------------------------------
+       if (debugThermoInterp) then 
+
+        write(unitCheckThermoInterpFluxT,*) V_South_plasma
+        write(unitCheckThermoInterpFluxT+1,*) V_East_plasma
+        write(unitCheckThermoInterpFluxT+2,*) V_Upward_plasma
+        write(unitCheckThermoInterpFluxT+3,*) ! should be rmt , but the composition is not being used ***
+        write(unitCheckThermoInterpFluxT+4,*) TN_plasma_input_3d
+        write(unitCheckThermoInterpFluxT+5,*) O_plasma_input_3d
+        write(unitCheckThermoInterpFluxT+6,*) O2_plasma_input_3d
+        write(unitCheckThermoInterpFluxT+7,*) N2_plasma_input_3d
+        write(unitCheckThermoInterpFluxT+8,*) !qion3d_
+
+
+       endif
+
+
+
 else
 
 
@@ -1639,7 +1744,25 @@ end if  ! if ( sw_neutral == 'GT' )
    ! output to a file
    !t        CALL output ( utime )
 
+   bigLoop = bigLoop + 1 !  increase # of times in big loop by 1
+
 END DO  time_loop !: DO utime = start_time, stop_time, time_step
+
+!-----------------------------------------------
+! Average the times spent in the subroutines
+!-----------------------------------------------
+timeFluxGridtoFixedGrid = timeFluxGridtoFixedGrid/(bigLoop - 1)
+timeFixedGridtoPressureGrid = timeFixedGridtoPressureGrid/(littleLoop - 1)
+timePressureGridtoFixedGrid = timePressureGridtoFixedGrid/(bigLoop - 1)
+timeFixedGridtoFluxGrid = timeFixedGridtoFluxGrid/(bigLoop - 1)
+
+print *,'INTERPOLATION TIMES : -------------------------------------------------'
+print *,'timeFluxGridtoFixedGrid = ', timeFluxGridtoFixedGrid
+print *,'timeFixedGridtoPressureGrid = ', timeFixedGridtoPressureGrid
+print *,'timePressureGridtoFixedGrid = ', timePressureGridtoFixedGrid
+print *,'timeFixedGridtoFluxGrid = ', timeFixedGridtoFluxGrid
+print *,' '
+print *,'bigLoop, littleLoop = ', bigLoop, littleLoop
 
 
 !-------------------------

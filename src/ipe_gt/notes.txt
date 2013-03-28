@@ -142,6 +142,20 @@ The following two files will need your help in completing the calls to GT routin
 driver_ipe_gt.3d.f90                : call GT_thermosphere_init (...)
 module_neutral_gt.3d.mpi.f90: call GT_thermosphere (...)
 
+------------------------------------------------------------------------------------------------
+
+march 18, 2013 :
+
+benchmark input file:
+/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/INPUT/
+Day_80_180_dipole_test.gt.20110913.v1.nc
+
+
+run difference script to check thermosphere output :
+
+go to :
+/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/OUTPUT/checkDiff.bash
+
 
 
 
