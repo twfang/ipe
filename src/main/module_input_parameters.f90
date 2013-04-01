@@ -108,6 +108,7 @@
 ! if sw_perp_tr=>1
       INTEGER (KIND=int_prec), PUBLIC :: lpmin_perp_trans !=15 :mlatN=78deg???
       INTEGER (KIND=int_prec), PUBLIC :: lpmax_perp_trans !=151:mlatN=5.64deg
+      INTEGER (KIND=int_prec), PUBLIC :: sw_th_or_r
       INTEGER (KIND=int_prec), PUBLIC :: record_number_plasma_start
       INTEGER (KIND=int_prec), PUBLIC :: sw_record_number
       INTEGER (KIND=int_prec), PUBLIC :: duration !used when sw_record_n=1
@@ -172,6 +173,7 @@
            &, sw_perp_transport &
            &, lpmin_perp_trans &
            &, lpmax_perp_trans &
+           &, sw_th_or_r &
            &, sw_exb_up &
            &, sw_para_transport &
            &, sw_ksi &

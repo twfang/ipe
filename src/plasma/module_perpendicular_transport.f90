@@ -18,8 +18,10 @@
 
       SUBROUTINE perpendicular_transport ( utime, mp,lp )
       USE module_precision
-      USE module_input_parameters,ONLY: sw_debug,mype
+      USE module_input_parameters,ONLY: sw_debug,mype, sw_th_or_r
+      USE module_find_neighbor_grid_th, ONLY: find_neighbor_grid_th
       USE module_find_neighbor_grid_R, ONLY: find_neighbor_grid_R
+      USE module_stepback_mag_th, ONLY: stepback_mag_th
       USE module_stepback_mag_R, ONLY: stepback_mag_R
       IMPLICIT NONE
 !--- INPUT ---
@@ -39,29 +41,29 @@
 !&,plasma_grid_3d(IN,mp)%GL, plasma_grid_3d(IS,mp)%GL       
 
 ! calculate where the flux tube is coming from (semi-lagulangian issue)
-! IF ( sw_th_or_R==0 ) THEN
-!      CALL stepback_mag ( mp,lp &
-!!d     &, mlon_rad(mp) &
-!!d     &, plasma_grid_3d(IN,mp)%GL, plasma_grid_3d(IS,mp)%GL &
-!     &, phi_t0      , theta_t0 ) 
+ IF ( sw_th_or_R==0 ) THEN
+      CALL stepback_mag_th ( mp,lp &
+!d     &, mlon_rad(mp) &
+!d     &, plasma_grid_3d(IN,mp)%GL, plasma_grid_3d(IS,mp)%GL &
+     &, phi_t0      , theta_t0 ) 
 !if(sw_debug) print *,'stepback_mag finished!'
 
-! ELSE IF ( sw_th_or_R==1 ) THEN
+ ELSE IF ( sw_th_or_R==1 ) THEN
       CALL stepback_mag_R (utime, mp,lp, phi_t0 , theta_t0, r0_apex )
 if(sw_debug) print *,'stepback_magR finished!'
-! END IF !( sw_th_or_R==1 ) THEN
+ END IF !( sw_th_or_R==1 ) THEN
 
-! IF ( sw_th_or_R==0 ) THEN
-!      CALL find_neighbor_grid_th ( mp,lp  &
-!     &, phi_t0  , theta_t0 &
-!     &,  mp_t0  ,    lp_t0)
+ IF ( sw_th_or_R==0 ) THEN
+      CALL find_neighbor_grid_th ( mp,lp  &
+     &, phi_t0  , theta_t0 &
+     &,  mp_t0  ,    lp_t0)
 !if(sw_debug) print *,'find_neighbor_grid_th finished!'
 
-! ELSE IF ( sw_th_or_R==1 ) THEN
+ ELSE IF ( sw_th_or_R==1 ) THEN
       CALL find_neighbor_grid_R ( mp,lp, phi_t0, theta_t0, r0_apex &
      &, mp_t0,lp_t0 )
 if(sw_debug) print *,'find_neighbor_grid R finished!'
-! END IF !( sw_th_or_R==1 ) THEN
+ END IF !( sw_th_or_R==1 ) THEN
 
 
 ! prepare all the parameters along the flux tube by interpolation, in addition to the adiabatic term, compressional term
