@@ -31,7 +31,8 @@
       SUBROUTINE plasma ( utime )
       USE module_input_parameters,ONLY:mpstop,ip_freq_output,start_time,stop_time,&
 &     sw_neutral_heating_flip,sw_perp_transport,lpmin_perp_trans,lpmax_perp_trans,sw_para_transport,sw_debug,        &
-&     sw_dbg_perp_trans,sw_exb_up,parallelBuild,mype
+&     sw_dbg_perp_trans,sw_exb_up,parallelBuild,mype, &
+& HPEQ_flip
       USE module_physical_constants,ONLY:rtd,zero
       USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,plasma_grid_3d,plasma_grid_GL,plasma_grid_Z,JMAX_IS,hrate_mks3d
       USE module_PLASMA,ONLY:utime_save,plasma_1d
@@ -151,6 +152,14 @@ end if
 
 
 !dbg20120509          IF ( sw_perp_transport(mp)>=1 ) THEN
+!nm20130401: transport is not called when HPEQ_flip=0.5 as initial profiles do
+!not exist!
+        IF ( HPEQ_flip==0.5 .AND. start_time==0 ) THEN
+
+          print *,'plasma perp transport is not called when HPEQ_flip=0.5 & start_time=0 because initial profiles do not exist!'
+
+        ELSE IF ( HPEQ_flip==0.0 ) THEN
+
           ret = gptlstart ('perp_transport')
           IF ( sw_perp_transport>=1 ) THEN
             IF ( lp>=lpmin_perp_trans.AND.lp<=lpmax_perp_trans ) THEN
@@ -168,7 +177,12 @@ endif
             END IF
           END IF !( sw_perp_transport>=1 ) THEN
           ret = gptlstop ('perp_transport')
+
+        ELSE
+          print *,'sub_plasma: !STOP! INVALID HPEQ_flip=',hpeq_flip,' start_time=',start_time,' sw_perp_transport=',sw_perp_transport
+          STOP
           
+        END IF !( HPEQ_flip==0.5 .AND. start_time==0 ) THEN
 
 ! update the boundary conditions if the top of the flux tube is open
 !t        CALL update_flux_tube_boundary_condition ( )
