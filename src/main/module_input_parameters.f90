@@ -64,6 +64,13 @@
       REAL (KIND=real_prec), PUBLIC :: ZLBNP_inp !.. ZLBNP
 !dbg20120304:
       REAL (KIND=real_prec), PUBLIC :: FNFAC_flip !.. FNFAC in RSPRIM.FOR
+!dbg20121129
+      LOGICAL, PUBLIC :: sw_optw_flip !=F  !chemical routine is called before He+ solution for too inflated o+ density due to exb drift
+!dbg20121130
+      LOGICAL, PUBLIC :: sw_init_guess_flip !=F  !this might help in finding a solution for convergence error???
+      INTEGER (KIND=int_prec), PUBLIC :: dt_init_guess_flip=60 !max DT for changing init_guess 
+!dbg20121130
+      REAL (KIND=real_prec), PUBLIC :: ZLBDY_flip=120.  !Lower boundary altitude
 
 !--- MSIS/HWM specific input parameters
       REAL (KIND=real_prec), DIMENSION(7), PUBLIC :: AP   ! magnetic index(daily)
@@ -91,6 +98,8 @@
       INTEGER(KIND=int_prec), DIMENSION(2), PUBLIC :: iout
       INTEGER(KIND=int_prec), PUBLIC :: mpstop
       INTEGER(KIND=int_prec), PUBLIC :: sw_neutral    !0:GT; 1:MSIS
+      INTEGER(KIND=int_prec), PUBLIC :: sw_eldyn
+!0:self-consistent eldyn solver; 1:WACCM efield ;2:  ;3: read in external efield
       INTEGER(KIND=int_prec), PUBLIC :: sw_pcp        !0:heelis; 1:weimer
       INTEGER(KIND=int_prec), PUBLIC :: sw_grid       !0:APEX; 1:FLIP
 ! if sw_grid=1 
@@ -160,11 +169,16 @@
      &,sw_LCE &
      &,ht_LCE &
      &,ZLBNP_inp &
-     &,FNFAC_flip
+     &,FNFAC_flip &
+     &,sw_optw_flip &
+     &,sw_init_guess_flip &
+     &,dt_init_guess_flip &
+     &,ZLBDY_flip 
       NAMELIST/NMMSIS/AP  &
      &,kp_eld
       NAMELIST/NMSWITCH/&
            &  sw_neutral     &
+           &,  sw_eldyn     &
            &, sw_pcp         &
            &, sw_grid        &
            &, sw_output_plasma_grid        &

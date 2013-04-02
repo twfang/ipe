@@ -332,6 +332,7 @@ C.... Written by P. Richards June-September 2010.
 
       USE module_input_parameters,ONLY: sw_TEI,sw_OHPLS
      &, sw_DEBUG_flip,sw_debug,sw_output_fort167
+     &,sw_optw_flip
       USE module_IO,ONLY: LUN_FLIP1,LUN_FLIP2,LUN_FLIP3,LUN_FLIP4
         USE module_physical_constants,ONLY: zero
       IMPLICIT NONE
@@ -616,7 +617,17 @@ c      ENDIF
       IF( sw_OHPLS>0) ! .AND. Z(midpoint)>120.00 )
      >  CALL DLOOPS(JMIN,JMAX,FLDIM,Z,N,TI,DT,DTMIN,EFLAG)   !$$$  
       ret = gptlstop  ('CTIPINT DLOOPS')
-
+!----------------------
+      if ( sw_optw_flip ) then
+      !.. Recalculate the minor ion densities with the new O+ density
+      !.. Added by PGR 2012-11-29
+      DO J=JMIN,JMAX
+       IF(Z(J).GE.80.AND.Z(J).LE.700) THEN
+          CALL CMINOR(0,J,0,IHEPLS,INPLS,INNO,FD,7,N,TI,Z,EFLAG)
+       ENDIF
+      ENDDO
+      endif !( sw_optw_flip ) then
+!----------------------
       !.. He+ solution
       ret = gptlstart ('CTIPINT XION')
       IF(EFLAG(2,1).EQ.0.AND.IHEPLS.GT.0) ! .AND. Z(midpoint)>200.00 )

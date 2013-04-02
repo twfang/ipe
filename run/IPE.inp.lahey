@@ -28,7 +28,11 @@
 	sw_LCE=F      ,
 	ht_LCE=200.0      ,
 	ZLBNP_inp=115.00      ,
-	FNFAC_flip=1.0      /
+	FNFAC_flip=1.0      ,
+	sw_optw_flip=F      ,
+	sw_init_guess_flip=F      ,
+	dt_init_guess_flip=60      ,
+	ZLBDY_flip=120.00      /
 &NMMSIS	AP(1)=4.     ,
 	AP(2)=4.     ,
 	AP(3)=4.     ,
@@ -38,6 +42,7 @@
 	AP(7)=4.     ,
 	kp_eld=3.    /
 &NMSWITCH       sw_neutral=1 ,
+		sw_eldyn=1   ,
 		sw_pcp=0     ,
 		sw_grid=0    ,
 		sw_output_plasma_grid=F  ,
@@ -45,6 +50,7 @@
 		sw_perp_transport=1 ,
 		lpmin_perp_trans=15  ,
 		lpmax_perp_trans=151 ,
+		sw_th_or_r=1 ,
 		sw_exb_up=1 ,
 		sw_para_transport=1 ,
 		sw_ksi=2 ,

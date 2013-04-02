@@ -20,6 +20,7 @@ C--- Consult file RSLPSD-Algorithm.doc for detailed explanation
       USE ION_DEN_VEL   !.. O+ H+ He+ N+ NO+ O2+ N2+ O+(2D) O+(2P)
 !dbg20120301: N+ problem: "IN BDSLV &&&&&&& BANDWIDTH IS TOO LARGE "
       USE module_input_parameters,ONLY:sw_LCE,ht_LCE,sw_DEBUG_flip
+     &,sw_init_guess_flip,ZLBDY_flip,dt_init_guess_flip
       USE module_IO,ONLY: PRUNIT
       IMPLICIT NONE
       INTEGER FLDIM                      !.. Field line grid array dimension
@@ -49,6 +50,12 @@ C--- Consult file RSLPSD-Algorithm.doc for detailed explanation
       JEQ=(JMIN+JMAX)/2 !.. Equatorial point
       EFLAG(2,1)=0      !.. Initialize error flag
       EFLAG(2,1)=0      !.. Initialize error flag
+!dbg20121130:debug note 
+!i vaguely remembered ZLBDY_flip=115 caused crash (or at least very bad results!)
+!i can't remember introducing ZLBDY_flip was the cause of the problem? 
+! or the bad value, 115???
+!therefore, the use of ZLBDY_flip is pending.
+!dbg20121130      ZLBDY=115.!ZLBDY_flip        !.. Lower boundary altitude
       ZLBDY=120.        !.. Lower boundary altitude
 
 !dbg20120301: this part was commented out on 20110815, but un-comment again to solve for N+ problem: "IN BDSLV &&&&&&& BANDWIDTH IS TOO LARGE " i don't remember why we decided to comment out here and i cannot find a program to setup the local chem equil anywhere else???
@@ -104,11 +111,12 @@ C*** OUTER LOOP: Return here on Non-Convergence with reduced time step
         MIT=JBNS-JBNN+1       !.. Number of points on field line
         IEQ=2*(MIT-2)         !.. Number of equations to set up      
 !dbg20120304:
-      if ( sw_DEBUG_flip==1 .and. IEQ==2 ) then
-        print *,MIT,JBNS,JBNN,ZLBDY
+      if ( IEQ<=2 ) then
+        print *,'!STOP! INVALID MIT=',MIT,JBNS,JBNN,ZLBDY
         do j=jmin,jmax
          print *,j,z(j)
         enddo
+        STOP
       end if
 
         !.. Main loop: On each iteration the Jacobian is formed and solved for
@@ -245,6 +253,15 @@ C*** OUTER LOOP: Return here on Non-Convergence with reduced time step
           DO J=JMIN,JMAX
             N(1,J)=NSAVE(1,J)
             N(2,J)=NSAVE(2,J)
+!20121130 Phil suggested to try this! it might help in finding a solution for convergence error...
+            if ( sw_init_guess_flip ) then
+           !.. Try a different initial guess. Could use random increment
+               IF(DT.LT.dt_init_guess_flip) THEN
+                  N(1,J)=0.9*NSAVE(1,J)
+                  N(2,J)=0.9*NSAVE(2,J) 
+               END IF
+            end if !( sw_init_guess_flip ) then
+!20121130
           ENDDO
           !.. Raise lower boundary if the problem is only below 200 km
           IF(DT.LE.DTIN/4.0.AND.DCUPP.EQ.1.AND.DCLON*DCLOS.EQ.0)
