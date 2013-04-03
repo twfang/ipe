@@ -154,6 +154,7 @@ SRC6P	=\
 	${DR6}/module_efield_init.f \
 	${DR6}/module_eldyn.f      \
 	${DR6}/module_init_eldyn.f \
+        ${DR6}/module_cal_monthday.f \
 	${DR6}/module_sub_eldyn.f  \
 	${DR6}/get_efield90km.f 
 # DR4: main driver

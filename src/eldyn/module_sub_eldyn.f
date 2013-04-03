@@ -36,6 +36,7 @@
 !---
       SUBROUTINE eldyn ( utime )
       USE module_precision
+      USE module_cal_monthday
       USE module_input_parameters,ONLY:NYEAR,NDAY,start_time,mype       &
      &, ip_freq_output, sw_debug, kp_eld, F107D_ipe => F107D            !,AP
       USE module_physical_constants,ONLY:rtd
@@ -53,9 +54,13 @@
 !c       imo=idate(2)
 !c       iday_m=idate(3) 
 !!!need to create a routine to calculate month/day from NDAY!!!
-      imo=3                     !month
-      iday_m=15                 !day of month 
+!      imo=3                     !month
       iyear = NYEAR 
+!nm20121127: calculate month/day from iyear and iday
+      call cal_monthday ( iyear,iday, imo,iday_m )
+!nm20130402: temporarily hard-code the iday to get b4bconfirmed.
+      iday_m=15                 !day of month 
+
 !!! F107D is global both in module efield & ipe input
       f107d = F107D_ipe         !f107
       ut = REAL(utime,real_prec)/3600.0
@@ -66,7 +71,7 @@
 
       if ( utime==start_time ) then
         print *,'iday',iday, 'imo',imo,' iday_m',iday_m,' iyear',iyear
-        print *,' utime=',utime,' kp',kp
+        print *,' kp',kp
         print *,'By=',by,' Bz=',bz,' F107d=',f107d
       end if
 
