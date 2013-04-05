@@ -154,11 +154,11 @@ end if
 !dbg20120509          IF ( sw_perp_transport(mp)>=1 ) THEN
 !nm20130401: transport is not called when HPEQ_flip=0.5 as initial profiles do
 !not exist!
-        IF ( HPEQ_flip==0.5 .AND. start_time==0 ) THEN
+        IF ( HPEQ_flip==0.5 .AND. utime==0 ) THEN
 
-          print *,'plasma perp transport is not called when HPEQ_flip=0.5 & start_time=0 because initial profiles do not exist!'
+          print *,lp,mp,'utime=',utime,' plasma perp transport is not called when HPEQ_flip=0.5 & start_time=0 because initial profiles do not exist!'
 
-        ELSE IF ( HPEQ_flip==0.0 ) THEN
+        ELSE IF ( utime>0 ) THEN
 
           ret = gptlstart ('perp_transport')
           IF ( sw_perp_transport>=1 ) THEN
@@ -178,11 +178,7 @@ endif
           END IF !( sw_perp_transport>=1 ) THEN
           ret = gptlstop ('perp_transport')
 
-        ELSE
-          print *,'sub_plasma: !STOP! INVALID HPEQ_flip=',hpeq_flip,' start_time=',start_time,' sw_perp_transport=',sw_perp_transport
-          STOP
-          
-        END IF !( HPEQ_flip==0.5 .AND. start_time==0 ) THEN
+        END IF !( HPEQ_flip==0.5 .AND. utime==0 ) THEN
 
 ! update the boundary conditions if the top of the flux tube is open
 !t        CALL update_flux_tube_boundary_condition ( )
