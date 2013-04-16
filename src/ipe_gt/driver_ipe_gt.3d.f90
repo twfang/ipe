@@ -149,7 +149,7 @@ LOGICAL, parameter :: debugIonoInterp = .FALSE.
 !---------------------------------------------------------------
 ! Write out the Ionospheric pressure grid interpolated values??
 !---------------------------------------------------------------
-LOGICAL, parameter :: debugIonoFixedtoPressure = .TRUE.
+LOGICAL, parameter :: debugIonoFixedtoPressure = .FALSE.
 
 !----------------------------------------
 ! File unit number for IPE startup files
@@ -344,15 +344,17 @@ REAL(kind=8) :: V_east_plasma(npts, nmp), &
                 V_south_plasma(npts, nmp), &
                 V_upward_plasma(npts, nmp)
 
-!-----------------------
+!------------------------------------------------------
 ! Output from fixed_geo 
-!-----------------------
+! lat, lon, ht points to be used for 
+! interpolation from thermo fixed grid to ipe grid
+!------------------------------------------------------
 INTEGER :: ilon1_3d_fixed_ht(npts,nmp), ilon2_3d_fixed_ht(npts,nmp)
 INTEGER :: ilat1_3d_fixed_ht(npts,nmp), ilat2_3d_fixed_ht(npts,nmp)
 INTEGER :: ispecial_3d_fixed_ht(npts,nmp)
 INTEGER :: ihl_3d_fixed_ht(npts,nmp), ihu_3d_fixed_ht(npts,nmp)
 
-
+! must always be true to start with
 LOGICAL :: isFirstCallFixedHeight = .TRUE.
 
 !---------------------

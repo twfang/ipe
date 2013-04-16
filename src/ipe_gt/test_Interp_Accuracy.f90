@@ -51,31 +51,21 @@ INTEGER :: FileOpenStatus
 !------------------------------------------------------
 ! File unit number for checking startup IPE values :
 !------------------------------------------------------
-! THIS IS NOT BEING USED RIGHT NOW,  NEED TO WRITE TO THIS FILE
-! INSTEAD OF PRINTING TO THE SCREEN ****************************** lrm20120830
-INTEGER, parameter :: unitCheckStartIPE = 19
-! Debug the Thermospheric values???
-LOGICAL, parameter :: debugStartupIPE = .FALSE.
-! THIS IS NOT BEING USED RIGHT NOW,  NEED TO WRITE TO THIS FILE
-! INSTEAD OF PRINTING TO THE SCREEN ****************************** lrm20120830
-CHARACTER(LEN=*), PARAMETER :: debugStartIPEFileName = 'CheckStartIPE.dat'
-
-
-! ONLY FOR TESTING................
-!INTEGER(KIND=int_prec), POINTER :: IN, IS  !  take this out later lrm20120531
+INTEGER, parameter :: uniterroripetofixed = 500
+INTEGER, parameter :: uniterrorfixedtothermo = 501
+INTEGER, parameter :: uniterroripetothermo = 502
+INTEGER, parameter :: uniterrorthermotofixedlinear = 503
+INTEGER, parameter :: uniterrorthermotofixedlog = 504
+INTEGER, parameter :: uniterrorfixedtoipelinear = 505
+INTEGER, parameter :: uniterrorfixedtoipelog = 506
+INTEGER, parameter :: uniterrorthermotoipelinear = 507
+INTEGER, parameter :: uniterrorthermotoipelog = 508
 
 
 !------------------------------------------------------
 ! File unit number for checking thermosphere values :
 !------------------------------------------------------
 INTEGER, parameter :: unitCheckThermo =7700
-
-!------------------------------------
-! Debug the Thermospheric values???
-!------------------------------------
-!LOGICAL, parameter :: debugThermo = .FALSE.
-CHARACTER(LEN=*), PARAMETER :: debugThermoFileName = 'CheckGTGIP.dat'
-
 
 !--------------------------------------------------------------------
 ! File unit number for checking Thermospheric interpolation values :
@@ -99,7 +89,7 @@ INTEGER, parameter :: unitCheckIonoInterpBefore = 9800
 INTEGER, parameter :: unitCheckIonoInterpAfter = 9900
 
 INTEGER, parameter :: numIonoVars = 10
-!INTEGER :: unitCheckIonoInterp(numIonoVars)
+
 CHARACTER(LEN=30) :: ionoVarName(numIonoVars)
 
 !-----------------------------------------------------------------------------
@@ -109,19 +99,6 @@ CHARACTER(LEN=30) :: ionoVarName(numIonoVars)
 INTEGER, parameter :: unitCheckPressureInterp = 8900
 INTEGER, parameter :: unitCheckPressureHeight = 7810
 
-!------------------------------------------------
-! Write out the Ionospheric interpolated values??
-!------------------------------------------------
-!LOGICAL, parameter :: debugIonoInterp = .TRUE.
-! THIS IS NOT BEING USED RIGHT NOW,  NEED TO WRITE TO THIS FILE
-! INSTEAD OF PRINTING TO THE SCREEN ****************************** lrm20120830
-!CHARACTER(LEN=*), PARAMETER :: debugIonoInterpFileName = 'interpIonoOut.dat'
-
-
-!---------------------------------------------------------------
-! Write out the Ionospheric pressure grid interpolated values??
-!---------------------------------------------------------------
-!LOGICAL, parameter :: debugIonoFixedtoPressure = .TRUE.
 
 !----------------------------------------
 ! File unit number for IPE startup files
@@ -232,9 +209,11 @@ REAL(kind=8) :: logfixedthermotoiono(npts, nmp)
 REAL(kind=8) :: junk_plasma(npts, nmp) = 0.0
 
 
-!-----------------------
+!----------------------------------------------------
 ! Output from fixed_geo 
-!-----------------------
+! lat, lon, ht points to be used for 
+! interpolation from thermo fixed grid to ipe grid
+!-----------------------------------------------------
 INTEGER :: ilon1_3d_fixed_ht(npts,nmp), ilon2_3d_fixed_ht(npts,nmp)
 INTEGER :: ilat1_3d_fixed_ht(npts,nmp), ilat2_3d_fixed_ht(npts,nmp)
 INTEGER :: ispecial_3d_fixed_ht(npts,nmp)
@@ -262,7 +241,6 @@ REAL(kind=8), PARAMETER  :: R0 = 6.370E06  ! in meters
 !----------------------------------------------------------------------
 INTEGER, parameter :: unitFixedGeo = 15
 CHARACTER(LEN=*), PARAMETER :: debugFixedGeoFileName = 'CheckFixedGeo.dat'
-!LOGICAL :: debugFixedGeo = .FALSE.
 
 !------------------------------------
 ! File with the IPE grid coordinates
@@ -287,55 +265,46 @@ logical ::  GIP_switches(GT_lon_dim)
 !----------------------
 ! Files & Directories
 !----------------------
-!CHARACTER(len=140) :: geoToMagFileName
 CHARACTER(len=200) :: GT_input_dataset , GT_output_dataset
 character(len=140) :: ionoStartDir
 character(len=140) :: staticFileDir
-character(len=140) :: debugDir
+character(len=140) :: debugDir, pressureDir
 CHARACTER(len=140) :: giptogeoFileName
 
-!-------------
-! inputs
-!-------------
 
-!---------------------------
-! IPE Startup files type
-!---------------------------
-!TYPE startUpType
-!  INTEGER :: unit
-!  CHARACTER(30) :: filename
-!  CHARACTER(7) :: speciesName
-!  REAL(kind=8) :: species(NPTS, NMP)
-!END TYPE startUpType
-
-!integer, parameter :: numIonoStart = 11
 
 REAL(kind=8) :: high_res_long(nFixedGridIonoLons) 
 REAL(kind=8) :: high_res_lat(nFixedGridIonoLats) 
 REAL(kind=8) :: high_res_height(nFixedGridIonoHeights)
 
 
-!-----------------------------------
-! Namelist for input parameters :
-!-----------------------------------
-!NAMELIST /gtipeINPUTS/GT_input_dataset, GT_output_dataset, &
-!                      ionoStartDir, staticFileDir, debugDir, &
-!                      nday, f107, GT_timestep_in_seconds, &
-!                      amplitude, tidalPhase, switches, &
-!                      smoothingFrequency, neutralCompositionFrequency
-
 
 ! BEGIN CODE ====================================================================================
 staticFileDir = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/static_files/'
-debugDir = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/DEBUG/interpAccur/'
+debugDir = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/DEBUG/interpAccur/TEST/'
+! has the file w/ the pressure grid heights
+pressureDir = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/DEBUG/interpAccur/'
 
 debugDir = TRIM(debugDir)
-		   			
+
+!-----------------------------------------------------------
+! open files for writing out interpolation error arrays
+!-----------------------------------------------------------
+OPEN (uniterroripetofixed, FILE=TRIM(debugDir)//TRIM("erroripetofixed"), STATUS='REPLACE')
+OPEN (uniterrorfixedtothermo, FILE=TRIM(debugDir)//TRIM("errorfixedtothermo"), STATUS='REPLACE')
+OPEN (uniterroripetothermo, FILE=TRIM(debugDir)//TRIM("erroripetothermo"), STATUS='REPLACE')
+OPEN (uniterrorthermotofixedlinear, FILE=TRIM(debugDir)//TRIM("errorthermotofixedlinear"), STATUS='REPLACE')
+OPEN (uniterrorthermotofixedlog, FILE=TRIM(debugDir)//TRIM("errorthermotofixedlog"), STATUS='REPLACE')
+OPEN (uniterrorfixedtoipelinear, FILE=TRIM(debugDir)//TRIM("errorfixedtoipelinear"), STATUS='REPLACE')
+OPEN (uniterrorfixedtoipelog, FILE=TRIM(debugDir)//TRIM("errorfixedtoipelog"), STATUS='REPLACE')
+OPEN (uniterrorthermotoipelinear, FILE=TRIM(debugDir)//TRIM("errorthermotoipelinear"), STATUS='REPLACE')
+OPEN (uniterrorthermotoipelog, FILE=TRIM(debugDir)//TRIM("errorthermotoipelog"), STATUS='REPLACE')
+
 			    
-    !--------------------------------------
-    ! Define name of the geo to mag file
-    !--------------------------------------
-    giptogeoFileName = TRIM(staticFileDir)//'/GIP_Fixed_GEO_grid_lowres'
+!--------------------------------------
+! Define name of the geo to mag file
+!--------------------------------------
+giptogeoFileName = TRIM(staticFileDir)//'GIP_Fixed_GEO_grid_lowres'
 
 
     !------------------------
@@ -376,7 +345,7 @@ debugDir = TRIM(debugDir)
        OPEN (unitCheckPressureInterp, FILE=TRIM(debugDir)//TRIM('InterpPressureGrid.txt'), STATUS='REPLACE')
 
    ! Open to read the pressure grid height file
-       OPEN (unitCheckPressureHeight, FILE=TRIM(debugDir)//TRIM('PressureHeightGrid.txt'))
+       OPEN (unitCheckPressureHeight, FILE=TRIM(pressureDir)//TRIM('PressureHeightGrid.txt'))
 
    !--------------------------------------------------------------
    ! Open files for writing out interpreted variables b/f & after
@@ -583,7 +552,7 @@ enddo ! kk
                                    testipedata, &      ! inputs
                                    ipetofixeddata)   ! output
 
-
+   !  Calculate the errors in the grid interpolation 
     erroripetofixeddata = abs(testionofixeddata - ipetofixeddata)/testionofixeddata
 
     print *,'min(erroripetofixeddata) = ', minval(erroripetofixeddata)
@@ -593,9 +562,7 @@ enddo ! kk
 
 
    ! Write out grid after interpolation  (or only write out the error grid????)
-   !   write(unitCheckIonoInterpAfter,*) 
-
-   !  Calculate the errors in the grid interpolation 
+   write(uniterroripetofixed,*) erroripetofixeddata
 
 
    ! SET UP GRID FUNCTION HERE
@@ -635,6 +602,8 @@ enddo ! kk
     print *,'max(errorfixedgridtothermo) = ', maxval(errorfixedgridtothermo)
     print *,'average(errorfixedgridtothermo) = ', sum(errorfixedgridtothermo)/size(errorfixedgridtothermo)
 
+    WRITE(uniterrorfixedtothermo,*) errorfixedgridtothermo
+
 
     ! Check ipe -> gt grid error
       ! This is in the loop b/c of changing heights of the pressure grid
@@ -659,7 +628,7 @@ enddo ! kk
     print *,'max(erroripetothermo) = ', maxval(erroripetothermo)
     print *,'average(erroripetothermo) = ', sum(erroripetothermo)/size(erroripetothermo)
 
-
+    WRITE(uniterroripetothermo,*) erroripetothermo
 
       !-------------------------------------------------------------------------
       ! For interpolation to IPE grid, switch (ht, lat, lon) to (ht, lon, lat)
@@ -733,6 +702,8 @@ print *,' '
     print *,'max(errorthermotofixedgrid) = ', maxval(errorthermotofixedgrid)
     print *,'average(errorthermotofixedgrid) = ', sum(errorthermotofixedgrid)/size(errorthermotofixedgrid)
 
+    WRITE(uniterrorthermotofixedlinear,*) errorthermotofixedgrid
+
 
            logerrorthermotofixedgrid = abs(logtestthermotofixedgrid - logthermotofixedgrid)/logtestthermotofixedgrid
     print *,' '
@@ -741,6 +712,8 @@ print *,' '
     print *,'average(logerrorthermotofixedgrid) = ', sum(logerrorthermotofixedgrid)/size(logerrorthermotofixedgrid)
 
     !print *,'maxval(abs(testthermotofixedgrid - thermotofixedgrid)) = ',maxval(abs(testthermotofixedgrid - thermotofixedgrid))
+
+    WRITE(uniterrorthermotofixedlog,*) logerrorthermotofixedgrid
 
 
   !-----------------------------------------------------------------
@@ -782,6 +755,7 @@ print *,' '
     print *,'max(errorfixedthermotoiono) = ', maxval(errorfixedthermotoiono)
     print *,'average(errorfixedthermotoiono) = ', sum(errorfixedthermotoiono)/size(errorfixedthermotoiono)
 
+    WRITE (uniterrorfixedtoipelinear,*) errorfixedthermotoiono
 
         ! calculate errors and write them out (log data)
         errorlogfixedthermotoiono = abs(logtestipedata - logfixedthermotoiono)/logtestipedata
@@ -790,7 +764,7 @@ print *,' '
     print *,'max(errorlogfixedthermotoiono) = ', maxval(errorlogfixedthermotoiono)
     print *,'average(errorlogfixedthermotoiono) = ', sum(errorlogfixedthermotoiono)/size(errorlogfixedthermotoiono)
 
-
+    WRITE (uniterrorfixedtoipelog,*) errorlogfixedthermotoiono
 
 
 ! Test thermosphere grid -> ipe grid
@@ -826,6 +800,8 @@ print *,' '
     print *,'max(errorthermotoiono) = ', maxval(errorthermotoiono)
     print *,'average(errorthermotoiono) = ', sum(errorthermotoiono)/size(errorthermotoiono)
 
+    WRITE (uniterrorthermotoipelinear,*) errorthermotoiono
+
         ! calculate errors and write them out (log data)
         errorlogthermotoiono = abs(logtestipedata - logfixedthermotoiono)/logtestipedata
     print *,' '
@@ -833,7 +809,7 @@ print *,' '
     print *,'max(errorlogthermotoiono) = ', maxval(errorlogthermotoiono)
     print *,'average(errorlogthermotoiono) = ', sum(errorlogthermotoiono)/size(errorlogthermotoiono)
 
-
+    WRITE (uniterrorthermotoipelog,*) errorlogthermotoiono
 
 print *,'test_Interp_Accuracy : END OF test_Interp_Accuracy '
 

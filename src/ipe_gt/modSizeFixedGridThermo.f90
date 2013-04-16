@@ -5,9 +5,9 @@ IMPLICIT NONE
 PRIVATE  ! Set everything to private access, except those
          ! marked as public
 
-PUBLIC :: nFixedGridThermoHeights, &
-          nFixedGridThermoLats, &
-          nFixedGridThermoLons, &
+PUBLIC :: nFixedGridThermoHeights , &
+          !nFixedGridThermoLats, &   not used - gt lats used instead
+          !nFixedGridThermoLons, &   not used - gt lons used instead
           fixedThermoHeights_km
 
 SAVE
@@ -16,9 +16,6 @@ SAVE
 ! sizes of Thermospheric fixed grid 
 !----------------------------------
 integer, parameter :: nFixedGridThermoHeights = 31
-integer, parameter :: nFixedGridThermoLats = 91
-integer, parameter :: nFixedGridThermoLons = 90
-
 
 ! lrm This was fixed_heights_km(interface_hts)
 REAL(kind=8) :: fixedThermoHeights_km(nFixedGridThermoHeights)

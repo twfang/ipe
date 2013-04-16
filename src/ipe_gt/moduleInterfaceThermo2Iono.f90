@@ -1550,10 +1550,6 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
 
   REAL(kind=8) :: tnl11 , tnl12 , tnl21 , tnl22 ,  tnu11 , tnu12 , tnu21 , tnu22 , tn11 , tn12 , tn21 , tn22  , tn1 , tn2
 
-  !REAL(kind=8) :: tel11 , tel12 , tel21 , tel22    not used lrm20121115
-  !REAL(kind=8) :: te1 , te2, te21, te22,  te11 , te12, , teu21 , teu22,  teu11 , teu12      not used lrm20121115
-
-
   ! meridional wind
   REAL(kind=8) :: eastl11 , eastl12 , eastl21 , eastl22 ,  eastu11 , eastu12 , eastu21 , eastu22 , &
                   east11 , east12 , east21 , east22 , east1 , east2
@@ -1604,10 +1600,7 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
   REAL(kind=8) ::  TN(NPTS) , O(NPTS) , O2(NPTS) , N2(NPTS) , GLAt(NPTS) , &
                    PZ(NPTS) , GLOnd(NPTS)
 
-
   !REAL(kind=8) :: pz_1000(npts) not used lrm20121115
-
-
 
   REAL(kind=8) :: small_power, small_number
 
@@ -1619,38 +1612,7 @@ small_number = 1.d-20
 
 sw_External_model_provides_NO_N4S_densities = GIP_switches(5) 
 
-!-----------------------------------------------------------
-! Initialize to variables to 0 
-! lrm20120328 (was not being initialized before using)
-!-----------------------------------------------------------
-!topu11 = 0   
-!topl11 = 0   
-!topu12 = 0
-!topl12 = 0
-!topu21 = 0
-!topl21 = 0
-!topu22 = 0
-!topl22 = 0
-!tnopu11 = 0
-!tnopl11 = 0
-!tnopu12 = 0
-!tnopl12 = 0
-!tnopu21 = 0
-!tnopl21 = 0
-!tnopu22 = 0
-!tnopl22 = 0
-!to2pu11 = 0
-!to2pl11 = 0
-!to2pu12 = 0
-!to2pl12 = 0
-!to2pu21 = 0
-!to2pl21 = 0
-!to2pu22 = 0
-!to2pl22 = 0
 
-
-!g
-!iwrite1 = 0 not used lrm20121115
 iwrite = 0
 istop = 0
 if (istop == 1) stop
@@ -1665,17 +1627,18 @@ enddo
 !g  Big loop over all flux tubes (nmp and nlp).....
 !g -----------------------------------------------------
 
-do mp = 1 , nmp
-   do lp = 1 , nlp
+do mp = 1 , nmp   ! longitude sectors
+   do lp = 1 , nlp   !  number of tubes for each longitude sector
 
       !g ---------------------------------------------
       !g  calculate the 1D geographic inputs......
+      !l (lat, lon, height of each point we want to 
+      !l  interpolate to
       !g ---------------------------------------------
-       do i = in(mp,lp), is(mp,lp)
+       do i = in(mp,lp), is(mp,lp)  ! points along each tube
           glat(i) = glat_3d(i,mp)
           glond(i) = glond_3d(i,mp)
           pz(i) = pz_3d(i,mp)
-          !pz_1000(i) = pz(i)*1000.  ! altitude in meters  not used lrm20121115
        enddo ! i
   
 
@@ -1790,17 +1753,6 @@ do mp = 1 , nmp
               tnl21 = TTS(ihl,ilat2,ilon1)
               tnu22 = TTS(ihu,ilat2,ilon2)
               tnl22 = TTS(ihl,ilat2,ilon2)
-
-          ! electron temperature on the eight surrounding points......
-
-!             teu11 = Telec(ihu,ilat1,ilon1)
-!             tel11 = Telec(ihl,ilat1,ilon1)
-!             teu12 = Telec(ihu,ilat1,ilon2)
-!             tel12 = Telec(ihl,ilat1,ilon2)
-!             teu21 = Telec(ihu,ilat2,ilon1)
-!             tel21 = Telec(ihl,ilat2,ilon1)
-!             teu22 = Telec(ihu,ilat2,ilon2)
-!             tel22 = Telec(ihl,ilat2,ilon2)
 
           ! zonal wind on the eight surrounding points......
 
@@ -1977,19 +1929,6 @@ do mp = 1 , nmp
               dnn12 = (((dnnu12-dnnl12)*fach)+dnnl12)
               dnn21 = (((dnnu21-dnnl21)*fach)+dnnl21)
               dnn22 = (((dnnu22-dnnl22)*fach)+dnnl22)
-
-              !top11 = (((topu11-topl11)*fach)+topl11)
-              !top12 = (((topu12-topl12)*fach)+topl12)
-              !top21 = (((topu21-topl21)*fach)+topl21)
-              !top22 = (((topu22-topl22)*fach)+topl22)
-              !tnop11 = (((tnopu11-tnopl11)*fach)+tnopl11)
-             ! tnop12 = (((tnopu12-tnopl12)*fach)+tnopl12)
-             ! tnop21 = (((tnopu21-tnopl21)*fach)+tnopl21)
-             ! tnop22 = (((tnopu22-tnopl22)*fach)+tnopl22)
-             ! to2p11 = (((to2pu11-to2pl11)*fach)+to2pl11)
-             ! to2p12 = (((to2pu12-to2pl12)*fach)+to2pl12)
-             ! to2p21 = (((to2pu21-to2pl21)*fach)+to2pl21)
-             ! to2p22 = (((to2pu22-to2pl22)*fach)+to2pl22)
 
           if (sw_External_model_provides_NO_N4S_densities) then
 

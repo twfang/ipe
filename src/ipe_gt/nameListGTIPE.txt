@@ -1,9 +1,9 @@
 &gtipeINPUTS
 GT_input_dataset = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/INPUT/Day_80_180_dipole_test.gt.20110913.v1.nc'
-GT_output_dataset = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/OUTPUT/output_Day_80_180_dipole_test.gt.20110913.v1.nc'
+GT_output_dataset = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/OUTPUT/3DAY/output_Day_80_180_dipole_test.gt.20110913.v1.nc'
 ionoStartDir = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/INPUT/'
 staticFileDir = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/static_files/'
-debugDir = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/DEBUG/'
+debugDir = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/DEBUG/3DAY/'
 nday = 80                                                    
 f107 = 180.                  
 GT_timestep_in_seconds = 60  
