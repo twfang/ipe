@@ -271,6 +271,14 @@ REAL(kind=8) :: high_res_long(nFixedGridIonoLons)
 REAL(kind=8) :: high_res_lat(nFixedGridIonoLats) 
 REAL(kind=8) :: high_res_height(nFixedGridIonoHeights)
 
+!-------------------------
+! For timing the code :
+!-------------------------
+REAL :: startTime, endTime
+REAL :: timeFluxGridtoFixedGrid = 0.
+REAL :: timeFixedGridtoPressureGrid = 0.
+REAL :: timePressureGridtoFixedGrid = 0.
+REAL :: timeFixedGridtoFluxGrid = 0.
 
 
 ! BEGIN CODE ====================================================================================
@@ -695,6 +703,10 @@ print *,' '
 print *,'fixedThermoHeights_km = ',fixedThermoHeights_km
 print *,' '
 
+      !-------------------------------------------------------------------------
+      ! time how long it takes to do pressure grid to fixed grid interpolation
+      !-------------------------------------------------------------------------
+      !CALL cpu_time(startTime)
 
       !------------------------------------------------------
       ! interpolate from pressure grid to fixed height grid
@@ -724,6 +736,10 @@ print *,' '
            thermotofixedgrid, &             ! temperature output --------------------------
            junk_fixed_ht, junk_fixed_ht, junk_fixed_ht)                        ! output
 
+           !CALL cpu_time(endTime)
+           !timePressureGridtoFixedGrid = (endTime - startTime) + timePressureGridtoFixedGrid 
+           !WRITE(*,*) "cpu_time for INTERFACE__thermosphere_to_FIXED_GEO   : ",(endTime-startTime)
+
            ! Calculate interpolation error
 
            errorthermotofixedgrid = abs(testthermotofixedgrid - thermotofixedgrid)/testthermotofixedgrid
@@ -752,6 +768,10 @@ print *,' '
 
    !    testthermotofixedgrid = 1.0 !  JUST FOR TESTING !!!!!
 
+  !---------------------------------------------------------------------
+  ! Time how long it takes to interpolate fixed grid to flux tube grid
+  !---------------------------------------------------------------------
+  !CALL cpu_time(startTime)
 
   call INTERFACE__FIXED_GEO_to_IONOSPHERE( &
         therm_model_geo_long_deg, & ! was : geo_grid_longitudes_degrees, &
@@ -776,6 +796,10 @@ print *,' '
         ihl_3d_fixed_ht, ihu_3d_fixed_ht, &
         isFirstCallFixedHeight, &
         GIP_switches)
+
+        !CALL cpu_time(endTime)
+        !timeFixedGridtoFluxGrid = (endTime - startTime) + timeFixedGridtoFluxGrid 
+        !WRITE(*,*) "cpu_time for INTERFACE__FIXED_GEO_to_IONOSPHERE  : ",(endTime-startTime)
 
         ! Write the grid functions out for plotting
         WRITE (unittestionofixeddata,*) testionofixeddata
@@ -850,5 +874,20 @@ print *,' '
     WRITE (uniterrorthermotoipelog,*) errorlogthermotoiono
 
 print *,'test_Interp_Accuracy : END OF test_Interp_Accuracy '
+
+!-----------------------------------------------
+! Average the times spent in the subroutines
+!-----------------------------------------------
+!timeFluxGridtoFixedGrid = timeFluxGridtoFixedGrid/(bigLoop - 1)
+!timeFixedGridtoPressureGrid = timeFixedGridtoPressureGrid/(littleLoop - 1)
+!timePressureGridtoFixedGrid = timePressureGridtoFixedGrid/(bigLoop - 1)
+!timeFixedGridtoFluxGrid = timeFixedGridtoFluxGrid/(bigLoop - 1)
+!print *,'INTERPOLATION TIMES : -------------------------------------------------'
+!print *,'timeFluxGridtoFixedGrid = ', timeFluxGridtoFixedGrid
+!print *,'timeFixedGridtoPressureGrid = ', timeFixedGridtoPressureGrid
+!print *,'timePressureGridtoFixedGrid = ', timePressureGridtoFixedGrid
+!print *,'timeFixedGridtoFluxGrid = ', timeFixedGridtoFluxGrid
+!print *,' '
+!print *,'bigLoop, littleLoop = ', bigLoop, littleLoop
 
 END PROGRAM  test_Interp_Accuracy

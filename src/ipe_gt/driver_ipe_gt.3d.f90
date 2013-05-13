@@ -24,8 +24,7 @@ USE module_input_parameters, ONLY: read_input_parameters, &
 ! lrm20120531
 !USE module_FIELD_LINE_GRID_MKS, ONLY: JMIN_IN, JMAX_IS  ! For testing purposes only *****
 
-
-USE module_NEUTRAL_MKS, ONLY: neutral 
+!USE module_NEUTRAL_MKS, ONLY: neutral 
 
 USE moduleTHERMOSPHERE, ONLY : GT_thermosphere_init, low_lat_efield, &
                                Foster, GT_thermosphere, &
@@ -51,10 +50,6 @@ USE moduleInterfaceIono2Thermo, ONLY : INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GE
                                        readIPEtoGeoGrid, INTERFACE__FIXED_GRID_to_THERMO
 
       
-!t    USE module_PLASMA,ONLY: plasma
-!t    USE module_ELDYN,ONLY: init_eldyn, eldyn
-!t    USE module_IO,ONLY: open_output_files,output,close_files
-
 IMPLICIT NONE
 
 INTEGER (KIND=int_prec)   :: utime ! universal time [sec]
@@ -445,15 +440,6 @@ integer, parameter :: numIonoStart = 11
 
 type (startUpType) :: startUpFiles(numIonoStart)
 
-!-------------------------
-! For timing the code :
-!-------------------------
-REAL :: startTime, endTime
-REAL :: timeFluxGridtoFixedGrid = 0.
-REAL :: timeFixedGridtoPressureGrid = 0.
-REAL :: timePressureGridtoFixedGrid = 0.
-REAL :: timeFixedGridtoFluxGrid = 0.
-
 
 !-----------------------------------
 ! Namelist for input parameters :
@@ -475,12 +461,8 @@ debugDir = TRIM(debugDir)
 !------------------------
 ! Set up input parameters
 !------------------------
-CALL read_input_parameters ()
+ CALL read_input_parameters ()
 
-!-------------------------
-! Open Input/Output files
-!-------------------------
-!t   CALL open_output_files ()
 
 !---------------------------------------
 ! Set up plasma grids by reading file
@@ -505,7 +487,6 @@ read (16, NML=gtipeINPUTS)
 
 print *,'driver_ipe_gt.3d : amplitude = ',amplitude
 print *,'driver_ipe_gt.3d : tidalPhase = ',tidalPhase
-
 print *,'driver_ipe_gt : GT_input_dataset = ', GT_input_dataset
 
 startUpFiles%speciesName = (/ "Oplus", "Hplus", "Heplus", "Nplus", "NOplus", "O2plus", &
@@ -546,7 +527,7 @@ enddo ! ii
 
 ! ***************************************************************
 
-IF ( sw_neutral == 'GT' ) then
+!IF ( sw_neutral == 'GT' ) then
 
     nnstrt = 1  ! ********************
     nnstop = 15  ! ******************** NEED TO CHANGE THIS - LRM
@@ -554,7 +535,7 @@ IF ( sw_neutral == 'GT' ) then
 
     ! These are in the namelist :
     !GT_input_dataset
-    !!GT_output_dataset 
+    !GT_output_dataset 
     !GT_output_dataset 
     !staticFileDir
     
@@ -940,7 +921,7 @@ IF ( sw_neutral == 'GT' ) then
      CALL readIPEtoGeoGrid( giptogeoFileName)
 
 
-endif ! sw_neutral == 'GT' 
+!endif ! sw_neutral == 'GT' 
 
 
 !------------------------------------------------
@@ -1191,7 +1172,7 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
   end if
 
 
-  IF ( sw_neutral == 'GT' ) then
+  !IF ( sw_neutral == 'GT' ) then
 
    !------------------------------------------
    ! Loop here for the thermosphere time step
@@ -1517,11 +1498,6 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
       !***************************************************
 
 
-      !-------------------------------------------------------------------------
-      ! time how long it takes to do pressure grid to fixed grid interpolation
-      !-------------------------------------------------------------------------
-      !CALL cpu_time(startTime)
-
       !------------------------------------------------------
       ! interpolate from pressure grid to fixed height grid
       ! variables to add later : NO_density, N4S_density, N2D_density
@@ -1550,10 +1526,6 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
            V_East_FixedHeight, V_South_FixedHeight, V_Upward_FixedHeight, tts_fixed_ht, &             ! output
            qion3d_fixed_ht, elx_fixed_ht, ely_fixed_ht)                        ! output
 
-
-           !CALL cpu_time(endTime)
-           !timePressureGridtoFixedGrid = (endTime - startTime) + timePressureGridtoFixedGrid 
-           !WRITE(*,*) "cpu_time for INTERFACE__thermosphere_to_FIXED_GEO   : ",(endTime-startTime)
 
            !-------------------------------------------------------------------------
            ! Write out results of the interpolation to an ascii file for examination
@@ -1588,11 +1560,6 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
       write(unitCheckThermoInterpAfter+8,*) qion3d_fixed_ht
   end if
 
-  !---------------------------------------------------------------------
-  ! Time how long it takes to interpolate fixed grid to flux tube grid
-  !---------------------------------------------------------------------
-  !CALL cpu_time(startTime)
-
 
   !--------------------------------------------
   ! Convert fixed height grid to flux tube grid
@@ -1624,9 +1591,6 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
         isFirstCallFixedHeight, &
         GIP_switches)
 
-        !CALL cpu_time(endTime)
-        !timeFixedGridtoFluxGrid = (endTime - startTime) + timeFixedGridtoFluxGrid 
-        !WRITE(*,*) "cpu_time for INTERFACE__FIXED_GEO_to_IONOSPHERE  : ",(endTime-startTime)
 
         !---------------------------------------
         ! print out results to check vs GT-IPE
@@ -1669,44 +1633,10 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
        endif
 
 
-else
-
-
-    ! Update the neutral 3D structure: use MSIS/HWM to get the values in the flux tube grid
-    CALL neutral ( utime )
-
-end if  ! if ( sw_neutral == 'GT' )
-
-
-
-   ! update plasma
-   !t        CALL plasma ( utime )
-
-   ! update electrodynamics
-   !t        CALL eldyn ( utime )
-
-   ! output to a file
-   !t        CALL output ( utime )
-
    bigLoop = bigLoop + 1 !  increase # of times in big loop by 1
 
 END DO  time_loop !: DO utime = start_time, stop_time, time_step
 
-!-----------------------------------------------
-! Average the times spent in the subroutines
-!-----------------------------------------------
-timeFluxGridtoFixedGrid = timeFluxGridtoFixedGrid/(bigLoop - 1)
-timeFixedGridtoPressureGrid = timeFixedGridtoPressureGrid/(littleLoop - 1)
-timePressureGridtoFixedGrid = timePressureGridtoFixedGrid/(bigLoop - 1)
-timeFixedGridtoFluxGrid = timeFixedGridtoFluxGrid/(bigLoop - 1)
-
-!print *,'INTERPOLATION TIMES : -------------------------------------------------'
-!print *,'timeFluxGridtoFixedGrid = ', timeFluxGridtoFixedGrid
-!print *,'timeFixedGridtoPressureGrid = ', timeFixedGridtoPressureGrid
-!print *,'timePressureGridtoFixedGrid = ', timePressureGridtoFixedGrid
-!print *,'timeFixedGridtoFluxGrid = ', timeFixedGridtoFluxGrid
-!print *,' '
-!print *,'bigLoop, littleLoop = ', bigLoop, littleLoop
 
 
 !-------------------------
@@ -1728,10 +1658,6 @@ endif
 if (debugThermoInterp) CLOSE (unitCheckThermoInterp)
 
 if (debugFixedGeo) CLOSE (unitFixedGeo)
-
-
-! close all open files
-!t      CALL close_files ()
 
 print *,'driver_ipe_gt.3d : END OF driver_ipe_gt.3d '
 
