@@ -533,8 +533,8 @@ startUpFiles%filename = (/ "plasma00.cmb.ascii", "plasma01.cmb.ascii", "plasma02
 do ii = 1, numIonoStart
 
    startUpFiles(ii)%unit = unitStartUp + (ii - 1)
-   print *,'startUpFiles(ii)%unit = ', startUpFiles(ii)%unit
-   print *,TRIM(GT_input_dataset)//TRIM(startUpFiles(ii)%filename)
+   !print *,'startUpFiles(ii)%unit = ', startUpFiles(ii)%unit
+   !print *,TRIM(GT_input_dataset)//TRIM(startUpFiles(ii)%filename)
    
    OPEN(UNIT=startUpFiles(ii)%unit, FILE=TRIM(ionoStartDir)//TRIM(startUpFiles(ii)%filename), &
               STATUS='old',FORM='formatted')
@@ -955,7 +955,7 @@ endif ! sw_neutral == 'GT'
 !  Ionospheric Loop :  time_loop is in seconds
 !-----------------------------------------------
 time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_step
-  !print *, 'driver_ipe_gt.3d : utime  =  ', utime
+  print *, 'driver_ipe_gt.3d : utime  =  ', utime
 
 
   !**************************************************************************************
@@ -986,8 +986,8 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
 
 ! WILL NEED TO READ VELOCITY FOR OPLUS AND HPLUS AND INTERPOLATE IN THE FUTURE may 1, 2012
 
-  print *,'driver_ipe_gt.3d '
-  print *,'driver_ipe_gt.3d : after reading all ipe startup files.......'
+  !print *,'driver_ipe_gt.3d '
+  !print *,'driver_ipe_gt.3d : after reading all ipe startup files.......'
 
   !--------------------------------------------------------------------------
   !Ne_density_from_IPE  = sum of all above ion densities  (not temperatures)
@@ -1099,10 +1099,6 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
 
   end if
 
-  !---------------------------------------------------------------
-  ! Check the cpu time to get timing of the interface subroutine
-  !---------------------------------------------------------------
-  CALL CPU_TIME(startTime)
 
 
   !-------------------------------------------------------
@@ -1115,13 +1111,6 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
                                    Oplus_density_from_IPE, &      ! inputs
                                    Oplus_high_res_fixed)   ! output
 
-  CALL CPU_TIME(endTime)
-
-  !------------------------------------------------------------------------
-  ! Add up how much time we've been spent in this routine, then avg at end
-  !------------------------------------------------------------------------
-  timeFluxGridtoFixedGrid = (endTime-startTime) + timeFluxGridtoFixedGrid
-  WRITE(*,*) "cpu_time for INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO, Oplus   : ",(endTime-startTime)
 
 
 
@@ -1210,6 +1199,8 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
    thermosphereLoop : DO gtLoopTime = utime, utime + (time_step-GT_timestep_in_seconds), &
                                       GT_timestep_in_seconds !------------------------
 
+      print *,'driver_ipe_gt.3d : gtLoopTime = ',gtLoopTime
+
       nnloop = MOD(nnloop + 1, number_of_GT_time_steps_in_24_hours)
       IF ( nnloop .EQ. 0 ) nnloop = number_of_GT_time_steps_in_24_hours
 
@@ -1218,8 +1209,8 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
       nn = MOD(nnloop, number_of_GT_time_steps_in_24_hours)
       IF ( nn .EQ. 0 ) nn = number_of_GT_time_steps_in_24_hours
 
-      print *, 'driver_ipe_gt.3d : utime, Universal_Time_seconds, nn, nnloop  =  ', &
-                                   utime, Universal_Time_seconds, nn, nnloop
+      !print *, 'driver_ipe_gt.3d : utime, Universal_Time_seconds, nn, nnloop  =  ', &
+      !                             utime, Universal_Time_seconds, nn, nnloop
 
       !---------------------
       ! increment counters
@@ -1283,10 +1274,6 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
       !print *,'driver : Before INTERFACE__FIXED_GRID_to_THERMO '
       !print *,'driver : Ne_high_res_fixed(:,10,10) = ', Ne_high_res_fixed(:,10,10)
 
-      !------------------------------------------------------
-      ! Time the fixed grid to pressure grid interpolation
-      !------------------------------------------------------
-      CALL cpu_time(startTime)
 
       ! This is in the loop b/c of changing heights of the pressure grid
       CALL INTERFACE__FIXED_GRID_to_THERMO ( &
@@ -1302,14 +1289,6 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
          NOplus_density_FOR_GT, O2plus_density_FOR_GT, &                     ! outputs
          N2plus_density_FOR_GT, Nplus_density_FOR_GT, &                      ! outputs
          Te_FOR_GT, Ti_Oplus_FOR_GT, Ti_Oplus_FOR_GT)                        ! outputs
-
-      CALL cpu_time(endTime)
-
-      !------------------------------------------------------------------------
-      ! Add up how much time we've been spent in this routine, then avg at end
-      !------------------------------------------------------------------------
-      timeFixedGridtoPressureGrid = (endTime-startTime) + timeFixedGridtoPressureGrid
-      WRITE(*,*) "cpu_time for  INTERFACE__FIXED_GRID_to_THERMO  : ",(endTime-startTime)
 
 
          !--------------------------------------------------------
@@ -1449,6 +1428,22 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
 
         endif ! debugThermo
 
+        !-----------------------------------
+        ! Check for negative temperatures
+        !-----------------------------------
+        if (MINVAL(Temperature_K_FROM_GT) < 100.) then
+
+            print *,'driver_ipe_gt.3d : WARNING, Temperature_K_FROM_GT) < 100. *********'
+            print *,'driver_ipe_gt.3d : ',MINVAL(Temperature_K_FROM_GT),  MINLOC(Temperature_K_FROM_GT)
+
+        else if (MINVAL(Temperature_K_FROM_GT) <= 0.) then
+           print *,'driver_ipe_gt.3d : NEGATIVE TEMPERATURE VALUE FROM GT ****************************************************'
+           print *,'nnloop, Universal_Time_seconds, MINVAL, MINLOC = ', &
+                    nnloop, Universal_Time_seconds, MINVAL(Temperature_K_FROM_GT), MINLOC(Temperature_K_FROM_GT)
+           print *,'driver_ipe_gt.3d : STOPPING .....................'
+           STOP
+        endif
+
 
         littleLoop = littleLoop + 1
 
@@ -1461,20 +1456,6 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
            !print *,'driver : setting GT densities to constants for testing ********************' 
            !print *,'driver : setting GT densities to constants for testing ********************' 
            !print *,'driver : setting GT densities to constants for testing ********************' 
-
-
-           !do ii = 1, gt_ht_dim
-           !   O_density_FROM_GT(ii,:,:) = ii
-           !end do
-
-           !O_density_FROM_GT = iitime
-
-           !iitime = iitime + 1
-
-
-           !O_density_FROM_GT = 1.0
-           !O2_density_FROM_GT = 2.0
-           !N2_density_FROM_GT = 3.0
 
            ! write out arrays to file for plotting
            write(unitCheckThermoInterpBefore,*) wind_southwards_ms1_FROM_GT
@@ -1491,7 +1472,7 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
           ! Calculate and write out the average height for each pressure level
           !--------------------------------------------------------------------
           write(unitCheckPressureHeightThermo, FMT="(I12)" ) gtLoopTime
-         do ii = 1, GT_ht_dim
+          do ii = 1, GT_ht_dim
 
             write(unitCheckPressureHeightThermo, FMT="(E12.4)") SUM(Ht_FROM_GT(ii,:,:))/(GT_lat_dim*GT_lon_dim)
 
@@ -1501,7 +1482,7 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
 
 
 
-
+!  if (doInterpToIpe )
 
 
       !-------------------------------------------------------------------------
@@ -1532,24 +1513,19 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
       !***************************************************
       !!! HN_m3,HE_m3 still need to be obtained from MSIS
       ! call MSIS to get these values
+      ! MAY NEED TO CONVERT cm-3 to m-3 ****
       !***************************************************
-      ! I could use the nday from the INP.inp file ****************
-      !iday = nday
-      !iyd = 99000 + iday
-      !call gtd7(iyd,sec,alt,glat,glon,stl,f107a_msis,f107d_msis,ap_msis,mass,d,t)
 
-      ! convert from cm-3 to m-3
-      !he_density_m3 (i) = d(1)/M3_TO_CM3 !*1.e6
-      !h_density_m3  (i) = d(7)/M3_TO_CM3
-      !n4s_density_m3(i) = d(8)/M3_TO_CM3
 
       !-------------------------------------------------------------------------
       ! time how long it takes to do pressure grid to fixed grid interpolation
       !-------------------------------------------------------------------------
-      CALL cpu_time(startTime)
+      !CALL cpu_time(startTime)
 
       !------------------------------------------------------
       ! interpolate from pressure grid to fixed height grid
+      ! variables to add later : NO_density, N4S_density, N2D_density
+      ! Aurora variables : qo2p_aurora, qop_aurora, qn2p_aurora, qnp_aurora, qtef_aurora
       !------------------------------------------------------
         call INTERFACE__thermosphere_to_FIXED_GEO ( &
            GIP_switches, &
@@ -1560,9 +1536,6 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
            O_density_m3_FOR_IPE, & !  O_density_FROM_GT,  &             ! was : therm_model_o_density
            O2_density_m3_FOR_IPE, & ! O2_density_FROM_GT, &             ! was : therm_model_o2_density
            N2_density_m3_FOR_IPE, & ! N2_density_FROM_GT, &             ! was : therm_model_n2_density
-           !! therm_model_NO_density, &      ! not needed now
-           !! therm_model_N4S_density, &     ! not needed now
-           !! therm_model_N2D_density, &     ! not needed now
            Tn_K_FOR_IPE, & ! Temperature_K_FROM_GT, &        ! was : therm_model_Tn
            Vn_Eastwards_ms1_FOR_IPE, & ! wind_eastwards_ms1_FROM_GT, &  ! was : therm_model_Vy
            Vn_Southwards_ms1_FOR_IPE, &  ! wind_southwards_ms1_FROM_GT, &   ! was : therm_model_Vx
@@ -1570,34 +1543,17 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
            qion3d_FOR_IPE, & ! was : therm_model_qion3d    ! input
            elx_FOR_IPE, & ! exns, &  ****                       ! was : therm_model_elx
            ely_FOR_IPE, & ! eyns, &  ****                      ! was : therm_model_ely
-           
-           !! AURORA VARIABLES NOT NEEDED FOR IPE YET lrm20110929
-           !! therm_model_qo2p_aurora, therm_model_qop_aurora, therm_model_qn2p_aurora, &
-           !! therm_model_qnp_aurora, therm_model_qtef_aurora, &
-
            therm_model_geo_long_deg, &  ! was : therm_model_geo_long
            therm_model_geo_lat_deg, &   ! was : therm_model_geo_lat 
            Altitude_m_FOR_IPE, &        ! was : therm_model_ht_m, &
-
            O_density_fixed_ht, O2_density_fixed_ht, N2_density_fixed_ht, &     ! output
-
-
-           !! NO_density_fixed_ht, &    ! output, not needed now
-           !! N4S_density_fixed_ht, &   ! output, not needed now
-           !! N2D_density_fixed_ht, &   ! output, not needed now
-
-
            V_East_FixedHeight, V_South_FixedHeight, V_Upward_FixedHeight, tts_fixed_ht, &             ! output
            qion3d_fixed_ht, elx_fixed_ht, ely_fixed_ht)                        ! output
 
-           !! AURORA VARIABLES NOT NEEDED FOR IPE YET lrm20110929
-           !! qo2p_aurora_fixed_ht, qop_aurora_fixed_ht, qn2p_aurora_fixed_ht, &  ! output
-           !! qnp_aurora_fixed_ht, qtef_aurora_fixed_ht)                          ! output
 
-
-           CALL cpu_time(endTime)
-           timePressureGridtoFixedGrid = (endTime - startTime) + timePressureGridtoFixedGrid 
-           WRITE(*,*) "cpu_time for INTERFACE__thermosphere_to_FIXED_GEO   : ",(endTime-startTime)
+           !CALL cpu_time(endTime)
+           !timePressureGridtoFixedGrid = (endTime - startTime) + timePressureGridtoFixedGrid 
+           !WRITE(*,*) "cpu_time for INTERFACE__thermosphere_to_FIXED_GEO   : ",(endTime-startTime)
 
            !-------------------------------------------------------------------------
            ! Write out results of the interpolation to an ascii file for examination
@@ -1635,7 +1591,7 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
   !---------------------------------------------------------------------
   ! Time how long it takes to interpolate fixed grid to flux tube grid
   !---------------------------------------------------------------------
-  CALL cpu_time(startTime)
+  !CALL cpu_time(startTime)
 
 
   !--------------------------------------------
@@ -1650,29 +1606,16 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
         O2_density_fixed_ht, &
         N2_density_fixed_ht, &
 
-        !! NO_density_fixed_ht, &    not needed now
-        !! N4S_density_fixed_ht, &   not needed now
-        !! N2D_density_fixed_ht, &   not needed now
-
         V_East_FixedHeight, V_South_FixedHeight, V_Upward_FixedHeight, tts_fixed_ht, &   ! inputs
-
-        !! telec_fixed_ht, &  not needed now
-
         inGIP, isGIP, &  ! was : IN, IS, &
-        ! iwrite_plasma_interface, & not used lrm20121115
         TN_plasma_input_3d, &
         O_plasma_input_3d, &
         O2_plasma_input_3d, &
         N2_plasma_input_3d, &
-
-        !! NO_plasma_input_3d, N4S_plasma_input_3d, N2D_plasma_input_3d, &  not needed now
-
         GLAt_plasma_3d, &
         GLOnd_plasma_3d, &
         PZ_plasma_3d, &
         V_east_plasma, V_south_plasma, V_upward_plasma, &  ! wind
-
-        !! te_dum_plasma_input_3d, & not needed now
 
         ilon1_3d_fixed_ht, ilon2_3d_fixed_ht, &  ! output
         ilat1_3d_fixed_ht, ilat2_3d_fixed_ht, &  ! output
@@ -1681,9 +1624,9 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
         isFirstCallFixedHeight, &
         GIP_switches)
 
-        CALL cpu_time(endTime)
-        timeFixedGridtoFluxGrid = (endTime - startTime) + timeFixedGridtoFluxGrid 
-        WRITE(*,*) "cpu_time for INTERFACE__FIXED_GEO_to_IONOSPHERE  : ",(endTime-startTime)
+        !CALL cpu_time(endTime)
+        !timeFixedGridtoFluxGrid = (endTime - startTime) + timeFixedGridtoFluxGrid 
+        !WRITE(*,*) "cpu_time for INTERFACE__FIXED_GEO_to_IONOSPHERE  : ",(endTime-startTime)
 
         !---------------------------------------
         ! print out results to check vs GT-IPE
@@ -1726,7 +1669,6 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
        endif
 
 
-
 else
 
 
@@ -1758,13 +1700,13 @@ timeFixedGridtoPressureGrid = timeFixedGridtoPressureGrid/(littleLoop - 1)
 timePressureGridtoFixedGrid = timePressureGridtoFixedGrid/(bigLoop - 1)
 timeFixedGridtoFluxGrid = timeFixedGridtoFluxGrid/(bigLoop - 1)
 
-print *,'INTERPOLATION TIMES : -------------------------------------------------'
-print *,'timeFluxGridtoFixedGrid = ', timeFluxGridtoFixedGrid
-print *,'timeFixedGridtoPressureGrid = ', timeFixedGridtoPressureGrid
-print *,'timePressureGridtoFixedGrid = ', timePressureGridtoFixedGrid
-print *,'timeFixedGridtoFluxGrid = ', timeFixedGridtoFluxGrid
-print *,' '
-print *,'bigLoop, littleLoop = ', bigLoop, littleLoop
+!print *,'INTERPOLATION TIMES : -------------------------------------------------'
+!print *,'timeFluxGridtoFixedGrid = ', timeFluxGridtoFixedGrid
+!print *,'timeFixedGridtoPressureGrid = ', timeFixedGridtoPressureGrid
+!print *,'timePressureGridtoFixedGrid = ', timePressureGridtoFixedGrid
+!print *,'timeFixedGridtoFluxGrid = ', timeFixedGridtoFluxGrid
+!print *,' '
+!print *,'bigLoop, littleLoop = ', bigLoop, littleLoop
 
 
 !-------------------------

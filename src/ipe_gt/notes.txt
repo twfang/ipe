@@ -1,3 +1,19 @@
+To run in batch mode :
+
+
+> qsub -M leslie.mayer@noaa.gov -m abe  qsub_runCoupler.sh  
+
+
+
+Interactive job :
+qsub -I -X -l procs=36,walltime=1:00:00 -A acct
+
+qsub -I -X -l procs=1,walltime=4:00:00 -A gm  - wait for prompt, move to directory
+                                                where I want to run, ./a.out
+                                                then interactive run a.out
+
+showq -v | grep -i leslie
+
 FOR NEW IPE GT
 --------------------------------------------------------------------------------------
 set up for make & run :

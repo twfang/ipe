@@ -6,18 +6,13 @@ PROGRAM  test_Interp_Accuracy
 
 USE module_precision
 
-!USE module_input_parameters, ONLY: read_input_parameters, &
-!                             start_time, stop_time, time_step, HPEQ_flip, sw_neutral  
-!                             ! add nday  **********************
-
-
 USE modSizeFluxTube, ONLY : NPTS, NMP, NLP  ! sizes of flux tube grid
 
 
 USE moduleInterfaceThermo2Iono, ONLY : INTERFACE__thermosphere_to_FIXED_GEO, &
                             INTERFACE__FIXED_GEO_to_IONOSPHERE
 
-USE modSizeFixedGridIono, ONLY : nFixedGridIonoHeights, &
+USE modSizeFixedGridIono, ONLY : nFixedGridIonoHeights, &  !  183 heights
                                  nFixedGridIonoLats, &
                                  nFixedGridIonoLons
 
@@ -32,17 +27,6 @@ USE moduleInterfaceIono2Thermo, ONLY : INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GE
 
 IMPLICIT NONE
       
-      
-! Variables for GT_thermosphere -------------------  NOW THIS IN A MODULE
-! Parameters
-!integer, parameter :: GT_ht_dim = 15
-!integer, parameter :: GT_lat_dim = 91
-!integer, parameter :: GT_lon_dim = 20
-
-
-! Parameters for IPE fixed grid  - in modSizeFixedGridIono module
-! nFixedGridIonoHeights 
-
 
 ! check status of fortran open
 INTEGER :: FileOpenStatus
@@ -61,6 +45,14 @@ INTEGER, parameter :: uniterrorfixedtoipelog = 506
 INTEGER, parameter :: uniterrorthermotoipelinear = 507
 INTEGER, parameter :: uniterrorthermotoipelog = 508
 
+!------------------------------------------------------
+! File unit number for checking test grid values :
+!------------------------------------------------------
+INTEGER, parameter :: unittestionofixeddata = 509
+INTEGER, parameter :: unittestthermotofixedgrid = 510
+INTEGER, parameter :: unittestipedata = 511
+INTEGER, parameter :: unitfixedthermotoiono = 512
+
 
 !------------------------------------------------------
 ! File unit number for checking thermosphere values :
@@ -74,7 +66,6 @@ INTEGER, parameter :: unitCheckThermoInterp = 7800
 !---------------------------------------------------
 ! Write out the Thermospheric interpolated values??
 !---------------------------------------------------
-!LOGICAL, parameter :: debugThermoInterp = .TRUE.
 CHARACTER(LEN=*), PARAMETER :: debugThermoInterpFileName = 'interpOut.dat'
 INTEGER, parameter :: unitCheckThermoInterpBefore = 7600  ! for writing out thermosphere values
 INTEGER, parameter :: unitCheckThermoInterpAfter = 7500  ! for writing out thermosphere values
@@ -195,6 +186,9 @@ INTEGER :: inGIP(NMP, NLP), isGIP(NMP, NLP)  ! 2d inGIP, isGIP grids to match up
 REAL(kind=8) :: pz_plasma_1d(NPTS)  ! 1d in, read from the IPE grid file
 REAL(kind=8) :: glat_plasma_3d(npts,nmp), glond_plasma_3d(npts,nmp), pz_plasma_3d(npts,nmp)
 
+! glats in co-lat radians
+REAL(kind=8) :: glat_plasma_3d_crad(npts,nmp), glond_plasma_3d_crad(npts,nmp)
+
 ! ipe test grid variable
 REAL(kind=8) :: testipedata(npts,nmp)
 REAL(kind=8) :: logtestipedata(npts,nmp)
@@ -300,6 +294,15 @@ OPEN (uniterrorfixedtoipelog, FILE=TRIM(debugDir)//TRIM("errorfixedtoipelog"), S
 OPEN (uniterrorthermotoipelinear, FILE=TRIM(debugDir)//TRIM("errorthermotoipelinear"), STATUS='REPLACE')
 OPEN (uniterrorthermotoipelog, FILE=TRIM(debugDir)//TRIM("errorthermotoipelog"), STATUS='REPLACE')
 
+
+!-----------------------------------------------------------
+! open files for writing out grid arrays
+!-----------------------------------------------------------
+OPEN (unittestionofixeddata, FILE=TRIM(debugDir)//TRIM("gridtestionofixeddata"), STATUS='REPLACE')
+OPEN (unittestthermotofixedgrid, FILE=TRIM(debugDir)//TRIM("gridtestthermotofixedgrid"), STATUS='REPLACE')
+OPEN (unittestipedata, FILE=TRIM(debugDir)//TRIM("gridtestipedata"), STATUS='REPLACE')
+OPEN (unitfixedthermotoiono, FILE=TRIM(debugDir)//TRIM("gridfixedthermotoiono"), STATUS='REPLACE')
+
 			    
 !--------------------------------------
 ! Define name of the geo to mag file
@@ -370,33 +373,37 @@ giptogeoFileName = TRIM(staticFileDir)//'GIP_Fixed_GEO_grid_lowres'
        Pz_plasma_3d(ii,:) = Pz_plasma_1d(ii)/1000.
     ENDDO ! ii
 
+
+    ! keep co-latitude in radians for grid function interpolation accuracy test ***
+    GLAT_plasma_3d_crad = GLAT_plasma_3d
+    GLONd_plasma_3d_crad = GLONd_plasma_3d
+
     !--------------------------------------------------------
     ! Convert co-latitude in radians to latitude in degrees
-    ! Keep in co-lat for interpolation accuracy test ***
     !--------------------------------------------------------
-    !GLAT_plasma_3d = 90. - (GLAT_plasma_3d/DTR)
+    GLAT_plasma_3d = 90. - (GLAT_plasma_3d/DTR)
 
     !--------------------------------------------------------
     ! Convert longitude in radians to degrees
     !--------------------------------------------------------
-    !GLONd_plasma_3d = GLONd_plasma_3d/DTR
+    GLONd_plasma_3d = GLONd_plasma_3d/DTR
 
     !------------------------------------
     ! Set up grid function for ipe grid    
     !------------------------------------
 
      testipedata = 1.0 + pz_plasma_3d*0.01 + &
-                   (cos(GLAT_plasma_3d)**2) * cos(2.0*GLONd_plasma_3d)
+                   (cos(GLAT_plasma_3d_crad)**2) * cos(2.0*GLONd_plasma_3d_crad)
 
      ! For testing logarithmic interpolations
      logtestipedata = 1.0 + 10.**(pz_plasma_3d*0.0001) + &
-                   (cos(GLAT_plasma_3d)**2) * cos(2.0*GLONd_plasma_3d)
+                   (cos(GLAT_plasma_3d_crad)**2) * cos(2.0*GLONd_plasma_3d_crad)
 
      print *,' '
      print *,'minval(pz_plasma_3d) in km = ',minval(pz_plasma_3d)
      print *,'maxval(pz_plasma_3d) in km = ',maxval(pz_plasma_3d)
-     print *,'min, max of GLAT_plasma_3d = ',minval(GLAT_plasma_3d), maxval(GLAT_plasma_3d)
-     print *,'min, max of GLONd_plasma_3d = ',minval(GLONd_plasma_3d), maxval(GLONd_plasma_3d)     
+     print *,'min, max of GLAT_plasma_3d_crad = ',minval(GLAT_plasma_3d_crad), maxval(GLAT_plasma_3d_crad)
+     print *,'min, max of GLONd_plasma_3d_crad = ',minval(GLONd_plasma_3d_crad), maxval(GLONd_plasma_3d_crad)     
      print *,' '
 
     !--------------------------------------
@@ -540,7 +547,10 @@ enddo ! kk
     !print *,'nFixedGridIonoHeights*nFixedGridIonoLats*nFixedGridIonoLons = ',&
     !         nFixedGridIonoHeights*nFixedGridIonoLats*nFixedGridIonoLons
 
-
+  !---------------------------------------------------------------
+  ! Check the cpu time to get timing of the interface subroutine
+  !---------------------------------------------------------------
+  !CALL CPU_TIME(startTime)
 
   !-------------------------------------------------------
   ! 1st interpolation :  Interpolate from flux tube grid
@@ -551,6 +561,13 @@ enddo ! kk
                                    nFixedGridIonoHeights, nFixedGridIonoLats, nFixedGridIonoLons, & ! inputs
                                    testipedata, &      ! inputs
                                    ipetofixeddata)   ! output
+
+  !CALL CPU_TIME(endTime)
+  !------------------------------------------------------------------------
+  ! Add up how much time we've been spent in this routine, then avg at end
+  !------------------------------------------------------------------------
+  !timeFluxGridtoFixedGrid = (endTime-startTime) + timeFluxGridtoFixedGrid
+  !WRITE(*,*) "cpu_time for INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO, Oplus   : ",(endTime-startTime)
 
    !  Calculate the errors in the grid interpolation 
     erroripetofixeddata = abs(testionofixeddata - ipetofixeddata)/testionofixeddata
@@ -579,6 +596,11 @@ enddo ! kk
    enddo ! ii
 
 
+      !------------------------------------------------------
+      ! Time the fixed grid to pressure grid interpolation
+      !------------------------------------------------------
+      !CALL cpu_time(startTime)
+
       ! This is in the loop b/c of changing heights of the pressure grid
       CALL INTERFACE__FIXED_GRID_to_THERMO ( &
          thermospheric_model_name , GT_ht_dim , GT_lat_dim , GT_lon_dim , &  ! inputs
@@ -593,8 +615,16 @@ enddo ! kk
          junk_FOR_GT, junk_FOR_GT, &                      ! outputs
          fixedgridtothermo, junk_FOR_GT, junk_FOR_GT)                        ! outputs
 
+      !CALL cpu_time(endTime)
 
-         ! Calculate the errors in the grid interpolation 
+      !------------------------------------------------------------------------
+      ! Add up how much time we've been spent in this routine, then avg at end
+      !------------------------------------------------------------------------
+      !timeFixedGridtoPressureGrid = (endTime-startTime) + timeFixedGridtoPressureGrid
+      !WRITE(*,*) "cpu_time for  INTERFACE__FIXED_GRID_to_THERMO  : ",(endTime-startTime)
+
+
+      ! Calculate the errors in the grid interpolation 
 
      errorfixedgridtothermo = abs(testthermogrid - fixedgridtothermo)/testthermogrid
 
@@ -727,19 +757,19 @@ print *,' '
         therm_model_geo_long_deg, & ! was : geo_grid_longitudes_degrees, &
         therm_model_geo_lat_deg, &  ! was : geo_grid_latitudes_degrees, &
         logtestthermotofixedgrid, &  ! O ------------
-        junk_fixed_ht, &
-        junk_fixed_ht, &
-        junk_Fixed_Ht, junk_Fixed_Ht, junk_Fixed_Ht, &
+        junk_fixed_ht, &  ! O2
+        junk_fixed_ht, &  ! N2
+        junk_Fixed_Ht, junk_Fixed_Ht, junk_Fixed_Ht, & ! v_east, v_south, v_up
         testthermotofixedgrid, &   ! temperature inputs
         inGIP, isGIP, &  ! was : IN, IS, &
         fixedthermotoiono, &  ! temperature output ---------
         logfixedthermotoiono, &  ! O ------------------
-        junk_plasma, &
-        junk_plasma, &
+        junk_plasma, &  ! O2 out
+        junk_plasma, &  ! N2 out
         GLAt_plasma_3d, &
         GLOnd_plasma_3d, &
         PZ_plasma_3d, &
-        junk_plasma, junk_plasma, junk_plasma, &  ! wind
+        junk_plasma, junk_plasma, junk_plasma, &  ! wind east, south, up out 
         ilon1_3d_fixed_ht, ilon2_3d_fixed_ht, &  ! output
         ilat1_3d_fixed_ht, ilat2_3d_fixed_ht, &  ! output
         ispecial_3d_fixed_ht, &
@@ -747,6 +777,11 @@ print *,' '
         isFirstCallFixedHeight, &
         GIP_switches)
 
+        ! Write the grid functions out for plotting
+        WRITE (unittestionofixeddata,*) testionofixeddata
+        WRITE (unittestthermotofixedgrid,*) testthermotofixedgrid
+        WRITE (unittestipedata,*) testipedata
+        WRITE (unitfixedthermotoiono,*) fixedthermotoiono
 
         ! calculate errors and write them out
         errorfixedthermotoiono = abs(testipedata - fixedthermotoiono)/testipedata
@@ -792,13 +827,16 @@ print *,' '
         isFirstCallFixedHeight, &
         GIP_switches)
 
-
         ! calculate errors and write them out
         errorthermotoiono = abs(testipedata - fixedthermotoiono)/testipedata
     print *,' '
     print *,'min(errorthermotoiono) = ', minval(errorthermotoiono)
     print *,'max(errorthermotoiono) = ', maxval(errorthermotoiono)
     print *,'average(errorthermotoiono) = ', sum(errorthermotoiono)/size(errorthermotoiono)
+
+    do ii = 1, nmp
+       print *,'max(errorthermotoiono(:,ii) = ', maxval(errorthermotoiono(:,ii)), ii
+    enddo
 
     WRITE (uniterrorthermotoipelinear,*) errorthermotoiono
 

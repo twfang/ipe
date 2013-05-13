@@ -681,7 +681,7 @@ qion3d = 0
    UT_minus_12UT_in_seconds = DMOD(UT_minus_12UT_in_seconds, secondsInDay)
 
 
-   print *,'moduleThermosphere : UT_minus_12UT_in_seconds = ',UT_minus_12UT_in_seconds
+   !print *,'moduleThermosphere : UT_minus_12UT_in_seconds = ',UT_minus_12UT_in_seconds
 
    mgtype = 2
    aa = 180.0
@@ -1598,7 +1598,7 @@ qion3d = 0
 !
             sw_smoothing_this_time_step = .false.
 
-            print *,'GT_thermosphere : nn_smoothing_counter, i_smoothing_frequency = ',nn_smoothing_counter, i_smoothing_frequency
+            !print *,'GT_thermosphere : nn_smoothing_counter, i_smoothing_frequency = ',nn_smoothing_counter, i_smoothing_frequency
 
             IF ( nn_smoothing_counter == i_smoothing_frequency ) THEN
 
@@ -1728,7 +1728,7 @@ qion3d = 0
                   s = -0.25
                   CALL Smooth_Tn_in_Y(j,psmo,s,nmin,nmax,mmin,mmax)
 
-                  print *,'GT_thermosphere : after all smoothing function calls....'
+                  !print *,'GT_thermosphere : after all smoothing function calls....'
 !
 ! end of inserts TJFR
 !
@@ -1770,7 +1770,7 @@ qion3d = 0
                     CALL SPECIFIC_HEAT(psao(1,m,l), psmo(1,m,l), psmn(1,m,l), cp)
                     DO 1815 n = 2 , 15
                        nd = n - 1
-                       temp(n) = (-(Wind_southwards_ms1(n,m,l)**2+Wind_eastwards_ms1(n,m,l)**2)/2.0+eps(n,m &
+                       temp(n) = (-(Wind_southwards_ms1(n,m,l)**2 + Wind_eastwards_ms1(n,m,l)**2)/2.0+eps(n,m &
                                ,l))/cp(n)
                        IF ( temp(n) < 0. ) WRITE(6,*) &
                           'Vx, Vy, Eps, cp ' , Wind_southwards_ms1(n,m,l) , Wind_eastwards_ms1(n,m,l) , &
@@ -1787,7 +1787,7 @@ qion3d = 0
                           WRITE(6,99019) scht(n) , rmt(n,m,l) , temp(n)
                           stop
                        endif
-99019 FORMAT (' negative scht:',e13.6,'  mwt: ',f9.3,' temp: ',f15.2)
+99019 FORMAT (' negative scht:',e13.6,'  rmt: ',f9.3,' temp: ',f15.2)
 
                      htt = ht(n,m,l)
                      ndd = n - 2
@@ -2172,7 +2172,7 @@ ENDDO
 temp0av = 210.
 
 
-print *,'GT_thermosphere_INIT : nnstrt = ',nnstrt
+;print *,'GT_thermosphere_INIT : nnstrt = ',nnstrt
 
 DO 1600 l = 1 , n_lons
 
@@ -3358,7 +3358,7 @@ SUBROUTINE neutral_composition_equation(XX, PREs, I11, F107, VX, VY, HT, ARMt, O
                !fac = (T(n,m,le)/ts)**1.75*(ps/PREs(n))
                fac = (T(n,m,le)/ts)
                !print *,'n, m, le(n,m,le), fac = ', n, m, le, T(n,m,le), fac
-               fac = fac**1.75
+               fac = fac**1.75   ! crashed for 3 day run
                fac = fac*(ps/PREs(n))
 
 
