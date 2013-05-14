@@ -404,9 +404,9 @@ INTEGER :: nday
 REAL*8  :: f107
 INTEGER :: GT_timestep_in_seconds
 
-!-------------
-! inputs
-!-------------
+!------------------
+! namelist inputs
+!-----------------
 TYPE(amplitudeType)  :: amplitude   ! replaces ampl11, ...
 TYPE(tidalPhaseType) :: tidalPhase  ! replaces lt11, ...
 
@@ -414,6 +414,9 @@ INTEGER :: smoothingFrequency
 INTEGER :: neutralCompositionFrequency
 
 TYPE(switchesType) :: switches   ! replaces sw_, .......
+
+! End of input namelist  ----------------------------------------
+
 
 ! should be inputs???
 INTEGER :: nnstop , nnstrt

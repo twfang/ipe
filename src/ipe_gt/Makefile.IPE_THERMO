@@ -44,22 +44,22 @@ SRC0	= module_precision.f90 \
           moduleTidalPhase.f90 \
           moduleSwitches.f90 \
           moduleDriverDebug.f90 \
-	module_IPE_dimension.f90 \
-	module_physical_constants.f90 \
-	module_unit_conversion.f90 \
-	module_input_parameters.f90 \
-	module_io.3d.f90 \
-	nrlmsise00.mod.f90 \
-	hwm93.mod.f90 \
-	thermosphere_1d_v2.mod.f90 \
-	run_parameters.f90 \
 	moduleThermospere.f90 \
         moduleInterfaceThermo2Iono.f90   \
         moduleInterfaceIono2Thermo.f90 \
 	driver_ipe_gt.3d.f90 
 
 # module_field_line_grid_gt.3d.f90 \  this is not used right now
-# module_neutral_gt.3d.mpi.f90 \
+# module_neutral_gt.3d.mpi.f90 \  this is not used right now
+# module_input_parameters.f90 \ this is not used right now
+# module_io.3d.f90 \ this is not used right now
+# thermosphere_1d_v2.mod.f90 \ this is not used right now
+# module_IPE_dimension.f90 \ this is not used right now
+# module_physical_constants.f90 \ this is not used right now
+# module_unit_conversion.f90 \ this is not used right now
+# nrlmsise00.mod.f90 \ this is not used right now
+# hwm93.mod.f90 \ this is not used right now
+# run_parameters.f90 \ this is not used right now
 
 #
 OBJS	= $(SRC0:.f90=.o)
