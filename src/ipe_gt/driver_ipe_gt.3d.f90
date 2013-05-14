@@ -13,27 +13,30 @@ USE moduleDriverDebug, ONLY : checkGridIPE , check2GridIPE,  checkThermo, & ! fo
                               checkThermoArrays, checkInterp, checkFixedGeo
 
 
-USE module_input_parameters, ONLY: read_input_parameters, &
-                             start_time, stop_time, time_step, HPEQ_flip, sw_neutral  
+!USE module_input_parameters, ONLY: read_input_parameters !, &
+                             !start_time, stop_time, time_step ! , HPEQ_flip !, sw_neutral  not used
                              ! add nday  **********************
 
 !------------------------------------------------------------------------
 ! Don't need this now, b/c I am reading this grid
 ! from other files, will need it later once we couple to IPE completely
+! these files were moved to subdirectory
 !------------------------------------------------------------------------
 !USE module_FIELD_LINE_GRID_MKS, ONLY: init_plasma_grid  
-
 !USE module_NEUTRAL_MKS, ONLY: neutral 
 
 USE moduleTHERMOSPHERE, ONLY : GT_thermosphere_init, low_lat_efield, &
                                Foster, GT_thermosphere, &
                                calculate_magnetic_parameters_using_apex
 
-USE modSizeFluxTube, ONLY : NPTS, NMP, NLP  ! sizes of flux tube grid
+! NPTS : Total number of gridpoints along flux tubes
+! NMP : number of longitude sectors
+! NLP : number of tubes (N. pole to equator)
+USE modSizeFluxTube, ONLY : NPTS, NMP, NLP  ! = 44514, 80, 170 sizes of flux tube grid
 
 
 USE moduleInterfaceThermo2Iono, ONLY : INTERFACE__thermosphere_to_FIXED_GEO, &
-                            INTERFACE__FIXED_GEO_to_IONOSPHERE
+                                       INTERFACE__FIXED_GEO_to_IONOSPHERE
 
 USE modSizeFixedGridIono, ONLY : nFixedGridIonoHeights, &
                                  nFixedGridIonoLats, &
@@ -42,28 +45,16 @@ USE modSizeFixedGridIono, ONLY : nFixedGridIonoHeights, &
 USE modSizeFixedGridThermo, ONLY : nFixedGridThermoHeights
 
 ! sizes of thermosphere pressure grid
-USE modSizeThermo, ONLY : GT_ht_dim, GT_lat_dim, GT_lon_dim
+USE modSizeThermo, ONLY : GT_ht_dim, GT_lat_dim, GT_lon_dim  ! = 15, 91, 20
 
 
 USE moduleInterfaceIono2Thermo, ONLY : INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO, &
                                        readIPEtoGeoGrid, INTERFACE__FIXED_GRID_to_THERMO
 
-      
 IMPLICIT NONE
 
-INTEGER (KIND=int_prec)   :: utime ! universal time [sec]
-      
-      
-! Variables for GT_thermosphere -------------------  NOW THIS IN A MODULE
-! Parameters
-!integer, parameter :: GT_ht_dim = 15
-!integer, parameter :: GT_lat_dim = 91
-!integer, parameter :: GT_lon_dim = 20
 
-
-! Parameters for IPE fixed grid  - in modSizeFixedGridIono module
-! nFixedGridIonoHeights 
-
+INTEGER (KIND=int_prec)   :: utime ! universal time [sec]      
 
 ! check status of fortran open
 INTEGER :: FileOpenStatus
@@ -79,11 +70,11 @@ INTEGER, parameter :: unitCheckStartIPE = 19
 LOGICAL, parameter :: debugStartupIPE = .FALSE.
 ! THIS IS NOT BEING USED RIGHT NOW,  NEED TO WRITE TO THIS FILE
 ! INSTEAD OF PRINTING TO THE SCREEN ****************************** lrm20120830
-CHARACTER(LEN=*), PARAMETER :: debugStartIPEFileName = 'CheckStartIPE.dat'
+ CHARACTER(LEN=*), PARAMETER :: debugStartIPEFileName = 'CheckStartIPE.dat'
 
 
 ! ONLY FOR TESTING................
-INTEGER(KIND=int_prec), POINTER :: IN, IS  !  take this out later lrm20120531
+!INTEGER(KIND=int_prec), POINTER :: IN, IS
 
 
 !------------------------------------------------------
@@ -391,9 +382,9 @@ CHARACTER(LEN=*), PARAMETER :: debugIPEFileName = 'checkIPEgrid.txt'
 LOGICAL, parameter :: debugGridIPE = .FALSE.
 
 
-
-
-!----------------------
+!--------------------------------------------
+! namelist variables
+!--------------------------------------------
 ! Files & Directories
 !----------------------
 CHARACTER(len=140) :: geoToMagFileName
@@ -403,12 +394,15 @@ character(len=140) :: staticFileDir
 character(len=140) :: debugDir
 CHARACTER(len=140) :: giptogeoFileName
 
-
-! should be inputs???
-INTEGER :: nnstop , nnstrt
+!------------------------------
+! time and f10.7 parameters
+!------------------------------
+INTEGER (KIND=int_prec) :: start_time  !=0  !UT[sec]
+INTEGER (KIND=int_prec) :: stop_time   !=60 !UT[sec]
+INTEGER (KIND=int_prec) :: time_step   !=60 ![sec]
 INTEGER :: nday
-INTEGER :: GT_timestep_in_seconds
 REAL*8  :: f107
+INTEGER :: GT_timestep_in_seconds
 
 !-------------
 ! inputs
@@ -420,6 +414,10 @@ INTEGER :: smoothingFrequency
 INTEGER :: neutralCompositionFrequency
 
 TYPE(switchesType) :: switches   ! replaces sw_, .......
+
+! should be inputs???
+INTEGER :: nnstop , nnstrt
+
 
 !---------------------------
 ! IPE Startup files type
@@ -439,18 +437,27 @@ integer, parameter :: numIonoStart = 11
 
 type (startUpType) :: startUpFiles(numIonoStart)
 
+!-----------------------------------------------
+! For timing how long driver code takes to run 
+!-----------------------------------------------
+REAL :: startCPUTime, endCPUTime
 
 !-----------------------------------
 ! Namelist for input parameters :
 !-----------------------------------
 NAMELIST /gtipeINPUTS/GT_input_dataset, GT_output_dataset, &
                       ionoStartDir, staticFileDir, debugDir, &
+                      start_time, stop_time, time_step, &
                       nday, f107, GT_timestep_in_seconds, &
                       amplitude, tidalPhase, switches, &
                       smoothingFrequency, neutralCompositionFrequency
 
 
 ! BEGIN CODE ====================================================================================
+!----------------------------------------
+! Get cpu time at start of main program
+!----------------------------------------
+CALL CPU_TIME(startCPUTime)
 
 debugDir = TRIM(debugDir)
 
@@ -460,7 +467,7 @@ debugDir = TRIM(debugDir)
 !------------------------
 ! Set up input parameters
 !------------------------
- CALL read_input_parameters ()
+! CALL read_input_parameters ()
 
 
 !---------------------------------------
@@ -1659,5 +1666,12 @@ if (debugThermoInterp) CLOSE (unitCheckThermoInterp)
 if (debugFixedGeo) CLOSE (unitFixedGeo)
 
 print *,'driver_ipe_gt.3d : END OF driver_ipe_gt.3d '
+
+!----------------------------------------
+! Get cpu time at start of main program
+!----------------------------------------
+CALL CPU_TIME(endCPUTime)
+
+print *,'driver_ipe_gt.3d : total cpu time of driver = ', endCPUTime - startCPUTime
 
 END PROGRAM  test_GT
