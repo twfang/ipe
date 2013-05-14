@@ -4,12 +4,13 @@
 
 PROGRAM  test_GT
 
-USE module_precision
+USE module_precision, ONLY : real_prec, int_prec
 
-USE moduleAmplitude  ! has amplitude type
-USE moduleTidalPhase ! has tidalPhase type
-USE moduleSwitches  ! has the switches type
-USE moduleDriverDebug   ! for calling debugging routines
+USE moduleAmplitude, ONLY : amplitudeType  ! has amplitude type
+USE moduleTidalPhase, ONLY : tidalPhaseType ! has tidalPhase type
+USE moduleSwitches, ONLY : SwitchesType  ! has the switches type
+USE moduleDriverDebug, ONLY : checkGridIPE , check2GridIPE,  checkThermo, & ! for calling debugging routines
+                              checkThermoArrays, checkInterp, checkFixedGeo
 
 
 USE module_input_parameters, ONLY: read_input_parameters, &
@@ -21,8 +22,6 @@ USE module_input_parameters, ONLY: read_input_parameters, &
 ! from other files, will need it later once we couple to IPE completely
 !------------------------------------------------------------------------
 !USE module_FIELD_LINE_GRID_MKS, ONLY: init_plasma_grid  
-! lrm20120531
-!USE module_FIELD_LINE_GRID_MKS, ONLY: JMIN_IN, JMAX_IS  ! For testing purposes only *****
 
 !USE module_NEUTRAL_MKS, ONLY: neutral 
 
