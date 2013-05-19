@@ -1,6 +1,23 @@
 MODULE moduleDriverDebug
 
 IMPLICIT NONE
+!-----------------------------
+! debug Interpolation files
+!-----------------------------
+
+CHARACTER(LEN=*), PARAMETER :: debugThermoInterpFileName = 'interpOut.dat'
+INTEGER, parameter :: unitCheckThermoInterpBefore = 7600  ! for writing out thermosphere values
+INTEGER, parameter :: unitCheckThermoInterpAfter = 7500  ! for writing out thermosphere values
+INTEGER, parameter :: unitCheckThermoInterpFluxT = 7400  ! for writing out thermosphere values
+INTEGER, parameter :: unitCheckPressureHeightThermo = 8800
+INTEGER, parameter :: unitPressureGridHeight = 7810
+!-----------------------------------------------------------------------------
+! File unit number for checking Ionospheric values to the pressure grid
+! and file unit number for getting the average height for each pressure level
+!-----------------------------------------------------------------------------
+INTEGER, parameter :: unitCheckPressureInterp = 8900
+INTEGER, parameter :: unitCheckPressureHeight = 7820
+!INTEGER, parameter :: unitPressureGridHeight = 7810
 
 PRIVATE
 
@@ -10,10 +27,309 @@ PUBLIC :: checkThermo
 PUBLIC :: checkThermoArrays
 PUBLIC :: checkInterp
 PUBLIC :: checkFixedGeo
+PUBLIC :: openInterpFiles
+PUBLIC :: openPressureInterpFiles
+PUBLIC :: writeInterpThermo
+PUBLIC :: writeThermo
+PUBLIC :: writeThermoFixed
+PUBLIC :: writeThermoToIono
 
 CONTAINS
 
 !==========================================================================
+
+Function openInterpFiles(debugDir) result(j)
+
+   IMPLICIT NONE
+
+   character(*), intent(in) :: debugDir
+   INTEGER :: j ! output
+
+   ! Begin code ------------------------
+
+   !--------------------------------------------------------------
+   ! Open files for writing out interpreted variables b/f & after
+   !--------------------------------------------------------------
+       OPEN (unitCheckThermoInterpBefore, FILE=TRIM(debugDir)//TRIM('SouthWindBefore.txt'), STATUS='REPLACE', ERR=100)
+       OPEN (unitCheckThermoInterpAfter, FILE=TRIM(debugDir)//TRIM('SouthWindAfter.txt'), STATUS='REPLACE', ERR=100)
+       OPEN (unitCheckThermoInterpFluxT, FILE=TRIM(debugDir)//TRIM('SouthWindFluxTube.txt'), STATUS='REPLACE', ERR=100)
+
+       OPEN (unitCheckThermoInterpBefore+1, FILE=TRIM(debugDir)//TRIM('EastWindBefore.txt'), STATUS='REPLACE', ERR=100)
+       OPEN (unitCheckThermoInterpAfter+1, FILE=TRIM(debugDir)//TRIM('EastWindAfter.txt'), STATUS='REPLACE', ERR=100)
+       OPEN (unitCheckThermoInterpFluxT+1, FILE=TRIM(debugDir)//TRIM('EastWindFluxTube.txt'), STATUS='REPLACE', ERR=100)
+
+       OPEN (unitCheckThermoInterpBefore+2, FILE=TRIM(debugDir)//TRIM('WVZBefore.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpAfter+2, FILE=TRIM(debugDir)//TRIM('WVZAfter.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpFluxT+2, FILE=TRIM(debugDir)//TRIM('WVZFluxTube.txt'), STATUS='REPLACE')
+
+
+       OPEN (unitCheckThermoInterpBefore+3, FILE=TRIM(debugDir)//TRIM('RMTBefore.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpAfter+3, FILE=TRIM(debugDir)//TRIM('RMTAfter.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpFluxT+3, FILE=TRIM(debugDir)//TRIM('RMTFluxTube.txt'), STATUS='REPLACE')
+
+
+       OPEN (unitCheckThermoInterpBefore+4, FILE=TRIM(debugDir)//TRIM('TemperatureBefore.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpAfter+4, FILE=TRIM(debugDir)//TRIM('TemperatureAfter.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpFluxT+4, FILE=TRIM(debugDir)//TRIM('TemperatureFluxTube.txt'), STATUS='REPLACE')
+
+
+       OPEN (unitCheckThermoInterpBefore+5, FILE=TRIM(debugDir)//TRIM('OBefore.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpAfter+5, FILE=TRIM(debugDir)//TRIM('OAfter.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpFluxT+5, FILE=TRIM(debugDir)//TRIM('OFluxTube.txt'), STATUS='REPLACE')
+
+
+       OPEN (unitCheckThermoInterpBefore+6, FILE=TRIM(debugDir)//TRIM('O2Before.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpAfter+6, FILE=TRIM(debugDir)//TRIM('O2After.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpFluxT+6, FILE=TRIM(debugDir)//TRIM('O2FluxTube.txt'), STATUS='REPLACE')
+
+
+       OPEN (unitCheckThermoInterpBefore+7, FILE=TRIM(debugDir)//TRIM('N2Before.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpAfter+7, FILE=TRIM(debugDir)//TRIM('N2After.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpFluxT+7, FILE=TRIM(debugDir)//TRIM('N2FluxTube.txt'), STATUS='REPLACE')
+
+
+       OPEN (unitCheckThermoInterpBefore+8, FILE=TRIM(debugDir)//TRIM('QionBefore.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpAfter+8, FILE=TRIM(debugDir)//TRIM('QionAfter.txt'), STATUS='REPLACE')
+       OPEN (unitCheckThermoInterpFluxT+8, FILE=TRIM(debugDir)//TRIM('QionFluxTube.txt'), STATUS='REPLACE')
+
+       OPEN (unitCheckPressureHeightThermo, &
+             FILE=TRIM(debugDir)//TRIM('averagePressureHeightGridfromThermo.txt'), STATUS='REPLACE')
+
+       ! Write all heights out to a file 
+       OPEN (unitPressureGridHeight, FILE=TRIM(debugDir)//TRIM('PressureHeightGrid.txt'), STATUS='REPLACE')
+
+   j = 0
+   RETURN
+
+100 j = -1
+    RETURN
+
+END FUNCTION openInterpFiles
+
+!============================================================================================================
+
+
+Function openPressureInterpFiles(debugDir) result(j)
+
+   IMPLICIT NONE
+
+   character(*), intent(in) :: debugDir
+   INTEGER :: j ! output
+
+   ! Begin code -----------------------------------------
+
+   OPEN (unitCheckPressureInterp, FILE=TRIM(debugDir)//TRIM('OplusPressureGrid.txt'), STATUS='REPLACE')
+   OPEN (unitCheckPressureInterp+1, FILE=TRIM(debugDir)//TRIM('HplusPressureGrid.txt'), STATUS='REPLACE')
+   OPEN (unitCheckPressureInterp+2, FILE=TRIM(debugDir)//TRIM('NplusPressureGrid.txt'), STATUS='REPLACE')
+   OPEN (unitCheckPressureInterp+3, FILE=TRIM(debugDir)//TRIM('NOplusPressureGrid.txt'), STATUS='REPLACE')
+   OPEN (unitCheckPressureInterp+4, FILE=TRIM(debugDir)//TRIM('O2plusPressureGrid.txt'), STATUS='REPLACE')
+   OPEN (unitCheckPressureInterp+5, FILE=TRIM(debugDir)//TRIM('N2plusPressureGrid.txt'), STATUS='REPLACE')
+   OPEN (unitCheckPressureInterp+6, FILE=TRIM(debugDir)//TRIM('NePressureGrid.txt'), STATUS='REPLACE')
+   OPEN (unitCheckPressureInterp+7, FILE=TRIM(debugDir)//TRIM('TePressureGrid.txt'), STATUS='REPLACE')
+   OPEN (unitCheckPressureInterp+8, FILE=TRIM(debugDir)//TRIM('TiPressureGrid.txt'), STATUS='REPLACE')
+
+   OPEN (unitCheckPressureHeight, FILE=TRIM(debugDir)//TRIM('averagePressureHeightGrid.txt'), STATUS='REPLACE')
+
+   j = 0
+   RETURN
+
+101 j = -1
+    RETURN
+
+
+END FUNCTION openPressureInterpFiles
+
+! ==================================================================================
+FUNCTION writeInterpThermo(time, Oplus, Hplus, Nplus, NOplus, O2plus,&
+                           N2plus, Ne, Te, Ti_Oplus, height)   result(j)
+
+   USE module_precision
+   USE modSizeThermo
+
+   IMPLICIT NONE
+
+   !----------------------------------------------
+   ! Ionospheric Variables in thermospheric grid
+   !----------------------------------------------
+   INTEGER (KIND=int_prec), intent(in) :: Time
+   REAL*8, intent(in) :: Oplus(GT_ht_dim, GT_lat_dim, GT_lon_dim)
+   REAL*8, intent(in) :: Hplus(GT_ht_dim, GT_lat_dim, GT_lon_dim)  ! NOT USED YET lrm20120508
+   REAL*8, intent(in) :: N2plus(GT_ht_dim, GT_lat_dim, GT_lon_dim) ! NOT USED YET lrm20120508
+   REAL*8, intent(in) :: Te(GT_ht_dim, GT_lat_dim, GT_lon_dim)             ! NOT USED YET lrm20120508
+   REAL*8, intent(in) :: Nplus(GT_ht_dim, GT_lat_dim, GT_lon_dim)  ! NOT USED YET lrm20120508
+   REAL*8, intent(in) :: Ne(GT_ht_dim, GT_lat_dim, GT_lon_dim)
+   REAL*8, intent(in) :: NOplus(GT_ht_dim, GT_lat_dim, GT_lon_dim)
+   REAL*8, intent(in) :: O2plus(GT_ht_dim, GT_lat_dim, GT_lon_dim)
+   REAL*8, intent(in) :: Ti_Oplus(GT_ht_dim, GT_lat_dim, GT_lon_dim)
+   REAL(kind=8), intent(in) :: height(GT_ht_dim, GT_lat_dim, GT_lon_dim)
+
+   INTEGER :: ii
+   INTEGER :: j ! output
+
+   ! Begin code -------------------------------------------------------------------
+
+   write(unitCheckPressureInterp,*)     Oplus
+   write(unitCheckPressureInterp + 1,*) Hplus
+   write(unitCheckPressureInterp + 2,*) Nplus
+   write(unitCheckPressureInterp + 3,*) NOplus
+   write(unitCheckPressureInterp + 4,*) O2plus
+   write(unitCheckPressureInterp + 5,*) N2plus
+   write(unitCheckPressureInterp + 6,*) Ne
+   write(unitCheckPressureInterp + 7,*) Te
+   write(unitCheckPressureInterp + 8,*) Ti_Oplus
+
+   ! write out the pressure grid heights
+   write(unitPressureGridHeight,*) height
+
+   !--------------------------------------------------------------------
+   ! Calculate and write out the average height for each pressure level
+   !--------------------------------------------------------------------
+   write(unitCheckPressureHeight, FMT="(I12)" ) Time
+   do ii = 1, GT_ht_dim
+
+      !avgHeightofPressure = Height(ii,:,:)/(GT_lat_dim*GT_lon_dim)
+
+      write(unitCheckPressureHeight, FMT="(E12.4)") SUM(Height(ii,:,:))/(GT_lat_dim*GT_lon_dim)
+      !write(unitCheckPressureHeight, FMT="(A1)") " "
+
+   enddo
+   j = 0
+END FUNCTION writeInterpThermo
+
+!================================================================================================================
+
+
+! ==================================================================================
+
+FUNCTION writeThermo(time, wind_southwards, wind_eastwards, &
+                     wvz, rmt, Temperature, &
+                     O_density, O2_density, N2_density, &
+                     qion3d, height)   result(j)
+
+   USE module_precision
+   USE modSizeThermo, ONLY : GT_ht_dim, GT_lat_dim, GT_lon_dim
+
+   IMPLICIT NONE
+
+   INTEGER (KIND=int_prec), intent(in) :: Time
+   REAL(kind=8), intent(in) :: wind_southwards(GT_ht_dim, GT_lat_dim, GT_lon_dim)
+   REAL(kind=8), intent(in) :: wind_eastwards(GT_ht_dim, GT_lat_dim, GT_lon_dim)
+   REAL(kind=8), intent(in) :: wvz(GT_ht_dim, GT_lat_dim, GT_lon_dim)
+
+   REAL(kind=8), intent(in) :: rmt(GT_ht_dim, GT_lat_dim, GT_lon_dim)
+   REAL(kind=8), intent(in) :: Temperature(GT_ht_dim, GT_lat_dim, GT_lon_dim)
+   REAL(kind=8), intent(in) :: height(GT_ht_dim, GT_lat_dim, GT_lon_dim)
+   REAL(kind=8), intent(in) :: O_density(GT_ht_dim, GT_lat_dim, GT_lon_dim)
+   REAL(kind=8), intent(in) :: O2_density(GT_ht_dim, GT_lat_dim, GT_lon_dim)
+   REAL(kind=8), intent(in) :: N2_density(GT_ht_dim, GT_lat_dim, GT_lon_dim)
+   REAL*8, intent(in) :: qion3d(GT_ht_dim,GT_lat_dim,GT_lon_dim)
+
+
+   INTEGER :: ii
+   INTEGER :: j ! output
+
+
+   ! Begin code -------------------------------------------
+
+   ! write out arrays to file for plotting
+   write(unitCheckThermoInterpBefore,*) wind_southwards
+   write(unitCheckThermoInterpBefore + 1,*) wind_eastwards
+   write(unitCheckThermoInterpBefore + 2,*) wvz
+   write(unitCheckThermoInterpBefore + 3,*) rmt
+   write(unitCheckThermoInterpBefore + 4,*) Temperature
+   write(unitCheckThermoInterpBefore + 5,*) O_density
+   write(unitCheckThermoInterpBefore + 6,*) O2_density
+   write(unitCheckThermoInterpBefore + 7,*) N2_density
+   write(unitCheckThermoInterpBefore + 8,*) qion3d
+
+   !--------------------------------------------------------------------
+   ! Calculate and write out the average height for each pressure level
+   !--------------------------------------------------------------------
+   write(unitCheckPressureHeightThermo, FMT="(I12)" ) Time
+   do ii = 1, GT_ht_dim
+
+        write(unitCheckPressureHeightThermo, FMT="(E12.4)") SUM(Height(ii,:,:))/(GT_lat_dim*GT_lon_dim)
+
+   enddo
+
+   j = 0
+END FUNCTION writeThermo
+
+!=======================================================================================
+
+FUNCTION writeThermoFixed(V_South_FixedHeight, V_East_FixedHeight, &
+                          V_Upward_FixedHeight, tts_fixed_ht, &
+                          O_density_fixed_ht, O2_density_fixed_ht, &
+                          N2_density_fixed_ht, qion3d_fixed_ht)  result(j)
+
+USE modSizeFixedGridThermo, ONLY : nFixedGridThermoHeights
+USE modSizeThermo, ONLY : GT_lat_dim, GT_lon_dim
+IMPLICIT NONE
+
+!-------------------------------- 
+! Fixed grid neutral atmosphere
+!--------------------------------                                              
+REAL(kind=8) :: O_density_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
+REAL(kind=8) :: O2_density_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
+REAL(kind=8) :: N2_density_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
+REAL(kind=8) :: V_East_FixedHeight(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
+REAL(kind=8) :: V_South_FixedHeight(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
+REAL(kind=8) :: V_Upward_FixedHeight(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
+REAL(kind=8) :: tts_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
+REAL(kind=8) :: qion3d_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
+REAL(kind=8) :: elx_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
+REAL(kind=8) :: ely_fixed_ht(nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim)
+
+   INTEGER :: j ! output
+! Begin code ----------------------------------------------------------------
+
+      write(unitCheckThermoInterpAfter,*) V_South_FixedHeight
+      write(unitCheckThermoInterpAfter+1,*) V_East_FixedHeight
+      write(unitCheckThermoInterpAfter+2,*) V_Upward_FixedHeight
+      write(unitCheckThermoInterpAfter+3,*) ! should be rmt , but the composition is not being used ***
+      write(unitCheckThermoInterpAfter+4,*) tts_fixed_ht
+      write(unitCheckThermoInterpAfter+5,*) O_density_fixed_ht
+      write(unitCheckThermoInterpAfter+6,*) O2_density_fixed_ht
+      write(unitCheckThermoInterpAfter+7,*) N2_density_fixed_ht
+      write(unitCheckThermoInterpAfter+8,*) qion3d_fixed_ht
+   j = 0
+END FUNCTION writeThermoFixed
+
+!=================================================================================
+
+FUNCTION writeThermoToIono(V_South_plasma, V_East_plasma, V_Upward_plasma, &
+                           TN_plasma_input_3d, O_plasma_input_3d, O2_plasma_input_3d, &
+                           N2_plasma_input_3d) result(j)
+
+USE modSizeFluxTube, ONLY : NPTS, NMP, NLP
+IMPLICIT NONE
+
+REAL(kind=8), intent(in) :: V_east_plasma(npts, nmp), &
+                V_south_plasma(npts, nmp), &
+                V_upward_plasma(npts, nmp)
+REAL(kind=8), intent(in) :: TN_plasma_input_3d(npts, nmp), O_plasma_input_3d(npts, nmp), &
+                O2_plasma_input_3d(npts, nmp), N2_plasma_input_3d(npts, nmp)
+
+INTEGER :: j
+
+
+! Begin code --------------------------------------------------
+
+        write(unitCheckThermoInterpFluxT,*) V_South_plasma
+        write(unitCheckThermoInterpFluxT+1,*) V_East_plasma
+        write(unitCheckThermoInterpFluxT+2,*) V_Upward_plasma
+        write(unitCheckThermoInterpFluxT+3,*) ! should be rmt , but the composition is not being used ***
+        write(unitCheckThermoInterpFluxT+4,*) TN_plasma_input_3d
+        write(unitCheckThermoInterpFluxT+5,*) O_plasma_input_3d
+        write(unitCheckThermoInterpFluxT+6,*) O2_plasma_input_3d
+        write(unitCheckThermoInterpFluxT+7,*) N2_plasma_input_3d
+        write(unitCheckThermoInterpFluxT+8,*) !qion3d_
+
+   j = 0
+
+END FUNCTION writeThermoToIono
+
+!===============================================================================
 
 SUBROUTINE checkGridIPE(directory, fileName, unitNumber, NMP, NLP, &
                         inGIP1d, isGIP1d, mlon_rad)
@@ -311,7 +627,7 @@ END SUBROUTINE checkThermoArrays
 !=================================================================================================
 
 
-SUBROUTINE checkInterp(directory, fileName, unitNumber, &
+SUBROUTINE checkInterp(directory, unitNumber, &
                        interface_hts, GT_lat_dim, GT_lon_dim, &
                        O_density_fixed_ht, O2_density_fixed_ht, N2_density_fixed_ht, &
                        Vx_fixed_ht, Vy_fixed_ht, wvz_fixed_ht, &
@@ -322,7 +638,7 @@ SUBROUTINE checkInterp(directory, fileName, unitNumber, &
 IMPLICIT NONE
 
 character(*), intent(in) :: directory
-character(*), intent(in) :: fileName
+!character(*), intent(in) :: fileName
 INTEGER, intent(in) :: unitNumber
 
 INTEGER, intent(in) ::  interface_hts, GT_lat_dim, GT_lon_dim
@@ -348,7 +664,8 @@ INTEGER ::  ii, jj
 
 ! BEGIN CODE ====================================================================
 
-fullFileName = TRIM(directory)//TRIM(fileName)
+!fullFileName = TRIM(directory)//TRIM(fileName)
+fullFileName = TRIM(directory)//TRIM(debugThermoInterpFileName)
 
 !======================================================
 ! Open file for checking values from the interpolation

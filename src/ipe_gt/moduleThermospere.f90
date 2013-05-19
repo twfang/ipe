@@ -1,7 +1,5 @@
        MODULE moduleTHERMOSPHERE
 
-       ! LRM added July 19, 2011 
-       !USE RUN_PARAMETERS, ONLY : static_file_location 
        USE moduleAmplitude
        USE moduleTidalPhase
 

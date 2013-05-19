@@ -12,8 +12,6 @@ ERRORFLAGS=-warn general -check all -traceback -ftrapuv -O0 -g -fpe:0
 
 FFLAGS=$(ERRORFLAGS) -I$(NETCDF)/include
 
-
-
 # -O0 -g -traceback -fpe:0 -check all 
 
 #> Try these options on both compile and link:
