@@ -1088,7 +1088,6 @@ qion3d = 0
                   if ((efield_var == 2) .and. (nnloop < 5 .or. &
                        mod(nnloop, efieldfreq) == 0)) then
 
-
  4416              continue
 
 !-------------------------------------------------------------------------
@@ -1824,6 +1823,7 @@ qion3d = 0
          !---------------------------------
          if (idump_GT  ==  1) then
 
+             print *,'GT_thermo : writing out netcdf for ',universal_time_seconds
              call write_gt_netcdf_history(GT_output_dataset)
 
          endif
@@ -1957,13 +1957,6 @@ REAL*8, parameter :: p0 = 1.0376
 REAL*8, parameter :: R0 = 6.370E06
 REAL*8, parameter  :: PI = 3.14159
 
-!PARAMETER (R0=6.370E06, &
-!           GRAV=9.5, PI=3.14159, &
-!           P0=1.0376, GSCON=8.3141E+03)
-
-! these not needed lrm20121108
-!INTEGER :: ilenp1  
-!CHARACTER*100 :: filer
 
 
 REAL*8 :: zn
@@ -2057,7 +2050,6 @@ iout_high = 0 ! counter for # of thermospheric calls
 ! Graphics output file name 
 ! Changed graphics_file name creation lrm20121108
 !-------------------------------
-!graphics_file = trim(GT_output_dataset(1:ilenp1-1)//'.graphics.nc')
 graphics_file = trim(GT_output_dataset)//'.graphics.nc'
 call create_gt_netcdf_graphics(graphics_file)
 
@@ -2078,7 +2070,7 @@ solar_declination_angle_radians = ATAN(0.434*SIN(PI/6.0*(ty-3.17)))
 !-----------------------------------------------
 ! Read in the GT and GIP startup data .....
 !-----------------------------------------------
-call read_gtgip_netcdf_history(GT_input_dataset, & !nm20110913
+call read_gtgip_netcdf_history(GT_input_dataset, & 
                                Electron_density_m3, O_plus_density_m3, &
                                NO_plus_density_m3, O2_plus_density_m3, Ti_Oplus_K )
 
@@ -2585,118 +2577,148 @@ end subroutine write_gt_netcdf_graphics
 
 
 
- !========================================================================================================
-
-
-
+!========================================================================================================
+! subroutine to write current values of thermosphere 
+! 
+! Updated w/ fortran 90 netcdf calls - lrm20130529
+!----------------------------------------------------------
 
 subroutine write_gt_netcdf_history(filename)
 
-      include 'netcdf.inc'
+use netcdf
+IMPLICIT NONE
 
-      character(len=*), intent(in) :: filename
-      integer :: ncid, istat
-      !integer :: id NOT USED
-      integer :: id_n_levels , id_n_lats , id_n_lons
+character(len=*), intent(in) :: filename
 
-      integer :: idv_vsouth , idv_veast , idv_wvz
-      integer :: idv_eps , idv_rmt , idv_tn, idv_ht
-      integer :: idv_psao , idv_psmo , idv_psmn
+integer :: ncid !, istat
+integer :: id_n_levels , id_n_lats , id_n_lons
 
-      integer :: ids3(3) ! vectors of dim id's
-      character(len=120) :: long_name
+integer :: idv_vsouth , idv_veast , idv_wvz
+integer :: idv_eps , idv_rmt , idv_tn, idv_ht
+integer :: idv_psao , idv_psmo , idv_psmn
 
-!
-! Create new data set (overwrite any pre-existing file):
-!
-      istat = nf_create(filename, NF_CLOBBER, ncid) 
-      if (istat /= NF_NOERR)  &
-         call handle_ncerr_gt(istat, 'Error from nf_create', 1)
-      write(6, "(/,'write_gt_netcdf_history: Created netcdf file ',a)") trim(filename) 
-!
-! Define dimensions:
-!
-      istat = nf_def_dim(ncid, "n_levels", n_levels, id_n_levels)
-      istat = nf_def_dim(ncid, "n_lats", n_lats, id_n_lats)
-      istat = nf_def_dim(ncid, "n_lons", n_lons, id_n_lons)
-!     write(6, "('Defined dimensions on file ',a)") trim(filename)
-!
+integer :: ids3(3) ! vectors of dim id's
+ character(len=120) :: long_name
+
+
+! BEGIN CODE -----------------------------------------------
+
+! Always check the return code of every netCDF function call. In
+! this example program, wrapping netCDF calls with "call check()"
+! makes sure that any return which is not equal to nf90_noerr (0)
+! will print a netCDF error message and exit.
+
+
+!-----------------------------------------------------------------------
+! Create the netCDF file. The nf90_clobber parameter tells netCDF to
+! overwrite this file, if it already exists.
+!-----------------------------------------------------------------------
+ call check( nf90_create(filename, NF90_CLOBBER, ncid) )
+
+ !write(6, "(/,'write_gt_netcdf_history: Created netcdf file ',a)") trim(filename) 
+
+ !--------------------------------------------------------------
+ ! Define the dimensions. NetCDF will hand back an ID for each.
+ !--------------------------------------------------------------
+ call check( nf90_def_dim(ncid, "n_levels", n_levels, id_n_levels) )
+ call check( nf90_def_dim(ncid, "n_lats", n_lats, id_n_lats) )
+ call check( nf90_def_dim(ncid, "n_lons", n_lons, id_n_lons) )
+
+ !   write(6, "('Defined dimensions on file ',a)") trim(filename)
+
+!------------------------
 ! Define variables:
-!
+!------------------------
 ! 3d variables:
-      ids3 = (/id_n_levels, id_n_lats, id_n_lons/)
+ ids3 = (/id_n_levels, id_n_lats, id_n_lons/)
 
-      istat = nf_def_var(ncid, "wind_southwards_ms1", NF_DOUBLE, 3, ids3, idv_vsouth)
-      long_name = "Southwards Wind"
-      istat = nf_put_att_text(ncid, idv_vsouth, "long_name", len_trim(long_name), trim(long_name))
-      istat = nf_put_att_text(ncid, idv_vsouth, "units", 5, "ms-1")
+ call check( nf90_def_var(ncid, "wind_southwards_ms1", NF90_DOUBLE, ids3, idv_vsouth) )
 
-      istat = nf_def_var(ncid, "wind_eastwards_ms1", NF_DOUBLE, 3, ids3, idv_veast)
-      long_name = "Eastwards Wind"
-      istat = nf_put_att_text(ncid, idv_veast, "long_name", len_trim(long_name), trim(long_name))
-      istat = nf_put_att_text(ncid, idv_veast, "units", 5, "ms-1")
+ long_name = "Southwards Wind"
+ call check(nf90_put_att(ncid, idv_vsouth, "long_name", trim(long_name)) )
 
-      istat = nf_def_var(ncid, "wvz", NF_DOUBLE, 3, ids3, idv_wvz)
-      istat = nf_def_var(ncid, "eps", NF_DOUBLE, 3, ids3, idv_eps)
-      istat = nf_def_var(ncid, "rmt", NF_DOUBLE, 3, ids3, idv_rmt)
-      istat = nf_def_var(ncid, "temperature_K", NF_DOUBLE, 3, ids3, idv_tn)
-      istat = nf_def_var(ncid, "ht", NF_DOUBLE, 3, ids3, idv_ht)
-      istat = nf_def_var(ncid, "psao", NF_DOUBLE, 3, ids3, idv_psao)
-      istat = nf_def_var(ncid, "psmo", NF_DOUBLE, 3, ids3, idv_psmo)
-      istat = nf_def_var(ncid, "psmn", NF_DOUBLE, 3, ids3, idv_psmn)
+ call check( nf90_put_att(ncid, idv_vsouth, "units", "ms-1" ) )
 
-!     write(6, "('Defined variables on file ',a)") trim(filename)
-!
-! Take out of define mode:
-      istat = nf_enddef(ncid)
-!
-! Write variables to the file:
-!     write(6, "('Writing variables to file ',a,'..')") trim(filename)
+ call check( nf90_def_var(ncid, "wind_eastwards_ms1", NF90_DOUBLE, ids3, idv_veast) )
 
-      istat = nf_put_var_double(ncid, idv_vsouth, wind_southwards_ms1)
-      if (istat /= NF_NOERR) call handle_ncerr_gt(istat, 'Error writing var vnx', 0)
+ long_name = "Eastwards Wind"
+ call check(nf90_put_att(ncid, idv_veast, "long_name", trim(long_name)) )
 
-      istat = nf_put_var_double(ncid, idv_veast, wind_eastwards_ms1)
-      if (istat /= NF_NOERR) call handle_ncerr_gt(istat, 'Error writing var vny', 0)
+ call check( nf90_put_att(ncid, idv_veast, "units", "ms-1" ) )
 
-      istat = nf_put_var_double(ncid, idv_wvz, wvz)
-      if (istat /= NF_NOERR) call handle_ncerr_gt(istat, 'Error writing var wvz', 0)
+ call check( nf90_def_var(ncid, "wvz", NF90_DOUBLE, ids3, idv_wvz) )
 
-      istat = nf_put_var_double(ncid, idv_eps, eps)
-      if (istat /= NF_NOERR) call handle_ncerr_gt(istat, 'Error writing var eps', 0)
+ call check( nf90_def_var(ncid, "eps", NF90_DOUBLE, ids3, idv_eps) )
 
-      istat = nf_put_var_double(ncid, idv_rmt, rmt)
-      if (istat /= NF_NOERR) call handle_ncerr_gt(istat, 'Error writing var rmt', 0)
+ call check( nf90_def_var(ncid, "rmt", NF90_DOUBLE, ids3, idv_rmt) )
 
-      istat = nf_put_var_double(ncid, idv_tn, temperature_K)
-      if (istat /= NF_NOERR) call handle_ncerr_gt(istat, 'Error writing var tn', 0)
+ call check( nf90_def_var(ncid, "temperature_K", NF90_DOUBLE, ids3, idv_tn) )
 
-      istat = nf_put_var_double(ncid, idv_ht, ht)
-      if (istat /= NF_NOERR) call handle_ncerr_gt(istat, 'Error writing var ht', 0)
+ call check( nf90_def_var(ncid, "ht", NF90_DOUBLE, ids3, idv_ht) )
 
-      istat = nf_put_var_double(ncid, idv_psao, psao)
-      if (istat /= NF_NOERR) call handle_ncerr_gt(istat, 'Error writing var psao', 0)
+ call check( nf90_def_var(ncid, "psao", NF90_DOUBLE, ids3, idv_psao) )
 
-      istat = nf_put_var_double(ncid, idv_psmo, psmo)
-      if (istat /= NF_NOERR) call handle_ncerr_gt(istat, 'Error writing var psmo', 0)
+ call check( nf90_def_var(ncid, "psmo", NF90_DOUBLE, ids3, idv_psmo) )
 
-      istat = nf_put_var_double(ncid, idv_psmn, psmn)
-      if (istat /= NF_NOERR) call handle_ncerr_gt(istat, 'Error writing var psmn', 0)
+ call check( nf90_def_var(ncid, "psmn", NF90_DOUBLE, ids3, idv_psmn) )
 
-!
-! Close data set:
-!
-      istat = nf_close(ncid)
-      if (istat /= NF_NOERR) &
-        call handle_ncerr_gt(istat, 'Error from nf_close', 0)
+ !--------------------------------------------------------------------
+ ! End define mode. This tells netCDF we are done defining metadata.
+ !--------------------------------------------------------------------
+ call check( nf90_enddef(ncid) )
+
+!-------------------------------------
+! Write data variables to the file. 
+! Although netCDF supports
+! reading and writing subsets of data, in this case we write all the
+! data in one operation.
+!-------------------------------------
+! write(6, "('Writing variables to file ',a,'..')") trim(filename)
+
+ call check( nf90_put_var(ncid, idv_vsouth, wind_southwards_ms1) )
+
+ call check( nf90_put_var(ncid, idv_veast, wind_eastwards_ms1) )
+
+ call check( nf90_put_var(ncid, idv_wvz, wvz) )
+
+ call check( nf90_put_var(ncid, idv_eps, eps) )
+
+ call check( nf90_put_var(ncid, idv_rmt, rmt) )
+
+ call check( nf90_put_var(ncid, idv_tn, temperature_K) )
+
+ call check( nf90_put_var(ncid, idv_ht, ht) )
+
+ call check( nf90_put_var(ncid, idv_psao, psao) )
+
+ call check( nf90_put_var(ncid, idv_psmo, psmo) )
+
+ call check( nf90_put_var(ncid, idv_psmn, psmn) )
+
+ !------------------
+ ! Close the file.
+ !------------------
+ call check( nf90_close(ncid) )
+       
 
 end subroutine write_gt_netcdf_history
 
+! ===============================================================================================================
 
+subroutine check(status)
 
+ use netcdf
+ IMPLICIT NONE
 
+ integer, intent ( in) :: status
+     
+ if(status /= nf90_noerr) then
+    print *, trim(nf90_strerror(status))
+    stop 2
+ end if
+end subroutine check
 
-
+! ===============================================================================================================
 !-----------------------------------------------------------------------
 
 
@@ -2707,19 +2729,6 @@ subroutine read_gt_netcdf_history(filename)
 
       character(len=*), intent(in) :: filename
       integer :: ncid, istat, id
-
-      ! integer :: idv_vsouth  ! NOT USED
-      ! integer :: idv_veast  ! NOT USED
-      ! integer :: idv_wvz ! NOT USED
-
-      !integer :: idv_rmt , idv_tn  ! NOT USED
-      ! integer :: idv_eps , idv_ht NOT USED
-
-      ! integer :: idv_psao ! NOT USED
-      ! integer :: idv_psmo , idv_psmn ! NOT USED
-
-      ! integer :: ids3(3) ! vectors of dim id's NOT USED
-      ! character(len=120) :: long_name NOT USED
 
 
 !
