@@ -4,7 +4,7 @@ EXEC = gt_ipe.exe
 
 NETCDF = /apps/netcdf/3.6.3/intel
 
-!FORTRAN=xlf90  vapor
+#FORTRAN=xlf90  vapor
 FORTRAN=ifort
 #FFLAGS=-I$(NETCDF)/include -warn general -check all -traceback -ftrapuv -O0 -g -fpe:0 -fpstkchk
 
