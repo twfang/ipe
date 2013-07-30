@@ -851,6 +851,11 @@ endif
    Tn_p_l12 = therm_Tn(iht_below,ilon_west,ilat_north)
    Tn_p_12  = ((Tn_p_u12 - Tn_p_l12)*factor_ht12) + Tn_p_l12
 
+   if (Tn_p_12 < 0) then
+       print *,'Tn_p_u12, Tn_p_l12, factor_ht12, iht_above,ilon_west,ilat_north = ', &
+                Tn_p_u12, Tn_p_l12, factor_ht12, iht_above,ilon_west,ilat_north
+   endif 
+
    ! wind
    Vn_E_u12 = Vn_east(iht_above,ilon_west,ilat_north)
    Vn_E_l12 = Vn_east(iht_below,ilon_west,ilat_north)
@@ -951,6 +956,11 @@ endif
    Tn_p_u22 = therm_Tn(iht_above,ilon_east,ilat_north)
    Tn_p_l22 = therm_Tn(iht_below,ilon_east,ilat_north)
    Tn_p_22  = ((Tn_p_u22 - Tn_p_l22)*factor_ht22) + Tn_p_l22
+
+   if (Tn_p_22 < 0) then
+       print *,'Tn_p_u22, Tn_p_l22, factor_ht22, iht_above,ilon_east,ilat_north = ', &
+                Tn_p_u22, Tn_p_l22, factor_ht22, iht_above,ilon_east,ilat_north
+   endif
 
    ! wind
    Vn_E_u22 = Vn_east(iht_above,ilon_east,ilat_north)
@@ -1153,6 +1163,11 @@ Tn_p_u21 = therm_Tn(iht_above,ilon_east,ilat_south)
 Tn_p_l21 = therm_Tn(iht_below,ilon_east,ilat_south)
 Tn_p_21  = ((Tn_p_u21 - Tn_p_l21)*factor_ht21) + Tn_p_l21
 
+if (Tn_p_21 < 0) then
+   print *,'Tn_p_u21, Tn_p_l21, factor_ht21, iht_above,ilon_east,ilat_south = ', &
+            Tn_p_u21, Tn_p_l21, factor_ht21, iht_above,ilon_east,ilat_south
+endif
+
 ! wind
 Vn_E_u21 = Vn_east(iht_above,ilon_east,ilat_south)
 Vn_E_l21 = Vn_east(iht_below,ilon_east,ilat_south)
@@ -1235,9 +1250,26 @@ if (sw_External_model_provides_NO_N4S_densities) then
    N2D_den_p_1 = ((N2D_den_p_12_log - N2D_den_p_11_log) * factor_lat) + N2D_den_p_11_log
 endif
 
+
 ! temperature
 Tn_p_2 = ((Tn_p_22 - Tn_p_21) * factor_lat) + Tn_p_21
 Tn_p_1 = ((Tn_p_12 - Tn_p_11) * factor_lat) + Tn_p_11
+
+!-----------------------------------------------------
+! For debugging negative temperature lrm20130520
+!------------------------------------------------------
+if ( (Tn_p_1 < 0) .or. (Tn_p_2  < 0.)) then
+        write (6,*) 'INTERFACE__thermosphere_to_FIXED_GEO : Tn_p_11, Tn_p_12, Tn_p_21, Tn_p_22, factor_lat = ',&
+                     Tn_p_11, Tn_p_12, Tn_p_21, Tn_p_22, factor_lat
+        write (6,*) 'INTERFACE__thermosphere_to_FIXED_GEO : iht_below, iht_above, ilon_east, ilat_south = ', &
+                     iht_below, iht_above, ilon_east, ilat_south
+        write (6,*) 'INTERFACE__thermosphere_to_FIXED_GEO : MINVAL(therm_Tn), MINLOC(therm_Tn) = ', &
+                     MINVAL(therm_Tn), MINLOC(therm_Tn)
+        STOP
+endif
+
+
+
 
 ! wind
 Vn_E_2 = ((Vn_E_22 - Vn_E_21) * factor_lat) + Vn_E_21
@@ -1318,6 +1350,18 @@ endif
 
    interface_Tn(iht,ilat,ilon) = ((Tn_p_2 - Tn_p_1) * factor_lon) + Tn_p_1
 
+   !-----------------------------------------------------
+   ! For debugging negative temperature lrm20130520
+   !------------------------------------------------------
+   if ( interface_Tn(iht,ilat,ilon) < 0. ) then
+        write (6,*) 'INTERFACE__thermosphere_to_FIXED_GEO : iht, ilat, ilon, Tn_p_2, Tn_p_1, factor_lon = ',&
+                     iht, ilat, ilon, Tn_p_2, Tn_p_1, factor_lon
+        write (6,*) 'INTERFACE__thermosphere_to_FIXED_GEO : MINVAL(therm_Tn), MINLOC(therm_Tn) = ', &
+                     MINVAL(therm_Tn), MINLOC(therm_Tn)
+        STOP
+   endif
+   !--------------------------------------------------------
+
    ! wind
    interface_East(iht,ilat,ilon) = ((Vn_E_2 - Vn_E_1) * factor_lon) + Vn_E_1
    interface_South(iht,ilat,ilon) = ((Vn_S_2 - Vn_S_1) * factor_lon) + Vn_S_1
@@ -1392,18 +1436,26 @@ endif
 elx_fixed_ht(:,:,:) = interface_elx(:,:,:)
 ely_fixed_ht(:,:,:) = interface_ely(:,:,:)
 
-do iht = 1 , interface_hts
-   do ilat = 1 , 91
-      do ilon = 1 , 20
-         if (interface_o2_density(iht,ilat,ilon) < 0.0 ) then
-           write(6,*) 'o2_density negative ', iht, ilat, ilon, &
-                       interface_o2_density(iht,ilat,ilon)
-           stop
-         endif
-      enddo
-   enddo
-enddo
+!------------------------------------------
+! for checking if O2 density is negative
+!------------------------------------------
+!do iht = 1 , interface_hts
+!   do ilat = 1 , 91
+!      do ilon = 1 , 20
+!         if (interface_o2_density(iht,ilat,ilon) < 0.0 ) then
+!           write(6,*) 'o2_density negative ', iht, ilat, ilon, &
+!                       interface_o2_density(iht,ilat,ilon)
+!           stop
+!         endif
+!      enddo
+!   enddo
+!enddo
 
+if (MINVAL(interface_o2_density) < 0) then
+    print *,'interface__thermosphere_to_FIXED_GEO : NEGATIVE interface_o2_density  ****'
+    print *,'interface__thermosphere_to_FIXED_GEO : MINVAL(interface_o2_density), MINLOC(interface_o2_density) = ', &
+             MINVAL(interface_o2_density), MINLOC(interface_o2_density)
+endif
 
 
 return
@@ -1606,6 +1658,7 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
 
 
 ! BEGIN CODE =======================================================================================
+
 
 small_power = -20.
 small_number = 1.d-20
@@ -2126,6 +2179,11 @@ do mp = 1 , nmp   ! longitude sectors
                        (geo_grid_latitudes_degrees(ilat2)-geo_grid_latitudes_degrees(ilat1))
 
               TN(i) = ((tn2-tn1)*faclat) + tn1
+              ! check for negative temperature 
+              if (TN(i) < 0.) then 
+                  write(*,*) 'tn1, tn2, faclat = ',tn1, tn2, faclat
+              endif
+
 !             Te_dum(i) = ((te2-te1)*faclat) + te1
               !if(te_dum(i) > 5000.) then
               ! write(6,*) 'TE_DUM ',i,mp,lp,te_dum(i)

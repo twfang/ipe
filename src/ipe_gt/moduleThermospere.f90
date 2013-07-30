@@ -75,6 +75,7 @@ CONTAINS
 
 SUBROUTINE GT_thermosphere( &
                  GT_output_dataset, &  ! input
+                 debugDir, & ! input
                  timestep_in_seconds, &           ! input
                  idump_gt, &
                  solar_declination_angle_radians, &
@@ -123,6 +124,7 @@ SUBROUTINE GT_thermosphere( &
 
      
       CHARACTER*200, INTENT(IN) :: GT_output_dataset  ! Startup filename for the next run
+      character(len=*), INTENT(IN)  :: debugDir
       !INTEGER, INTENT(IN) :: i_no_day                 !M:I: nday (input from unit5)
       INTEGER, INTENT(IN) :: timestep_in_seconds    !M:I:  (input from unit5)
       !INTEGER, INTENT(IN)  :: i_graphics_out_start   !NE:I:  (input from unit5)
@@ -305,6 +307,14 @@ SUBROUTINE GT_thermosphere( &
                 sped(15), teuv(15), &
                 elz(91,20)
 
+ !-----------------------------------------------------------
+ ! Arrays for checking values of source1, source2
+ ! 20130610lrm
+ !-----------------------------------------------------------
+! REAL*8 :: source1Array(n_levels,nlats,nlons), source2Array(n_levels,n_lats,n_lons)
+! REAL*8 :: c7Array(n_levels,n_lats,n_lons), k3Array(n_levels,n_lats,n_lons)
+ REAL*8 :: a5Array(n_levels,n_lats,n_lons), b5Array(n_levels,n_lats,n_lons)
+
       REAL*8 :: cp(15) , &
                 temp(15) , neutral_density_1d(15) , &
                 neutral_density_3d(15,91,20), &
@@ -312,6 +322,8 @@ SUBROUTINE GT_thermosphere( &
                 c7(15) , stfac(15) , fo2(15) , qiont(15) , &
                 effqia(15) , div(15) , c7_3d(15,91,20), &
                 c77_3d(15,91,20)
+
+      REAL*8 :: factor !  for multipling source1, source2
 
       REAL*8 :: vxe(15) , vye(15) , epse(15) , hte(15) , vxw(15) , &
                 vyw(15) , epsw(15) , htw(15) , vxs(15) , vys(15) , &
@@ -361,6 +373,18 @@ SUBROUTINE GT_thermosphere( &
       real*8 :: rjth(15), rjphi(15)
       INTEGER :: efield_var, efieldfreq
 
+!-------------------------------------------------
+! file units for checking aeuv, source1, source2 lrm20130610
+!-------------------------------------------------
+!INTEGER, parameter :: aeuvUnit = 5000, source1Unit = 5010, source2Unit = 5020
+INTEGER, parameter :: psmnUnit = 5030, rmtUnit = 5040, neutral_density_3dUnit = 5050
+INTEGER, parameter :: OplusUnit = 5060
+INTEGER, parameter :: a5Unit = 5070, b5Unit = 5080, c7Unit = 5090, k3Unit = 6000
+
+LOGICAL, parameter :: checkHeatingSources = .FALSE.
+
+
+
 ! Small scale variation in E-Field
       DATA efield_var/0/  ! 0 old, 1 just X2 Joule heating, 2 random
                           ! number variation on E-field, 3 rms added
@@ -381,6 +405,32 @@ SUBROUTINE GT_thermosphere( &
 !=======================================================================
 ! BEGIN CODE
 !=======================================================================  
+ !------------------------------------------------
+ ! Initialize source1Array, source2Array to 0 lrm20130610
+ ! open output files
+ !------------------------------------------------
+ if (checkHeatingSources) then 
+     !source1Array = 0.
+     !source2Array = 0.
+     !c7Array = 0.
+     !k3Array = 0.
+     a5Array = 0.
+     b5Array = 0.
+     !OPEN (aeuvUnit, FILE=TRIM(debugDir)//'aeuv.txt')
+     !print *,'debugdir = ',debugdir
+     !OPEN (source1Unit, FILE=TRIM(debugDir)//'source1.txt')
+     !OPEN (source2Unit, FILE=TRIM(debugDir)//'source2.txt')
+     !OPEN (psmnUnit, FILE=TRIM(debugDir)//'psmn.txt')
+     !OPEN (rmtUnit, FILE=TRIM(debugDir)//'rmt.txt')
+     !OPEN (neutral_density_3dUnit, FILE=TRIM(debugDir)//'neutral_density_3d.txt')
+     !OPEN (OplusUnit, FILE=TRIM(debugDir)//'OplusPressure.txt')
+     OPEN (a5Unit, FILE=TRIM(debugDir)//'a5.txt')
+     OPEN (b5Unit, FILE=TRIM(debugDir)//'b5.txt')
+     !OPEN (c7Unit, FILE=TRIM(debugDir)//'c7.txt')
+     !OPEN (k3Unit, FILE=TRIM(debugDir)//'k3.txt')
+
+
+ endif
 
 
 ndd = 0
@@ -1221,9 +1271,15 @@ qion3d = 0
                   END DO ! n = 2, 14
 
 
+               !write(6,*) 'GT_thermosphere : Temperature_K = ',Temperature_K  
 
                DO n = 1 , 15
-                  teff(n)=(Temperature_K(n,m,l)+Ti1(n,m,l))/2.0
+                   ! THIS IS THE PROPER WAY  *********************
+                  teff(n) = (Temperature_K(n,m,l) + Ti1(n,m,l))/2.0
+
+                  ! FOR DEBUGGING ONLY ******* :
+                  !teff(n) = Temperature_K(n,m,l)
+
                   O_plus_1d(n) = O_plus_density_m3(n,m,l)
                   NO_plus_1d(n)= NO_plus_density_m3(n,m,l)
                   O2_plus_1d(n)= O2_plus_density_m3(n,m,l)
@@ -1231,7 +1287,7 @@ qion3d = 0
                   p1(n) = rnumden*psao(n,m,l)*rmt(n,m,l)/16.
                   p2(n) = rnumden*psmo(n,m,l)*rmt(n,m,l)/32.
                   p33(n) = rnumden*psmn(n,m,l)*rmt(n,m,l)/28.
-               END DO
+               END DO ! n = 1, 15
 
 
                  !print *,'GT_thermosphere : p1 = ',p1
@@ -1243,7 +1299,8 @@ qion3d = 0
                                O2_plus_1d, teff, &
                                rvin, ramin)
 !g
-                  DO 1695 n = 2 , 14
+              DO 1695 n = 2 , 14 ! ------------------------------------------------------------------
+
                      nu = n + 1
                      nd = n - 1
 
@@ -1275,12 +1332,12 @@ qion3d = 0
 !g
 !g
 ! electric fields with variability used in Joule heating
-                     if (efield_var == 2 .or. efield_var == 3) then
+                  if (efield_var == 2 .or. efield_var == 3) then
 
-                      if(efield_var == 3) then  ! if not using random (not
+                     if(efield_var == 3) then  ! if not using random (not
                        if(elecy*elyr == -1) elyr=-1.*elyr  ! strictly valid
                        if(elecx*elxr == -1) elxr=-1.*elxr
-                      endif
+                     endif
 
                       rjth(n) = sigped*((elecx+elxr)+ &
                               Wind_eastwards_ms1(n,m,l)*brad)/Sine_Dip_angle &
@@ -1292,10 +1349,10 @@ qion3d = 0
                                  *brad-(elecy+elyr)) &
                                - sighal*((elecx+elxr)+ &
                                Wind_eastwards_ms1(n,m,l)*brad)/Sine_Dip_angle
-                     else
+                 else
                       rjth(n)=jth(n)
                       rjphi(n)=jphi(n)
-                     endif
+                 endif
 !g
 !g
 !c  **
@@ -1385,29 +1442,64 @@ qion3d = 0
         source1 = 0.0
         source2 = 0.0
 
-        if(n >= 7) then
+        if(n >= 7) then ! only higher altitudes
+
            tr = temp(n)*1.2
            k8 = 2.82e-17-7.74e-18*(tr/300.0)+1.073e-18*(tr &
-           /300.0)**2-5.17e-20*(tr/300.0)**3+9.65e-22*(tr &
-           /300.0)**4
+                /300.0)**2-5.17e-20*(tr/300.0)**3+9.65e-22*(tr &
+                /300.0)**4
            if (tr < 1700.0) k3 = 1.533e-18-5.92e-19*( &
-               tr/300.0)+8.6e-20*(tr/300.0)**2
+                                 tr/300.0)+8.6e-20*(tr/300.0)**2
            if (tr >= 1700.0) k3 = 2.73e-18-1.155e-18*( &
-               tr/300.0)+1.483e-19*(tr/300.0)**2
+                                  tr/300.0)+1.483e-19*(tr/300.0)**2
 
-! evaluate energy from O+ recombination with N2
-           source1 = O_plus_density_m3(n,m,l)*p33(n)*k3*13.0*1.66E-19/neutral_density_1d(n)
-! evaluate energy from O+ recombination with O2
-           source2 = O_plus_density_m3(n,m,l)*p2(n)*k8*13.0*1.66E-19/neutral_density_1d(n)
-        endif
-                     c6 = qir(n) + qeuv(n) + source1 + source2
-                     sum3(n) = c1 + c2 + c3 + c4 + c5 + c6 + c7(n) &
+           !------------------------------------------------------
+           ! evaluate energy from O+ recombination with N2
+           ! source1 term for heating
+           !------------------------------------------------------
+           factor = 13.0*1.66E-19/neutral_density_1d(n)  ! lrm20130722
+
+           !source1 = O_plus_density_m3(n,m,l)*p33(n)*k3*13.0*1.66E-19/neutral_density_1d(n)  ! original
+           source1 = O_plus_density_m3(n,m,l)*p33(n)*k3*factor  ! lrm20130722
+
+           ! *****************lrm20130705*******************************************************
+           !source1 = 0.0 !  ***************** ONLY FOR TESTING *********************************
+           !source1 = source1 * .25 !  **** ONLY FOR TESTING *********************
+           !**************************************************************************************
+
+           !-----------------------------------------------
+           ! evaluate energy from O+ recombination with O2
+           !-----------------------------------------------
+           !source2 = O_plus_density_m3(n,m,l)*p2(n)*k8*13.0*1.66E-19/neutral_density_1d(n) ! original
+           source2 = O_plus_density_m3(n,m,l)*p2(n)*k8*factor   ! lrm20130722
+
+
+
+        endif ! if n>= 7
+
+
+        c6 = qir(n) + qeuv(n) + source1 + source2
+        sum3(n) = c1 + c2 + c3 + c4 + c5 + c6 + c7(n) &
                                + c8 + c10(n)
-                     volume = (ht(nu,m,l)-ht(nd,m,l)) &
+        volume = (ht(nu,m,l)-ht(nd,m,l)) &
                               *R0**2*deltha*sth*delphi/8.0
-                     stfac(n) = volume*neutral_density_1d(n)
-                     c77(n) = c77(n)*stfac(n)
- 1695             CONTINUE
+        stfac(n) = volume*neutral_density_1d(n)
+        c77(n) = c77(n)*stfac(n)
+
+
+    !--------------------------------------------------------
+    ! For checking values of source1, source2  lrm20130610
+    !--------------------------------------------------------
+    if (checkHeatingSources) then
+      !source1Array(n,m,l) = source1 
+      !source2Array(n,m,l) = source2
+      !k3Array(n,m,l) = k3
+      !c7Array(n,m,l) = c7(n)
+    endif
+
+
+
+ 1695             CONTINUE  ! ------------------------------------------------------------
 
 !c  ************************************************************
 !
@@ -1425,7 +1517,7 @@ qion3d = 0
 !       a5/b5 are ion drag terms
 !
 !c  ************************************************************
-                  DO n = 2 , 14
+        DO n = 2 , 14
                      nu = n + 1
                      nd = n - 1
                      a11 = -Wind_southwards_ms1(n,m,l)*(vxs(n) &
@@ -1441,10 +1533,18 @@ qion3d = 0
                 a6 = +om(n)*(Wind_southwards_ms1(nu,m,l) &
                           -Vx_1d_copy(nd))/(2.0*pressure(n))
                      sum1(n) = a1 + a2 + a3 + a4 + a5 + a6 + a8(n)
-                  END DO
+
+               !--------------------------------------------------------
+               ! For checking values of source1, source2  lrm20130717
+               !--------------------------------------------------------
+               if (checkHeatingSources) then
+                   a5Array(n,m,l) = a5
+               endif
+
+        END DO ! n = 2,24
 
 
-                  DO n = 2 , 14
+        DO n = 2 , 14
                      nu = n + 1
                      nd = n - 1
                      b11 = -Wind_southwards_ms1(n,m,l) &
@@ -1460,16 +1560,24 @@ qion3d = 0
                      b6 = +om(n)*(Wind_eastwards_ms1(nu,m,l) &
                           -Vy_1d_copy(nd))/(2.0*pressure(n))
                      sum2(n) = b1 + b2 + b3 + b4 + b5 + b6 + b8(n)
-                  END DO
+
+               !--------------------------------------------------------
+               ! For checking values of source1, source2  lrm20130717
+               !--------------------------------------------------------
+               if (checkHeatingSources) then
+                  b5Array(n,m,l) = b5
+               endif
+
+         END DO ! n = 2, 14
 
 
-                  DO n = 2 , 14
+         DO n = 2 , 14
                      Wind_southwards_ms1(n,m,l) = realTimeStep*sum1(n) &
                                            + Wind_southwards_ms1(n,m,l)
                      Wind_eastwards_ms1(n,m,l) = realTimeStep*sum2(n) &
                                            + Wind_eastwards_ms1(n,m,l)
                      eps(n,m,l) = realTimeStep*sum3(n) + eps(n,m,l)
-                  END DO
+         END DO
 
 
              Wind_southwards_ms1(15,m,l) = Wind_southwards_ms1(14,m,l)
@@ -1824,7 +1932,10 @@ qion3d = 0
          if (idump_GT  ==  1) then
 
              print *,'GT_thermo : writing out netcdf for ',universal_time_seconds
-             call write_gt_netcdf_history(GT_output_dataset)
+             !call write_gt_netcdf_history(GT_output_dataset)
+             ! Pass in the lats, lons
+             call write_gt_netcdf_history(GT_output_dataset, magnetic_latitude_degrees(:,1), &
+                                          magnetic_longitude_degrees(1,:))
 
          endif
 
@@ -1857,6 +1968,25 @@ qion3d = 0
                 call write_gt_netcdf_graphics(graphics_file, irec_number, &
                                               electron_density_m3, Universal_Time_hours)
 
+                !----------------------------------------------------------
+                ! For write values of aeuv, source1, source2 for checking lrm20130610
+                ! or for writing psmn, rmt, neutral density, oplus lrm20130624
+                !----------------------------------------------------------
+                if (checkHeatingSources) then
+                    !print *,'gt_thermo : writing out aeuv, source1, source2...............'
+                    !write(aeuvUnit,*) aeuv
+                    !write(source1Unit,*) source1Array
+                    !write(source2Unit,*) source2Array
+                    !write(psmnUnit,*) psmn
+                    !write(rmtUnit,*) rmt
+                    !write(neutral_density_3dUnit,*) neutral_density_3d
+                    !write(OplusUnit,*) O_plus_density_m3
+                    write(a5Unit,*) a5Array
+                    write(b5Unit,*) b5Array
+                    !write(c7Unit,*) c7Array
+                    !write(k3Unit,*) k3Array
+                endif
+
              endif  ! ggg == 0
 
 
@@ -1886,7 +2016,6 @@ qion3d = 0
        enddo
        enddo
        enddo
-
 
 
 RETURN
@@ -2583,22 +2712,36 @@ end subroutine write_gt_netcdf_graphics
 ! Updated w/ fortran 90 netcdf calls - lrm20130529
 !----------------------------------------------------------
 
-subroutine write_gt_netcdf_history(filename)
+subroutine write_gt_netcdf_history(filename, latitudes, longitudes)
 
 use netcdf
 IMPLICIT NONE
 
 character(len=*), intent(in) :: filename
+REAL*8, intent(in) :: latitudes(n_lats)
+REAL*8, intent(in) :: longitudes(n_lons)
+!real :: lats(NLATS), lons(NLONS) from netcdf example
 
-integer :: ncid !, istat
+! Local variables ----------------------------------
+
+integer :: levels(n_levels)
+
+integer :: ncid 
 integer :: id_n_levels , id_n_lats , id_n_lons
+integer :: lat_varid, lon_varid, levels_varid
 
 integer :: idv_vsouth , idv_veast , idv_wvz
 integer :: idv_eps , idv_rmt , idv_tn, idv_ht
 integer :: idv_psao , idv_psmo , idv_psmn
 
 integer :: ids3(3) ! vectors of dim id's
+integer :: I
+
  character(len=120) :: long_name
+
+ character (len = *), parameter :: PRESSURE_UNITS = "mb"
+ character (len = *), parameter :: LAT_UNITS = "degrees_north"
+ character (len = *), parameter :: LON_UNITS = "degrees_east"
 
 
 ! BEGIN CODE -----------------------------------------------
@@ -2608,6 +2751,9 @@ integer :: ids3(3) ! vectors of dim id's
 ! makes sure that any return which is not equal to nf90_noerr (0)
 ! will print a netCDF error message and exit.
 
+! Need to create pressure, lat, lon, pressures
+ levels = (/ (I, I = 1, n_levels) /)
+! xlhs_n = (/ (I*grd_res_n, I = 0, i_new-1) /)
 
 !-----------------------------------------------------------------------
 ! Create the netCDF file. The nf90_clobber parameter tells netCDF to
@@ -2625,6 +2771,16 @@ integer :: ids3(3) ! vectors of dim id's
  call check( nf90_def_dim(ncid, "n_lons", n_lons, id_n_lons) )
 
  !   write(6, "('Defined dimensions on file ',a)") trim(filename)
+
+ ! Define the coordinate variables. They will hold the coordinate
+ ! information, that is, the latitudes and longitudes. A varid is
+ ! returned for each.
+ call check( nf90_def_var(ncid, "n_levels", NF90_REAL, id_n_levels, levels_varid) )
+ call check( nf90_def_var(ncid, "n_lats", NF90_REAL, id_n_lats, lat_varid) )
+ call check( nf90_def_var(ncid, "n_lons", NF90_REAL, id_n_lons, lon_varid) )
+
+
+
 
 !------------------------
 ! Define variables:
@@ -2674,6 +2830,12 @@ integer :: ids3(3) ! vectors of dim id's
 ! data in one operation.
 !-------------------------------------
 ! write(6, "('Writing variables to file ',a,'..')") trim(filename)
+
+ ! Write the coordinate variable data. This will put the latitudes
+ ! and longitudes of our data grid into the netCDF file.
+ call check( nf90_put_var(ncid, levels_varid, levels) )
+ call check( nf90_put_var(ncid, lat_varid, latitudes) )
+ call check( nf90_put_var(ncid, lon_varid, longitudes) )
 
  call check( nf90_put_var(ncid, idv_vsouth, wind_southwards_ms1) )
 
@@ -3059,10 +3221,7 @@ Subroutine calculate_magnetic_parameters_using_apex(inFileName, &
   ! Open the static file Geographic_to_Magnetic_91_20.2000.0.format
   ! LRM fixed this to use specified static_file_location from the input file
   ! --------------------------------------------------------------------------
-  !open(fileUnit, &
-  !     file= TRIM(static_file_location)//'/Geographic_to_Magnetic_91_20.2000.0.format', &
-  !     form='formatted', status='old')
-  open(fileUnit, file= inFileName, &
+  open(fileUnit, file= inFileName, &  ! Geographic_to_Magnetic formatted file
        form='formatted', status='old')
 
 
@@ -3089,6 +3248,13 @@ Subroutine calculate_magnetic_parameters_using_apex(inFileName, &
 
      enddo ! ilat = 1 , 91
   enddo ! ilon = 1 , 20
+
+  print *,'calculate_magnetic_parameters_using_apex : Magnetic_latitude_degrees = ', &
+           Magnetic_latitude_degrees
+  print *,'calculate_magnetic_parameters_using_apex : '
+  print *,'calculate_magnetic_parameters_using_apex : Magnetic_longitude_degrees = ', &
+           Magnetic_longitude_degrees
+
 
   close(fileUnit)
 

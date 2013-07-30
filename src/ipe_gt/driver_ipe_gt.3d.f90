@@ -83,7 +83,7 @@ LOGICAL, parameter :: debugStartupIPE = .FALSE.
 !------------------------------------------------------
 ! File unit number for checking thermosphere values :
 !------------------------------------------------------
-INTEGER, parameter :: unitCheckThermo =7700
+INTEGER, parameter :: unitCheckThermo = 7700
 
 !------------------------------------
 ! Debug the Thermospheric values???
@@ -99,14 +99,7 @@ INTEGER, parameter :: unitCheckThermoInterp = 7800
 !---------------------------------------------------
 ! Write out the Thermospheric interpolated values??
 !---------------------------------------------------
-LOGICAL, parameter :: debugThermoInterp = .TRUE.
-
-! MOVED TO moduleDriverDebug
-!CHARACTER(LEN=*), PARAMETER :: debugThermoInterpFileName = 'interpOut.dat' *** 
-!INTEGER, parameter :: unitCheckThermoInterpBefore = 7600  ! for writing out thermosphere values
-!INTEGER, parameter :: unitCheckThermoInterpAfter = 7500  ! for writing out thermosphere values
-!INTEGER, parameter :: unitCheckThermoInterpFluxT = 7400  ! for writing out thermosphere values
-!INTEGER, parameter :: unitCheckPressureHeightThermo = 8800
+LOGICAL, parameter :: debugThermoInterp = .FALSE.
 
 !-----------------------------------------------------------------
 ! File unit number for checking Ionospheric interpolation values :
@@ -116,16 +109,8 @@ INTEGER, parameter :: unitCheckIonoInterpBefore = 9800
 INTEGER, parameter :: unitCheckIonoInterpAfter = 9900
 
 INTEGER, parameter :: numIonoVars = 10
-!INTEGER :: unitCheckIonoInterp(numIonoVars)
 CHARACTER(LEN=30) :: ionoVarName(numIonoVars)
 
-!-----------------------------------------------------------------------------
-! File unit number for checking Ionospheric values to the pressure grid
-! and file unit number for getting the average height for each pressure level
-!-----------------------------------------------------------------------------
-!INTEGER, parameter :: unitCheckPressureInterp = 8900
-!INTEGER, parameter :: unitCheckPressureHeight = 7820
-!!INTEGER, parameter :: unitPressureGridHeight = 7810
 
 !------------------------------------------------
 ! Write out the Ionospheric interpolated values??
@@ -405,6 +390,7 @@ CHARACTER(len=140) :: giptogeoFileName
 INTEGER (KIND=int_prec) :: start_time  !=0  !UT[sec]
 INTEGER (KIND=int_prec) :: stop_time   !=60 !UT[sec]
 INTEGER (KIND=int_prec) :: time_step   !=60 ![sec]
+INTEGER (KIND=int_prec) :: ipeFileStartTime ! starting time of the ipe input files
 INTEGER :: nday
 REAL*8  :: f107
 INTEGER :: GT_timestep_in_seconds
@@ -425,8 +411,7 @@ TYPE(switchesType) :: switches   ! replaces sw_, .......
 ! End of input namelist  ----------------------------------------
 
 
-! should be inputs???
-INTEGER :: nnstop , nnstrt
+!INTEGER :: nnstop , nnstrt  THESE AREN'T NEEDED ANYMORE lrm20130528
 
 
 !---------------------------
@@ -459,17 +444,44 @@ REAL :: startCPUTime, endCPUTime
 !-----------------------------------
 NAMELIST /gtipeINPUTS/GT_input_dataset, GT_output_dataset, &
                       ionoStartDir, staticFileDir, debugDir, &
-                      start_time, stop_time, time_step, &
+                      start_time, stop_time, time_step, ipeFileStartTime, &
                       nday, f107, GT_timestep_in_seconds, &
                       amplitude, tidalPhase, switches, &
                       smoothingFrequency, neutralCompositionFrequency
 
 
 ! BEGIN CODE ====================================================================================
+
+
+!write(6,*) '*****************************************************************************************'
+!write(6,*) 'SETTING SOURCE 1 TO SOURCE1/4 IN gt_thermosphere FOR TESTING  ************************************'
+!write(6,*) '*****************************************************************************************'
+
+write(6,*) '*****************************************************************************************'
+write(6,*) 'SETTING Oplus_density_FROM_IPE TO Oplus_density_FROM_IPE/4 IN gt_thermosphere FOR TESTING  ************************************'
+write(6,*) '*****************************************************************************************'
+
+
+
+write(6,*) '*****************************************************************************************'
+write(6,*) 'SETTING NEGATIVE DENSITIES TO 1 BEFORE PASSING TO GT ************************************'
+write(6,*) '*****************************************************************************************'
+
+!write(6,*) '*****************************************************************************************'
+!write(6,*) 'SETTING Ti_Oplus_for_gt = 1000. BEFORE PASSING TO GT ************************************'
+!write(6,*) '*****************************************************************************************'
+
+!write(6,*) '*****************************************************************************************'
+!write(6,*) 'IN GT, teff(n) = Temperature_K(n,m,l) FOR DEBUGGING *****************************'
+!write(6,*) '*******************************************************************************************'
+!write(6,*) ' '
+
+
+
 !----------------------------------------
 ! Get cpu time at start of main program
 !----------------------------------------
-CALL CPU_TIME(startCPUTime)
+ CALL CPU_TIME(startCPUTime)
 
 debugDir = TRIM(debugDir)
 
@@ -491,9 +503,51 @@ Foster_Efield_amplification = 1.3
 OPEN (UNIT=16, FILE='nameListGTIPE.txt', STATUS='OLD')
 read (16, NML=gtipeINPUTS)
 
+print *,'driver_ipe_gt.3d : start_time, stop_time, time_step = ',start_time, stop_time, time_step
+print *,'driver_ipe_gt.3d : ipeFileStartTime = ', ipeFileStartTime
 print *,'driver_ipe_gt.3d : amplitude = ',amplitude
 print *,'driver_ipe_gt.3d : tidalPhase = ',tidalPhase
 print *,'driver_ipe_gt : GT_input_dataset = ', GT_input_dataset
+!print *,'driver_ipe_gt : namelist = ',gtipeINPUTS
+
+!-----------------------------------
+! Check value of start_time
+!-----------------------------------
+if (start_time < 0) then
+
+   STOP "start_time < 0"
+
+end if
+
+!-----------------------------------
+! Check value of stop_time
+!-----------------------------------
+if (start_time < 0) then
+
+   STOP "start_time < 0"
+
+end if
+
+!-----------------------------------
+! Check value of time_step
+!-----------------------------------
+if (time_step < 0) then
+
+   STOP "time_step < 0"
+
+end if
+
+!-----------------------------------
+! Check value of ipeFileStartTime
+!-----------------------------------
+if (ipeFileStartTime < 0) then
+
+   STOP "ipeFileStartTime < 0"
+
+end if
+
+
+
 
 startUpFiles%speciesName = (/ "Oplus", "Hplus", "Heplus", "Nplus", "NOplus", "O2plus", &
                               "N2plus", "0plus2D", "0plus2P", "startTe", "startTi" /)
@@ -531,18 +585,9 @@ enddo ! ii
 
 ! ***************************************************************
 
-!IF ( sw_neutral == 'GT' ) then
+!!IF ( sw_neutral == 'GT' ) then
 
-    nnstrt = 1  ! ********************
-    nnstop = 15  ! ******************** NEED TO CHANGE THIS - LRM
-      
 
-    ! These are in the namelist :
-    !GT_input_dataset
-    !GT_output_dataset 
-    !GT_output_dataset 
-    !staticFileDir
-    
     !--------------------------------------
     ! Define name of the geo to mag file
     !--------------------------------------
@@ -671,79 +716,18 @@ enddo ! ii
    !--------------------------------------------------------------
    ! Open files for writing out interpreted variables b/f & after
    !--------------------------------------------------------------
-   If (debugIonoFixedtoPressure) then   !  *** MOVE TO DEBUG MODULE ****
+   If (debugIonoFixedtoPressure) then   !  
 
        iii = openPressureInterpFiles(debugDir)
-
-       !OPEN (unitCheckPressureInterp, FILE=TRIM(debugDir)//TRIM('OplusPressureGrid.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckPressureInterp+1, FILE=TRIM(debugDir)//TRIM('HplusPressureGrid.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckPressureInterp+2, FILE=TRIM(debugDir)//TRIM('NplusPressureGrid.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckPressureInterp+3, FILE=TRIM(debugDir)//TRIM('NOplusPressureGrid.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckPressureInterp+4, FILE=TRIM(debugDir)//TRIM('O2plusPressureGrid.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckPressureInterp+5, FILE=TRIM(debugDir)//TRIM('N2plusPressureGrid.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckPressureInterp+6, FILE=TRIM(debugDir)//TRIM('NePressureGrid.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckPressureInterp+7, FILE=TRIM(debugDir)//TRIM('TePressureGrid.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckPressureInterp+8, FILE=TRIM(debugDir)//TRIM('TiPressureGrid.txt'), STATUS='REPLACE')
-
-       !OPEN (unitCheckPressureHeight, FILE=TRIM(debugDir)//TRIM('averagePressureHeightGrid.txt'), STATUS='REPLACE')
-
 
   end if ! (debugIonoFixedtoPressure) 
 
    !--------------------------------------------------------------
    ! Open files for writing out interpreted variables b/f & after
    !--------------------------------------------------------------
-   !  *** MOVE TO DEBUG MODULE ****
-   IF (debugThermoInterp) then  !  *** MOVE TO DEBUG MODULE ****
+   IF (debugThermoInterp) then  !  
 
        iii = openInterpFiles(debugDir)
- 
-       !OPEN (unitCheckThermoInterpBefore, FILE=TRIM(debugDir)//TRIM('SouthWindBefore.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckThermoInterpAfter, FILE=TRIM(debugDir)//TRIM('SouthWindAfter.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckThermoInterpFluxT, FILE=TRIM(debugDir)//TRIM('SouthWindFluxTube.txt'), STATUS='REPLACE')
-
-       !OPEN (unitCheckThermoInterpBefore+1, FILE=TRIM(debugDir)//TRIM('EastWindBefore.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckThermoInterpAfter+1, FILE=TRIM(debugDir)//TRIM('EastWindAfter.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckThermoInterpFluxT+1, FILE=TRIM(debugDir)//TRIM('EastWindFluxTube.txt'), STATUS='REPLACE')
-
-       !OPEN (unitCheckThermoInterpBefore+2, FILE=TRIM(debugDir)//TRIM('WVZBefore.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckThermoInterpAfter+2, FILE=TRIM(debugDir)//TRIM('WVZAfter.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckThermoInterpFluxT+2, FILE=TRIM(debugDir)//TRIM('WVZFluxTube.txt'), STATUS='REPLACE')
-
-
-       !OPEN (unitCheckThermoInterpBefore+3, FILE=TRIM(debugDir)//TRIM('RMTBefore.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckThermoInterpAfter+3, FILE=TRIM(debugDir)//TRIM('RMTAfter.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckThermoInterpFluxT+3, FILE=TRIM(debugDir)//TRIM('RMTFluxTube.txt'), STATUS='REPLACE')
-
-
-       !OPEN (unitCheckThermoInterpBefore+4, FILE=TRIM(debugDir)//TRIM('TemperatureBefore.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckThermoInterpAfter+4, FILE=TRIM(debugDir)//TRIM('TemperatureAfter.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckThermoInterpFluxT+4, FILE=TRIM(debugDir)//TRIM('TemperatureFluxTube.txt'), STATUS='REPLACE')
-
-
-       !OPEN (unitCheckThermoInterpBefore+5, FILE=TRIM(debugDir)//TRIM('OBefore.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckThermoInterpAfter+5, FILE=TRIM(debugDir)//TRIM('OAfter.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckThermoInterpFluxT+5, FILE=TRIM(debugDir)//TRIM('OFluxTube.txt'), STATUS='REPLACE')
-
-
-       !OPEN (unitCheckThermoInterpBefore+6, FILE=TRIM(debugDir)//TRIM('O2Before.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckThermoInterpAfter+6, FILE=TRIM(debugDir)//TRIM('O2After.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckThermoInterpFluxT+6, FILE=TRIM(debugDir)//TRIM('O2FluxTube.txt'), STATUS='REPLACE')
-
-
-       !OPEN (unitCheckThermoInterpBefore+7, FILE=TRIM(debugDir)//TRIM('N2Before.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckThermoInterpAfter+7, FILE=TRIM(debugDir)//TRIM('N2After.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckThermoInterpFluxT+7, FILE=TRIM(debugDir)//TRIM('N2FluxTube.txt'), STATUS='REPLACE')
-
-
-       !OPEN (unitCheckThermoInterpBefore+8, FILE=TRIM(debugDir)//TRIM('QionBefore.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckThermoInterpAfter+8, FILE=TRIM(debugDir)//TRIM('QionAfter.txt'), STATUS='REPLACE')
-       !OPEN (unitCheckThermoInterpFluxT+8, FILE=TRIM(debugDir)//TRIM('QionFluxTube.txt'), STATUS='REPLACE')
-
-       !OPEN (unitCheckPressureHeightThermo, FILE=TRIM(debugDir)//TRIM('averagePressureHeightGridfromThermo.txt'), STATUS='REPLACE')
-
-       ! Write all heights out to a file 
-       !OPEN (unitPressureGridHeight, FILE=TRIM(debugDir)//TRIM('PressureHeightGrid.txt'), STATUS='REPLACE')
 
    end if !  (debugThermoInterp)
 
@@ -928,8 +912,32 @@ enddo ! ii
 ! One for each species, with all time steps in it
 !------------------------------------------------
 
+!----------------------------------------------------
+! Read ahead to the starting time that we want
+!----------------------------------------------------
+print *,'driver : start_time, time_step = ',start_time, time_step
+print *,'driver : reading to ', start_time - time_step,' then start at ',start_time
+skip_ipe : do utime = ipeFileStartTime, start_time - time_step, time_step
+
+  print *,'driver : skipping ipe time = ',utime
+
+  !------------------------------
+  ! Read the IPE start up files
+  !------------------------------
+  READ (UNIT=startUpFiles(1)%unit,FMT="(20E12.4)" ) Oplus_density_from_IPE
+  READ (UNIT=startUpFiles(2)%unit,FMT="(20E12.4)" ) Hplus_density_from_IPE
+  READ (UNIT=startUpFiles(3)%unit,FMT="(20E12.4)" ) Heplus_density_from_IPE
+  READ (UNIT=startUpFiles(4)%unit,FMT="(20E12.4)" ) Nplus_density_from_IPE
+  READ (UNIT=startUpFiles(5)%unit,FMT="(20E12.4)" ) NOplus_density_from_IPE
+  READ (UNIT=startUpFiles(6)%unit,FMT="(20E12.4)" ) O2plus_density_from_IPE
+  READ (UNIT=startUpFiles(7)%unit,FMT="(20E12.4)" ) N2plus_density_from_IPE
+  READ (UNIT=startUpFiles(8)%unit,FMT="(20E12.4)" ) Oplus2D_density_from_IPE
+  READ (UNIT=startUpFiles(9)%unit,FMT="(20E12.4)" ) Oplus2P_density_from_IPE
+  READ (UNIT=startUpFiles(10)%unit,FMT="(20E12.4)" ) Te_from_IPE  
+  READ (UNIT=startUpFiles(11)%unit,FMT="(20E12.4)" ) Ti_from_IPE  
 
 
+end do skip_ipe
 
 !-----------------------------------------------
 !  Ionospheric Loop :  time_loop is in seconds
@@ -969,6 +977,13 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
   !print *,'driver_ipe_gt.3d '
   !print *,'driver_ipe_gt.3d : after reading all ipe startup files.......'
 
+! DIVIDE OPLUS / 4  ONLY FOR TESTING ***********************************************
+! DIVIDE OPLUS / 4  ONLY FOR TESTING ***********************************************
+! DIVIDE OPLUS / 4  ONLY FOR TESTING ***********************************************
+Oplus_density_from_IPE = Oplus_density_from_IPE*(.25)
+
+
+
   !--------------------------------------------------------------------------
   !Ne_density_from_IPE  = sum of all above ion densities  (not temperatures)
   !--------------------------------------------------------------------------
@@ -980,22 +995,22 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
   
   If (debugStartupIPE) then !   *** MOVE TO DEBUG MODULE  ***
 
-      print *,'driver_ipe_gt.3d : Oplus_density_from_IPE(1:5,1) = ', Oplus_density_from_IPE(1:5,1)
-      print *,'driver_ipe_gt.3d : Hplus_density_from_IPE(1:5,1) = ', Hplus_density_from_IPE(1:5,1)
-       print *,'driver_ipe_gt.3d : Heplus_density_from_IPE(1:5,1) = ', Heplus_density_from_IPE(1:5,1)
-       print *,'driver_ipe_gt.3d : Nplus_density_from_IPE(1:5,1) = ', Nplus_density_from_IPE(1:5,1)
-       print *,'driver_ipe_gt.3d : NOplus_density_from_IPE(1:5,1) = ', NOplus_density_from_IPE(1:5,1)
-       print *,'driver_ipe_gt.3d : O2plus_density_from_IPE(1:5,1) = ', O2plus_density_from_IPE(1:5,1)
-       print *,'driver_ipe_gt.3d : N2plus_density_from_IPE(1:5,1) = ', N2plus_density_from_IPE(1:5,1)
-       print *,'driver_ipe_gt.3d : Oplus2D_density_from_IPE(1:5,1) = ', Oplus2D_density_from_IPE(1:5,1)
-       print *,'driver_ipe_gt.3d : Oplus2P_density_from_IPE(1:5,1) = ', Oplus2P_density_from_IPE(1:5,1)
-       print *,'driver_ipe_gt.3d : Te_from_IPE(1:5,1) = ', Te_from_IPE(1:5,1)
-       print *,'driver_ipe_gt.3d : Ti_from_IPE(1:5,1) = ', Ti_from_IPE(1:5,1)
-       print *,'driver_ipe_gt.3d : Ne_density_from_IPE(1:5,1) = ', Ne_density_from_IPE(1:5,1)
-       print *,'driver_ipe_gt.3d '
+      !print *,'driver_ipe_gt.3d : Oplus_density_from_IPE(1:5,1) = ', Oplus_density_from_IPE(1:5,1)
+      !print *,'driver_ipe_gt.3d : Hplus_density_from_IPE(1:5,1) = ', Hplus_density_from_IPE(1:5,1)
+       !print *,'driver_ipe_gt.3d : Heplus_density_from_IPE(1:5,1) = ', Heplus_density_from_IPE(1:5,1)
+       !print *,'driver_ipe_gt.3d : Nplus_density_from_IPE(1:5,1) = ', Nplus_density_from_IPE(1:5,1)
+       !print *,'driver_ipe_gt.3d : NOplus_density_from_IPE(1:5,1) = ', NOplus_density_from_IPE(1:5,1)
+       !print *,'driver_ipe_gt.3d : O2plus_density_from_IPE(1:5,1) = ', O2plus_density_from_IPE(1:5,1)
+       !print *,'driver_ipe_gt.3d : N2plus_density_from_IPE(1:5,1) = ', N2plus_density_from_IPE(1:5,1)
+       !print *,'driver_ipe_gt.3d : Oplus2D_density_from_IPE(1:5,1) = ', Oplus2D_density_from_IPE(1:5,1)
+       !print *,'driver_ipe_gt.3d : Oplus2P_density_from_IPE(1:5,1) = ', Oplus2P_density_from_IPE(1:5,1)
+       !print *,'driver_ipe_gt.3d : Te_from_IPE(1:5,1) = ', Te_from_IPE(1:5,1)
+       !print *,'driver_ipe_gt.3d : Ti_from_IPE(1:5,1) = ', Ti_from_IPE(1:5,1)
+       !print *,'driver_ipe_gt.3d : Ne_density_from_IPE(1:5,1) = ', Ne_density_from_IPE(1:5,1)
+       !print *,'driver_ipe_gt.3d '
 
-       print *,'driver_ipe_gt.3d : inGIP1d(1:NLP) = ', inGIP1d(1:NLP)
-       print *,'driver_ipe_gt.3d : isGIP1d(1:NLP) = ', isGIP1d(1:NLP)
+       !print *,'driver_ipe_gt.3d : inGIP1d(1:NLP) = ', inGIP1d(1:NLP)
+       !print *,'driver_ipe_gt.3d : isGIP1d(1:NLP) = ', isGIP1d(1:NLP)
 
 
      ! Note :
@@ -1020,46 +1035,44 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
      !end do !mm
 
 
+     write(6,*) ' '
+     write(6,'(A,E12.4, 2I8)') 'driver_ipe_gt.3d : MINVAL(Oplus_density_from_IPE) = ', MINVAL(Oplus_density_from_IPE), MINLOC(Oplus_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)') 'driver_ipe_gt.3d : MAXVAL(Oplus_density_from_IPE) = ', MAXVAL(Oplus_density_from_IPE), MAXLOC(Oplus_density_from_IPE)
 
-     print *,'driver_ipe_gt.3d : MINVAL(Oplus_density_from_IPE) = ', MINVAL(Oplus_density_from_IPE)
-     print *,'driver_ipe_gt.3d : MAXVAL(Oplus_density_from_IPE) = ', MAXVAL(Oplus_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MINVAL(Hplus_density_from_IPE) = ', MINVAL(Hplus_density_from_IPE), MINLOC(Hplus_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MAXVAL(Hplus_density_from_IPE) = ', MAXVAL(Hplus_density_from_IPE), MAXLOC(Hplus_density_from_IPE)
 
-     print *,'driver_ipe_gt.3d : MINVAL(Hplus_density_from_IPE) = ', MINVAL(Hplus_density_from_IPE)
-     print *,'driver_ipe_gt.3d : MAXVAL(Hplus_density_from_IPE) = ', MAXVAL(Hplus_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MINVAL(Heplus_density_from_IPE) = ', MINVAL(Heplus_density_from_IPE), MINLOC(Heplus_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MAXVAL(Heplus_density_from_IPE) = ', MAXVAL(Heplus_density_from_IPE), MAXLOC(Heplus_density_from_IPE)
 
-     print *,'driver_ipe_gt.3d : MINVAL(Heplus_density_from_IPE) = ', MINVAL(Heplus_density_from_IPE)
-     print *,'driver_ipe_gt.3d : MAXVAL(Heplus_density_from_IPE) = ', MAXVAL(Heplus_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MINVAL(Nplus_density_from_IPE) = ', MINVAL(Nplus_density_from_IPE), MINLOC(Nplus_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MAXVAL(Nplus_density_from_IPE) = ', MAXVAL(Nplus_density_from_IPE), MAXLOC(Nplus_density_from_IPE)
 
-     print *,'driver_ipe_gt.3d : MINVAL(Nplus_density_from_IPE) = ', MINVAL(Nplus_density_from_IPE)
-     print *,'driver_ipe_gt.3d : MAXVAL(Nplus_density_from_IPE) = ', MAXVAL(Nplus_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MINVAL(NOplus_density_from_IPE) = ', MINVAL(NOplus_density_from_IPE), MINLOC(NOplus_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MAXVAL(NOplus_density_from_IPE) = ', MAXVAL(NOplus_density_from_IPE), MAXLOC(NOplus_density_from_IPE)
 
-     print *,'driver_ipe_gt.3d : MINVAL(NOplus_density_from_IPE) = ', MINVAL(NOplus_density_from_IPE)
-     print *,'driver_ipe_gt.3d : MAXVAL(NOplus_density_from_IPE) = ', MAXVAL(NOplus_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MINVAL(O2plus_density_from_IPE) = ', MINVAL(O2plus_density_from_IPE), MINLOC(O2plus_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MAXVAL(O2plus_density_from_IPE) = ', MAXVAL(O2plus_density_from_IPE), MAXLOC(O2plus_density_from_IPE)
 
-     print *,'driver_ipe_gt.3d : MINVAL(O2plus_density_from_IPE) = ', MINVAL(O2plus_density_from_IPE)
-     print *,'driver_ipe_gt.3d : MAXVAL(O2plus_density_from_IPE) = ', MAXVAL(O2plus_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MINVAL(N2plus_density_from_IPE) = ', MINVAL(N2plus_density_from_IPE), MINLOC(N2plus_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MAXVAL(N2plus_density_from_IPE) = ', MAXVAL(N2plus_density_from_IPE), MAXLOC(N2plus_density_from_IPE)
 
-     print *,'driver_ipe_gt.3d : MINVAL(N2plus_density_from_IPE) = ', MINVAL(N2plus_density_from_IPE)
-     print *,'driver_ipe_gt.3d : MAXVAL(N2plus_density_from_IPE) = ', MAXVAL(N2plus_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MINVAL(Oplus2D_density_from_IPE) = ', MINVAL(Oplus2D_density_from_IPE), MINLOC(Oplus2D_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MAXVAL(Oplus2D_density_from_IPE) = ', MAXVAL(Oplus2D_density_from_IPE), MAXLOC(Oplus2D_density_from_IPE)
 
-     print *,'driver_ipe_gt.3d : MINVAL(Oplus2D_density_from_IPE) = ', MINVAL(Oplus2D_density_from_IPE)
-     print *,'driver_ipe_gt.3d : MAXVAL(Oplus2D_density_from_IPE) = ', MAXVAL(Oplus2D_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MINVAL(Oplus2P_density_from_IPE) = ', MINVAL(Oplus2P_density_from_IPE), MINLOC(Oplus2P_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MAXVAL(Oplus2P_density_from_IPE) = ', MAXVAL(Oplus2P_density_from_IPE), MAXLOC(Oplus2P_density_from_IPE)
 
-     print *,'driver_ipe_gt.3d : MINVAL(Oplus2P_density_from_IPE) = ', MINVAL(Oplus2P_density_from_IPE)
-     print *,'driver_ipe_gt.3d : MAXVAL(Oplus2P_density_from_IPE) = ', MAXVAL(Oplus2P_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MINVAL(Te_from_IPE) = ', MINVAL(Te_from_IPE), MINLOC(Te_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MAXVAL(Te_from_IPE) = ', MAXVAL(Te_from_IPE), MAXLOC(Te_from_IPE)
 
-     print *,'driver_ipe_gt.3d : MINVAL(Te_from_IPE) = ', MINVAL(Te_from_IPE)
-     print *,'driver_ipe_gt.3d : MAXVAL(Te_from_IPE) = ', MAXVAL(Te_from_IPE)
-
-     print *,'driver_ipe_gt.3d : MINVAL(Ti_from_IPE) = ', MINVAL(Ti_from_IPE)
-     print *,'driver_ipe_gt.3d : MAXVAL(Ti_from_IPE) = ', MAXVAL(Ti_from_IPE)
-
-
-     print *,'driver_ipe_gt.3d : MINVAL(Ne_density_from_IPE) = ', MINVAL(Ne_density_from_IPE)
-     print *,'driver_ipe_gt.3d : MAXVAL(Ne_density_from_IPE) = ', MAXVAL(Ne_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MINVAL(Ti_from_IPE) = ', MINVAL(Ti_from_IPE), MINLOC(Ti_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MAXVAL(Ti_from_IPE) = ', MAXVAL(Ti_from_IPE), MAXLOC(Ti_from_IPE)
 
 
-     STOP
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MINVAL(Ne_density_from_IPE) = ', MINVAL(Ne_density_from_IPE), MINLOC(Ne_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MAXVAL(Ne_density_from_IPE) = ', MAXVAL(Ne_density_from_IPE), MAXLOC(Ne_density_from_IPE)
+
 
   endif ! debugStartupIPE
 
@@ -1163,8 +1176,40 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
       write(unitCheckIonoInterpAfter+8,*) Ti_high_res_fixed
   end if
 
+      if (debugStartupIPE) then
 
-  !IF ( sw_neutral == 'GT' ) then
+        !--------------------------------------------------------------
+        ! Check min, max values that are going into the fixed grid
+        !--------------------------------------------------------------
+        write(6,*)' '
+        write(6,*)'--- FIXED Grid ------------------------------------------'
+        write(6,'(A, 3i7, E12.4, 3i7, E12.4 )') 'driver_ipe_gt.3d : locations, min, max, of Ne_high_res_fixed = ', &
+                 MINLOC(Ne_high_res_fixed),  MINVAL(Ne_high_res_fixed), &
+                 MAXLOC(Ne_high_res_fixed),  MAXVAL(Ne_high_res_fixed)
+        write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of Oplus_high_res_fixed = ', &
+                 MINLOC(Oplus_high_res_fixed),  MINVAL(Oplus_high_res_fixed), &
+                 MAXLOC(Oplus_high_res_fixed),  MAXVAL(Oplus_high_res_fixed)
+        write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of NOplus_high_res_fixed = ', &
+                 MINLOC(NOplus_high_res_fixed),  MINVAL(NOplus_high_res_fixed), &
+                 MAXLOC(NOplus_high_res_fixed),  MAXVAL(NOplus_high_res_fixed)
+        write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of O2plus_high_res_fixed = ', &
+                 MINLOC(O2plus_high_res_fixed),  MINVAL(O2plus_high_res_fixed), &
+                 MAXLOC(O2plus_high_res_fixed),  MAXVAL(O2plus_high_res_fixed)
+        write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of N2plus_high_res_fixed = ', &
+                 MINLOC(N2plus_high_res_fixed),  MINVAL(N2plus_high_res_fixed), &
+                 MAXLOC(N2plus_high_res_fixed),  MAXVAL(N2plus_high_res_fixed)
+        write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of Hplus_high_res_fixed = ', &
+                 MINLOC(Hplus_high_res_fixed),  MINVAL(Hplus_high_res_fixed), &
+                 MAXLOC(Hplus_high_res_fixed),  MAXVAL(Hplus_high_res_fixed)
+        write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of Ti_Oplus_for_GT = ', &
+                 MINLOC(Ti_Oplus_for_GT),  MINVAL(Ti_Oplus_for_GT), &
+                 MAXLOC(Ti_Oplus_for_GT),  MAXVAL(Ti_Oplus_for_GT)
+        write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of Te_for_GT = ', &
+                 MINLOC(Te_for_GT),  MINVAL(Te_for_GT), &
+                 MAXLOC(Te_for_GT),  MAXVAL(Te_for_GT)
+
+      endif
+
 
    !------------------------------------------
    ! Loop here for the thermosphere time step
@@ -1172,12 +1217,16 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
    thermosphereLoop : DO gtLoopTime = utime, utime + (time_step-GT_timestep_in_seconds), &
                                       GT_timestep_in_seconds !------------------------
 
-      print *,'driver_ipe_gt.3d : gtLoopTime = ',gtLoopTime
-
-      nnloop = MOD(nnloop + 1, number_of_GT_time_steps_in_24_hours)
-      IF ( nnloop .EQ. 0 ) nnloop = number_of_GT_time_steps_in_24_hours
+      ! reset idump_gt to 0
+      idump_gt = 0
 
       Universal_Time_seconds = gtLoopTime
+
+      print *,'driver_ipe_gt.3d : gtLoopTime = ',gtLoopTime
+
+      ! loop # for the day (increases nnloop by 1)
+      nnloop = MOD(nnloop + 1, number_of_GT_time_steps_in_24_hours)
+      IF ( nnloop .EQ. 0 ) nnloop = number_of_GT_time_steps_in_24_hours
 
       nn = MOD(nnloop, number_of_GT_time_steps_in_24_hours)
       IF ( nn .EQ. 0 ) nn = number_of_GT_time_steps_in_24_hours
@@ -1190,6 +1239,15 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
       !---------------------
       nn_smoothing_counter = nn_smoothing_counter + 1
       nn_composition_counter = nn_composition_counter + 1
+
+      !----------------------------------------
+      ! Dump out the thermosphere values ???
+      !----------------------------------------
+      !if (nnloop .eq. nnstop) idump_gt = 1
+
+      if (gtLoopTime == (utime + time_step-GT_timestep_in_seconds)) idump_gt = 1
+      !print *,'driver : nnloop, idump_gt = ',nnloop, idump_gt
+
 
 
       CALL FOSTER(exns, eyns, Foster_level, Foster_power, &
@@ -1236,6 +1294,8 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
       !Te_high_res_fixed = -999999.  ! This is not used yet ****  lrm20120509
 
 
+
+
       !-------------------------------------------------------------------
       ! This is in the loop b/c of changing heights of the pressure grid
       !-------------------------------------------------------------------
@@ -1254,86 +1314,120 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
          Te_FOR_GT, Ti_Oplus_FOR_GT, Ti_Oplus_FOR_GT)                        ! outputs
 
 
-         !--------------------------------------------------------
-         ! Write out the interpolated values on the pressure grid
-         !--------------------------------------------------------
-         if ((debugIonoFixedtoPressure) .and. (idump_gt == 1)) then  ! *** MOVE TO DEBUG MODULE ***
+      !--------------------------------------------------------
+      ! Write out the interpolated values on the pressure grid
+      !--------------------------------------------------------
+      if ((debugIonoFixedtoPressure) .and. (idump_gt == 1)) then  
 
             iii = writeInterpThermo(gtLoopTime, Oplus_density_for_GT, Hplus_density_for_GT, &
                                     Nplus_density_for_GT, NOplus_density_for_GT, &
                                     O2plus_density_for_GT, N2plus_density_for_GT, &
                                     Ne_density_for_GT, Te_for_GT, Ti_Oplus_for_GT, ht_FROM_GT)
 
-            !write(unitCheckPressureInterp,*) Oplus_density_for_GT
-            !write(unitCheckPressureInterp + 1,*) Hplus_density_for_GT
-            !write(unitCheckPressureInterp + 2,*) Nplus_density_for_GT
-            !write(unitCheckPressureInterp + 3,*) NOplus_density_for_GT
-            !write(unitCheckPressureInterp + 4,*) O2plus_density_for_GT
-            !write(unitCheckPressureInterp + 5,*) N2plus_density_for_GT
-            !write(unitCheckPressureInterp + 6,*) Ne_density_for_GT
-            !write(unitCheckPressureInterp + 7,*) Te_for_GT
-            !write(unitCheckPressureInterp + 8,*) Ti_Oplus_for_GT
-
-            ! write out the pressure grid heights
-            !write(unitPressureGridHeight,*) ht_FROM_GT
-
-           !--------------------------------------------------------------------
-           ! Calculate and write out the average height for each pressure level
-           !--------------------------------------------------------------------
-           !write(unitCheckPressureHeight, FMT="(I12)" ) gtLoopTime
-           !do ii = 1, GT_ht_dim
-
-              !!avgHeightofPressure = Ht_FROM_GT(ii,:,:)/(GT_lat_dim*GT_lon_dim)
-
-              !write(unitCheckPressureHeight, FMT="(E12.4)") SUM(Ht_FROM_GT(ii,:,:))/(GT_lat_dim*GT_lon_dim)
-              !!write(unitCheckPressureHeight, FMT="(A1)") " "
-
-           !enddo
-
-        end if
+      end if
 
 
-        !----------------
-        ! Placeholders :
-        !----------------
-        !Hplus_density_FOR_GT = -999999.  ! This is not used yet ****  20120508lrm
-        !N2plus_density_FOR_GT = -999999.  ! This is not used yet ****  20120508lrm
-        !Nplus_density_FOR_GT = -999999.  ! This is not used yet ****  20120508lrm
-        !Te_FOR_GT = -999999.  ! This is not used yet ****  20120508lrm
+      !----------------
+      ! Placeholders :
+      !----------------
+      !Hplus_density_FOR_GT = -999999.  ! This is not used yet ****  20120508lrm
+      !N2plus_density_FOR_GT = -999999.  ! This is not used yet ****  20120508lrm
+      !Nplus_density_FOR_GT = -999999.  ! This is not used yet ****  20120508lrm
+      !Te_FOR_GT = -999999.  ! This is not used yet ****  20120508lrm
 
 
-        !--------------------------------------------
-        ! Variables for GT - 20120501lrm
-        !--------------------------------------------
-        !therm_geo_long_input : therm_model_geo_long_deg
-        !therm_geo_lat : therm_model_geo_lat_deg
-        !therm_Z : ht_FROM_GT(GT_ht_dim, GT_lat_dim, GT_lon_dim) : Altitude_m_FOR_IPE(GT_ht_dim, GT_lon_dim, GT_lat_dim)
+      !--------------------------------------------
+      ! Variables for GT - 20120501lrm
+      !--------------------------------------------
+      !therm_geo_long_input : therm_model_geo_long_deg
+      !therm_geo_lat : therm_model_geo_lat_deg
+      !therm_Z : ht_FROM_GT(GT_ht_dim, GT_lat_dim, GT_lon_dim) : Altitude_m_FOR_IPE(GT_ht_dim, GT_lon_dim, GT_lat_dim)
 
-        !therm_Ne_density : Ne_density_FOR_GT
-        !therm_oplus_density : Oplus_density_FOR_GT
-        !therm_hplus_density ????   keep  - not sure if we want to use this ???
-        !therm_noplus_density : NOplus_density_FOR_GT
-        !therm_o2plus_density : O2plus_density_FOR_GT
-        !therm_n2plus_density : ???? keep
-        !therm_nplus_density : ???? keep
-        !therm_Te : ???? keep  - should be used later
-        !therm_Ti1 : Ti_Oplus_FOR_GT - yes, use Ti
-        !therm_Ti2 : only 1 Ti from IPE
+      !therm_Ne_density : Ne_density_FOR_GT
+      !therm_oplus_density : Oplus_density_FOR_GT
+      !therm_hplus_density ????   keep  - not sure if we want to use this ???
+      !therm_noplus_density : NOplus_density_FOR_GT
+      !therm_o2plus_density : O2plus_density_FOR_GT
+      !therm_n2plus_density : ???? keep
+      !therm_nplus_density : ???? keep
+      !therm_Te : ???? keep  - should be used later
+      !therm_Ti1 : Ti_Oplus_FOR_GT - yes, use Ti
+      !therm_Ti2 : only 1 Ti from IPE
 
-        ! will need to add heating rates from IPE - Tim will add heating rates to GT
+      ! will need to add heating rates from IPE - Tim will add heating rates to GT
 
-        !----------------------------------------
-        ! Dump out the thermosphere values ???
-        !----------------------------------------
-        if (nnloop .eq. nnstop) idump_gt = 1
 
-        !---------------------------------------------
-        ! Now call the thermosphere ................
-        !---------------------------------------------
+     !------------------------------------
+     ! Set any negative densities to 1.0 
+     !------------------------------------
+     WHERE (Ne_density_for_GT < 0.) 
+            Ne_density_for_GT = 1.
+     END WHERE
 
-        ! This will reset the nn_smoothing_counter if it equals the smoothing frequency
-        call GT_thermosphere( &
-                      GT_output_dataset, &
+     WHERE (Oplus_density_for_GT < 0.) 
+            Oplus_density_for_GT = 1.
+     END WHERE
+
+     WHERE (NOplus_density_for_GT < 0.) 
+            NOplus_density_for_GT = 1.
+     END WHERE
+
+     WHERE (O2plus_density_for_GT < 0.) 
+            O2plus_density_for_GT = 1.
+     END WHERE
+
+
+     ! FOR DEBUGGING ONLY :
+     !WHERE (Ti_Oplus_FOR_GT > 2500.)
+     !       Ti_Oplus_FOR_GT = 2500.
+     !END WHERE
+     !Ti_Oplus_FOR_GT = 1000.
+
+
+
+
+      if (debugStartupIPE) then
+
+        !----------------------------------------------------
+        ! Check min, max values that are going into GT
+        !----------------------------------------------------
+        write(6,*)' '
+        write(6,*)'--- Pressure Grid ------------------------------------------'
+        write(6,'(A, 3i7, E12.4, 3i7, E12.4 )') 'driver_ipe_gt.3d : locations, min, max, of Ne_density_for_GT = ', &
+                 MINLOC(Ne_density_for_GT),  MINVAL(Ne_density_for_GT), &
+                 MAXLOC(Ne_density_for_GT),  MAXVAL(Ne_density_for_GT)
+        write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of Oplus_density_for_GT = ', &
+                 MINLOC(Oplus_density_for_GT),  MINVAL(Oplus_density_for_GT), &
+                 MAXLOC(Oplus_density_for_GT),  MAXVAL(Oplus_density_for_GT)
+        write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of NOplus_density_for_GT = ', &
+                 MINLOC(NOplus_density_for_GT),  MINVAL(NOplus_density_for_GT), &
+                 MAXLOC(NOplus_density_for_GT),  MAXVAL(NOplus_density_for_GT)
+        write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of O2plus_density_for_GT = ', &
+                 MINLOC(O2plus_density_for_GT),  MINVAL(O2plus_density_for_GT), &
+                 MAXLOC(O2plus_density_for_GT),  MAXVAL(O2plus_density_for_GT)
+        write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of N2plus_density_for_GT = ', &
+                 MINLOC(N2plus_density_for_GT),  MINVAL(N2plus_density_for_GT), &
+                 MAXLOC(N2plus_density_for_GT),  MAXVAL(N2plus_density_for_GT)
+        write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of Hplus_density_for_GT = ', &
+                 MINLOC(Hplus_density_for_GT),  MINVAL(Hplus_density_for_GT), &
+                 MAXLOC(Hplus_density_for_GT),  MAXVAL(Hplus_density_for_GT)
+        write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of Ti_Oplus_for_GT = ', &
+                 MINLOC(Ti_Oplus_for_GT),  MINVAL(Ti_Oplus_for_GT), &
+                 MAXLOC(Ti_Oplus_for_GT),  MAXVAL(Ti_Oplus_for_GT)
+        write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of Te_for_GT = ', &
+                 MINLOC(Te_for_GT),  MINVAL(Te_for_GT), &
+                 MAXLOC(Te_for_GT),  MAXVAL(Te_for_GT)
+     endif
+
+
+     !---------------------------------------------
+     ! Now call the thermosphere ................
+     !---------------------------------------------
+
+     ! This will reset the nn_smoothing_counter if it equals the smoothing frequency
+     call GT_thermosphere( &
+                      GT_output_dataset, &                       ! input
+                      debugDir, &                                ! input
                       GT_timestep_in_seconds, &
                       idump_gt, &
                       solar_declination_angle_radians, &
@@ -1370,11 +1464,12 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
                       qion3d)  ! output
 
 
-       !-------------------------------------------------------------------
-       ! If in Thermospheric debug mode, write out values to a file
-       ! & do some prints to the screen
-       !-------------------------------------------------------------------
-       if ((debugThermo).and. (idump_gt == 1)) then
+
+     !-------------------------------------------------------------------
+     ! If in Thermospheric debug mode, write out values to a file
+     ! & do some prints to the screen
+     !-------------------------------------------------------------------
+     if ((debugThermo).and. (idump_gt == 1)) then
 
           WRITE (unitCheckThermo, '(A)' ) ' '
           WRITE(unitCheckThermo,'(A)') 'driver_ipe_gt.3d : '
@@ -1390,78 +1485,68 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
                                  wind_eastwards_ms1_FROM_GT, wvz_FROM_GT, rmt_FROM_GT, &
                                  Temperature_K_FROM_GT, ht_FROM_GT)
 
-        endif ! debugThermo
+     endif ! debugThermo
 
-        !-----------------------------------
-        ! Check for negative temperatures
-        !-----------------------------------
-        if (MINVAL(Temperature_K_FROM_GT) < 100.) then
+
+     !-----------------------------------
+     ! Check for negative temperatures
+     !-----------------------------------
+     if (MINVAL(Temperature_K_FROM_GT) < 100.) then
 
             print *,'driver_ipe_gt.3d : WARNING, Temperature_K_FROM_GT) < 100. *********'
-            print *,'driver_ipe_gt.3d : ',MINVAL(Temperature_K_FROM_GT),  MINLOC(Temperature_K_FROM_GT)
+            print *,'driver_ipe_gt.3d : gtLoopTime, MINVAL(Temperature_K_FROM_GT),  MINLOC(Temperature_K_FROM_GT)', &
+                     gtLoopTime, MINVAL(Temperature_K_FROM_GT),  MINLOC(Temperature_K_FROM_GT)
 
-        else if (MINVAL(Temperature_K_FROM_GT) <= 0.) then
+     else if (MINVAL(Temperature_K_FROM_GT) <= 0.) then
            print *,'driver_ipe_gt.3d : NEGATIVE TEMPERATURE VALUE FROM GT ****************************************************'
-           print *,'nnloop, Universal_Time_seconds, MINVAL, MINLOC = ', &
-                    nnloop, Universal_Time_seconds, MINVAL(Temperature_K_FROM_GT), MINLOC(Temperature_K_FROM_GT)
+           print *,'gtLoopTime, MINVAL(Temperature_K_FROM_GT), MINLOC(Temperature_K_FROM_GT) = ', &
+                    gtLooptime, MINVAL(Temperature_K_FROM_GT), MINLOC(Temperature_K_FROM_GT)
            print *,'driver_ipe_gt.3d : STOPPING .....................'
            STOP
-        endif
+     endif
 
 
-        littleLoop = littleLoop + 1
+     littleLoop = littleLoop + 1
 
-      END DO thermosphereLoop ! --------------------------------------------------------------------------------------------------
+   END DO thermosphereLoop ! --------------------------------------------------------------------------------------------------
 
 
 
-        if (debugThermoInterp) then  ! *** MOVE TO DEBUG MODULE ***
-
-           iii = writeThermo(gtLoopTime, wind_southwards_ms1_FROM_GT, wind_eastwards_ms1_FROM_GT, &
+   if (debugThermoInterp) then  ! *** MOVE TO DEBUG MODULE ***
+           ! universal_time_seconds is the correct time to write out after the thermosphere loop
+           iii = writeThermo(INT(universal_time_seconds), wind_southwards_ms1_FROM_GT, wind_eastwards_ms1_FROM_GT, &
                              wvz_FROM_GT, rmt_FROM_GT, Temperature_K_FROM_GT, &
                              O_density_FROM_GT, O2_density_FROM_GT, N2_density_FROM_GT, &
                              qion3d, Ht_FROM_GT)
 
-           ! write out arrays to file for plotting
-           !write(unitCheckThermoInterpBefore,*) wind_southwards_ms1_FROM_GT
-           !write(unitCheckThermoInterpBefore + 1,*) wind_eastwards_ms1_FROM_GT
-           !write(unitCheckThermoInterpBefore + 2,*) wvz_FROM_GT
-           !write(unitCheckThermoInterpBefore + 3,*) rmt_FROM_GT
-           !write(unitCheckThermoInterpBefore + 4,*) Temperature_K_FROM_GT
-           !write(unitCheckThermoInterpBefore + 5,*) O_density_FROM_GT
-           !write(unitCheckThermoInterpBefore + 6,*) O2_density_FROM_GT
-           !write(unitCheckThermoInterpBefore + 7,*) N2_density_FROM_GT
-           !write(unitCheckThermoInterpBefore + 8,*) qion3d
-
-          !--------------------------------------------------------------------
-          ! Calculate and write out the average height for each pressure level
-          !--------------------------------------------------------------------
-          !write(unitCheckPressureHeightThermo, FMT="(I12)" ) gtLoopTime
-          !do ii = 1, GT_ht_dim
-
-          !  write(unitCheckPressureHeightThermo, FMT="(E12.4)") SUM(Ht_FROM_GT(ii,:,:))/(GT_lat_dim*GT_lon_dim)
-
-         !enddo
-
-      endif ! debugThermoInterp
+   endif ! debugThermoInterp
 
 
-
-!  if (doInterpToIpe )
-
-
-      !-------------------------------------------------------------------------
-      ! For interpolation to IPE grid, switch (ht, lat, lon) to (ht, lon, lat)
-      !-------------------------------------------------------------------------
-      do ii = 1 , GT_ht_dim
-         do jj = 1 , GT_lon_dim
-            do kk = 1 , GT_lat_dim
+   !-------------------------------------------------------------------------
+   ! For interpolation to IPE grid, switch (ht, lat, lon) to (ht, lon, lat)
+   !-------------------------------------------------------------------------
+   do ii = 1 , GT_ht_dim
+      do jj = 1 , GT_lon_dim
+         do kk = 1 , GT_lat_dim
 
                Altitude_m_FOR_IPE(ii,jj,kk) = ht_FROM_GT(ii,kk,jj)
                Vn_Southwards_ms1_FOR_IPE(ii,jj,kk) = wind_southwards_ms1_FROM_GT(ii,kk,jj)
                Vn_Eastwards_ms1_FOR_IPE(ii,jj,kk) = wind_eastwards_ms1_FROM_GT(ii,kk,jj)
                Vn_Upwards_ms1_FOR_IPE(ii,jj,kk) = wvz_FROM_GT(ii,kk,jj)
                Tn_K_FOR_IPE(ii,jj,kk) = temperature_K_FROM_GT(ii,kk,jj)
+
+               !--------------------------------------------------
+               ! For debugging negative temperatures lrm20130520
+               !--------------------------------------------------
+               if ( Tn_K_FOR_IPE(ii,jj,kk) < 0. ) then
+                  write (6,*) 'driver : Tn_K_FOR_IPE(ii,jj,kk) < 0. ************************'
+                  write (6,*) 'driver : universal_time_seconds, ii, jj, kk, Tn_K_FOR_IPE(ii,jj,kk) = ',&
+                               universal_time_seconds, ii, jj, kk, Tn_K_FOR_IPE(ii,jj,kk)
+                               
+                  STOP
+               endif
+               !--------------------------------------------------
+
                O_density_m3_FOR_IPE(ii,jj,kk) = O_density_FROM_GT(ii,kk,jj)
                O2_density_m3_FOR_IPE(ii,jj,kk) = O2_density_FROM_GT(ii,kk,jj)
                N2_density_m3_FOR_IPE(ii,jj,kk) = N2_density_FROM_GT(ii,kk,jj)
@@ -1469,12 +1554,11 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
                ely_FOR_IPE(ii,jj,kk) = 0.  ! = ely(m,l) ****** ely IS NOT DEFINED IN TUCAN_TIME ***********
                qion3d_FOR_IPE(ii,jj,kk) = qion3d(ii,kk,jj)
 
-            enddo
-         enddo
-      enddo
+          enddo
+       enddo
+    enddo
 
 
-   
       !***************************************************
       !!! HN_m3,HE_m3 still need to be obtained from MSIS
       ! call MSIS to get these values
@@ -1510,6 +1594,16 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
            V_East_FixedHeight, V_South_FixedHeight, V_Upward_FixedHeight, tts_fixed_ht, &             ! output
            qion3d_fixed_ht, elx_fixed_ht, ely_fixed_ht)                        ! output
 
+           !----------------------------------
+           ! Check for negative temperature
+           !----------------------------------
+           if (MINVAL(tts_fixed_ht) < 0) then
+               print *,'driver : universal_time_seconds, MINVAL(tts_fixed_ht), MINLOC(tts_fixed_ht) = ', &
+                          universal_time_seconds, MINVAL(tts_fixed_ht), MINLOC(tts_fixed_ht)
+               STOP
+           endif
+ 
+
 
            !-------------------------------------------------------------------------
            ! Write out results of the interpolation to an ascii file for examination
@@ -1518,7 +1612,6 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
 
               print *,'driver_ipe_gt.3d : Writing out the interpolated values to a file..........'
 
-              !CALL checkInterp(debugDir, debugThermoInterpFileName, unitCheckThermoInterp, &
               CALL checkInterp(debugDir, unitCheckThermoInterp, &
                        nFixedGridThermoHeights, GT_lat_dim, GT_lon_dim, &
                        O_density_fixed_ht, O2_density_fixed_ht, N2_density_fixed_ht, &
@@ -1533,23 +1626,12 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
            !------------------------------------------------------
            ! Write out pressure to fixed grid results
            !------------------------------------------
-  If (debugThermoInterp) then ! *** MOVE TO DEBUG MODULE ***
+  If (debugThermoInterp) then ! *** MOVED TO DEBUG MODULE ***
 
       iii = writeThermoFixed(V_South_FixedHeight, V_East_FixedHeight, &
                              V_Upward_FixedHeight, tts_fixed_ht, &
                              O_density_fixed_ht, O2_density_fixed_ht, &
                              N2_density_fixed_ht, qion3d_fixed_ht)
-
-      !write(unitCheckThermoInterpAfter,*) V_South_FixedHeight
-      !write(unitCheckThermoInterpAfter+1,*) V_East_FixedHeight
-      !write(unitCheckThermoInterpAfter+2,*) V_Upward_FixedHeight
-      !write(unitCheckThermoInterpAfter+3,*) ! should be rmt , but the composition is not being used ***
-      !write(unitCheckThermoInterpAfter+4,*) tts_fixed_ht
-      !write(unitCheckThermoInterpAfter+5,*) O_density_fixed_ht
-      !write(unitCheckThermoInterpAfter+6,*) O2_density_fixed_ht
-      !write(unitCheckThermoInterpAfter+7,*) N2_density_fixed_ht
-      !write(unitCheckThermoInterpAfter+8,*) qion3d_fixed_ht
-
 
   end if
 

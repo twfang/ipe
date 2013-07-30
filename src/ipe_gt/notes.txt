@@ -1,3 +1,9 @@
+
+
+nameListgtipe.tnDebug.txt - used for debugging the negative
+temperature problem in interpolation from thermo pressure grid to fixed grid
+
+--------------------------
 To run in batch mode :
 
 
@@ -171,6 +177,18 @@ run difference script to check thermosphere output :
 
 go to :
 /scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/OUTPUT/checkDiff.bash
+
+
+-------------------------------------------------------------------------------------------------
+
+July 15, 2013 
+
+output of setting source1 = 0   is in :
+/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/OUTPUT/ipe_640_25840/SOURCE1/
+/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/DEBUG/ipe_640_25840/SOURCE1/
+
+
+
 
 
 
