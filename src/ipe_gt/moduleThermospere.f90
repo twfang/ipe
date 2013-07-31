@@ -1,73 +1,88 @@
-       MODULE moduleTHERMOSPHERE
+MODULE moduleTHERMOSPHERE
 
-       USE moduleAmplitude
-       USE moduleTidalPhase
+  USE moduleAmplitude
+  USE moduleTidalPhase
+  ! sizes of thermosphere pressure gridb
+  USE modSizeThermo, ONLY : GT_ht_dim, GT_lat_dim, GT_lon_dim  ! = 15, 91, 20
 
-       IMPLICIT NONE
+  IMPLICIT NONE
 
-       PUBLIC :: GT_thermosphere_INIT
-       PUBLIC :: GT_thermosphere
-       PUBLIC :: Foster
-       PUBLIC :: readelec
-       PUBLIC :: calculate_magnetic_parameters_using_apex
-       PUBLIC :: high_lat_elecz
-       PUBLIC :: low_lat_efield
+  PUBLIC :: GT_thermosphere_INIT
+  PUBLIC :: GT_thermosphere
+  PUBLIC :: Foster
+  PUBLIC :: readelec
+  PUBLIC :: calculate_magnetic_parameters_using_apex
+  PUBLIC :: high_lat_elecz
+  PUBLIC :: low_lat_efield
+  PUBLIC :: setThermoLatLons
+  PUBLIC :: therm_model_geo_lat_deg, therm_model_geo_long_deg
 
-       PRIVATE
+  PRIVATE
 
-       SAVE
+  ! Parameters
+  !integer, parameter :: n_levels = 15
+  integer, parameter :: n_levels = GT_ht_dim
+  !integer, parameter :: n_lats = 91
+  integer, parameter :: n_lats = GT_lat_dim
+  !integer, parameter :: n_lons = 20
+  integer, parameter :: n_lons = GT_lon_dim 
 
-       ! Parameters
-       integer, parameter :: n_levels = 15
-       integer, parameter :: n_lats = 91
-       integer, parameter :: n_lons = 20
-
-       real(kind=8), parameter :: secondsInDay = 86400.
-
-
-       REAL(kind=8) :: wind_southwards_ms1(n_levels, n_lats, n_lons)
-       REAL(kind=8) :: wind_eastwards_ms1(n_levels, n_lats, n_lons)
-       REAL(kind=8) :: wvz(n_levels, n_lats, n_lons)
-       REAL(kind=8) :: eps(n_levels, n_lats, n_lons)
-       REAL(kind=8) :: rmt(n_levels, n_lats, n_lons)
-       REAL(kind=8) :: Temperature_K(n_levels, n_lats, n_lons)
-       REAL(kind=8) :: ht(n_levels, n_lats, n_lons)
-       REAL(kind=8) :: psao(n_levels, n_lats, n_lons)
-       REAL(kind=8) :: psmo(n_levels, n_lats, n_lons)
-       REAL(kind=8) :: psmn(n_levels, n_lats, n_lons)
-
-       REAL(kind=8) :: km(n_levels)
-       REAL(kind=8) :: kt(n_levels)
-       REAL(kind=8) :: tin(n_levels)
-       REAL(kind=8) :: umut(n_levels)
+  real(kind=8), parameter :: secondsInDay = 86400.
 
 
-       REAL(kind=8) :: vy0(91)
-       REAL(kind=8) :: temp0(91)
-       REAL(kind=8) :: temp0av
-       REAL(kind=8) :: dh0(91)
-       REAL(kind=8) :: htold(91,20)
-       REAL(kind=8) :: pressure(15)
-       REAL(kind=8) :: examp
-       REAL(kind=8) :: fden
+  REAL(kind=8) :: wind_southwards_ms1(n_levels, n_lats, n_lons)
+  REAL(kind=8) :: wind_eastwards_ms1(n_levels, n_lats, n_lons)
+  REAL(kind=8) :: wvz(n_levels, n_lats, n_lons)
+  REAL(kind=8) :: eps(n_levels, n_lats, n_lons)
+  REAL(kind=8) :: rmt(n_levels, n_lats, n_lons)
+  REAL(kind=8) :: Temperature_K(n_levels, n_lats, n_lons)
+  REAL(kind=8) :: ht(n_levels, n_lats, n_lons)
+  REAL(kind=8) :: psao(n_levels, n_lats, n_lons)
+  REAL(kind=8) :: psmo(n_levels, n_lats, n_lons)
+  REAL(kind=8) :: psmn(n_levels, n_lats, n_lons)
 
-       INTEGER :: m_North_Pole
-       INTEGER :: m_equator
-       INTEGER :: ixx
-       INTEGER :: mjk
-       INTEGER :: mj1
-       INTEGER :: mj2
+  REAL(kind=8) :: km(n_levels)
+  REAL(kind=8) :: kt(n_levels)
+  REAL(kind=8) :: tin(n_levels)
+  REAL(kind=8) :: umut(n_levels)
 
-       integer :: idv_vsouth2 , idv_veast2 , idv_wvz2
-       integer :: idv_rmt2 , idv_tn2, idv_ht2
-       integer :: idv_psao2 , idv_psmo2
-       integer :: idv_Ne2
-       integer :: idv_UT2
 
-       integer :: irec_number  ! for writing to the graphics file
-       integer :: iout_high  !  counter for # of times gt_thermosphere has been called
+  REAL(kind=8) :: vy0(91)
+  REAL(kind=8) :: temp0(91)
+  REAL(kind=8) :: temp0av
+  REAL(kind=8) :: dh0(91)
+  !REAL(kind=8) :: htold(91,20)
+  REAL(kind=8) :: htold(n_lats,n_lons)
+  !REAL(kind=8) :: pressure(15)
+  REAL(kind=8) :: pressure(n_levels)
 
-CHARACTER(len=200) :: graphics_file
+  REAL(kind=8) :: examp
+  REAL(kind=8) :: fden
+
+  INTEGER :: m_North_Pole
+  INTEGER :: m_equator
+  INTEGER :: ixx
+  INTEGER :: mjk
+  INTEGER :: mj1
+  INTEGER :: mj2
+
+  integer :: idv_vsouth2 , idv_veast2 , idv_wvz2
+  integer :: idv_rmt2 , idv_tn2, idv_ht2
+  integer :: idv_psao2 , idv_psmo2
+  integer :: idv_Ne2
+  integer :: idv_UT2
+
+  integer :: irec_number  ! for writing to the graphics file
+  integer :: iout_high  !  counter for # of times gt_thermosphere has been called
+
+ CHARACTER(len=200) :: graphics_file
+
+!-------------------------------
+! thermosphere lats & lons
+!-------------------------------
+real*8 :: therm_model_geo_long_deg(GT_lon_dim)
+real*8 :: therm_model_geo_lat_deg(GT_lat_dim)
+
 
 CONTAINS
 
@@ -160,8 +175,11 @@ SUBROUTINE GT_thermosphere( &
       REAL*8, INTENT(IN) :: emaps(21,20,7) , cmaps(21,20,7) , profile(15,21) !M:I
 
       ! OUTPUTS ----------------------------------------
-      REAL(kind=8), INTENT(OUT) :: wind_southwards_ms1_copy(15,91,20)
-      REAL(kind=8), INTENT(OUT) :: wind_eastwards_ms1_copy(15,91,20)
+      !REAL(kind=8), INTENT(OUT) :: wind_southwards_ms1_copy(15,91,20)
+      !REAL(kind=8), INTENT(OUT) :: wind_eastwards_ms1_copy(15,91,20)
+      REAL(kind=8), INTENT(OUT) :: wind_southwards_ms1_copy(n_levels, n_lats, n_lons)  ! lrm20130731
+      REAL(kind=8), INTENT(OUT) :: wind_eastwards_ms1_copy(n_levels, n_lats, n_lons)
+
       REAL(kind=8), INTENT(OUT) :: wvz_copy(15,91,20)
       REAL(kind=8), INTENT(OUT) :: rmt_copy(15,91,20)
       REAL(kind=8), INTENT(OUT) :: Temperature_K_copy(15,91,20)
@@ -231,10 +249,10 @@ SUBROUTINE GT_thermosphere( &
                 source1 , source2 , k3 , k8 , tr
 
       REAL*8 :: dt, dvydy, &
-                edep(15) , elecx , elecz
+                elecx , elecz
 
-
-
+      !REAL*8 :: edep(15)
+      REAL*8 :: edep(n_levels)
 
       REAL*8 :: elecy , &
                 magnetic_local_time_in_degrees 
@@ -293,12 +311,6 @@ SUBROUTINE GT_thermosphere( &
 
       INTEGER :: nu , nxx , nyy
 
-      !PARAMETER (PI=3.14159, R0=6.370E06, &
-      !           R0SQ=R0*R0, Electron_charge_Coulombs=1.602E-19, ANROT=7.29E-05, GRAV=9.5, &
-      !           GSCON=8.3141E+03, &
-      !           DTR=PI/180.0, RTD=180.0/PI, PI2=PI/2.0, BZ=1.38E-23)
-
-
       INTEGER :: yy, ggg
 
       REAL*8 :: om1(15,91,20) , &
@@ -315,7 +327,7 @@ SUBROUTINE GT_thermosphere( &
 ! REAL*8 :: c7Array(n_levels,n_lats,n_lons), k3Array(n_levels,n_lats,n_lons)
  REAL*8 :: a5Array(n_levels,n_lats,n_lons), b5Array(n_levels,n_lats,n_lons)
 
-      REAL*8 :: cp(15) , &
+ REAL*8 :: cp(15) , &
                 temp(15) , neutral_density_1d(15) , &
                 neutral_density_3d(15,91,20), &
                 scht(15) , om(15) , &
@@ -323,14 +335,17 @@ SUBROUTINE GT_thermosphere( &
                 effqia(15) , div(15) , c7_3d(15,91,20), &
                 c77_3d(15,91,20)
 
-      REAL*8 :: factor !  for multipling source1, source2
+ REAL*8 :: factor !  for multipling source1, source2
 
-      REAL*8 :: vxe(15) , vye(15) , epse(15) , hte(15) , vxw(15) , &
+ REAL*8 :: vxe(15) , vye(15) , epse(15) , hte(15) , vxw(15) , &
                 vyw(15) , epsw(15) , htw(15) , vxs(15) , vys(15) , &
                 epss(15) , hts(15) , a8(15) , b8(15) , c10(15) , &
                 qeuv(15) , qir(15) , &
-                vx2(15,91) , vy2(15,91) , eps2(15,91) , &
+                !vx2(15,91) , vy2(15,91) , eps2(15,91) , &  moved below lrm20130731
                 vxl(15,91) , vyl(15,91) , epsl(15,91)
+
+ REAL*8 :: vx2(n_levels,n_lats) , vy2(n_levels,n_lats) , eps2(n_levels,n_lats) 
+
 
       REAL*8 :: Vx_1d_copy(15)
       REAL*8 :: Vy_1d_copy(15)
@@ -709,176 +724,189 @@ qion3d = 0
 
 ! -------------------------------------------
 
+ !print *,'GT_thermoshpere : timestep_in_seconds = ',  timestep_in_seconds  
+ realTimeStep = REAL( timestep_in_seconds )
 
+ ! 20110927 lrm - changed 86400. to secondsInDay
 
+ UT_minus_12UT_in_seconds = universal_time_seconds - 43200.
 
+ if ( UT_minus_12UT_in_seconds < 0.0 ) then
+      UT_minus_12UT_in_seconds = UT_minus_12UT_in_seconds + secondsInDay
+ endif
 
+ UT_minus_12UT_in_seconds = DMOD(UT_minus_12UT_in_seconds, secondsInDay)
 
-   !print *,'GT_thermoshpere : timestep_in_seconds = ',  timestep_in_seconds  
-   realTimeStep = REAL( timestep_in_seconds )
+ !print *,'moduleThermosphere : UT_minus_12UT_in_seconds = ',UT_minus_12UT_in_seconds
 
-   ! 20110927 lrm - changed 86400. to secondsInDay
+ mgtype = 2
+ aa = 180.0
+ yy = 2
+ bb = 4.0
+ deltha = bb*DTR
+ delphi = 36.0*DTR
+ sx1 = deltha*R0
+ sx3 = (sx1*sx1)/4.0
+ sx5 = sx3/R0SQ
+ nyy = yy
+ nxx = ixx
 
+ IF ( bb == 4. ) nyy = yy + 1
+ IF ( bb == 4. ) nxx = ixx - 1
 
-   UT_minus_12UT_in_seconds = universal_time_seconds - 43200.
+ !************************
+ !    longitude loop l   *
+ !************************
 
-   if ( UT_minus_12UT_in_seconds < 0.0 ) then
-        UT_minus_12UT_in_seconds = UT_minus_12UT_in_seconds + secondsInDay
-   endif
+ !DO 1740 l = 1 , 20
+ DO 1740 l = 1 , n_lons
 
-   UT_minus_12UT_in_seconds = DMOD(UT_minus_12UT_in_seconds, secondsInDay)
+    le = l + 1
+    lw = l - 1
 
+    !g
+    !g Ingo's version of the code had these next two lines in it ??????
+    !g
+    IF (lw  ==  0)  lw = 20
+    IF (le  ==  21) le = 1
 
-   !print *,'moduleThermosphere : UT_minus_12UT_in_seconds = ',UT_minus_12UT_in_seconds
+    !longitude_degrees = (FLOAT(l)-1.0)*18.0
+    longitude_degrees = therm_model_geo_long_deg(l)  ! lrm20130731
 
-   mgtype = 2
-   aa = 180.0
-   yy = 2
-   bb = 4.0
-   deltha = bb*DTR
-   delphi = 36.0*DTR
-   sx1 = deltha*R0
-   sx3 = (sx1*sx1)/4.0
-   sx5 = sx3/R0SQ
-   nyy = yy
-   nxx = ixx
+    longitude_radians = longitude_degrees*DTR
+    ssa = longitude_degrees + UT_minus_12UT_in_seconds/240.0
 
-   IF ( bb == 4. ) nyy = yy + 1
-   IF ( bb == 4. ) nxx = ixx - 1
-
-!************************
-!    longitude loop l   *
-!************************
-!
-   DO 1740 l = 1 , 20
-           le = l + 1
-           lw = l - 1
-!g
-!g Ingo's version of the code had these next two lines in it ??????
-!g
-           IF (lw  ==  0)  lw = 20
-           IF (le  ==  21) le = 1
-
-           longitude_degrees = (FLOAT(l)-1.0)*18.0
-           longitude_radians = longitude_degrees*DTR
-           ssa = longitude_degrees + UT_minus_12UT_in_seconds/240.0
-
-           IF ( ssa >= 360.0 ) ssa = ssa - 360.0
+    IF ( ssa >= 360.0 ) ssa = ssa - 360.0
  
-           rlt = 180.0 + ssa
-           IF ( rlt > 360.0 ) rlt = rlt - 360.0
-           rlt = rlt*DTR
+    rlt = 180.0 + ssa
+    IF ( rlt > 360.0 ) rlt = rlt - 360.0
+    rlt = rlt*DTR
 
-           DO 1620 n = 2 , 14
-               vx2(n,nyy-1) = Wind_southwards_ms1(n,nyy-1,l)
-               vy2(n,nyy-1) = Wind_eastwards_ms1(n,nyy-1,l)
-               eps2(n,nyy-1) = eps(n,nyy-1,l)
- 1620      CONTINUE
+    !DO  n = 2 , 14
+    !           vx2(n,nyy-1) = Wind_southwards_ms1(n,nyy-1,l)
+    !           vy2(n,nyy-1) = Wind_eastwards_ms1(n,nyy-1,l)
+    !           eps2(n,nyy-1) = eps(n,nyy-1,l)
+    !END DO
+    vx2(2:14,nyy-1) = Wind_southwards_ms1(2:14,nyy-1,l)  ! array assignment lrm20130731
+    vy2(2:14,nyy-1) = Wind_eastwards_ms1(2:14,nyy-1,l)
+    eps2(2:14,nyy-1) = eps(2:14,nyy-1,l)
 
-!***********************
-!    latitude loop m   *
-!***********************
-!
-           DO 1720 m = nyy , nxx
-              !print *,'line 424 : GT_thermosphere : m = ',m
 
-!- 
-! set height independent parameters
-!-  
-              mn = m + 1
-              ms = m - 1
-              colatitude_degrees = aa - (m-1.0)*bb/2.0
-              colatitude_radians = colatitude_degrees*DTR
+    !***********************
+    !    latitude loop m   *
+    !***********************
+    DO 1720 m = nyy , nxx
+       !print *,'line 424 : GT_thermosphere : m = ',m
 
-!- check what hemisphere
-              IF ( m <= m_equator - 1) THEN
-                   ihemi = 2
-              ELSE
-                   ihemi = 1
-              ENDIF
-!-
-              splus = SIN(colatitude_radians+deltha/4.0)
-              smin = SIN(colatitude_radians-deltha/4.0)
-              sth = SIN(colatitude_radians)
-              sth2 = sth*sth
-              cth = COS(colatitude_radians)
-              sx2 = delphi*R0*sth
-              sx4 = (sx2*sx2)/4.0
-              sx6 = sx4/R0SQ
-              sx7 = deltha*sth
-              sx8 = R0*sth
+       !- 
+       ! set height independent parameters
+       !-  
+       mn = m + 1
+       ms = m - 1
+       colatitude_degrees = aa - (m-1.0)*bb/2.0
+       colatitude_radians = colatitude_degrees*DTR
+
+       !- check what hemisphere
+       IF ( m <= m_equator - 1) THEN
+            ihemi = 2
+       ELSE
+            ihemi = 1
+       ENDIF
+
+       splus = SIN(colatitude_radians+deltha/4.0)
+       smin = SIN(colatitude_radians-deltha/4.0)
+       sth = SIN(colatitude_radians)
+       sth2 = sth*sth
+       cth = COS(colatitude_radians)
+       sx2 = delphi*R0*sth
+       sx4 = (sx2*sx2)/4.0
+       sx6 = sx4/R0SQ
+       sx7 = deltha*sth
+       sx8 = R0*sth
   
-              latitude_radians = PI2 - colatitude_radians
+       latitude_radians = PI2 - colatitude_radians
  
-              magnetic_latitude_radians = Magnetic_latitude_degrees(m,l)*dtr
-              magnetic_longitude_radians = Magnetic_longitude_degrees(m,l)*dtr
-              magnetic_colatitude_degrees = 90. - Magnetic_latitude_degrees(m,l)
-!
-!   calculation of the MLT requires the magnetic coords of the
-!   sub solar point.....
-!
-              latitude_subsolar_point_degrees = solar_declination_angle_radians/dtr
-              longitude_subsolar_point_degrees = 360. - UT_minus_12UT_in_seconds/240.
+       magnetic_latitude_radians = Magnetic_latitude_degrees(m,l)*dtr
+       magnetic_longitude_radians = Magnetic_longitude_degrees(m,l)*dtr
+       magnetic_colatitude_degrees = 90. - Magnetic_latitude_degrees(m,l)
 
-              call GEO2MG_apex(Magnetic_longitude_degrees, &
+       !
+       !   calculation of the MLT requires the magnetic coords of the
+       !   sub solar point.....
+       !
+       latitude_subsolar_point_degrees = solar_declination_angle_radians/dtr
+       longitude_subsolar_point_degrees = 360. - UT_minus_12UT_in_seconds/240.
+
+       call GEO2MG_apex(Magnetic_longitude_degrees, &
                                Magnetic_latitude_degrees, &
                                longitude_subsolar_point_degrees, &
                                latitude_subsolar_point_degrees, &
                                magnetic_longitude_subsolar_point_degrees, &
                                magnetic_latitude_subsolar_point_degrees)
-!g
-!g  essa is then the MLT in degrees....
-!g
-              magnetic_local_time_in_degrees = magnetic_longitude_degrees(m,l) - &
-                                               magnetic_longitude_subsolar_point_degrees
+       !g
+       !g  essa is then the MLT in degrees....
+       !g
+       magnetic_local_time_in_degrees = magnetic_longitude_degrees(m,l) - &
+                                        magnetic_longitude_subsolar_point_degrees
 
-              IF ( magnetic_local_time_in_degrees >= 360.0 ) &
+       IF ( magnetic_local_time_in_degrees >= 360.0 ) &
                    magnetic_local_time_in_degrees = magnetic_local_time_in_degrees - 360.0
-              IF ( magnetic_local_time_in_degrees < 0.0 ) &
+       IF ( magnetic_local_time_in_degrees < 0.0 ) &
                    magnetic_local_time_in_degrees = magnetic_local_time_in_degrees + 360.
  
-              rm2 = ixx - magnetic_colatitude_degrees/bb*2.
-              IF ( rm2 <= mj1 ) fp2 = -1.
-              IF ( rm2 <= mj1 ) rj1 = rm2
-              IF ( rm2 >= mj2 ) fp2 = 1.
-              IF ( rm2 >= mj2 ) rj1 = ixx - rm2
-!--
-!-- set rj1 to point back into the electric field table
-!-- ( for expanded elec. field runs)
-!--
-              rj1 = rj1/fden
+       rm2 = ixx - magnetic_colatitude_degrees/bb*2.
 
-              B_magnitude_Tesla = B_magnitude_nT(m,l)*1.E-09
-              Dip_angle_radians = Dip_angle_degrees(m,l)*DTR
-              Sine_Dip_angle = sin(Dip_angle_radians)
-              Cosine_Dip_angle = cos(Dip_angle_radians)
+       !IF ( rm2 <= mj1 ) fp2 = -1.
+       !IF ( rm2 <= mj1 ) rj1 = rm2
+       IF ( rm2 <= mj1 ) then  ! lrm20130731
+            fp2 = -1.
+            rj1 = rm2
+       END IF
 
-! angdif is the angle between mag and geo. frames
+       !IF ( rm2 >= mj2 ) fp2 = 1.
+       !IF ( rm2 >= mj2 ) rj1 = ixx - rm2
+       IF ( rm2 >= mj2 ) then  ! lrm20130731
+            fp2 = 1.
+            rj1 = ixx - rm2
+       END IF
+
+       !--------------------------------------------------------
+       !-- set rj1 to point back into the electric field table
+       !-- ( for expanded elec. field runs)
+       !--------------------------------------------------------
+       rj1 = rj1/fden
+
+       B_magnitude_Tesla = B_magnitude_nT(m,l)*1.E-09
+       Dip_angle_radians = Dip_angle_degrees(m,l)*DTR
+       Sine_Dip_angle = sin(Dip_angle_radians)
+       Cosine_Dip_angle = cos(Dip_angle_radians)
+
+       ! angdif is the angle between mag and geo. frames
  
-              angdif = (magnetic_local_time_in_degrees-ssa)*DTR
-              cosdif = COS(angdif)
-              sindif = SIN(angdif)
+       angdif = (magnetic_local_time_in_degrees-ssa)*DTR
+       cosdif = COS(angdif)
+       sindif = SIN(angdif)
 
-              brad   = -B_magnitude_Tesla*Sine_Dip_angle
-              btheta = -B_magnitude_Tesla*Cosine_Dip_angle*cosdif
-              bphi   = -B_magnitude_Tesla*Cosine_Dip_angle*sindif
-!c  **
-              sza = ACOS(-COS(latitude_radians)*COS(solar_declination_angle_radians)*COS(rlt) &
+        brad   = -B_magnitude_Tesla*Sine_Dip_angle
+        btheta = -B_magnitude_Tesla*Cosine_Dip_angle*cosdif
+        bphi   = -B_magnitude_Tesla*Cosine_Dip_angle*sindif
+
+        sza = ACOS(-COS(latitude_radians)*COS(solar_declination_angle_radians)*COS(rlt) &
                         +SIN(latitude_radians) &
                         *SIN(solar_declination_angle_radians))
-              csza = COS(sza)
+        csza = COS(sza)
 
-              elecx = 0.0
-              elecy = 0.0
+        elecx = 0.0
+        elecy = 0.0
 
-! new lower boundary insert:
-! Tides at level 1. Lower boundary winds and heights are
-! calculated here (once for each time step).
-! IMW August 1995
+        ! new lower boundary insert:
+        ! Tides at level 1. Lower boundary winds and heights are
+        ! calculated here (once for each time step). 
+        ! IMW August 1995
 
-             htold(m,l) = ht(1,m,l)
+        htold(m,l) = ht(1,m,l)
 
-             CALL TIDES(nn, m, l, hough11, hough22, hough23, &
+        CALL TIDES(nn, m, l, hough11, hough22, hough23, &
                         hough24, hough25, &
                         amplitude, &
                         ht, &
@@ -887,108 +915,107 @@ qion3d = 0
                         tidalPhase, &
                         temp0, vy0, temp0av, dh0)
 
-
-             CALL SPECIFIC_HEAT(psao(1,m,l), psmo(1,m,l), psmn(1,m,l), cp)
-
-
-              DO 1625 n = 1 , 15
-                 nu = n + 1
-                 nd = n - 1
-                 IF ( n <= 14 .AND. n > 1 ) THEN
-                      temp(n) = (-(Wind_southwards_ms1(n,m,l)**2 + &
-                                  Wind_eastwards_ms1(n,m,l)**2)/2.0 + eps( &
-                                  n,m,l))/cp(n)
-                 ELSE
-                      temp(15) = temp(14)
-                      eps(15,m,l) = cp(15)*temp(15) &
-                                      + (Wind_southwards_ms1(15,m,l)**2+ &
-                                         Wind_eastwards_ms1(15,m,l)**2) &
-                                      /2.0
-                 ENDIF
-
-                 !print *,'GT_thermosphere : Wind_southwards_ms1(n,m,l) = ',Wind_southwards_ms1(n,m,l)
-                 !print *,'GT_thermosphere : Wind_eastwards_ms1(n,m,l) = ', Wind_eastwards_ms1(n,m,l)
-                 !print *,'GT_thermosphere : eps(n,m,l), cp(n) = ', eps(n,m,l), cp(n)
+        CALL SPECIFIC_HEAT(psao(1,m,l), psmo(1,m,l), psmn(1,m,l), cp)
 
 
+        !DO 1625 n = 1 , 15
+        levelsloop1625 : DO n = 1 , n_levels
+
+           nu = n + 1
+           nd = n - 1
+
+           !IF ( n <= 14 .AND. n > 1 ) THEN
+           IF ( n <= (n_levels-1) .AND. n > 1 ) THEN
+                temp(n) = (-(Wind_southwards_ms1(n,m,l)**2 + &
+                             Wind_eastwards_ms1(n,m,l)**2)/2.0 + eps( n,m,l))/cp(n)
+           ELSE
+                temp(15) = temp(14)
+                eps(15,m,l) = cp(15)*temp(15) &
+                              + (Wind_southwards_ms1(15,m,l)**2+ &
+                              Wind_eastwards_ms1(15,m,l)**2)/2.0
+           ENDIF
+
+           !print *,'GT_thermosphere : Wind_southwards_ms1(n,m,l) = ',Wind_southwards_ms1(n,m,l)
+           !print *,'GT_thermosphere : Wind_eastwards_ms1(n,m,l) = ', Wind_eastwards_ms1(n,m,l)
+           !print *,'GT_thermosphere : eps(n,m,l), cp(n) = ', eps(n,m,l), cp(n)
 
 
-! ****************************************************************
-! ** modification of lower boundary temp inserted on 9 Feb 1995 **
-! ** this is the place in the code where lower boundary temps   **
-! ** need to be changed - if it is done during setup only the   **
-! ** information gets lost when reading in eps from previous    **
-! ** run. Since lat loop doesn't automatically go from 1 to 91  **
-! ** need to set the pole values extra, otherwise it uses those **
-! ** from previous runs. IMW, MARCH 1995                  **
-! **                                                **
-! ** commented all level 1 temperature settings out since they  **
-! ** are now oscillated in the TIDES routine                  **
-! ** IMW, OCTOBER 1995                                    **
-! ****************************************************************
-                 IF (n == 1) THEN
-                    eps(1,m,l) = temp(1) * cp(1) + &
-                        (Wind_southwards_ms1(1,m,l)**2 + &
-                         Wind_eastwards_ms1(1,m,l)**2)/2.0
+           ! ****************************************************************
+           ! ** modification of lower boundary temp inserted on 9 Feb 1995 **
+           ! ** this is the place in the code where lower boundary temps   **
+           ! ** need to be changed - if it is done during setup only the   **
+           ! ** information gets lost when reading in eps from previous    **
+           ! ** run. Since lat loop doesn't automatically go from 1 to 91  **
+           ! ** need to set the pole values extra, otherwise it uses those **
+           ! ** commented all level 1 temperature settings out since they  **
+           ! ** are now oscillated in the TIDES routine                  **
+           ! ** IMW, OCTOBER 1995                                    **
+           ! ****************************************************************
+           IF (n == 1) THEN
+               eps(1,m,l) = temp(1) * cp(1) + &
+                            (Wind_southwards_ms1(1,m,l)**2 + &
+                             Wind_eastwards_ms1(1,m,l)**2)/2.0
 
-                    ! the following pole settings are necessary
-                    IF (m == 3) THEN
-                        eps(1,1,l) = eps(1,m,l)
-                        eps(1,2,l) = eps(1,m,l)
-                    ENDIF
+               ! the following pole settings are necessary
+               IF (m == 3) THEN
+                   eps(1,1,l) = eps(1,m,l)
+                   eps(1,2,l) = eps(1,m,l)
+               ENDIF
 
-                    eps(1,90,l) = eps(1,89,l)
-                    eps(1,91,l) = eps(1,89,l)
-                 ENDIF
+               eps(1,90,l) = eps(1,89,l)
+               eps(1,91,l) = eps(1,89,l)
+           ENDIF
 
-! ** end of modification ***
+           ! ** end of modification ***
 
-                 !print *,'GT_thermosphere : n, pressure(n) = ',n, pressure(n)
-                 !print *,'GT_thermosphere : rmt(n,m,l) = ', rmt(n,m,l)
-                 !print *,'GT_thermosphere : GSCON, temp(n) = ',GSCON, temp(n)
+           !print *,'GT_thermosphere : n, pressure(n) = ',n, pressure(n)
+           !print *,'GT_thermosphere : rmt(n,m,l) = ', rmt(n,m,l)
+           !print *,'GT_thermosphere : GSCON, temp(n) = ',GSCON, temp(n)
 
-                 neutral_density_1d(n) = (pressure(n)*rmt(n,m,l))/(GSCON*temp(n))
+           neutral_density_1d(n) = (pressure(n)*rmt(n,m,l))/(GSCON*temp(n))
 
 
+           neutral_density_3d(n,m,l) = neutral_density_1d(n)
+           scht(n) = (GSCON*temp(n))/(rmt(n,m,l)*GRAV)
+           IF ( m /= yy ) vxmu = Wind_southwards_ms1(n,m,l) + vx2(n,ms)
 
-                 neutral_density_3d(n,m,l) = neutral_density_1d(n)
-                 scht(n) = (GSCON*temp(n))/(rmt(n,m,l)*GRAV)
-                 IF ( m /= yy ) vxmu = Wind_southwards_ms1(n,m,l) &
-                                           + vx2(n,ms)
-                 vxmd = Wind_southwards_ms1(n,m,l) &
-                            + Wind_southwards_ms1(n,mn,l)
+           vxmd = Wind_southwards_ms1(n,m,l) &
+                  + Wind_southwards_ms1(n,mn,l)
 
-                 IF ( m  ==  2 ) vxmu = Wind_southwards_ms1(n,m,l) &
-                                          + Wind_southwards_ms1(n,ms,l)
+           IF ( m  ==  2 ) vxmu = Wind_southwards_ms1(n,m,l) &
+                                  + Wind_southwards_ms1(n,ms,l)
 
-                 IF ( l  ==  1 ) THEN
-                        dvydy = (Wind_eastwards_ms1(n,m,2) &
-                                -Wind_eastwards_ms1(n,m,20))/delphi
-                 ELSEIF ( l  ==  20 ) THEN
+           IF ( l  ==  1 ) THEN
+                dvydy = (Wind_eastwards_ms1(n,m,2) &
+                         -Wind_eastwards_ms1(n,m,20))/delphi
+           ELSEIF ( l  ==  20 ) THEN
                         dvydy = (vyl(n,m)-vy2(n,m))/delphi
-                 ELSE
+           ELSE
                         dvydy = (Wind_eastwards_ms1(n,m,le) &
                                 -vy2(n,m))/delphi
-                 ENDIF
-!
-!                div is horizontal divergence of velocity
-!
-                 IF ( m  ==  1 ) THEN
-                      div(n) = ((-2.0*vxmd*smin)/deltha+dvydy)/R0
-                 ELSE
-                      div(n) = ((vxmu*splus-vxmd*smin)/deltha+dvydy) &
-                                 /(R0*sth)
-                 ENDIF
+           ENDIF
 
- 1625       CONTINUE
-!
-!  calculation of w(=dp/dt) (called om here) by expansion using Taylor
-!  series, see Tim's thesis, p.108
-!  w is the vertical velocity relative to the pressure level. Later,
-!  the total vertical velocity wvz is calculated using w (ie.om)
-!  and the velocity of the pressure level itself.
-!
-             DO 1630 n = 1 , 13
+
+           ! div is horizontal divergence of velocity
+
+           IF ( m  ==  1 ) THEN
+                div(n) = ((-2.0*vxmd*smin)/deltha+dvydy)/R0
+           ELSE
+                div(n) = ((vxmu*splus-vxmd*smin)/deltha+dvydy) &
+                                 /(R0*sth)
+           ENDIF
+
+     END DO levelsloop1625
+
+     !-------------------------------------------------------------------------
+     !  calculation of w(=dp/dt) (called om here) by expansion using Taylor
+     !  series, see Tim's thesis, p.108
+     !  w is the vertical velocity relative to the pressure level. Later,
+     !  the total vertical velocity wvz is calculated using w (ie.om)
+     !  and the velocity of the pressure level itself.
+     !-------------------------------------------------------------------------
+      !DO 1630 n = 1 , 13
+      levelsloop1630 : DO n = 1, 13
                      nb = 15 - n
                      ib = nb + 1
                      jb = nb - 1
@@ -1019,12 +1046,16 @@ qion3d = 0
                         om1(1,m,l) = om(1)
                      ENDIF
 
- 1630        CONTINUE
+! 1630        CONTINUE
+    END DO levelsloop1630
 
              c8 = 0.0
-             DO n = 1 , 15
-                edep(n) = 0.0
-             END DO
+
+             !DO n = 1 , 15
+             !   edep(n) = 0.0
+             !END DO
+             edep = 0.0  ! do whole array assignment to 0 lrm20130731
+            
 
 !
 !c  use shaun switch for foster electric field in gtms simulations
@@ -1097,11 +1128,12 @@ qion3d = 0
 !
 ! call tiros if required
 !
-              DO n = 1 , 15
-                 qiont(n) = 0.0
-              END DO
+              !DO n = 1 , 15
+              !   qiont(n) = 0.0
+              !END DO
+              qiont = 0.0 ! whole array assignment to 0 lrm20130731
 
-                  level = newl
+              level = newl
 
             IF ( ABS(magnetic_latitude_degrees(m,l)) > 50. ) THEN
 
@@ -1110,20 +1142,26 @@ qion3d = 0
                            emaps, cmaps, profile, dmsp)
             ENDIF
 
-            DO n = 1 , 15
-                       qiont(n) = qiont(n) + bq(n)
-                       qion3d(n,m,l) = qiont(n)
-            END DO
+            !DO n = 1 , 15
+            !   qiont(n) = qiont(n) + bq(n)
+            !   qion3d(n,m,l) = qiont(n)
+            !END DO
+            qiont = qiont + bq  ! whole array assignment lrm20130731
+            qion3d(:,m,l) = qiont(:)
 
-                  ex2d(m,l) = elecx
-                  ey2d(m,l) = elecy
-                  ez2d(m,l) = elecz
+
+
+            ex2d(m,l) = elecx
+            ey2d(m,l) = elecy
+            ez2d(m,l) = elecz
 !g
 
-                 do n = 1 , 15
-                   ti1(n,m,l) = Ti_Oplus_K(n,m,l)
-                   !telec(n,m,l) = Te_K(n,m,l)  NOT USED FOR ANYTHING
-                 enddo 
+            !do n = 1 , 15
+            !   ti1(n,m,l) = Ti_Oplus_K(n,m,l)
+            !   !telec(n,m,l) = Te_K(n,m,l)  NOT USED FOR ANYTHING
+            !enddo 
+            ti1(:,m,l) = Ti_Oplus_K(:,m,l)  ! array assignment lrm20130731
+
 !g
 !g  New insert to allow for electric field variation - taken from CMAT model
 !g  originally from Mihail Codrescu....
@@ -1934,8 +1972,7 @@ qion3d = 0
              print *,'GT_thermo : writing out netcdf for ',universal_time_seconds
              !call write_gt_netcdf_history(GT_output_dataset)
              ! Pass in the lats, lons
-             call write_gt_netcdf_history(GT_output_dataset, magnetic_latitude_degrees(:,1), &
-                                          magnetic_longitude_degrees(1,:))
+             call write_gt_netcdf_history(GT_output_dataset)
 
          endif
 
@@ -2712,14 +2749,15 @@ end subroutine write_gt_netcdf_graphics
 ! Updated w/ fortran 90 netcdf calls - lrm20130529
 !----------------------------------------------------------
 
-subroutine write_gt_netcdf_history(filename, latitudes, longitudes)
+subroutine write_gt_netcdf_history(filename)
 
 use netcdf
 IMPLICIT NONE
 
-character(len=*), intent(in) :: filename
-REAL*8, intent(in) :: latitudes(n_lats)
-REAL*8, intent(in) :: longitudes(n_lons)
+ character(len=*), intent(in) :: filename
+
+!REAL*8, intent(in) :: latitudes(n_lats)
+! REAL*8, intent(in) :: longitudes(n_lons)
 !real :: lats(NLATS), lons(NLONS) from netcdf example
 
 ! Local variables ----------------------------------
@@ -2834,8 +2872,8 @@ integer :: I
  ! Write the coordinate variable data. This will put the latitudes
  ! and longitudes of our data grid into the netCDF file.
  call check( nf90_put_var(ncid, levels_varid, levels) )
- call check( nf90_put_var(ncid, lat_varid, latitudes) )
- call check( nf90_put_var(ncid, lon_varid, longitudes) )
+ call check( nf90_put_var(ncid, lat_varid, therm_model_geo_lat_deg) )
+ call check( nf90_put_var(ncid, lon_varid, therm_model_geo_long_deg) )
 
  call check( nf90_put_var(ncid, idv_vsouth, wind_southwards_ms1) )
 
@@ -4942,7 +4980,8 @@ vyd = 0.
 
       ht(1,m,l) = 80.E+3 + (pht+phtd) + ht0(m)
 
-      IF (m  ==  1 .OR. m  ==  91) GOTO 100
+      !IF (m  ==  1 .OR. m  ==  91) GOTO 100
+      IF (m  ==  1 .OR. m  ==  n_lats) GOTO 100
 
       der11 = (hough11(m+1)-hough11(m-1))/dlat
       der22 = (hough22(m+1)-hough22(m-1))/dlat
@@ -5636,8 +5675,38 @@ SUBROUTINE Smooth_VnY_in_Y(J, VX, VY, DELtha, DELphi, S, NMIn, NMAx, MMIn, MMAx)
 RETURN
 END SUBROUTINE Smooth_VnY_in_Y
 
+!------------------------------------------------------
 
 
+SUBROUTINE setThermoLatLons()
+
+IMPLICIT NONE
+
+ integer :: I
+ real, parameter :: grid_res_lon = 18.
+ real, parameter :: grid_res_lat = 2.
+!=====================================================
+
+
+therm_model_geo_long_deg = (/( (I-1)*grid_res_lon, I = 1, gt_lon_dim)  /)
+
+therm_model_geo_lat_deg =  (/( (I-46)*grid_res_lat, I = 1, gt_lat_dim)  /)
+
+
+      !-----------------------------------------------------------
+      ! Set up lat, longs, used for interpolation to the IPE grid
+      !-----------------------------------------------------------
+      !do ii = 1 , GT_lon_dim
+      !   therm_model_geo_long_deg(ii) = (ii - 1) * 18.
+      !enddo
+
+      !do ii = 1 , GT_lat_dim
+      !   therm_model_geo_lat_deg(ii) = (ii - 46) * 2.
+      !enddo
+
+
+RETURN
+END SUBROUTINE setThermoLatLons
 
 
 END MODULE moduleTHERMOSPHERE

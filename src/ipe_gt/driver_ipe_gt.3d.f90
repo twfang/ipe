@@ -30,7 +30,9 @@ USE moduleDriverDebug, ONLY : checkGridIPE , check2GridIPE,  checkThermo, & ! fo
 
 USE moduleTHERMOSPHERE, ONLY : GT_thermosphere_init, low_lat_efield, &
                                Foster, GT_thermosphere, &
-                               calculate_magnetic_parameters_using_apex
+                               calculate_magnetic_parameters_using_apex, &
+                               setThermoLatLons, &
+                               therm_model_geo_lat_deg, therm_model_geo_long_deg
 
 ! NPTS : Total number of gridpoints along flux tubes
 ! NMP : number of longitude sectors
@@ -168,8 +170,13 @@ REAL*8 :: Start_time_UT_hours   !,Stop_time_UT_hours
 INTEGER :: foster_level
 REAL*8 :: foster_power
 REAL*8 :: emaps(21,GT_lon_dim,7) , cmaps(21,GT_lon_dim,7)
-REAL*8 :: magnetic_latitude_degrees(91,20)
-REAL*8 :: magnetic_longitude_degrees(91,20)
+
+
+!REAL*8 :: magnetic_latitude_degrees(91,20)
+!REAL*8 :: magnetic_longitude_degrees(91,20)
+REAL*8 :: magnetic_latitude_degrees(GT_lat_dim, GT_lon_dim)
+REAL*8 :: magnetic_longitude_degrees(GT_lat_dim, GT_lon_dim)
+
 
 REAL*8 :: B_magnitude_apex_nT(GT_lat_dim,GT_lon_dim)
 REAL*8 :: B_dip_angle_apex_degrees(GT_lat_dim,GT_lon_dim)      
@@ -263,8 +270,7 @@ INTEGER :: number_of_GT_time_steps_in_24_hours
 ! For interpolating from Thermosphere to IPE grid
 !--------------------------------------------------
 CHARACTER*10, parameter :: thermospheric_model_name = 'CMAT2'
-real*8 :: therm_model_geo_long_deg(GT_lon_dim)
-real*8 :: therm_model_geo_lat_deg(GT_lat_dim)
+
 real*8 :: Altitude_m_FOR_IPE(GT_ht_dim, GT_lon_dim, GT_lat_dim)
 
 
@@ -866,15 +872,7 @@ enddo ! ii
       !-----------------------------------------------------------
       ! Set up lat, longs, used for interpolation to the IPE grid
       !-----------------------------------------------------------
-      ! COULD MAKE THIS A DATA STATEMENT ?????*********
-      do ii = 1 , GT_lon_dim
-         therm_model_geo_long_deg(ii) = (ii - 1) * 18.
-      enddo
-
-      do ii = 1 , GT_lat_dim
-         therm_model_geo_lat_deg(ii) = (ii - 46) * 2.
-      enddo
-
+      CALL setThermoLatLons()
 
       !-------------------------------------------------
       ! Debug the results from the GT_thermosphere_INIT
@@ -1525,9 +1523,47 @@ Oplus_density_from_IPE = Oplus_density_from_IPE*(.25)
    !-------------------------------------------------------------------------
    ! For interpolation to IPE grid, switch (ht, lat, lon) to (ht, lon, lat)
    !-------------------------------------------------------------------------
-   do ii = 1 , GT_ht_dim
+   !do ii = 1 , GT_ht_dim
+   !   do jj = 1 , GT_lon_dim
+   !      do kk = 1 , GT_lat_dim
+
+   !            Altitude_m_FOR_IPE(ii,jj,kk) = ht_FROM_GT(ii,kk,jj)
+   !            Vn_Southwards_ms1_FOR_IPE(ii,jj,kk) = wind_southwards_ms1_FROM_GT(ii,kk,jj)
+   !            Vn_Eastwards_ms1_FOR_IPE(ii,jj,kk) = wind_eastwards_ms1_FROM_GT(ii,kk,jj)
+   !           Vn_Upwards_ms1_FOR_IPE(ii,jj,kk) = wvz_FROM_GT(ii,kk,jj)
+   !            Tn_K_FOR_IPE(ii,jj,kk) = temperature_K_FROM_GT(ii,kk,jj)
+
+               !--------------------------------------------------
+               ! For debugging negative temperatures lrm20130520
+               !--------------------------------------------------
+    !           if ( Tn_K_FOR_IPE(ii,jj,kk) < 0. ) then
+    !              write (6,*) 'driver : Tn_K_FOR_IPE(ii,jj,kk) < 0. ************************'
+    !              write (6,*) 'driver : universal_time_seconds, ii, jj, kk, Tn_K_FOR_IPE(ii,jj,kk) = ',&
+    !                           universal_time_seconds, ii, jj, kk, Tn_K_FOR_IPE(ii,jj,kk)
+    !                           
+    !              STOP
+    !           endif
+               !--------------------------------------------------
+
+    !           O_density_m3_FOR_IPE(ii,jj,kk) = O_density_FROM_GT(ii,kk,jj)
+    !           O2_density_m3_FOR_IPE(ii,jj,kk) = O2_density_FROM_GT(ii,kk,jj)
+    !           N2_density_m3_FOR_IPE(ii,jj,kk) = N2_density_FROM_GT(ii,kk,jj)
+    !           elx_FOR_IPE(ii,jj,kk) = 0.  ! = elx(m,l) ****** elx IS NOT DEFINED IN TUCAN_TIME ***********
+    !           ely_FOR_IPE(ii,jj,kk) = 0.  ! = ely(m,l) ****** ely IS NOT DEFINED IN TUCAN_TIME ***********
+    !           qion3d_FOR_IPE(ii,jj,kk) = qion3d(ii,kk,jj)
+
+    !      enddo
+    !   enddo
+    !enddo
+
+
+   !-------------------------------------------------------------------------
+   ! For interpolation to IPE grid, switch (ht, lat, lon) to (ht, lon, lat)
+   !-------------------------------------------------------------------------
+   do kk = 1 , GT_lat_dim
       do jj = 1 , GT_lon_dim
-         do kk = 1 , GT_lat_dim
+         do ii = 1 , GT_ht_dim
+
 
                Altitude_m_FOR_IPE(ii,jj,kk) = ht_FROM_GT(ii,kk,jj)
                Vn_Southwards_ms1_FOR_IPE(ii,jj,kk) = wind_southwards_ms1_FROM_GT(ii,kk,jj)
@@ -1554,9 +1590,9 @@ Oplus_density_from_IPE = Oplus_density_from_IPE*(.25)
                ely_FOR_IPE(ii,jj,kk) = 0.  ! = ely(m,l) ****** ely IS NOT DEFINED IN TUCAN_TIME ***********
                qion3d_FOR_IPE(ii,jj,kk) = qion3d(ii,kk,jj)
 
-          enddo
-       enddo
-    enddo
+          enddo ! ii
+       enddo ! jj
+    enddo ! kk
 
 
       !***************************************************
