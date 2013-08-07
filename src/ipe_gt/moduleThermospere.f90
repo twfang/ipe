@@ -187,7 +187,9 @@ SUBROUTINE GT_thermosphere( &
       REAL(kind=8), INTENT(OUT) :: O_density_copy(15,91,20)
       REAL(kind=8), INTENT(OUT) :: O2_density_copy(15,91,20)
       REAL(kind=8), INTENT(OUT) :: N2_density_copy(15,91,20)
-      REAL*8, INTENT(OUT) :: qion3d(15,91,20)
+
+      !REAL*8, INTENT(OUT) :: qion3d(15,91,20) lrm20130731
+      REAL*8, INTENT(OUT) :: qion3d(n_levels,n_lats,n_lons)
 
       ! Local Variables -------------------------------------------------------
       !----------------
@@ -281,7 +283,7 @@ SUBROUTINE GT_thermosphere( &
       REAL*8 :: latitude_subsolar_point_degrees
       REAL*8 :: magnetic_longitude_subsolar_point_degrees
       REAL*8 :: magnetic_latitude_subsolar_point_degrees
-      REAL*8 :: t14 , t15 , &
+      REAL*8 :: t14 , & ! t15 , &
                 tepse , tepsn , tepso , tepss , tepsw , &
                 colatitude_radians
 
@@ -328,24 +330,29 @@ SUBROUTINE GT_thermosphere( &
  REAL*8 :: a5Array(n_levels,n_lats,n_lons), b5Array(n_levels,n_lats,n_lons)
 
  REAL*8 :: cp(15) , &
-                temp(15) , neutral_density_1d(15) , &
-                neutral_density_3d(15,91,20), &
-                scht(15) , om(15) , &
-                c7(15) , stfac(15) , fo2(15) , qiont(15) , &
-                effqia(15) , div(15) , c7_3d(15,91,20), &
-                c77_3d(15,91,20)
+           temp(15), &
+           ! neutral_density_3d(15,91,20), & lrm20130731
+           scht(15) , om(15) , &
+           c7(15) , stfac(15) , fo2(15) , qiont(15) , &
+           div(15) , c7_3d(15,91,20), &
+           c77_3d(15,91,20)
+
+! REAL*8 :: effqia(15), neutral_density_1d(15)   lrm20130731
+ REAL*8 :: effqia(n_levels), neutral_density_1d(n_levels)
+ REAL*8 :: neutral_density_3d(n_levels, n_lats, n_lons)
+
 
  REAL*8 :: factor !  for multipling source1, source2
 
  REAL*8 :: vxe(15) , vye(15) , epse(15) , hte(15) , vxw(15) , &
                 vyw(15) , epsw(15) , htw(15) , vxs(15) , vys(15) , &
                 epss(15) , hts(15) , a8(15) , b8(15) , c10(15) , &
-                qeuv(15) , qir(15) , &
+                qeuv(15) , qir(15) 
                 !vx2(15,91) , vy2(15,91) , eps2(15,91) , &  moved below lrm20130731
-                vxl(15,91) , vyl(15,91) , epsl(15,91)
+                !vxl(15,91) , vyl(15,91) , epsl(15,91) moved below lrm20130731
 
  REAL*8 :: vx2(n_levels,n_lats) , vy2(n_levels,n_lats) , eps2(n_levels,n_lats) 
-
+ REAL*8 :: vxl(n_levels,n_lats) , vyl(n_levels,n_lats) , epsl(n_levels,n_lats)
 
       REAL*8 :: Vx_1d_copy(15)
       REAL*8 :: Vy_1d_copy(15)
@@ -358,9 +365,12 @@ SUBROUTINE GT_thermosphere( &
 
 
       REAL*8 :: jth(15) , jphi(15) , dvx(15) , dvy(15) , ddvx(15) , &
-                ddvy(15) , dumut(15) , sum1(15) , sum2(15) , sum3(15) , &
+                ddvy(15) , dumut(15) , &
                 c77(15) , &
                 jrad(15)
+
+ !REAL*8 :: sum1(15) , sum2(15) , sum3(15)
+ REAL*8 :: sum1(n_levels) , sum2(n_levels) , sum3(n_levels)
 
 
       REAL*8 :: p1(15) , p2(15) , p33(15) , &
@@ -568,7 +578,7 @@ latitude_subsolar_point_degrees = 0
 magnetic_longitude_subsolar_point_degrees = 0
 magnetic_latitude_subsolar_point_degrees = 0      
 t14  = 0   
-t15  = 0               
+!t15  = 0               
 tepse  = 0   
 tepsn  = 0   
 tepso  = 0   
@@ -759,7 +769,8 @@ qion3d = 0
  !************************
 
  !DO 1740 l = 1 , 20
- DO 1740 l = 1 , n_lons
+ !DO 1740 l = 1 , n_lons
+ lonloop1740 : DO l = 1 , n_lons
 
     le = l + 1
     lw = l - 1
@@ -795,7 +806,8 @@ qion3d = 0
     !***********************
     !    latitude loop m   *
     !***********************
-    DO 1720 m = nyy , nxx
+    !DO 1720 m = nyy , nxx
+    latloop1720 : DO m = nyy , nxx
        !print *,'line 424 : GT_thermosphere : m = ',m
 
        !- 
@@ -1015,708 +1027,796 @@ qion3d = 0
      !  and the velocity of the pressure level itself.
      !-------------------------------------------------------------------------
       !DO 1630 n = 1 , 13
-      levelsloop1630 : DO n = 1, 13
-                     nb = 15 - n
-                     ib = nb + 1
-                     jb = nb - 1
-                     om(15) = 0.0
-                     pdn = pressure(nb)*div(nb)
-                     pdnu = pressure(ib)*div(ib)
-                     pdnd = pressure(jb)*div(jb)
-                     ddddom = 0.0
-                     dddom = 0.0
+      !levelsloop1630 : DO n = 1, 13
+      levelsloop1630 : DO nb = 14, 2, -1  ! lrm20130731
 
-                     IF ( nb /= 2 .AND. nb /= 14 ) THEN
-                        kb = nb + 2
-                        lb = nb - 2
-                        pdnuu = pressure(kb)*div(kb)
-                        pdndd = pressure(lb)*div(lb)
-                        ddddom = (pdnuu-2.0*pdnu+2.0*pdnd-pdndd)/2.0
-                        dddom = (pdnu+pdnd-2.0*pdn)
-                     ENDIF
+         !nb = 15 - n  ! lrm20130731
 
-                     dom = pdn
-                     ddom = (pdnu-pdnd)/2.0
-                     om(nb) = om(ib) - dom - ddom/2.0 - dddom/6.0 - &
-                              ddddom/24.0
-                     om1(nb,m,l) = om(nb)
+         ib = nb + 1
+         jb = nb - 1
+         om(15) = 0.0
+         pdn = pressure(nb)*div(nb)
+         pdnu = pressure(ib)*div(ib)
+         pdnd = pressure(jb)*div(jb)
+         ddddom = 0.0
+         dddom = 0.0
 
-                     IF ( nb == 2 ) THEN
-                        om(1) = om(2) - pressure(1)*div(1)
-                        om1(1,m,l) = om(1)
-                     ENDIF
+         IF ( nb /= 2 .AND. nb /= 14 ) THEN
+              kb = nb + 2
+              lb = nb - 2
+              pdnuu = pressure(kb)*div(kb)
+              pdndd = pressure(lb)*div(lb)
+              ddddom = (pdnuu-2.0*pdnu+2.0*pdnd-pdndd)/2.0
+              dddom = (pdnu+pdnd-2.0*pdn)
+         ENDIF
 
-! 1630        CONTINUE
+         dom = pdn
+         ddom = (pdnu-pdnd)/2.0
+         om(nb) = om(ib) - dom - ddom/2.0 - dddom/6.0 - &
+                  ddddom/24.0
+         om1(nb,m,l) = om(nb)
+
+         IF ( nb == 2 ) THEN
+              om(1) = om(2) - pressure(1)*div(1)
+              om1(1,m,l) = om(1)
+         ENDIF
+
     END DO levelsloop1630
 
-             c8 = 0.0
+    c8 = 0.0
 
-             !DO n = 1 , 15
-             !   edep(n) = 0.0
-             !END DO
-             edep = 0.0  ! do whole array assignment to 0 lrm20130731
+    !DO n = 1 , 15
+    !   edep(n) = 0.0
+    !END DO
+    edep = 0.0  ! do whole array assignment to 0 lrm20130731
             
 
-!
-!c  use shaun switch for foster electric field in gtms simulations
-!c
-!c           IF ( rm2 <= mj1 .OR. rm2 >= mj2 ) THEN
+    !
+    !c  use shaun switch for foster electric field in gtms simulations
+    !c
+    !c           IF ( rm2 <= mj1 .OR. rm2 >= mj2 ) THEN
 
-!   expanded electric field
+    !   expanded electric field
 
-                 j1 = INT(rj1)
+    j1 = INT(rj1)
 
-                 IF ( j1 < 1 ) j1 = 1
-                 IF ( j1 > mjk ) j1 = mjk
-                 j2 = j1 + 1
-                 IF ( j1  >=  mjk ) j2 = mjk
-                 fak = magnetic_local_time_in_degrees/18.0
-                 i1 = INT(fak) + 1
-                 IF ( i1 > 20 ) i1 = 20
-                 i2 = i1 + 1
-                 IF ( i2 == 21 ) i2 = i2 - 20
-                 fak = fak - INT(fak)
-                 fakj = rj1 - j1
-!
-!  use a2 ; b2 electric field models
-!
-                 elecx = exns(ihemi,j1,i1)*(1.-fak)*(1.-fakj) &
-                             + exns(ihemi,j1,i2)*(1.-fakj) &
-                             *fak + exns(ihemi,j2,i2)*fak*fakj + &
-                             exns(ihemi,j2,i1)*fakj*(1.-fak)
+    IF ( j1 < 1 ) j1 = 1
+    IF ( j1 > mjk ) j1 = mjk
+    j2 = j1 + 1
+    IF ( j1  >=  mjk ) j2 = mjk
+    fak = magnetic_local_time_in_degrees/18.0
+    i1 = INT(fak) + 1
+    IF ( i1 > 20 ) i1 = 20
+    i2 = i1 + 1
+    IF ( i2 == 21 ) i2 = i2 - 20
+    fak = fak - INT(fak)
+    fakj = rj1 - j1
 
-                 elecy = eyns(ihemi,j1,i1)*(1.-fak)*(1.-fakj) &
-                             + eyns(ihemi,j1,i2)*(1.-fakj) &
-                             *fak + eyns(ihemi,j2,i2)*fak*fakj + &
-                             eyns(ihemi,j2,i1)*fakj*(1.-fak)
 
-                 elecz = ezns(ihemi,j1,i1)*(1.-fak)*(1.-fakj) &
-                             + ezns(ihemi,j1,i2)*(1.-fakj) &
-                             *fak + ezns(ihemi,j2,i2)*fak*fakj + &
-                             ezns(ihemi,j2,i1)*fakj*(1.-fak)
-!c  **
-!c  the potential patterns are perp. to magnetic field.
-!c  the horizontal component elecx should *sin(dip)
-!c  original separations will also have factor sin(dip)
-!c  therefore they cancel.
-!g
-                 exd = (elecx*cosdif-elecy*sindif)*fp2
-                 eyd = (elecx*sindif+elecy*cosdif)
-                 ezd = elecz
-!c  **
-!c  scale up foster/holt electric fields
-!c  this should be done in foster for potl also.
-!c               elecx=exd*1.3
-!c               elecy=eyd*1.3
-!
-!  expanded electric field
-!
-                 elecx = exd*examp
-                 elecy = eyd*examp
-                 elecz = ezd*examp
+    !-----------------------------------------
+    !  use a2 ; b2 electric field models
+    !-----------------------------------------
+    elecx = exns(ihemi,j1,i1)*(1.-fak)*(1.-fakj) &
+            + exns(ihemi,j1,i2)*(1.-fakj) &
+            *fak + exns(ihemi,j2,i2)*fak*fakj + &
+            exns(ihemi,j2,i1)*fakj*(1.-fak)
 
-!            ENDIF 
-!
-!  end of expanded electric field inserts
-!
-              elx(m,l) = elecx
-              ely(m,l) = elecy
-              elz(m,l) = elecz
-!g
-              elecx = elx(m,l)
-              elecy = ely(m,l)
-!
-! call tiros if required
-!
-              !DO n = 1 , 15
-              !   qiont(n) = 0.0
-              !END DO
-              qiont = 0.0 ! whole array assignment to 0 lrm20130731
+    elecy = eyns(ihemi,j1,i1)*(1.-fak)*(1.-fakj) &
+            + eyns(ihemi,j1,i2)*(1.-fakj) &
+            *fak + eyns(ihemi,j2,i2)*fak*fakj + &
+            eyns(ihemi,j2,i1)*fakj*(1.-fak)
 
-              level = newl
+    elecz = ezns(ihemi,j1,i1)*(1.-fak)*(1.-fakj) &
+            + ezns(ihemi,j1,i2)*(1.-fakj) &
+            *fak + ezns(ihemi,j2,i2)*fak*fakj + &
+            ezns(ihemi,j2,i1)*fakj*(1.-fak)
 
-            IF ( ABS(magnetic_latitude_degrees(m,l)) > 50. ) THEN
+    !c  ** ------------------------------------------------------
+    !c  the potential patterns are perp. to magnetic field.
+    !c  the horizontal component elecx should *sin(dip)
+    !c  original separations will also have factor sin(dip)
+    !c  therefore they cancel.
+    !g ----------------------------------------------------------
+    exd = (elecx*cosdif-elecy*sindif)*fp2
+    eyd = (elecx*sindif+elecy*cosdif)
+    ezd = elecz
 
-                CALL TIROS(magnetic_latitude_degrees(m,l), magnetic_local_time_in_degrees, &
+    !c  **
+    !c  scale up foster/holt electric fields
+    !c  this should be done in foster for potl also.
+    !c               elecx=exd*1.3
+    !c               elecy=eyd*1.3
+    !
+    !  expanded electric field
+    !
+    elecx = exd*examp
+    elecy = eyd*examp
+    elecz = ezd*examp
+
+    !            ENDIF 
+    !
+    !  end of expanded electric field inserts
+    !
+    elx(m,l) = elecx
+    ely(m,l) = elecy
+    elz(m,l) = elecz
+
+    elecx = elx(m,l)
+    elecy = ely(m,l)
+
+    !-----------------------------
+    ! call tiros if required
+    !-----------------------------
+    !DO n = 1 , 15
+    !   qiont(n) = 0.0
+    !END DO
+     qiont = 0.0 ! whole array assignment to 0 lrm20130731
+
+     level = newl
+
+     IF ( ABS(magnetic_latitude_degrees(m,l)) > 50. ) THEN
+
+          CALL TIROS(magnetic_latitude_degrees(m,l), magnetic_local_time_in_degrees, &
                            level, qiont, neutral_density_1d, gw, &
                            emaps, cmaps, profile, dmsp)
-            ENDIF
+     ENDIF
 
-            !DO n = 1 , 15
-            !   qiont(n) = qiont(n) + bq(n)
-            !   qion3d(n,m,l) = qiont(n)
-            !END DO
-            qiont = qiont + bq  ! whole array assignment lrm20130731
-            qion3d(:,m,l) = qiont(:)
+     !DO n = 1 , 15
+     !   qiont(n) = qiont(n) + bq(n)
+     !   qion3d(n,m,l) = qiont(n)
+     !END DO
+     qiont = qiont + bq  ! whole array assignment lrm20130731
+     qion3d(:,m,l) = qiont(:)
 
-
-
-            ex2d(m,l) = elecx
-            ey2d(m,l) = elecy
-            ez2d(m,l) = elecz
+     ex2d(m,l) = elecx
+     ey2d(m,l) = elecy
+     ez2d(m,l) = elecz
 !g
 
-            !do n = 1 , 15
-            !   ti1(n,m,l) = Ti_Oplus_K(n,m,l)
-            !   !telec(n,m,l) = Te_K(n,m,l)  NOT USED FOR ANYTHING
-            !enddo 
-            ti1(:,m,l) = Ti_Oplus_K(:,m,l)  ! array assignment lrm20130731
+     !do n = 1 , 15
+     !   ti1(n,m,l) = Ti_Oplus_K(n,m,l)
+     !   !telec(n,m,l) = Te_K(n,m,l)  NOT USED FOR ANYTHING
+     !enddo 
+     ti1(:,m,l) = Ti_Oplus_K(:,m,l)  ! array assignment lrm20130731
 
-!g
-!g  New insert to allow for electric field variation - taken from CMAT model
-!g  originally from Mihail Codrescu....
-!g
-! calculate small scale electric field variation, add on for Joule heating
-! later, but not on E-field as mean acceleration shouldn't be affected
-                  elxr = 0.0
-                  elyr = 0.0
+     !g
+     !g  New insert to allow for electric field variation - taken from CMAT model
+     !g  originally from Mihail Codrescu....
+     !g
+     ! calculate small scale electric field variation, add on for Joule heating
+     ! later, but not on E-field as mean acceleration shouldn't be affected
+     elxr = 0.0
+     elyr = 0.0
 
+     !------------------------------------
+     ! if using random number generator
+     !------------------------------------
+     if ((efield_var == 2) .and. (nnloop < 5 .or. mod(nnloop, efieldfreq) == 0)) then
 
-! if using random number generator
-                  if ((efield_var == 2) .and. (nnloop < 5 .or. &
-                       mod(nnloop, efieldfreq) == 0)) then
+ 4416   continue
 
- 4416              continue
-
-!-------------------------------------------------------------------------
-! in future the standard deviation (here 1.e-2)  will be a function of
-! location, TIROS level, and possibly even F10.7.
-!                   if(abs(elecx) > 0.001) elxr=g05ddf(0., 1.e-2)
-!                   if(abs(elecy) > 0.001) elyr=g05ddf(0., 1.e-2)
-!-------------------------------------------------------------------------
-                    write(6,2177) nnloop, m, l, elecx, elxr, elecy, elyr
+        !-------------------------------------------------------------------------
+        ! in future the standard deviation (here 1.e-2)  will be a function of
+        ! location, TIROS level, and possibly even F10.7.
+        !                   if(abs(elecx) > 0.001) elxr=g05ddf(0., 1.e-2)
+        !                   if(abs(elecy) > 0.001) elyr=g05ddf(0., 1.e-2)
+        !-------------------------------------------------------------------------
+        write(6,2177) nnloop, m, l, elecx, elxr, elecy, elyr
  2177   format('random field ', 3i4, 4e12.4)
 
-! restrict to 2 sigma
-                    if (abs(elxr) > 2.0e-2) then
-                        write(6,*) 'elxr too large', elxr
-                        goto 4416
-                    endif
+        ! restrict to 2 sigma
+        if (abs(elxr) > 2.0e-2) then
+            write(6,*) 'elxr too large', elxr
+            goto 4416
+        endif
 
-                    if (abs(elyr) > 2.0e-2) then
-                        write(6,*) 'elyr too large', elyr
-                        goto 4416
-                    endif
+        if (abs(elyr) > 2.0e-2) then
+            write(6,*) 'elyr too large', elyr
+            goto 4416
+        endif
+
+      endif ! ((efield_var == 2) .and. (nnloop < 5 .or. mod(nnloop, efieldfreq) == 0))
 
 
-                  endif
+      if (efield_var == 3) then
+          if(abs(elecx) > 0.001) elxr=1.e-2
+          if(abs(elecy) > 0.001) elyr=1.e-2
+      endif
 
-
-                  if (efield_var == 3) then
-                      if(abs(elecx) > 0.001) elxr=1.e-2
-                      if(abs(elecy) > 0.001) elyr=1.e-2
-                  endif
-
-!
-! set energy deposition
-!
-                  DO n = 1 , 15
-                     edep(n) = qion3d(n,m,l)*effqia(n)*5.6E-18/neutral_density_1d(n)
-                  END DO
+      !
+      ! set energy deposition
+      !
+      !DO n = 1 , 15
+      !   edep(n) = qion3d(n,m,l)*effqia(n)*5.6E-18/neutral_density_1d(n)  lrm20130731
+      !END DO
+      edep(:) = qion3d(:,m,l)*effqia(:)*5.6E-18/neutral_density_1d(:)
  
 
-                  !print *,'GT_thermosphere : line 806 : b/f SOLAR_EUV, neutral_density_1d = ',neutral_density_1d
-                  CALL SOLAR_EUV(f107, rmt(1,m,l), scht, neutral_density_1d, sza, teuv)
+      !print *,'GT_thermosphere : line 806 : b/f SOLAR_EUV, neutral_density_1d = ',neutral_density_1d
+      CALL SOLAR_EUV(f107, rmt(1,m,l), scht, neutral_density_1d, sza, teuv)
 
 
-                  CALL INFRARED_COOLING(temp, ht(1,m,l), neutral_density_1d,QIR)
+      CALL INFRARED_COOLING(temp, ht(1,m,l), neutral_density_1d,QIR)
 
 
-                  DO n = 2 , 14
-                     aeuv(n,m,l) = teuv(n)
-                  END DO
+      !DO n = 2 , 14
+      !    aeuv(n,m,l) = teuv(n)
+      !END DO
+      aeuv(2:14,m,l) = teuv(2:14)
+
+      !DO n = 2 , 14
+      !   qeuv(n) = aeuv(n,m,l)
+      !END DO
+      qeuv(2:14) = aeuv(2:14,m,l)
 
 
-                  DO n = 2 , 14
-                     qeuv(n) = aeuv(n,m,l)
-                  END DO
+      !DO n = 1 , 15
+      !   Vx_1d_copy(n) = Wind_southwards_ms1(n,m,l)
+      !   Vy_1d_copy(n) = Wind_eastwards_ms1(n,m,l)
+      !   Eps_1d_copy(n) = eps(n,m,l)
+      !END DO
+      Vx_1d_copy(:) = Wind_southwards_ms1(:,m,l)
+      Vy_1d_copy(:) = Wind_eastwards_ms1(:,m,l)
+      Eps_1d_copy(:) = eps(:,m,l)
 
 
-                  DO n = 1 , 15
-                     Vx_1d_copy(n) = Wind_southwards_ms1(n,m,l)
-                     Vy_1d_copy(n) = Wind_eastwards_ms1(n,m,l)
-                     Eps_1d_copy(n) = eps(n,m,l)
-                  END DO
+      !DO n = 1 , 14
+      DO n = 1 , n_levels-1
+         IF ( l == 20 ) THEN
+              vxe(n) = vxl(n,m)
+              vye(n) = vyl(n,m)
+              epse(n) = epsl(n,m)
+              hte(n) = ht(n,m,1)
+         ELSE
+              vxe(n) = Wind_southwards_ms1(n,m,le)
+              vye(n) = Wind_eastwards_ms1(n,m,le)
+              epse(n) = eps(n,m,le)
+              hte(n) = ht(n,m,le)
+         ENDIF
 
+         vxs(n) = vx2(n,ms)
+         vys(n) = vy2(n,ms)
+         epss(n) = eps2(n,ms)
+         hts(n) = ht(n,ms,l)
 
-                  DO n = 1 , 14
-                     IF ( l == 20 ) THEN
-                        vxe(n) = vxl(n,m)
-                        vye(n) = vyl(n,m)
-                        epse(n) = epsl(n,m)
-                        hte(n) = ht(n,m,1)
-                     ELSE
-                        vxe(n) = Wind_southwards_ms1(n,m,le)
-                        vye(n) = Wind_eastwards_ms1(n,m,le)
-                        epse(n) = eps(n,m,le)
-                        hte(n) = ht(n,m,le)
-                     ENDIF
-                     vxs(n) = vx2(n,ms)
-                     vys(n) = vy2(n,ms)
-                     epss(n) = eps2(n,ms)
-                     hts(n) = ht(n,ms,l)
-                     IF ( l == 1 ) THEN
-                        vxw(n) = Wind_southwards_ms1(n,m,20)
-                        vyw(n) = Wind_eastwards_ms1(n,m,20)
-                        epsw(n) = eps(n,m,20)
-                        htw(n) = ht(n,m,20)
-                     ELSE
-                        vxw(n) = vx2(n,m)
-                        vyw(n) = vy2(n,m)
-                        epsw(n) = eps2(n,m)
-                        htw(n) = ht(n,m,lw)
-                     ENDIF
-                  END DO
+         IF ( l == 1 ) THEN
+            vxw(n) = Wind_southwards_ms1(n,m,20)
+            vyw(n) = Wind_eastwards_ms1(n,m,20)
+            epsw(n) = eps(n,m,20)
+            htw(n) = ht(n,m,20)
+         ELSE
+            vxw(n) = vx2(n,m)
+            vyw(n) = vy2(n,m)
+            epsw(n) = eps2(n,m)
+            htw(n) = ht(n,m,lw)
+         ENDIF
 
-!---
-!---
-                  DO n = 2 , 14
-                     tepso = eps(n,m,l) - (Wind_southwards_ms1(n,m,l)**2 &
+      END DO ! n = 1 , n_levels-1
+
+      !---
+      !---
+      !DO n = 2 , 14
+      DO n = 2, n_levels-1
+         tepso = eps(n,m,l) - (Wind_southwards_ms1(n,m,l)**2 &
                              + Wind_eastwards_ms1(n,m,l)**2) &
                              /2.0
-                     tepss = epss(n) - (vxs(n)**2+vys(n)**2)/2.0
-                     tepsn = eps(n,mn,l) - (Wind_southwards_ms1(n,mn,l) &
+         tepss = epss(n) - (vxs(n)**2+vys(n)**2)/2.0
+         tepsn = eps(n,mn,l) - (Wind_southwards_ms1(n,mn,l) &
                              **2+Wind_eastwards_ms1(n,mn,l)**2) &
                              /2.0
-                     tepse = epse(n) - (vxe(n)**2+vye(n)**2)/2.0
-                     tepsw = epsw(n) - (vxw(n)**2+vyw(n)**2)/2.0
-                     x8 = (vxs(n)-2.0*Wind_southwards_ms1(n,m,l) &
+
+         tepse = epse(n) - (vxe(n)**2+vye(n)**2)/2.0
+         tepsw = epsw(n) - (vxw(n)**2+vyw(n)**2)/2.0
+
+         x8 = (vxs(n)-2.0*Wind_southwards_ms1(n,m,l) &
                            +Wind_southwards_ms1(n,mn,l))/sx5
-                     x9 = cth*(vxs(n)-Wind_southwards_ms1(n,mn,l))/sx7
-                     x10 = (vxe(n)-2.0*Wind_southwards_ms1(n,m,l) &
+         x9 = cth*(vxs(n)-Wind_southwards_ms1(n,mn,l))/sx7
+         x10 = (vxe(n)-2.0*Wind_southwards_ms1(n,m,l) &
                            +vxw(n))/sx6
-                     x11 = -Wind_southwards_ms1(n,m,l)/sth2
-                     x12 = -2.*cth*(vye(n)-vyw(n))/(sth2*delphi)
-                     x13 = 2.*Wind_southwards_ms1(n,m,l)
-                     a8(n) = umut(n)*scht(n)*(x8+x9+x10+x11+x12+x13) &
+         x11 = -Wind_southwards_ms1(n,m,l)/sth2
+         x12 = -2.*cth*(vye(n)-vyw(n))/(sth2*delphi)
+         x13 = 2.*Wind_southwards_ms1(n,m,l)
+
+         a8(n) = umut(n)*scht(n)*(x8+x9+x10+x11+x12+x13) &
                              /(R0SQ*neutral_density_1d(n))
-                     y8 = (vys(n)-2.0*Wind_eastwards_ms1(n,m,l) &
+         y8 = (vys(n)-2.0*Wind_eastwards_ms1(n,m,l) &
                           +Wind_eastwards_ms1(n,mn,l))/sx5
-                     y9 = cth*(vys(n)-Wind_eastwards_ms1(n,mn,l))/sx7
-                     y10 = (vye(n)-2.0*Wind_eastwards_ms1(n,m,l) &
+         y9 = cth*(vys(n)-Wind_eastwards_ms1(n,mn,l))/sx7
+         y10 = (vye(n)-2.0*Wind_eastwards_ms1(n,m,l) &
                            +vyw(n))/sx6
-                     y11 = -Wind_eastwards_ms1(n,m,l)/sth2
-                     y12 = 2.*cth*(vxe(n)-vxw(n))/(sth2*delphi)
-                     y13 = 2.*Wind_eastwards_ms1(n,m,l)
-                     b8(n) = umut(n)*scht(n)*(y8+y9+y10+y11+y12+y13) &
+         y11 = -Wind_eastwards_ms1(n,m,l)/sth2
+         y12 = 2.*cth*(vxe(n)-vxw(n))/(sth2*delphi)
+         y13 = 2.*Wind_eastwards_ms1(n,m,l)
+         b8(n) = umut(n)*scht(n)*(y8+y9+y10+y11+y12+y13) &
                              /(R0SQ*neutral_density_1d(n))
-                     z8 = (tepss-2.0*tepso+tepsn)/sx5
-                     z9 = cth*(tepss-tepsn)/sx7
-                     z10 = (tepse-2.0*tepso+tepsw)/sx6
-                     c10(n) = (km(n)+kt(n))*scht(n)*(z8+z9+z10) &
+         z8 = (tepss-2.0*tepso+tepsn)/sx5
+         z9 = cth*(tepss-tepsn)/sx7
+         z10 = (tepse-2.0*tepso+tepsw)/sx6
+         c10(n) = (km(n)+kt(n))*scht(n)*(z8+z9+z10) &
                               /(R0SQ*cp(n)*neutral_density_1d(n))
 
-                  END DO ! n = 2, 14
+        END DO ! n = 2, 14
 
 
-               !write(6,*) 'GT_thermosphere : Temperature_K = ',Temperature_K  
+        !write(6,*) 'GT_thermosphere : Temperature_K = ',Temperature_K  
 
-               DO n = 1 , 15
-                   ! THIS IS THE PROPER WAY  *********************
-                  teff(n) = (Temperature_K(n,m,l) + Ti1(n,m,l))/2.0
+        ! THIS IS THE PROPER WAY  *********************
+        teff(:) = (Temperature_K(:,m,l) + Ti1(:,m,l))/2.0
 
-                  ! FOR DEBUGGING ONLY ******* :
-                  !teff(n) = Temperature_K(n,m,l)
+        ! FOR DEBUGGING ONLY ******* :
+        !teff(n) = Temperature_K(n,m,l)
 
-                  O_plus_1d(n) = O_plus_density_m3(n,m,l)
-                  NO_plus_1d(n)= NO_plus_density_m3(n,m,l)
-                  O2_plus_1d(n)= O2_plus_density_m3(n,m,l)
-                  rnumden = pressure(n)/(BZ*Temperature_K(n,m,l))
-                  p1(n) = rnumden*psao(n,m,l)*rmt(n,m,l)/16.
-                  p2(n) = rnumden*psmo(n,m,l)*rmt(n,m,l)/32.
-                  p33(n) = rnumden*psmn(n,m,l)*rmt(n,m,l)/28.
-               END DO ! n = 1, 15
+        O_plus_1d(:) = O_plus_density_m3(:,m,l)
+        NO_plus_1d(:)= NO_plus_density_m3(:,m,l)
+        O2_plus_1d(:)= O2_plus_density_m3(:,m,l)
+
+        !DO n = 1 , 15
+        DO n = 1 , n_levels
+           !! THIS IS THE PROPER WAY  *********************
+           !teff(n) = (Temperature_K(n,m,l) + Ti1(n,m,l))/2.0
+
+           !! FOR DEBUGGING ONLY ******* :
+           !!teff(n) = Temperature_K(n,m,l)
+
+           !O_plus_1d(n) = O_plus_density_m3(n,m,l)
+           !NO_plus_1d(n)= NO_plus_density_m3(n,m,l)
+           !O2_plus_1d(n)= O2_plus_density_m3(n,m,l)
+
+           rnumden = pressure(n)/(BZ*Temperature_K(n,m,l))
+           p1(n) = rnumden*psao(n,m,l)*rmt(n,m,l)/16.
+           p2(n) = rnumden*psmo(n,m,l)*rmt(n,m,l)/32.
+           p33(n) = rnumden*psmn(n,m,l)*rmt(n,m,l)/28.
+        END DO ! n = 1, 15
 
 
-                 !print *,'GT_thermosphere : p1 = ',p1
-                 !print *,'GT_thermosphere : p2 = ',p2
-                 !print *,'GT_thermosphere : teff = ',teff
-                 !print *,'GT_thermosphere : m, l = ',m, l
+        !print *,'GT_thermosphere : p1 = ',p1
+        !print *,'GT_thermosphere : p2 = ',p2
+        !print *,'GT_thermosphere : teff = ',teff
+        !print *,'GT_thermosphere : m, l = ',m, l
 
-                  CALL IONNEUT(p1, p2, p33, O_plus_1d, NO_plus_1d, &
+        CALL IONNEUT(p1, p2, p33, O_plus_1d, NO_plus_1d, &
                                O2_plus_1d, teff, &
                                rvin, ramin)
-!g
-              DO 1695 n = 2 , 14 ! ------------------------------------------------------------------
+        !g
+        !DO 1695 n = 2 , 14 ! ------------------------------------------------------------------
+        looplevels1695 : DO n = 2 , n_levels-1 ! ------------------------------------------------------------------
 
-                     nu = n + 1
-                     nd = n - 1
+           nu = n + 1
+           nd = n - 1
 
-                  r_variable = (ramin(n)*rvin(n))/(Electron_charge_Coulombs*B_magnitude_Tesla)
-                  sigped = (Electron_density_m3(n,m,l)*Electron_charge_Coulombs*r_variable)/ &
+           r_variable = (ramin(n)*rvin(n))/(Electron_charge_Coulombs*B_magnitude_Tesla)
+           sigped = (Electron_density_m3(n,m,l)*Electron_charge_Coulombs*r_variable)/ &
                            (B_magnitude_Tesla*(1.0+r_variable**2))
-                  ped(n,m,l) = sigped
-                  sped(n) = sigped
-                  sighal = sigped*r_variable
-                  hall(n,m,l) = sighal
-      SIGPAR=(Electron_charge_Coulombs*Electron_density_m3(n,m,l))/(B_magnitude_Tesla*r_variable)
-!c  **
-!c  insert full layer conductivities for low latitude electrodynamics
-!c  **
+           ped(n,m,l) = sigped
+           sped(n) = sigped
+           sighal = sigped*r_variable
+           hall(n,m,l) = sighal
+           SIGPAR=(Electron_charge_Coulombs*Electron_density_m3(n,m,l))/(B_magnitude_Tesla*r_variable)
 
-       jth(n) = sigped*(elecx+Wind_eastwards_ms1(n,m,l)*brad) &
-           + sighal*(elecy-Wind_southwards_ms1(n,m,l)*brad)*Sine_Dip_angle
-       jphi(n)= &
-          +sigped*(elecy-brad*Wind_southwards_ms1(n,m,l)) &
-          -sighal*(elecx+brad*Wind_eastwards_ms1(n,m,l))/Sine_Dip_angle
-       jrad(n)=sigped*(elecz-Wind_eastwards_ms1(n,m,l)*btheta &
-             +Wind_southwards_ms1(n,m,l)*bphi) &
-             -sighal*(elecy-Wind_southwards_ms1(n,m,l)*brad)*Cosine_Dip_angle
+           !c  **
+           !c  insert full layer conductivities for low latitude electrodynamics
+           !c  **
 
-       jth_3d(n,m,l) = jth(n)
-       jphi_3d(n,m,l) = jphi(n)
-       jrad_3d(n,m,l) = jrad(n)
+           jth(n) = sigped*(elecx+Wind_eastwards_ms1(n,m,l)*brad) &
+                    + sighal*(elecy-Wind_southwards_ms1(n,m,l)*brad)*Sine_Dip_angle
+           jphi(n)= &
+                  +sigped*(elecy-brad*Wind_southwards_ms1(n,m,l)) &
+                  -sighal*(elecx+brad*Wind_eastwards_ms1(n,m,l))/Sine_Dip_angle
+           jrad(n) = sigped*(elecz-Wind_eastwards_ms1(n,m,l)*btheta &
+                    +Wind_southwards_ms1(n,m,l)*bphi) &
+                    -sighal*(elecy-Wind_southwards_ms1(n,m,l)*brad)*Cosine_Dip_angle
 
-!g
-!g
-! electric fields with variability used in Joule heating
-                  if (efield_var == 2 .or. efield_var == 3) then
+           jth_3d(n,m,l) = jth(n)
+           jphi_3d(n,m,l) = jphi(n)
+           jrad_3d(n,m,l) = jrad(n)
 
-                     if(efield_var == 3) then  ! if not using random (not
+
+           !g
+           ! electric fields with variability used in Joule heating
+           if (efield_var == 2 .or. efield_var == 3) then
+
+               if (efield_var == 3) then  ! if not using random (not
                        if(elecy*elyr == -1) elyr=-1.*elyr  ! strictly valid
                        if(elecx*elxr == -1) elxr=-1.*elxr
-                     endif
+               endif
 
-                      rjth(n) = sigped*((elecx+elxr)+ &
+               rjth(n) = sigped*((elecx+elxr)+ &
                               Wind_eastwards_ms1(n,m,l)*brad)/Sine_Dip_angle &
                               **2 - sighal*(Wind_southwards_ms1(n,m,l) &
                                     *brad-(elecy &
                                     +elyr)) &
                               /Sine_Dip_angle
-                      rjphi(n) = -sigped*(Wind_southwards_ms1(n,m,l) &
+
+               rjphi(n) = -sigped*(Wind_southwards_ms1(n,m,l) &
                                  *brad-(elecy+elyr)) &
                                - sighal*((elecx+elxr)+ &
                                Wind_eastwards_ms1(n,m,l)*brad)/Sine_Dip_angle
-                 else
-                      rjth(n)=jth(n)
-                      rjphi(n)=jphi(n)
-                 endif
-!g
-!g
-!c  **
-!c  **
+           else
+               rjth(n)=jth(n)
+               rjphi(n)=jphi(n)
+           endif
 
-      vionx(n,m,l)= Wind_southwards_ms1(n,m,l) &
+           !g
+           !c  **
+           !c  **
+
+           vionx(n,m,l) = Wind_southwards_ms1(n,m,l) &
                    +(jphi(n)*brad-bphi*jrad(n)) &
                    /(Electron_density_m3(n,m,l)*rvin(n)*ramin(n))
 
-      viony(n,m,l)= Wind_eastwards_ms1(n,m,l) &
+           viony(n,m,l) = Wind_eastwards_ms1(n,m,l) &
                    +(btheta*jrad(n)-jth(n)*brad) &
                    /(Electron_density_m3(n,m,l)*rvin(n)*ramin(n))
 
-               dvx(n) = (Wind_southwards_ms1(nu,m,l)-Vx_1d_copy(nd))/2.0
-               dvy(n) = (Wind_eastwards_ms1(nu,m,l)-Vy_1d_copy(nd))/2.0
-               dt = (temp(nu)-temp(nd))/2.0
-               dumut(n) = (umut(nu)-umut(nd))/2.0
-               dkmkt = (km(nu)+kt(nu)-km(nd)-kt(nd))/2.0
-               ddt = temp(nu) + temp(nd) - 2.0*temp(n)
-               ddvx(n) = Wind_southwards_ms1(nu,m,l) + Vx_1d_copy(nd) &
+           dvx(n) = (Wind_southwards_ms1(nu,m,l)-Vx_1d_copy(nd))/2.0
+           dvy(n) = (Wind_eastwards_ms1(nu,m,l)-Vy_1d_copy(nd))/2.0
+           dt = (temp(nu)-temp(nd))/2.0
+           dumut(n) = (umut(nu)-umut(nd))/2.0
+           dkmkt = (km(nu)+kt(nu)-km(nd)-kt(nd))/2.0
+           ddt = temp(nu) + temp(nd) - 2.0*temp(n)
+           ddvx(n) = Wind_southwards_ms1(nu,m,l) + Vx_1d_copy(nd) &
                                - 2.0*Wind_southwards_ms1(n,m,l)
-               ddvy(n) = Wind_eastwards_ms1(nu,m,l) + Vy_1d_copy(nd) - &
+           ddvy(n) = Wind_eastwards_ms1(nu,m,l) + Vy_1d_copy(nd) - &
                           2.0*Wind_eastwards_ms1(n,m,l)
 
-!---------------------------------------------------------------------------
-!       energy equation
-!
-!       c1 and c2 form horizontal advection of eps
-!       c5 is vertical advection of eps
-!       c6 is solar heating and IR cooling
-!       c3 (first line) is vertical molecular and turbulent heat conduction
-!       c3 (3rd line) is vertical turbulent heat conduction due to
-!          adiabatic lapse rate
-!       c4 is vertical viscous drag term
-!       c10 (calculated above) is horizontal molecular and turbulent
-!          heat conduction
-!       c7 is ion drag and Joule heating term
-!---------------------------------------------------------------------------
-                     c1 = -Wind_southwards_ms1(n,m,l) &
+           !---------------------------------------------------------------------------
+           !       energy equation
+           !
+           !       c1 and c2 form horizontal advection of eps
+           !       c5 is vertical advection of eps
+           !       c6 is solar heating and IR cooling
+           !       c3 (first line) is vertical molecular and turbulent heat conduction
+           !       c3 (3rd line) is vertical turbulent heat conduction due to
+           !          adiabatic lapse rate
+           !       c4 is vertical viscous drag term
+           !       c10 (calculated above) is horizontal molecular and turbulent
+           !          heat conduction
+           !       c7 is ion drag and Joule heating term
+           !---------------------------------------------------------------------------
+           c1 = -Wind_southwards_ms1(n,m,l) &
                           *((epss(n)+GRAV*hts(n))-(eps(n,mn,l)+ &
                           GRAV*ht(n,mn,l)))/sx1
-                     c2 = -Wind_eastwards_ms1(n,m,l) &
+           c2 = -Wind_eastwards_ms1(n,m,l) &
                           *((epse(n)+GRAV*hte(n))-(epsw(n)+GRAV*htw(n))) &
                           /sx2
-                     c3 = GRAV*((km(n)+kt(n))*ddt+dt*dkmkt)/pressure(n)
-                     c3 = c3*temp(n)**0.71*tin(n)/(tin(n)**0.71*temp(n))
-                     c3 = c3 + (kt(nu)*scht(nu)-kt(nd)*scht(nd)) &
-                          *GRAV**2/(pressure(n)*cp(n)*2.0)
+           c3 = GRAV*((km(n)+kt(n))*ddt+dt*dkmkt)/pressure(n)
+           c3 = c3*temp(n)**0.71*tin(n)/(tin(n)**0.71*temp(n))
+           c3 = c3 + (kt(nu)*scht(nu)-kt(nd)*scht(nd)) &
+                *GRAV**2/(pressure(n)*cp(n)*2.0)
 
-                     c4 = GRAV*(Wind_southwards_ms1(n,m,l)*umut(n) &
+           c4 = GRAV*(Wind_southwards_ms1(n,m,l)*umut(n) &
                           *ddvx(n)+Wind_southwards_ms1(n,m,l) &
                           *dvx(n)*dumut(n)+umut(n)*dvx(n)**2 &
                           +Wind_eastwards_ms1(n,m,l) &
                           *umut(n)*ddvy(n) &
                           +Wind_eastwards_ms1(n,m,l)*dvy(n)*dumut(n) &
                           +umut(n)*dvy(n)**2)/pressure(n)
-                   c51 = om(n)*(eps(nu,m,l)-Eps_1d_copy(nd))/ &
+           c51 = om(n)*(eps(nu,m,l)-Eps_1d_copy(nd))/ &
                          (2.0*pressure(n))
-                   c52 = +om(n)/neutral_density_1d(n)
-                   c5 = c51 + c52
+           c52 = +om(n)/neutral_density_1d(n)
+           c5 = c51 + c52
 
-!g------------------------------------------------------------------------------
-!g  new definitions for c77 to take into account the E field variations......
-!g------------------------------------------------------------------------------
-                     c7(n) = (rjth(n)*(elecx+elxr)+ &
-                              rjphi(n)*(elecy+elyr))/neutral_density_1d(n)
+           !g------------------------------------------------------------------------------
+           !g  new definitions for c77 to take into account the E field variations......
+           !g------------------------------------------------------------------------------
+           c7(n) = (rjth(n)*(elecx+elxr)+ &
+                    rjphi(n)*(elecy+elyr))/neutral_density_1d(n)
 
-                     c77(n) = (rjth(n)*((elecx+elxr) &
+           c77(n) = (rjth(n)*((elecx+elxr) &
                               +Wind_eastwards_ms1(n,m,l)*brad)+ &
                               rjphi(n)*((elecy+elyr)- &
                               Wind_southwards_ms1(n,m,l)*brad))/neutral_density_1d(n)
 
 
-                     if(efield_var == 1) then
-                       c7(n)=2.*c7(n)
-                       c77(n)=2.*c77(n)
-                     endif
+           if (efield_var == 1) then
+              c7(n)=2.*c7(n)
+              c77(n)=2.*c77(n)
+           endif
 
 
-                     c7_3d(n,m,l) = c7(n)
-                     c77_3d(n,m,l) = c77(n)
+           c7_3d(n,m,l) = c7(n)
+           c77_3d(n,m,l) = c77(n)
 
-                     c8 = edep(n)
-!c  **
-!c  evaluate recombination heating
-!c  **
-        source1 = 0.0
-        source2 = 0.0
+           c8 = edep(n)
 
-        if(n >= 7) then ! only higher altitudes
+           !c  **
+           !c  evaluate recombination heating
+           !c  **
+           source1 = 0.0
+           source2 = 0.0
 
-           tr = temp(n)*1.2
-           k8 = 2.82e-17-7.74e-18*(tr/300.0)+1.073e-18*(tr &
+           if (n >= 7) then ! only higher altitudes
+
+              ! this could be more efficient ***
+              tr = temp(n)*1.2
+              k8 = 2.82e-17-7.74e-18*(tr/300.0)+1.073e-18*(tr &
                 /300.0)**2-5.17e-20*(tr/300.0)**3+9.65e-22*(tr &
                 /300.0)**4
-           if (tr < 1700.0) k3 = 1.533e-18-5.92e-19*( &
-                                 tr/300.0)+8.6e-20*(tr/300.0)**2
-           if (tr >= 1700.0) k3 = 2.73e-18-1.155e-18*( &
+
+              !if (tr < 1700.0) k3 = 1.533e-18-5.92e-19*( &   lrm20130731
+              !                   tr/300.0)+8.6e-20*(tr/300.0)**2
+              !if (tr >= 1700.0) k3 = 2.73e-18-1.155e-18*( &
+              !                    tr/300.0)+1.483e-19*(tr/300.0)**2
+
+              if (tr < 1700.0) then
+                  k3 = 1.533e-18-5.92e-19*(tr/300.0)+8.6e-20*(tr/300.0)**2
+              else
+                  k3 = 2.73e-18-1.155e-18*( &
                                   tr/300.0)+1.483e-19*(tr/300.0)**2
+              endif
 
-           !------------------------------------------------------
-           ! evaluate energy from O+ recombination with N2
-           ! source1 term for heating
-           !------------------------------------------------------
-           factor = 13.0*1.66E-19/neutral_density_1d(n)  ! lrm20130722
+              !------------------------------------------------------
+              ! evaluate energy from O+ recombination with N2
+              ! source1 term for heating
+              !------------------------------------------------------
+              factor = 13.0*1.66E-19/neutral_density_1d(n)  ! lrm20130722
 
-           !source1 = O_plus_density_m3(n,m,l)*p33(n)*k3*13.0*1.66E-19/neutral_density_1d(n)  ! original
-           source1 = O_plus_density_m3(n,m,l)*p33(n)*k3*factor  ! lrm20130722
+              !source1 = O_plus_density_m3(n,m,l)*p33(n)*k3*13.0*1.66E-19/neutral_density_1d(n)  ! original
+              source1 = O_plus_density_m3(n,m,l)*p33(n)*k3*factor  ! lrm20130722
 
-           ! *****************lrm20130705*******************************************************
-           !source1 = 0.0 !  ***************** ONLY FOR TESTING *********************************
-           !source1 = source1 * .25 !  **** ONLY FOR TESTING *********************
-           !**************************************************************************************
+              ! *****************lrm20130705*******************************************************
+              !source1 = 0.0 !  ***************** ONLY FOR TESTING *********************************
+              !source1 = source1 * .25 !  **** ONLY FOR TESTING *********************
+              !**************************************************************************************
 
-           !-----------------------------------------------
-           ! evaluate energy from O+ recombination with O2
-           !-----------------------------------------------
-           !source2 = O_plus_density_m3(n,m,l)*p2(n)*k8*13.0*1.66E-19/neutral_density_1d(n) ! original
-           source2 = O_plus_density_m3(n,m,l)*p2(n)*k8*factor   ! lrm20130722
+              !-----------------------------------------------
+              ! evaluate energy from O+ recombination with O2
+              !-----------------------------------------------
+              !source2 = O_plus_density_m3(n,m,l)*p2(n)*k8*13.0*1.66E-19/neutral_density_1d(n) ! original
+              source2 = O_plus_density_m3(n,m,l)*p2(n)*k8*factor   ! lrm20130722
 
-
-
-        endif ! if n>= 7
+           endif ! if n>= 7
 
 
-        c6 = qir(n) + qeuv(n) + source1 + source2
-        sum3(n) = c1 + c2 + c3 + c4 + c5 + c6 + c7(n) &
+           c6 = qir(n) + qeuv(n) + source1 + source2
+           sum3(n) = c1 + c2 + c3 + c4 + c5 + c6 + c7(n) &
                                + c8 + c10(n)
-        volume = (ht(nu,m,l)-ht(nd,m,l)) &
+           volume = (ht(nu,m,l)-ht(nd,m,l)) &
                               *R0**2*deltha*sth*delphi/8.0
-        stfac(n) = volume*neutral_density_1d(n)
-        c77(n) = c77(n)*stfac(n)
+           stfac(n) = volume*neutral_density_1d(n)
+           c77(n) = c77(n)*stfac(n)
 
 
-    !--------------------------------------------------------
-    ! For checking values of source1, source2  lrm20130610
-    !--------------------------------------------------------
-    if (checkHeatingSources) then
-      !source1Array(n,m,l) = source1 
-      !source2Array(n,m,l) = source2
-      !k3Array(n,m,l) = k3
-      !c7Array(n,m,l) = c7(n)
-    endif
+           !--------------------------------------------------------
+           ! For checking values of source1, source2  lrm20130610
+           !--------------------------------------------------------
+           if (checkHeatingSources) then
+              !source1Array(n,m,l) = source1 
+              !source2Array(n,m,l) = source2
+              !k3Array(n,m,l) = k3
+              !c7Array(n,m,l) = c7(n)
+           endif
+
+        END DO looplevels1695 ! ------------------------------------------------------------
 
 
 
- 1695             CONTINUE  ! ------------------------------------------------------------
-
-!c  ************************************************************
-!
-!       momentum equation
-!
-!       a: in x-direction
-!       b: in y-direction
-!       sum1 and sum2 are in units of [m/s^2]
-!       a1/b1 are horizontal advection terms of velocity
-!       a6/b6 are vertical advection terms of velocity
-!       a4/b4 are geopotential terms
-!       a2/b2 are coriolis terms
-!       a3/b3 are vertical viscous drag terms
-!       a8/b8 are horizontal viscous drag terms
-!       a5/b5 are ion drag terms
-!
-!c  ************************************************************
-        DO n = 2 , 14
-                     nu = n + 1
-                     nd = n - 1
-                     a11 = -Wind_southwards_ms1(n,m,l)*(vxs(n) &
+        !c  ************************************************************
+        !
+        !       momentum equation
+        !
+        !       a: in x-direction
+        !       b: in y-direction
+        !       sum1 and sum2 are in units of [m/s^2]
+        !       a1/b1 are horizontal advection terms of velocity
+        !       a6/b6 are vertical advection terms of velocity
+        !       a4/b4 are geopotential terms
+        !       a2/b2 are coriolis terms
+        !       a3/b3 are vertical viscous drag terms
+        !       a8/b8 are horizontal viscous drag terms
+        !       a5/b5 are ion drag terms
+        !
+        !c  ************************************************************
+        !DO n = 2 , 14
+        DO n = 2 , n_levels-1
+           nu = n + 1
+           nd = n - 1
+           a11 = -Wind_southwards_ms1(n,m,l)*(vxs(n) &
                            -Wind_southwards_ms1(n,mn,l))/sx1
-                     a12 = -Wind_eastwards_ms1(n,m,l) &
+           a12 = -Wind_eastwards_ms1(n,m,l) &
                            *(vxe(n)-vxw(n))/sx2
-                     a1 = a11 + a12
-                     a2 = (2.0*ANROT+Wind_eastwards_ms1(n,m,l)/sx8) &
+           a1 = a11 + a12
+           a2 = (2.0*ANROT+Wind_eastwards_ms1(n,m,l)/sx8) &
                            *Wind_eastwards_ms1(n,m,l)*cth
-                a3 = GRAV*(umut(n)*ddvx(n)+dumut(n)*dvx(n))/pressure(n)
-                a4 = -GRAV*(hts(n)-ht(n,mn,l))/sx1
-                a5 = (jphi(n)*brad-bphi*jrad(n))/neutral_density_1d(n)
-                a6 = +om(n)*(Wind_southwards_ms1(nu,m,l) &
+           a3 = GRAV*(umut(n)*ddvx(n)+dumut(n)*dvx(n))/pressure(n)
+           a4 = -GRAV*(hts(n)-ht(n,mn,l))/sx1
+           a5 = (jphi(n)*brad-bphi*jrad(n))/neutral_density_1d(n)
+           a6 = +om(n)*(Wind_southwards_ms1(nu,m,l) &
                           -Vx_1d_copy(nd))/(2.0*pressure(n))
-                     sum1(n) = a1 + a2 + a3 + a4 + a5 + a6 + a8(n)
+           sum1(n) = a1 + a2 + a3 + a4 + a5 + a6 + a8(n)
 
-               !--------------------------------------------------------
-               ! For checking values of source1, source2  lrm20130717
-               !--------------------------------------------------------
-               if (checkHeatingSources) then
-                   a5Array(n,m,l) = a5
-               endif
+           !--------------------------------------------------------
+           ! For checking values of source1, source2  lrm20130717
+           !--------------------------------------------------------
+           if (checkHeatingSources) then
+              a5Array(n,m,l) = a5
+           endif
 
-        END DO ! n = 2,24
+        END DO ! n = 2, n_levels-1
 
 
-        DO n = 2 , 14
-                     nu = n + 1
-                     nd = n - 1
-                     b11 = -Wind_southwards_ms1(n,m,l) &
+        !DO n = 2 , 14
+        DO n = 2 , n_levels-1
+
+           nu = n + 1
+           nd = n - 1
+           b11 = -Wind_southwards_ms1(n,m,l) &
                            *(vys(n)-Wind_eastwards_ms1(n,mn,l))/sx1
-                     b12 = -Wind_eastwards_ms1(n,m,l) &
+           b12 = -Wind_eastwards_ms1(n,m,l) &
                            *(vye(n)-vyw(n))/sx2
-                     b1 = b11 + b12
-                     b2 = -(2.0*ANROT+Wind_eastwards_ms1(n,m,l)/sx8) &
+           b1 = b11 + b12
+           b2 = -(2.0*ANROT+Wind_eastwards_ms1(n,m,l)/sx8) &
                           *Wind_southwards_ms1(n,m,l)*cth
-                b3 = GRAV*(umut(n)*ddvy(n)+dumut(n)*dvy(n))/pressure(n)
-                b4 = -GRAV*(hte(n)-htw(n))/sx2
-                B5 = -(JTH(N)*BRAD-JRAD(N)*BTHETA)/neutral_density_1d(n)
-                     b6 = +om(n)*(Wind_eastwards_ms1(nu,m,l) &
+           b3 = GRAV*(umut(n)*ddvy(n)+dumut(n)*dvy(n))/pressure(n)
+           b4 = -GRAV*(hte(n)-htw(n))/sx2
+           B5 = -(JTH(N)*BRAD-JRAD(N)*BTHETA)/neutral_density_1d(n)
+           b6 = +om(n)*(Wind_eastwards_ms1(nu,m,l) &
                           -Vy_1d_copy(nd))/(2.0*pressure(n))
-                     sum2(n) = b1 + b2 + b3 + b4 + b5 + b6 + b8(n)
+           sum2(n) = b1 + b2 + b3 + b4 + b5 + b6 + b8(n)
 
-               !--------------------------------------------------------
-               ! For checking values of source1, source2  lrm20130717
-               !--------------------------------------------------------
-               if (checkHeatingSources) then
-                  b5Array(n,m,l) = b5
-               endif
+           !--------------------------------------------------------
+           ! For checking values of source1, source2  lrm20130717
+           !--------------------------------------------------------
+            if (checkHeatingSources) then
+               b5Array(n,m,l) = b5
+            endif
 
-         END DO ! n = 2, 14
-
-
-         DO n = 2 , 14
-                     Wind_southwards_ms1(n,m,l) = realTimeStep*sum1(n) &
-                                           + Wind_southwards_ms1(n,m,l)
-                     Wind_eastwards_ms1(n,m,l) = realTimeStep*sum2(n) &
-                                           + Wind_eastwards_ms1(n,m,l)
-                     eps(n,m,l) = realTimeStep*sum3(n) + eps(n,m,l)
-         END DO
+         END DO ! 
 
 
-             Wind_southwards_ms1(15,m,l) = Wind_southwards_ms1(14,m,l)
-             Wind_eastwards_ms1(15,m,l) = Wind_eastwards_ms1(14,m,l)
-                  t14 = (-(Wind_southwards_ms1(14,m,l)**2 &
-                        +Wind_eastwards_ms1(14,m,l)**2)/2.0+eps(14,m,l)) &
-                        /cp(14)
-                  t15 = t14
-                  eps(15,m,l) = cp(15) &
-                                *t15 + (Wind_southwards_ms1(15,m,l)**2 &
-                                +Wind_eastwards_ms1(15,m,l)**2)/2.0
+         !DO n = 2 , 14
+         !            Wind_southwards_ms1(n,m,l) = realTimeStep*sum1(n) &
+         !                                  + Wind_southwards_ms1(n,m,l)
+         !            Wind_eastwards_ms1(n,m,l) = realTimeStep*sum2(n) &
+         !                                  + Wind_eastwards_ms1(n,m,l)
+         !            eps(n,m,l) = realTimeStep*sum3(n) + eps(n,m,l)
+         !END DO
+         Wind_southwards_ms1(2:n_levels-1,m,l) = realTimeStep*sum1(2:n_levels-1) &
+                                           + Wind_southwards_ms1(2:n_levels-1,m,l)
+         Wind_eastwards_ms1(2:n_levels-1,m,l) = realTimeStep*sum2(2:n_levels-1) &
+                                           + Wind_eastwards_ms1(2:n_levels-1,m,l)
+         eps(2:n_levels-1,m,l) = realTimeStep*sum3(2:n_levels-1) + eps(2:n_levels-1,m,l)
 
-                  DO 1715 n = 1 , 15
-                     vx2(n,m) = Vx_1d_copy(n)
-                     vy2(n,m) = Vy_1d_copy(n)
-                     eps2(n,m) = Eps_1d_copy(n)
-                     IF ( l == 1 ) THEN
-                        vxl(n,m) = Vx_1d_copy(n)
-                        vyl(n,m) = Vy_1d_copy(n)
-                        epsl(n,m) = Eps_1d_copy(n)
-                     ENDIF
- 1715             CONTINUE
+
+
+         Wind_southwards_ms1(15,m,l) = Wind_southwards_ms1(14,m,l)
+         Wind_eastwards_ms1(15,m,l) = Wind_eastwards_ms1(14,m,l)
+         t14 = (-(Wind_southwards_ms1(14,m,l)**2 &
+                 + Wind_eastwards_ms1(14,m,l)**2)/2.0+eps(14,m,l)) &
+                 /cp(14)
+
+         !t15 = t14
+         !eps(15,m,l) = cp(15) &
+         !              *t15 + (Wind_southwards_ms1(15,m,l)**2 &
+         !              + Wind_eastwards_ms1(15,m,l)**2)/2.0
+         eps(15,m,l) = cp(15) &
+                       *t14 + (Wind_southwards_ms1(15,m,l)**2 &
+                       + Wind_eastwards_ms1(15,m,l)**2)/2.0
+
+         vx2(:,m) = Vx_1d_copy(:)
+         vy2(:,m) = Vy_1d_copy(:)
+         eps2(:,m) = Eps_1d_copy(:)
+
+         !DO 1715 n = 1 , 15
+         !DO n = 1, n_levels
+                !vx2(n,m) = Vx_1d_copy(n)
+                !vy2(n,m) = Vy_1d_copy(n)
+                !eps2(n,m) = Eps_1d_copy(n)
+               ! IF ( l == 1 ) THEN
+               !      vxl(n,m) = Vx_1d_copy(n)
+               !      vyl(n,m) = Vy_1d_copy(n)
+               !      epsl(n,m) = Eps_1d_copy(n)
+               ! ENDIF
+         !END DO
+
+         IF ( l == 1 ) THEN
+            vxl(:,m) = Vx_1d_copy(:)
+            vyl(:,m) = Vy_1d_copy(:)
+            epsl(:,m) = Eps_1d_copy(:)
+         ENDIF
+
+
 !g
 !g  End of the latitude, longitude loops.....
 !g
- 1720          CONTINUE
- 1740       CONTINUE
+ ! 1720          CONTINUE
+   END DO latloop1720
+ ! 1740       CONTINUE
+ END DO lonloop1740
 
 
+ !---------------------------------------
+ ! Calculate values at the poles.......
+ !-------------------------------------------
 
-! Calculate values at the poles.......
+ zz = m_North_Pole - 1
 
+ !DO 1780 m = 1 , m_North_Pole , zz
+ latpole1780 : DO m = 1 , m_North_Pole , zz
+    fp1 = 1.0
+    IF ( bb == 4. ) fp1 = 2.0
 
-            zz = m_North_Pole - 1
-            DO 1780 m = 1 , m_North_Pole , zz
-               fp1 = 1.0
-               IF ( bb == 4. ) fp1 = 2.0
-               IF ( m == 1 ) THEN
-                  mm = 1
-                  fp = -1.0
-               ENDIF
-               IF ( m == m_North_Pole ) THEN
-                  mm = 2
-                  fp = 1.0
-               ENDIF
-               mp = m - (fp*fp1) + 0.1
+    IF ( m == 1 ) THEN
+         mm = 1
+         fp = -1.0
+    ENDIF
 
-               DO 1750 n = 1 , 15
-                  vpx(n,mm) = 0.0
-                  vpy(n,mm) = 0.0
-                  epsp(n,mm) = 0.0
-                  om1(n,m,1) = 0.0
-                  Electron_density_m3(n,m,1) = 0.0
-                  neutral_density_3d(n,m,1) = 0.0
+    IF ( m == m_North_Pole ) THEN
+         mm = 2
+         fp = 1.0
+    ENDIF
 
-                  DO 1745 l = 1 , 20
-                     phir = (FLOAT(l)-1.0)*PI/10.0
-                     cphi = COS(phir)
-                     sphi = SIN(phir)
-                     vpx(n,mm) = vpx(n,mm) + Wind_southwards_ms1(n,mp,l) &
+    mp = m - (fp*fp1) + 0.1
+
+    !DO 1750 n = 1 , 15
+    levelpole1750 : DO n = 1 , n_levels
+
+       vpx(n,mm) = 0.0
+       vpy(n,mm) = 0.0
+       epsp(n,mm) = 0.0
+       om1(n,m,1) = 0.0
+       Electron_density_m3(n,m,1) = 0.0
+       neutral_density_3d(n,m,1) = 0.0
+
+       !DO 1745 l = 1 , 20
+       lonpole1745 : DO l = 1 , n_lons
+          phir = (FLOAT(l)-1.0)*PI/10.0
+          cphi = COS(phir)
+          sphi = SIN(phir)
+          vpx(n,mm) = vpx(n,mm) + Wind_southwards_ms1(n,mp,l) &
                                  *cphi - Wind_eastwards_ms1(n,mp,l)*sphi*fp
-                     vpy(n,mm) = vpy(n,mm) + Wind_southwards_ms1(n,mp,l)*sphi*fp + &
+          vpy(n,mm) = vpy(n,mm) + Wind_southwards_ms1(n,mp,l)*sphi*fp + &
                                  Wind_eastwards_ms1(n,mp,l)*cphi
-                     epsp(n,mm) = epsp(n,mm) + eps(n,mp,l)
-                     om1(n,m,1) = om1(n,m,1) + om1(n,mp,l)
-                     Electron_density_m3(n,m,1) = Electron_density_m3(n,m,1) + Electron_density_m3(n,mp,l)
-                     neutral_density_3d(n,m,1) = neutral_density_3d(n,m,1) + neutral_density_3d(n,mp,l)
-                     IF ( l == 20 ) THEN
-                        vpx(n,mm) = vpx(n,mm)/20.0
-                        vpy(n,mm) = vpy(n,mm)/20.0
-                        epsp(n,mm) = epsp(n,mm)/20.0
-                        om1(n,m,1) = om1(n,m,1)/20.
-                        Electron_density_m3(n,m,1) = Electron_density_m3(n,m,1)/20.
-                        neutral_density_3d(n,m,1) = neutral_density_3d(n,m,1)/20.
-                     ENDIF
- 1745             CONTINUE
- 1750          CONTINUE
+          epsp(n,mm) = epsp(n,mm) + eps(n,mp,l)
+          om1(n,m,1) = om1(n,m,1) + om1(n,mp,l)
+          Electron_density_m3(n,m,1) = Electron_density_m3(n,m,1) + Electron_density_m3(n,mp,l)
+          neutral_density_3d(n,m,1) = neutral_density_3d(n,m,1) + neutral_density_3d(n,mp,l)
 
-               DO 1760 l = 1 , 20
-                  phir = (FLOAT(l)-1.0)*PI/10.0
+          !IF ( l == 20 ) THEN
+          IF ( l == n_lons ) THEN
+             vpx(n,mm) = vpx(n,mm)/20.0
+             vpy(n,mm) = vpy(n,mm)/20.0
+             epsp(n,mm) = epsp(n,mm)/20.0
+             om1(n,m,1) = om1(n,m,1)/20.
+             Electron_density_m3(n,m,1) = Electron_density_m3(n,m,1)/20.
+             neutral_density_3d(n,m,1) = neutral_density_3d(n,m,1)/20.
+          ENDIF
+
+
+ !1745             CONTINUE
+       END DO lonpole1745
+ !1750          CONTINUE
+    END DO levelpole1750
+
+    !DO 1760 l = 1 , 20
+    lonpole1760 : DO l = 1 , n_lons
+       phir = (FLOAT(l)-1.0)*PI/10.0
                   cphi = COS(phir)
                   sphi = SIN(phir)
 
                   !DO 1755 n = 2 , 15
-                  DO 1755 n = 1 , 15 ! lm20110922  Start at 1
+                  DO n = 1 , n_levels ! lm20110922  Start at 1
                      Wind_southwards_ms1(n,m,l) = vpx(n,mm)*cphi + vpy(n,mm)*sphi*fp
                      Wind_eastwards_ms1(n,m,l) = vpy(n,mm)*cphi - vpx(n,mm)*sphi*fp
                      eps(n,m,l) = epsp(n,mm)
                      om1(n,m,l) = om1(n,m,1)
                      Electron_density_m3(n,m,l) = Electron_density_m3(n,m,1)
                      neutral_density_3d(n,m,l) = neutral_density_3d(n,m,1)
- 1755             CONTINUE
+ !1755             CONTINUE
+                  END DO
 
- 1760          CONTINUE
- 1780       CONTINUE
+ !1760          CONTINUE
+    END DO lonpole1760
 
-            IF ( bb == 4.0 ) THEN
+ !1780       CONTINUE
+ END DO latpole1780
 
-               DO 1800 l = 1 , 20
-                  m = ixx
-                  DO 1785 n = 1 , 15
+ IF ( bb == 4.0 ) THEN
+
+      !DO 1800 l = 1 , 20
+      lonbb1800 : DO l = 1 , n_lons
+         m = ixx
+         DO 1785 n = 1 , 15
                      Wind_southwards_ms1(n,m,l) = (Wind_southwards_ms1(n,m+1,l)+Wind_southwards_ms1(n,m-1,l))/2.0
                      Wind_eastwards_ms1(n,m,l) = (Wind_eastwards_ms1(n,m+1,l)+Wind_eastwards_ms1(n,m-1,l))/2.0
                      eps(n,m,l) = (eps(n,m+1,l)+eps(n,m-1,l))/2.0
@@ -1734,7 +1834,8 @@ qion3d = 0
                      neutral_density_3d(n,m,l) = (neutral_density_3d(n,m+1,l)+neutral_density_3d(n,m-1,l))/2.0
  1790             CONTINUE
  1800          CONTINUE
-            ENDIF
+         END DO lonbb1800
+ ENDIF
 
 !
 ! check if smoothing needed this step

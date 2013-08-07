@@ -445,6 +445,10 @@ type (startUpType) :: startUpFiles(numIonoStart)
 !-----------------------------------------------
 REAL :: startCPUTime, endCPUTime
 
+! only for testing setting test = test8
+real*8 :: test8
+real :: test
+
 !-----------------------------------
 ! Namelist for input parameters :
 !-----------------------------------
@@ -457,6 +461,11 @@ NAMELIST /gtipeINPUTS/GT_input_dataset, GT_output_dataset, &
 
 
 ! BEGIN CODE ====================================================================================
+test8 = 123456789123456.
+test = test8
+print *,'test8, test = ',test8, test
+STOP
+
 
 
 !write(6,*) '*****************************************************************************************'
