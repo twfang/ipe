@@ -1549,10 +1549,12 @@ qion3d = 0
               ! evaluate energy from O+ recombination with N2
               ! source1 term for heating
               !------------------------------------------------------
-              factor = 13.0*1.66E-19/neutral_density_1d(n)  ! lrm20130722
+              !factor = 13.0*1.66E-19/neutral_density_1d(n)  ! lrm20130722
 
               !source1 = O_plus_density_m3(n,m,l)*p33(n)*k3*13.0*1.66E-19/neutral_density_1d(n)  ! original
-              source1 = O_plus_density_m3(n,m,l)*p33(n)*k3*factor  ! lrm20130722
+              !source1 = O_plus_density_m3(n,m,l)*p33(n)*k3*factor  ! lrm20130722
+              source1 = O_plus_density_m3(n,m,l)*p33(n)*k3*4.0*1.66E-19/neutral_density_1d(n)  ! ctipe formula lrm20130807
+
 
               ! *****************lrm20130705*******************************************************
               !source1 = 0.0 !  ***************** ONLY FOR TESTING *********************************
@@ -1563,7 +1565,8 @@ qion3d = 0
               ! evaluate energy from O+ recombination with O2
               !-----------------------------------------------
               !source2 = O_plus_density_m3(n,m,l)*p2(n)*k8*13.0*1.66E-19/neutral_density_1d(n) ! original
-              source2 = O_plus_density_m3(n,m,l)*p2(n)*k8*factor   ! lrm20130722
+              !source2 = O_plus_density_m3(n,m,l)*p2(n)*k8*factor   ! lrm20130722
+               source2 = O_plus_density_m3(n,m,l)*p2(n)*k8*8.55*1.66E-19/neutral_density_1d(n)   ! ctipe formula lrm20130807
 
            endif ! if n>= 7
 

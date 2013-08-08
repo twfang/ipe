@@ -446,8 +446,8 @@ type (startUpType) :: startUpFiles(numIonoStart)
 REAL :: startCPUTime, endCPUTime
 
 ! only for testing setting test = test8
-real*8 :: test8
-real :: test
+!real*8 :: test8
+!real :: test
 
 !-----------------------------------
 ! Namelist for input parameters :
@@ -461,10 +461,10 @@ NAMELIST /gtipeINPUTS/GT_input_dataset, GT_output_dataset, &
 
 
 ! BEGIN CODE ====================================================================================
-test8 = 123456789123456.
-test = test8
-print *,'test8, test = ',test8, test
-STOP
+!test8 = 123456789123456.
+!test = test8
+!print *,'test8, test = ',test8, test
+!STOP
 
 
 
@@ -473,7 +473,7 @@ STOP
 !write(6,*) '*****************************************************************************************'
 
 write(6,*) '*****************************************************************************************'
-write(6,*) 'SETTING Oplus_density_FROM_IPE TO Oplus_density_FROM_IPE/4 IN gt_thermosphere FOR TESTING  ************************************'
+write(6,*) 'SETTING source1, source2 to ctipe equations IN gt_thermosphere FOR TESTING  ************************************'
 write(6,*) '*****************************************************************************************'
 
 

@@ -1,13 +1,13 @@
 &gtipeINPUTS
 start_time= 43200,
-stop_time= 46860,
+stop_time= 302400,
 time_step=    900,
 ipeFileStartTime = 43200,
-GT_input_dataset = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/INPUT/BENCHMARK/Day_80_180_dipole_test.gt.20110913.v1.nc'
-GT_output_dataset = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/OUTPUT/TEST/output_Day_80_180_dipole_test.gt.20110913.v1.nc'
-ionoStartDir = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/INPUT/BENCHMARK/'
+GT_input_dataset = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/INPUT/ipe_640_25840/Day_80_180_dipole_test.gt.20110913.v1.nc'
+GT_output_dataset = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/OUTPUT/ipe_640_25840/SOURCECTIPE/output_Day_80_180_dipole_test.gt.20110913.v1.nc'
+ionoStartDir = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/INPUT/ipe_640_25840/'
 staticFileDir = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/static_files/'
-debugDir = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/DEBUG/TEST/'
+debugDir = '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/DEBUG/ipe_640_25840/SOURCE1CTIPE/'
 nday = 80                                                    
 f107 = 180.                  
 GT_timestep_in_seconds = 60  
