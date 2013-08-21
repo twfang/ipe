@@ -156,6 +156,7 @@ do lp=1,NLP
 enddo
 print *,"reading SL_meter etc completed"
 !SMS$SERIAL END
+!SMS$EXCHANGE(plasma_grid_3d)
 
 minTheta=plasma_grid_GL(JMIN_IN(  1),  1)
 maxTheta=plasma_grid_GL(JMIN_IN(NLP),NLP) 

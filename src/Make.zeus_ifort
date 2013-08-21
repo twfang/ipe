@@ -90,9 +90,9 @@ endif
 # SMS library location
 ifeq ($(USE_GPTL),yes)
 # If available, use SMS version compiled with auto-profiling flag
-  SMS = /home/Jacques.Middlecoff/SMS/SMSr346ifort
+  SMS = /home/Jacques.Middlecoff/SMS/SMS_r395_intel_mpt/
 else
-  SMS = /home/Jacques.Middlecoff/SMS/SMSr346ifort
+  SMS = /home/Jacques.Middlecoff/SMS/SMS_r395_intel_mpt/
 endif
 
 # SMS
