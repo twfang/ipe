@@ -25,7 +25,7 @@
       USE module_physical_constants,ONLY: rtd,earth_radius
       USE module_FIELD_LINE_GRID_MKS,ONLY:plasma_grid_GL,JMIN_IN,JMAX_IS,mlon_rad,dlonm90km,plasma_grid_Z,minTheta,maxTheta,midpnt
       USE module_IPE_dimension,ONLY: NMP,NLP
-      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,lpHaloSize,mpHaloSize,MaxLpHaloUsed,MaxMpHaloUsed,mype
+      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,lpHaloSize,mpHaloSize,MaxLpHaloUsed,MaxMpHaloUsed,mype,parallelBuild
      IMPLICIT NONE
 !--- INPUT ---
       INTEGER (KIND=int_prec),INTENT(IN) :: mp
@@ -66,9 +66,11 @@ which_hemisphere: DO ihem=1,1  !ihem_max
     endif
     MaxMpHaloUsed = max(MaxMpHaloUsed,mpx+1)
     mpp=mp+mpx
-    if(mpp > NMP) mpp= mpp-NMP
     mpm=mp-mpx
-    if(mpm < 1) mpm= NMP+mpm
+    if(.not.parallelBuild) then
+      if(mpp > NMP) mpp= mpp-NMP
+      if(mpm <   1) mpm= NMP+mpm
+    endif
     IF(mlon_rad(mpp)<=phi_t0(ihem).AND.phi_t0(ihem)<mlon_rad(mpp+1)) THEN
       mp_t0(ihem,1) =mpp
       mp_t0(ihem,2) =mpp+1

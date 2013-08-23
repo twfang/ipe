@@ -233,7 +233,7 @@
 
 !SMS$INSERT lpHaloSize=5
 !SMS$INSERT mpHaloSize=1
-!SMS$CREATE_DECOMP(dh,<NLP,NMP>,<lpHaloSize,mpHaloSize>)
+!SMS$CREATE_DECOMP(dh,<NLP,NMP>,<lpHaloSize,mpHaloSize>: <PERIODIC, PERIODIC>)
 
 !SMS$SERIAL BEGIN
         READ(LUN_nmlt,NML=NMFLIP   ,ERR=222,IOSTAT=IOST_RD)
