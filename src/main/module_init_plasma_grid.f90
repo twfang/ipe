@@ -24,7 +24,8 @@ INTEGER (KIND=int_prec)           :: midpoint
       REAL (KIND=real_prec) :: ufac
       REAL (KIND=real_prec),DIMENSION(3) :: bhat !eq(3.14)
       REAL (KIND=real_prec),DIMENSION(3)  :: a,b,c      
-
+!dbg20130814
+      INTEGER (KIND=int_prec)           :: ii
 
 
 
@@ -54,12 +55,14 @@ apex_longitude_loop: DO mp = 1,NMP
       IS = JMAX_IS(lp)
 
 !debug write
-IF ( sw_debug) THEN
+!dbg20130814 IF ( sw_debug) THEN
 
 !dbg20120305
 midpoint = IN + ( IS - IN )/2
-!print *,'midpoint',midpoint,plasma_grid_Z(midpoint)
+print *,'midpoint',midpoint,plasma_grid_Z(midpoint,lp)
 
+!dbg20130814
+IF ( sw_debug) THEN
 print "('lp=',i6,'  IN=',i6,'  IS=',i6,'  NPTS=',i6)", lp,IN,IS,(IS-IN+1)
 print "('r [m]      =',2E12.4)", r_meter2D(in,lp),r_meter2D(is,lp)
 print "('G-LAT [deg]=',2f10.4)",(90.-plasma_grid_3d(in,lp,mp,IGCOLAT)*180./pi),(90.-plasma_grid_3d(is,lp,mp,IGCOLAT)*180./pi)
@@ -91,44 +94,69 @@ IF ( sw_grid==0 ) THEN  !APEX
 !nm20130201: need to calculate some more apex parameters 
 !           CALL cal_apex_param (i,lp,mp,sinI)
 !---
+!nm20130814: double check if apexD has the values...
+            if ( apexD(i,lp,mp,east,1)==0.0.AND.apexD(i,lp,mp,east,2)==0.0 ) then
+
+               if ( i==midpoint ) then
+                  ii = i-1  !assign the northward neighboring value
+                  print *,'apexD is corrected!',i,lp,mp
+               else
+                  print *,'sub-init_plasma_grid: STOP! INVALID apexD!',i,lp,mp,apexD(i,lp,mp,:,1),apexD(i,lp,mp,:,2)
+                  STOP 
+               end if
+
+            else
+              ii = i
+           end if
+
 ! calculate D from eq 3.15: | d1 X d2 |
-a(1) = apexD(i,lp,mp,east,1)
-a(2) = apexD(i,lp,mp,north,1)
-a(3) = apexD(i,lp,mp,up,1)
-b(1) = apexD(i,lp,mp,east,2)
-b(2) = apexD(i,lp,mp,north,2)
-b(3) = apexD(i,lp,mp,up,2)
+           a(1) = apexD(ii,lp,mp,east,1)
+           a(2) = apexD(ii,lp,mp,north,1)
+           a(3) = apexD(ii,lp,mp,up,1)
+           b(1) = apexD(ii,lp,mp,east,2)
+           b(2) = apexD(ii,lp,mp,north,2)
+           b(3) = apexD(ii,lp,mp,up,2)
 
 !      call cross_product (a,b,c)
 !---
 ! calculate cross product   a X b 
 
 
-      c(1) = a(2)*b(3) - a(3)*b(2) 
-      c(2) = a(3)*b(1) - a(1)*b(3) 
-      c(3) = a(1)*b(2) - a(2)*b(1) 
+           c(1) = a(2)*b(3) - a(3)*b(2) 
+           c(2) = a(3)*b(1) - a(1)*b(3) 
+           c(3) = a(1)*b(2) - a(2)*b(1) 
 !---
 
-      apexDscalar(i,lp,mp) = &
+           apexDscalar(i,lp,mp) = &
 !plasma_grid_3d(i,mp)%BM / Be3(1,mp,lp)
-&     ABS ( &
-& c(1)*c(1) + c(2)*c(2) + c(3)*c(3) &
-& )
+                &     ABS ( &
+                & c(1)*c(1) + c(2)*c(2) + c(3)*c(3) &
+                & )
+
 
 ! calculate bhat
-      bhat(east)  = apexD(i,lp,mp,east, 3) * apexDscalar(i,lp,mp)
-      bhat(north) = apexD(i,lp,mp,north,3) * apexDscalar(i,lp,mp)
-      bhat(up)    = apexD(i,lp,mp,up,   3) * apexDscalar(i,lp,mp)
+           bhat(east)  = apexD(ii,lp,mp,east, 3) * apexDscalar(i,lp,mp)
+           bhat(north) = apexD(ii,lp,mp,north,3) * apexDscalar(i,lp,mp)
+           bhat(up)    = apexD(ii,lp,mp,up,   3) * apexDscalar(i,lp,mp)
 
-      sinI = -bhat(up) !output
+           sinI = -bhat(up) !output
 
-      ufac  = SQRT(bhat(north)**2 + bhat(east)**2)
+!dbg           print *,i,lp,mp,'bhat',bhat
+           ufac  = SQRT(bhat(north)**2 + bhat(east)**2)
+
+!dbg           print *,'ufac',ufac
+
 ! l_mag: unit vector
 !(1) magnetic eastward exactly horizontal
 !    l_e = bhat x k /|bhat x k|
-      l_mag(i,lp,mp,east ,1) =  bhat(north)/ufac
-      l_mag(i,lp,mp,north,1) = -bhat(east) /ufac
-      l_mag(i,lp,mp,up   ,1) =  zero
+           if ( ufac > 0 ) then
+              l_mag(i,lp,mp,east ,1) =  bhat(north)/ufac
+              l_mag(i,lp,mp,north,1) = -bhat(east) /ufac
+              l_mag(i,lp,mp,up   ,1) =  zero
+           else 
+              print *,'sub-init_plasma_grid: STOP! INVALID ufac!',ufac
+              STOP
+           endif
       
 !i and j are longitude and latitude index, bhat is the unit vector
 !in direction of the geomagnetic filed line from subroutine apxmall,
@@ -137,9 +165,9 @@ b(3) = apexD(i,lp,mp,up,2)
 !unit vector in upward direction
 !(2) magnetic upward exactly horizontal
 ! l_u = l_e x bhat
-      l_mag(i,lp,mp,east, 2) = l_mag(i,lp,mp,north,1)*bhat(up)   - l_mag(i,lp,mp,up   ,1)*bhat(north)
-      l_mag(i,lp,mp,north,2) = l_mag(i,lp,mp,up   ,1)*bhat(east) - l_mag(i,lp,mp,east ,1)*bhat(up)
-      l_mag(i,lp,mp,up,   2) = l_mag(i,lp,mp,east ,1)*bhat(north)- l_mag(i,lp,mp,north,1)*bhat(east)
+           l_mag(i,lp,mp,east, 2) = l_mag(i,lp,mp,north,1)*bhat(up)   - l_mag(i,lp,mp,up   ,1)*bhat(north)
+           l_mag(i,lp,mp,north,2) = l_mag(i,lp,mp,up   ,1)*bhat(east) - l_mag(i,lp,mp,east ,1)*bhat(up)
+           l_mag(i,lp,mp,up,   2) = l_mag(i,lp,mp,east ,1)*bhat(north)- l_mag(i,lp,mp,north,1)*bhat(east)
 !with the vector l you can use the formula in Art's paper.
 
 !inserted from
