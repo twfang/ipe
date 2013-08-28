@@ -77,6 +77,10 @@ MODULE moduleTHERMOSPHERE
 
  CHARACTER(len=200) :: graphics_file
 
+ REAL*8, parameter :: PI = 3.14159
+ REAL*8, parameter :: DTR = PI/180.0 ! lrm20130822
+ REAL*8, parameter :: RTD = 180.0/PI
+
 !-------------------------------
 ! thermosphere lats & lons
 !-------------------------------
@@ -195,12 +199,12 @@ SUBROUTINE GT_thermosphere( &
       !----------------
       ! Parameters
       !----------------
-      REAL*8, parameter :: PI = 3.14159
+      !REAL*8, parameter :: PI = 3.14159
       REAL*8, parameter :: R0 = 6.370E06
       REAL*8, parameter :: R0SQ = R0*R0
 
-      REAL*8, parameter :: DTR = PI/180.0
-      REAL*8, parameter :: RTD = 180.0/PI
+      !REAL*8, parameter :: DTR = PI/180.0  moved to module head lrm20130822
+      !REAL*8, parameter :: RTD = 180.0/PI  moved to module head lrm20130822
       REAL*8, parameter :: Electron_charge_Coulombs = 1.602E-19
 
       REAL*8, parameter :: GRAV = 9.5
@@ -325,7 +329,7 @@ SUBROUTINE GT_thermosphere( &
  ! Arrays for checking values of source1, source2
  ! 20130610lrm
  !-----------------------------------------------------------
-! REAL*8 :: source1Array(n_levels,nlats,nlons), source2Array(n_levels,n_lats,n_lons)
+ REAL*8 :: source1Array(n_levels,n_lats,n_lons), source2Array(n_levels,n_lats,n_lons)
 ! REAL*8 :: c7Array(n_levels,n_lats,n_lons), k3Array(n_levels,n_lats,n_lons)
  REAL*8 :: a5Array(n_levels,n_lats,n_lons), b5Array(n_levels,n_lats,n_lons)
 
@@ -401,12 +405,12 @@ SUBROUTINE GT_thermosphere( &
 !-------------------------------------------------
 ! file units for checking aeuv, source1, source2 lrm20130610
 !-------------------------------------------------
-!INTEGER, parameter :: aeuvUnit = 5000, source1Unit = 5010, source2Unit = 5020
+INTEGER, parameter :: aeuvUnit = 5000, source1Unit = 5010, source2Unit = 5020
 INTEGER, parameter :: psmnUnit = 5030, rmtUnit = 5040, neutral_density_3dUnit = 5050
 INTEGER, parameter :: OplusUnit = 5060
 INTEGER, parameter :: a5Unit = 5070, b5Unit = 5080, c7Unit = 5090, k3Unit = 6000
 
-LOGICAL, parameter :: checkHeatingSources = .FALSE.
+LOGICAL, parameter :: checkHeatingSources = .TRUE.
 
 
 
@@ -435,22 +439,22 @@ LOGICAL, parameter :: checkHeatingSources = .FALSE.
  ! open output files
  !------------------------------------------------
  if (checkHeatingSources) then 
-     !source1Array = 0.
-     !source2Array = 0.
+     source1Array = 0.
+     source2Array = 0.
      !c7Array = 0.
      !k3Array = 0.
-     a5Array = 0.
-     b5Array = 0.
+     !a5Array = 0.
+     !b5Array = 0.
      !OPEN (aeuvUnit, FILE=TRIM(debugDir)//'aeuv.txt')
      !print *,'debugdir = ',debugdir
-     !OPEN (source1Unit, FILE=TRIM(debugDir)//'source1.txt')
-     !OPEN (source2Unit, FILE=TRIM(debugDir)//'source2.txt')
+     OPEN (source1Unit, FILE=TRIM(debugDir)//'source1.txt')
+     OPEN (source2Unit, FILE=TRIM(debugDir)//'source2.txt')
      !OPEN (psmnUnit, FILE=TRIM(debugDir)//'psmn.txt')
      !OPEN (rmtUnit, FILE=TRIM(debugDir)//'rmt.txt')
      !OPEN (neutral_density_3dUnit, FILE=TRIM(debugDir)//'neutral_density_3d.txt')
-     !OPEN (OplusUnit, FILE=TRIM(debugDir)//'OplusPressure.txt')
-     OPEN (a5Unit, FILE=TRIM(debugDir)//'a5.txt')
-     OPEN (b5Unit, FILE=TRIM(debugDir)//'b5.txt')
+     OPEN (OplusUnit, FILE=TRIM(debugDir)//'OplusPressure.txt')
+     !OPEN (a5Unit, FILE=TRIM(debugDir)//'a5.txt')
+     !OPEN (b5Unit, FILE=TRIM(debugDir)//'b5.txt')
      !OPEN (c7Unit, FILE=TRIM(debugDir)//'c7.txt')
      !OPEN (k3Unit, FILE=TRIM(debugDir)//'k3.txt')
 
@@ -1358,10 +1362,6 @@ qion3d = 0
            !! FOR DEBUGGING ONLY ******* :
            !!teff(n) = Temperature_K(n,m,l)
 
-           !O_plus_1d(n) = O_plus_density_m3(n,m,l)
-           !NO_plus_1d(n)= NO_plus_density_m3(n,m,l)
-           !O2_plus_1d(n)= O2_plus_density_m3(n,m,l)
-
            rnumden = pressure(n)/(BZ*Temperature_K(n,m,l))
            p1(n) = rnumden*psao(n,m,l)*rmt(n,m,l)/16.
            p2(n) = rnumden*psmo(n,m,l)*rmt(n,m,l)/32.
@@ -1566,7 +1566,7 @@ qion3d = 0
               !-----------------------------------------------
               !source2 = O_plus_density_m3(n,m,l)*p2(n)*k8*13.0*1.66E-19/neutral_density_1d(n) ! original
               !source2 = O_plus_density_m3(n,m,l)*p2(n)*k8*factor   ! lrm20130722
-               source2 = O_plus_density_m3(n,m,l)*p2(n)*k8*8.55*1.66E-19/neutral_density_1d(n)   ! ctipe formula lrm20130807
+              source2 = O_plus_density_m3(n,m,l)*p2(n)*k8*8.55*1.66E-19/neutral_density_1d(n)   ! ctipe formula lrm20130807
 
            endif ! if n>= 7
 
@@ -1584,8 +1584,8 @@ qion3d = 0
            ! For checking values of source1, source2  lrm20130610
            !--------------------------------------------------------
            if (checkHeatingSources) then
-              !source1Array(n,m,l) = source1 
-              !source2Array(n,m,l) = source2
+              source1Array(n,m,l) = source1 
+              source2Array(n,m,l) = source2
               !k3Array(n,m,l) = k3
               !c7Array(n,m,l) = c7(n)
            endif
@@ -2116,14 +2116,14 @@ qion3d = 0
                 if (checkHeatingSources) then
                     !print *,'gt_thermo : writing out aeuv, source1, source2...............'
                     !write(aeuvUnit,*) aeuv
-                    !write(source1Unit,*) source1Array
-                    !write(source2Unit,*) source2Array
+                    write(source1Unit,*) source1Array
+                    write(source2Unit,*) source2Array
                     !write(psmnUnit,*) psmn
                     !write(rmtUnit,*) rmt
                     !write(neutral_density_3dUnit,*) neutral_density_3d
-                    !write(OplusUnit,*) O_plus_density_m3
-                    write(a5Unit,*) a5Array
-                    write(b5Unit,*) b5Array
+                    write(OplusUnit,*) O_plus_density_m3
+                    !write(a5Unit,*) a5Array
+                    !write(b5Unit,*) b5Array
                     !write(c7Unit,*) c7Array
                     !write(k3Unit,*) k3Array
                 endif
@@ -2225,7 +2225,7 @@ REAL*8, parameter :: GRAV = 9.5
 REAL*8, parameter :: GSCON = 8.3141E+03
 REAL*8, parameter :: p0 = 1.0376
 REAL*8, parameter :: R0 = 6.370E06
-REAL*8, parameter  :: PI = 3.14159
+!REAL*8, parameter  :: PI = 3.14159
 
 
 
@@ -3349,9 +3349,11 @@ Subroutine calculate_magnetic_parameters_using_apex(inFileName, &
   ! REAL*8  B_declination_apex_degrees(91,20) NOT USED
   REAL*8 :: B_magnitude_horizontal_apex_nT
 
-  REAL*8 :: PI , DTR
+  !REAL*8 :: PI , DTR
+  !PARAMETER (PI=3.14159, DTR=PI/180.0)
 
-  PARAMETER (PI=3.14159, DTR=PI/180.0)
+  !REAL*8 :: PI
+  !PARAMETER (PI=3.14159)
 
   INTEGER, PARAMETER  :: fileUnit = 117
 
@@ -3437,7 +3439,8 @@ SUBROUTINE neutral_composition_equation(XX, PREs, I11, F107, VX, VY, HT, ARMt, O
            dz , f1 , F107 , f2 , f3 , f4 , fac , fp1
       REAL*8 g2 , gamma , grav , gscon , ho2 , HT , hte , htn , hto , &
              hts , htw , oh , OM , omo , omo2 , p1 , p1e , p1n , p1s , p1t
-      REAL*8 p1w , p2 , p2e , p2n , p2s , p2t , p2w , p3 , pi , pr2 , &
+      !REAL*8 p1w , p2 , p2e , p2n , p2s , p2t , p2w , p3 , pi , pr2 , &
+      REAL*8 p1w , p2 , p2e , p2n , p2s , p2t , p2w , p3 , pr2 , &
              PREs , ps , PSAo , psaop , PSMn , psmnp , PSMo , psmop , q1
       REAL*8 q2 , r1x , r1y , r1z , r2x , r2y , r2z , R0 , rlat , rmte , &
              rmtn , rmtp , rmts , rmtw , ro , ro2 , s1 , s2 , sht
@@ -3498,7 +3501,7 @@ SUBROUTINE neutral_composition_equation(XX, PREs, I11, F107, VX, VY, HT, ARMt, O
       amu = 1.66E-27
       grav = 9.5
       bz = 1.38E-23
-      pi = 3.14159
+      !pi = 3.14159
       dr = pi/180.
       m1 = 16.*amu
       m2 = 32.*amu
@@ -4642,7 +4645,7 @@ END SUBROUTINE IONNEUT
 
 
 
-SUBROUTINE BACK (temp0, vy0, temp0av, dh0)
+SUBROUTINE BACK (temp0, vy0, temp0av, dh0)  ! THIS IS NOT BEING USED ???!!! lrm20130827
 ! ** soubroutine calculates background zonal winds and elevation
 ! ** of lower boundary pressure level, caused by zonally averaged
 ! ** background temperature field (read in from backtemp file).
@@ -4656,13 +4659,16 @@ IMPLICIT NONE
 
       INTEGER :: m
       REAL*8  :: temp0(91) , vy0(91) , temp0av , dh0(91)
-      REAL*8  :: GSCON , OM , GRAV , lat , PI , dT , dTdx
-      PARAMETER (GSCON=8.3141E+03, OM = 7.29E-05, GRAV=9.81, PI=3.1416)
+      !REAL*8  :: GSCON , OM , GRAV , lat , PI , dT , dTdx
+      REAL*8  :: GSCON , OM , GRAV , lat , dT , dTdx
+      !PARAMETER (GSCON=8.3141E+03, OM = 7.29E-05, GRAV=9.81, PI=3.1416)
+      PARAMETER (GSCON=8.3141E+03, OM = 7.29E-05, GRAV=9.81)
 
       temp0av = 0.
       DO m = 2, 90
          lat = (m-1) - 90.
-         lat = lat*PI/180.
+         !lat = lat*PI/180.
+         lat = lat*DTR  ! convert degrees to radians lrm20130822
          dTdx = (temp0(m+1) - temp0(m-1))/(4*450.4E+3)
          IF (m /= 46) vy0(m) = -1./(2.*OM*SIN(lat))*GSCON/28.8*dTdx
          temp0av = temp0av + temp0(m)
@@ -4706,8 +4712,8 @@ SUBROUTINE FOSTER(EXNs, EYNs, newl, GW, AMP, potential)
       !-------------------
       ! Local variables
       !-------------------
-      REAL*8 DTR
-      PARAMETER (DTR=3.14159/180.)
+      !REAL*8 DTR
+      !PARAMETER (DTR=3.14159/180.)
 
       INTEGER :: newll 
 
@@ -4912,7 +4918,8 @@ SUBROUTINE TIDES (nn, m, l, hough11, hough22, hough23, hough24, hough25, & ! inp
       REAL*8 ssa, ssad
       REAL*8 ssa22, ssa23, ssa24, ssa11, ssa25
       REAL*8 lat, dlat
-      REAL*8 PI, R, OM, G, w1, w2, f, der22, der23, der24, derht, pht, ipht
+      !REAL*8 PI, R, OM, G, w1, w2, f, der22, der23, der24, derht, pht, ipht
+      REAL*8 :: R, OM, G, w1, w2, f, der22, der23, der24, derht, pht, ipht
       REAL*8 phtd, iphtd, derhtd, der11, merhtd, dmerhtd, facd
       REAL*8 vxd(15,91,20), vyd(15,91,20), lambda11, shift11
       REAL*8 merht, dmerht, fac
@@ -4924,7 +4931,8 @@ SUBROUTINE TIDES (nn, m, l, hough11, hough22, hough23, hough24, hough25, & ! inp
       REAL*8 shift22 , shift23 , shift24 , shift25
       REAL*8 der25 , lambda25
 
-      PARAMETER (PI=3.14159, R=6.371E+06, OM=7.292E-05, G=9.56)
+      !PARAMETER (PI=3.14159, R=6.371E+06, OM=7.292E-05, G=9.56)
+      PARAMETER (R=6.371E+06, OM=7.292E-05, G=9.56)
       PARAMETER (GSCON=8.3141E+03)
 
 ! BEGIN CODE ============================================================
@@ -5009,18 +5017,35 @@ vyd = 0.
       ENDIF
 
       lambda25 = SQRT(a5)
- 80   dlat = 4.* PI/180.
+! 80   dlat = 4.* PI/180.
+ 80   dlat = 4.* DTR
       lat = (m-1)*2 - 90.
-      lat = lat * PI/180.
+      !lat = lat * PI/180.
+      lat = lat * DTR
+
       f = 2*OM*SIN(lat)*60
 
-      ssa = ((FLOAT(l-1)*18.0) + FLOAT(nn)*DTIME/240)*2.0
-      ssad = ((FLOAT(l-1)*18.0) + FLOAT(nn)*DTIME/240)*1.0
+      !ssa = ((FLOAT(l-1)*18.0) + FLOAT(nn)*DTIME/240)*2.0
+      ssad = ( (FLOAT(l-1)*18.0) + FLOAT(nn)*DTIME/240)*1.0
+      ssa = ssad*2.0  ! lrm20130822
 
-      IF (ssa >= 360.0) ssa = ssa - 360
-      IF (ssa < 0.0) ssa = ssa + 360
-      IF (ssad >= 360.0) ssad = ssad - 360
-      IF (ssad < 0.0) ssad = ssad + 360
+      !IF (ssa >= 360.0) ssa = ssa - 360
+      !IF (ssa < 0.0) ssa = ssa + 360
+      IF (ssa >= 360.0) then ! lrm20130822
+          ssa = ssa - 360.
+      ELSE IF (ssa < 0.0) THEN
+           ssa = ssa + 360.
+      ENDIF
+
+      !IF (ssad >= 360.0) ssad = ssad - 360
+      !IF (ssad < 0.0) ssad = ssad + 360
+      IF (ssad >= 360.0) then ! lrm20130822
+          ssad = ssad - 360.
+      ELSE IF (ssad < 0.0) THEN
+           ssad = ssad + 360.
+      ENDIF
+
+
 
      !write(6,*) 'TIDES : nn, dtime, ssa ssad  ', nn, dtime, ssa , ssad
      !stop
@@ -5052,8 +5077,11 @@ vyd = 0.
       ssa24 = ssa + shift24*DTIME/240*2.0
       ssa25 = ssa + shift25*DTIME/240*2.0
 
+      !IF (ssa11 >= 360.0) ssa11 = ssa11 - 360
+      !IF (ssa11 < 0.0) ssa11 = ssa11 + 360
       IF (ssa11 >= 360.0) ssa11 = ssa11 - 360
       IF (ssa11 < 0.0) ssa11 = ssa11 + 360
+
       IF (ssa22 >= 360.0) ssa22 = ssa22 - 360
       IF (ssa22 < 0.0) ssa22 = ssa22 + 360
       IF (ssa23 >= 360.0) ssa23 = ssa23 - 360
@@ -5063,11 +5091,19 @@ vyd = 0.
       IF (ssa25 >= 360.0) ssa25 = ssa25 - 360
       IF (ssa25 < 0.0) ssa25 = ssa25 + 360
 
-      ssa11 = ssa11*PI/180.
-      ssa22 = ssa22*PI/180.
-      ssa23 = ssa23*PI/180.
-      ssa24 = ssa24*PI/180.
-      ssa25 = ssa25*PI/180.
+      !ssa11 = ssa11*PI/180.
+      !ssa22 = ssa22*PI/180.
+      !ssa23 = ssa23*PI/180.
+      !ssa24 = ssa24*PI/180.
+      !ssa25 = ssa25*PI/180.
+
+      ssa11 = ssa11*DTR
+      ssa22 = ssa22*DTR
+      ssa23 = ssa23*DTR
+      ssa24 = ssa24*DTR
+      ssa25 = ssa25*DTR
+
+
 
       pht = hough22(m)*(COS(ssa22))*amplitude%a_22+hough24(m)*(COS(ssa24)) &
            *amplitude%a_24+hough23(m)*(COS(ssa23))*amplitude%a_23+hough25(m)* &
@@ -5169,7 +5205,7 @@ SUBROUTINE high_lat_elecz(exns, ezns)
 !c  fill the arrays from 46 - 90 degrees latitude for ezns from
 !c  exns value
 
-      dtr = 3.14159/180.
+      !dtr = 3.14159/180.
 
       do 10 m = 1,22
         thmag = (45.-m)*2.
@@ -5206,7 +5242,8 @@ SUBROUTINE low_lat_efield(exns, eyns, ezns, plvu, zonal, f107, nday)
       ! Local variables
       !------------------------------------------
       REAL*8 &
-       dtr, thmag, cmag, b, dip, essa, rll, &
+       !dtr, thmag, cmag, b, dip, essa, rll, &
+       thmag, cmag, b, dip, essa, rll, &
        fac , factor, time , &
        plvu_dec_max(49), plvu_dec_min(49), &
        plvu_eq_max(49), plvu_eq_min(49), &
@@ -5413,7 +5450,7 @@ SUBROUTINE low_lat_efield(exns, eyns, ezns, plvu, zonal, f107, nday)
 !c  fill the arrays from 0 - 16 degrees latitude with values from
 !c  Jicamarca
 
-     dtr = 3.14159/180.
+     !dtr = 3.14159/180.
 
 !c  **
 !c  m values are every 2 degrees in magnetic latitude from 2 degrees from
@@ -5484,9 +5521,13 @@ END SUBROUTINE low_lat_efield
 SUBROUTINE Smooth_Tn_in_X(J, T, DELtha, S, NMIn, NMAx, MMIn, MMAx)
 
       IMPLICIT NONE
-      REAL*8 a1 , a2 , DELtha , dth , PI , S , T , th , tt
+      !REAL*8 a1 , a2 , DELtha , dth , PI , S , T , th , tt
+      REAL*8 a1 , a2 , DELtha , dth , S , T , th , tt
+
       INTEGER J , J1 , K1 , l , m , MMAx , MMIn , n , NMAx , NMIn
-      PARAMETER (J1=91, K1=22, PI=3.14159)
+      !PARAMETER (J1=91, K1=22, PI=3.14159)
+      PARAMETER (J1=91, K1=22)
+
       DIMENSION T(15,J,20) , tt(J1,K1)
       dth = DELtha/2.
 
@@ -5571,9 +5612,14 @@ SUBROUTINE Smooth_VnX_in_X(J, VX, VY, DELtha, DELphi, S, NMIn, NMAx, MMIn, MMAx)
       IMPLICIT NONE
 
       REAL*8 a1 , a2 , a3 , a4 , a5 , DELphi , DELtha , dphi , dth , &
-             dth2 , PI , S , sin2 , th , VX , vxt , VY , vyt
+             !dth2 , PI , S , sin2 , th , VX , vxt , VY , vyt
+             dth2 , S , sin2 , th , VX , vxt , VY , vyt
+
       INTEGER J , J1 , K1 , l , m , MMAx , MMIn , n , NMAx , NMIn
-      PARAMETER (J1=91,K1=22,PI=3.14159)
+
+      !PARAMETER (J1=91,K1=22,PI=3.14159)
+      PARAMETER (J1=91,K1=22)
+
       DIMENSION VX(15,J,20) , VY(15,J,20) , vxt(J1,K1) , vyt(J1,K1)
 
       dth = DELtha/2.
@@ -5627,10 +5673,14 @@ SUBROUTINE Smooth_VnX_in_Y(J, VX, VY, DELtha, DELphi, S, NMIn, NMAx, MMIn, MMAx)
       IMPLICIT NONE
 
       REAL*8 &
-       a1 , a2 , a3 , d2 , DELphi , DELtha , dphi , dth , PI , S , &
+       !a1 , a2 , a3 , d2 , DELphi , DELtha , dphi , dth , PI , S , &
+       a1 , a2 , a3 , d2 , DELphi , DELtha , dphi , dth , S , &
            sin2 , th , VX , vxt , VY , vyt
+
       INTEGER J , J1 , K1 , l , m , MMAx , MMIn , n , NMAx , NMIn
-      PARAMETER (J1=91, K1=22, PI=3.14159)
+      !PARAMETER (J1=91, K1=22, PI=3.14159)
+      PARAMETER (J1=91, K1=22)
+
       DIMENSION VX(15,J,20) , VY(15,J,20) , vxt(J1,K1) , vyt(J1,K1)
 
       dth = DELtha/2.
@@ -5681,10 +5731,18 @@ SUBROUTINE Smooth_VnY_in_X(J, VX, VY, DELtha, DELphi, S, NMIn, NMAx, MMIn, MMAx)
 
       REAL*8 &
        a1 , a2 , a3 , a4 , a5 , cth , DELphi , DELtha , dphi , dth , &
-           dth2 , PI , S , sin2 , th , VX , vxt , VY , vyt
+           !dth2 , PI , S , sin2 , th , VX , vxt , VY , vyt
+           dth2 , S , sin2 , th , VX , vxt , VY , vyt
+
       INTEGER J , J1 , K1 , l , m , MMAx , MMIn , n , NMAx , NMIn
-      PARAMETER (J1=91,K1=22,PI=3.14159)
+
+      !PARAMETER (J1=91,K1=22,PI=3.14159)
+      PARAMETER (J1=91,K1=22)
+
+
       DIMENSION VX(15,J,20) , VY(15,J,20) , vxt(J1,K1) , vyt(J1,K1)
+
+      !=====================================================================
 
       dth = DELtha/2.
       dphi = DELphi/2.
@@ -5739,11 +5797,18 @@ SUBROUTINE Smooth_VnY_in_Y(J, VX, VY, DELtha, DELphi, S, NMIn, NMAx, MMIn, MMAx)
       IMPLICIT NONE
 
       REAL*8 &
-           a1 , a2 , cth , DELphi , DELtha , dphi , dth , PI , S , th , &
+           !a1 , a2 , cth , DELphi , DELtha , dphi , dth , PI , S , th , &
+           a1 , a2 , cth , DELphi , DELtha , dphi , dth  , S , th , &
            VX , vxt , VY , vyt
+
       INTEGER J , J1 , K1 , l , m , MMAx , MMIn , n , NMAx , NMIn
-      PARAMETER (J1=91, K1=22, PI=3.14159)
+
+      !PARAMETER (J1=91, K1=22, PI=3.14159)
+      PARAMETER (J1=91, K1=22)
+
       DIMENSION VX(15,J,20) , VY(15,J,20) , vxt(J1,K1) , vyt(J1,K1)
+
+      !====================================================================
 
       dth = DELtha/2.
       dphi = DELphi/2.

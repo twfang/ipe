@@ -166,12 +166,17 @@ module_neutral_gt.3d.mpi.f90: call GT_thermosphere (...)
 
 ------------------------------------------------------------------------------------------------
 
-march 18, 2013 :
+Aug 22, 2013 :  for testing :
+
+nameListGTIPE_benchmark.txt : 
+
+start_time= 43200,
+stop_time= 46860,
+time_step=    900,
+ipeFileStartTime = 43200,
 
 benchmark input file:
-/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/INPUT/
-Day_80_180_dipole_test.gt.20110913.v1.nc
-
+/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/INPUT/BENCHMARK/Day_80_180_dipole_test.gt.20110913.v1.nc
 
 run difference script to check thermosphere output :
 

@@ -125,8 +125,9 @@ LOGICAL, parameter :: debugIonoInterp = .FALSE.
 
 !---------------------------------------------------------------
 ! Write out the Ionospheric pressure grid interpolated values??
+! ALSO WANT THIS IF YOU NEED THE AVERAGE HEIGHTS OF THE PRESSURE GRID *****
 !---------------------------------------------------------------
-LOGICAL, parameter :: debugIonoFixedtoPressure = .FALSE.
+LOGICAL, parameter :: debugIonoFixedtoPressure = .TRUE.
 
 !----------------------------------------
 ! File unit number for IPE startup files
@@ -987,7 +988,7 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
 ! DIVIDE OPLUS / 4  ONLY FOR TESTING ***********************************************
 ! DIVIDE OPLUS / 4  ONLY FOR TESTING ***********************************************
 ! DIVIDE OPLUS / 4  ONLY FOR TESTING ***********************************************
-Oplus_density_from_IPE = Oplus_density_from_IPE*(.25)
+!Oplus_density_from_IPE = Oplus_density_from_IPE*(.25)
 
 
 
@@ -1171,7 +1172,6 @@ Oplus_density_from_IPE = Oplus_density_from_IPE*(.25)
   If (debugIonoInterp) then !  *** MOVE TO DEBUG MODULE ***
       !print *,'driver_ipe_gt.3d : MINVAL(Oplus_high_res_fixed) = ', MINVAL(Oplus_high_res_fixed)
       !nm20120607dbg
-      !write(9999,*) Oplus_high_res_fixed   ! output
       write(unitCheckIonoInterpAfter,*) Oplus_high_res_fixed
       write(unitCheckIonoInterpAfter+1,*) Hplus_high_res_fixed
       write(unitCheckIonoInterpAfter+2,*) Nplus_high_res_fixed
