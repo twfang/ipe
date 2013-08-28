@@ -83,8 +83,8 @@ if(sw_debug)&
 
           GLON_deg = plasma_grid_3d(midpoint,mp)%GLON*180./pi
           LT_SEC = utime + GLON_deg/15.*3600.
-          IF ( LT_SEC>=86400.)  LT_SEC=LT_SEC-86400.
-          IF ( LT_SEC<     0.)  LT_SEC=LT_SEC+86400.
+          IF ( LT_SEC>=86400.)  LT_SEC = MOD ( LT_SEC, 86400. )
+          IF ( LT_SEC<     0.)  LT_SEC = LT_SEC + 86400.
           CALL supim_EXBV(utime,lp,LT_SEC,r_apex,GLON_deg ,VEXB3D(2,midpoint,mp))
 
         ELSE IF ( sw_exb_up==4 ) THEN 
