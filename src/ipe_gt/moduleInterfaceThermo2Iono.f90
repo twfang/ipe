@@ -132,33 +132,33 @@ REAL(kind=8) :: therm_qnp_aurora(ht_dim,lon_dim,lat_dim)
 REAL(kind=8) :: therm_qtef_aurora(ht_dim,lon_dim,lat_dim)
 
 ! Outputs ----------------------------
-REAL(kind=8), INTENT(OUT) :: interface_o_density(interface_hts,91,20)
-REAL(kind=8), INTENT(OUT) ::  interface_o2_density(interface_hts,91,20)
-REAL(kind=8), INTENT(OUT) ::  interface_n2_density(interface_hts,91,20)
+REAL(kind=8), INTENT(OUT) :: interface_o_density(interface_hts,lat_dim,20)
+REAL(kind=8), INTENT(OUT) ::  interface_o2_density(interface_hts,lat_dim,20)
+REAL(kind=8), INTENT(OUT) ::  interface_n2_density(interface_hts,lat_dim,20)
 
-!REAL(kind=8) :: NO_density_fixed_ht(interface_hts,91,20) ! was set but never used lrm20121108
-REAL(kind=8) :: N4S_density_fixed_ht(interface_hts,91,20)
-REAL(kind=8) :: N2D_density_fixed_ht(interface_hts,91,20)
+!REAL(kind=8) :: NO_density_fixed_ht(interface_hts,lat_dim,20) ! was set but never used lrm20121108
+REAL(kind=8) :: N4S_density_fixed_ht(interface_hts,lat_dim,20)
+REAL(kind=8) :: N2D_density_fixed_ht(interface_hts,lat_dim,20)
 
 
 ! Wind
-REAL(kind=8), INTENT(OUT) :: interface_East(interface_hts,91,20)
-REAL(kind=8), INTENT(OUT) :: interface_South(interface_hts,91,20)
-REAL(kind=8), INTENT(OUT) :: interface_Upward(interface_hts,91,20)
+REAL(kind=8), INTENT(OUT) :: interface_East(interface_hts,lat_dim,20)
+REAL(kind=8), INTENT(OUT) :: interface_South(interface_hts,lat_dim,20)
+REAL(kind=8), INTENT(OUT) :: interface_Upward(interface_hts,lat_dim,20)
 
 
 ! temperature
-REAL(kind=8), INTENT(OUT) ::  interface_Tn(interface_hts,91,20)
+REAL(kind=8), INTENT(OUT) ::  interface_Tn(interface_hts,lat_dim,20)
 
-REAL(kind=8) :: qion3d_fixed_ht(interface_hts,91,20)
-REAL(kind=8) :: elx_fixed_ht(interface_hts,91,20)
-REAL(kind=8) :: ely_fixed_ht(interface_hts,91,20)
+REAL(kind=8) :: qion3d_fixed_ht(interface_hts,lat_dim,20)
+REAL(kind=8) :: elx_fixed_ht(interface_hts,lat_dim,20)
+REAL(kind=8) :: ely_fixed_ht(interface_hts,lat_dim,20)
 
-REAL(kind=8) :: qo2p_aurora_fixed_ht(interface_hts,91,20)
-REAL(kind=8) :: qop_aurora_fixed_ht(interface_hts,91,20)
-REAL(kind=8) :: qn2p_aurora_fixed_ht(interface_hts,91,20)
-REAL(kind=8) :: qnp_aurora_fixed_ht(interface_hts,91,20)
-REAL(kind=8) :: qtef_aurora_fixed_ht(interface_hts,91,20)
+REAL(kind=8) :: qo2p_aurora_fixed_ht(interface_hts,lat_dim,20)
+REAL(kind=8) :: qop_aurora_fixed_ht(interface_hts,lat_dim,20)
+REAL(kind=8) :: qn2p_aurora_fixed_ht(interface_hts,lat_dim,20)
+REAL(kind=8) :: qnp_aurora_fixed_ht(interface_hts,lat_dim,20)
+REAL(kind=8) :: qtef_aurora_fixed_ht(interface_hts,lat_dim,20)
 
 
 ! Local variables -----------------------------------------
@@ -175,26 +175,26 @@ LOGICAL :: sw_input_Auroral_production_is_single_overall_rate
 REAL(kind=8) therm_height(ht_dim)
 
 
-REAL(kind=8) interface_NO_density(interface_hts,91,20)
-REAL(kind=8) interface_N4S_density(interface_hts,91,20)
-REAL(kind=8) interface_N2D_density(interface_hts,91,20)
+REAL(kind=8) interface_NO_density(interface_hts,lat_dim,20)
+REAL(kind=8) interface_N4S_density(interface_hts,lat_dim,20)
+REAL(kind=8) interface_N2D_density(interface_hts,lat_dim,20)
 
 
-REAL(kind=8) interface_qion3d(interface_hts,91,20)
-REAL(kind=8) interface_elx(interface_hts,91,20)
-REAL(kind=8) interface_ely(interface_hts,91,20)
-REAL(kind=8) interface_qo2p_aurora(interface_hts,91,20)
-REAL(kind=8) interface_qop_aurora(interface_hts,91,20)
-REAL(kind=8) interface_qn2p_aurora(interface_hts,91,20)
-REAL(kind=8) interface_qnp_aurora(interface_hts,91,20)
-REAL(kind=8) interface_qtef_aurora(interface_hts,91,20)
+REAL(kind=8) interface_qion3d(interface_hts,lat_dim,20)
+REAL(kind=8) interface_elx(interface_hts,lat_dim,20)
+REAL(kind=8) interface_ely(interface_hts,lat_dim,20)
+REAL(kind=8) interface_qo2p_aurora(interface_hts,lat_dim,20)
+REAL(kind=8) interface_qop_aurora(interface_hts,lat_dim,20)
+REAL(kind=8) interface_qn2p_aurora(interface_hts,lat_dim,20)
+REAL(kind=8) interface_qnp_aurora(interface_hts,lat_dim,20)
+REAL(kind=8) interface_qtef_aurora(interface_hts,lat_dim,20)
 
 
 INTEGER ilon_west_array(20)
 INTEGER ilon_east_array(20)
-INTEGER ilat_north_array(91)
-INTEGER ilat_south_array(91)
-REAL(kind=8) factor_lat_array(91)
+INTEGER ilat_north_array(lat_dim)
+INTEGER ilat_south_array(lat_dim)
+REAL(kind=8) factor_lat_array(lat_dim)
 REAL(kind=8) factor_lon_array(20)
 INTEGER ilon_west
 INTEGER ilon_east
@@ -203,21 +203,21 @@ INTEGER ilat_south
 REAL(kind=8) factor_lat
 REAL(kind=8) factor_lon
 
-INTEGER iht_above_west_north(interface_hts,91,20)
-INTEGER iht_below_west_north(interface_hts,91,20)
-INTEGER iht_above_east_north(interface_hts,91,20)
-INTEGER iht_below_east_north(interface_hts,91,20)
-INTEGER iht_above_west_south(interface_hts,91,20)
-INTEGER iht_below_west_south(interface_hts,91,20)
-INTEGER iht_above_east_south(interface_hts,91,20)
-INTEGER iht_below_east_south(interface_hts,91,20)
+INTEGER iht_above_west_north(interface_hts,lat_dim,20)
+INTEGER iht_below_west_north(interface_hts,lat_dim,20)
+INTEGER iht_above_east_north(interface_hts,lat_dim,20)
+INTEGER iht_below_east_north(interface_hts,lat_dim,20)
+INTEGER iht_above_west_south(interface_hts,lat_dim,20)
+INTEGER iht_below_west_south(interface_hts,lat_dim,20)
+INTEGER iht_above_east_south(interface_hts,lat_dim,20)
+INTEGER iht_below_east_south(interface_hts,lat_dim,20)
 INTEGER iht_above
 INTEGER iht_below
 
-REAL(kind=8) factor_ht_west_north(interface_hts,91,20)
-REAL(kind=8) factor_ht_east_north(interface_hts,91,20)
-REAL(kind=8) factor_ht_west_south(interface_hts,91,20)
-REAL(kind=8) factor_ht_east_south(interface_hts,91,20)
+REAL(kind=8) factor_ht_west_north(interface_hts,lat_dim,20)
+REAL(kind=8) factor_ht_east_north(interface_hts,lat_dim,20)
+REAL(kind=8) factor_ht_west_south(interface_hts,lat_dim,20)
+REAL(kind=8) factor_ht_east_south(interface_hts,lat_dim,20)
 
 REAL(kind=8) factor_ht12
 REAL(kind=8) factor_ht22
@@ -551,7 +551,7 @@ REAL(kind=8) qtef_aurora_p_1
 
 
 REAL(kind=8) interface_long(20)
-REAL(kind=8) interface_lat(91)
+REAL(kind=8) interface_lat(lat_dim)
 REAL(kind=8) interface_height(interface_hts)
 
 ! BEGIN CODE ===========================================================================
@@ -627,7 +627,7 @@ do ilon = 1 , 20
    !---------------------------------------
    ! Loop over interface latitudes....
    !------------------------------------
-   do ilat = 1 , 91
+   do ilat = 1 , lat_dim
 
       ! latitude interpolation....
 
@@ -751,7 +751,7 @@ do ilon = 1 , 20
    iht_above_west_south(iht,ilat,ilon) = iht_above
    iht_below_west_south(iht,ilat,ilon) = iht_below
 
-
+   ! REPLACE W/ MORE EFFICIENT SEARCH ????
    do iht_therm = 1 , ht_dim
       therm_height(iht_therm) = therm_Z(iht_therm, ilon_east, ilat_south) / 1000.
       if ( therm_height(iht_therm) > interface_height(iht) ) then
@@ -770,9 +770,7 @@ do ilon = 1 , 20
 
    factor_ht21 = (interface_height(iht) - therm_height(iht_below)) / (therm_height(iht_above) - therm_height(iht_below))
 
-   if( factor_ht21 < 0.0 ) factor_ht21 = 0.0
-
-   !print *,'factor_ht11 = ',factor_ht11
+   !if( factor_ht21 < 0.0 ) factor_ht21 = 0.0  ! moved below to a where statement for the array
 
    factor_ht_east_south(iht,ilat,ilon) = factor_ht21
    iht_above_east_south(iht,ilat,ilon) = iht_above
@@ -784,6 +782,9 @@ enddo  ! heights
 enddo  ! lats
 enddo  ! lons
 
+     WHERE (factor_ht_east_south < 0.) 
+            factor_ht_east_south = 0.0
+     END WHERE
 
 
 ! Loop over interface longitudes....
@@ -796,7 +797,7 @@ do ilon = 1 , 20
 
 ! Loop over interface latitudes....
 
-do ilat = 1 , 91
+do ilat = 1 , lat_dim
   factor_lat = factor_lat_array(ilat)
   ilat_north = ilat_north_array(ilat)
   ilat_south = ilat_south_array(ilat)
@@ -1377,12 +1378,16 @@ else
 
    interface_qo2p_aurora(iht,ilat,ilon) = ((qo2p_aurora_p_2 - qo2p_aurora_p_1) * factor_lon) + qo2p_aurora_p_1
    if (interface_qo2p_aurora(iht,ilat,ilon) < 0.0) interface_qo2p_aurora(iht,ilat,ilon) = 0.0
+
    interface_qop_aurora(iht,ilat,ilon) = ((qop_aurora_p_2 - qop_aurora_p_1) * factor_lon) + qop_aurora_p_1
    if (interface_qop_aurora(iht,ilat,ilon) < 0.0) interface_qop_aurora(iht,ilat,ilon) = 0.0
+
    interface_qn2p_aurora(iht,ilat,ilon) = ((qn2p_aurora_p_2 - qn2p_aurora_p_1) * factor_lon) + qn2p_aurora_p_1
    if (interface_qn2p_aurora(iht,ilat,ilon) < 0.0) interface_qn2p_aurora(iht,ilat,ilon) = 0.0
+
    interface_qnp_aurora(iht,ilat,ilon) = ((qnp_aurora_p_2 - qnp_aurora_p_1) * factor_lon) + qnp_aurora_p_1
    if (interface_qnp_aurora(iht,ilat,ilon) < 0.0) interface_qnp_aurora(iht,ilat,ilon) = 0.0
+
    interface_qtef_aurora(iht,ilat,ilon) = ((qtef_aurora_p_2 - qtef_aurora_p_1) * factor_lon) + qtef_aurora_p_1
    if (interface_qtef_aurora(iht,ilat,ilon) < 0.0) interface_qtef_aurora(iht,ilat,ilon) = 0.0
 
@@ -1424,13 +1429,15 @@ enddo
 
 if (sw_input_Auroral_production_is_single_overall_rate) then
     qion3d_fixed_ht(:,:,:) = interface_qion3d(:,:,:)
-else
+endif
+
+!else
     !qo2p_aurora_fixed_ht(:,:,:) = interface_qo2p_aurora(:,:,:)  never used lrm20121115
     !qop_aurora_fixed_ht(:,:,:)  = interface_qop_aurora(:,:,:)  never used lrm20121115
     !qn2p_aurora_fixed_ht(:,:,:) = interface_qn2p_aurora(:,:,:)  never used lrm20121115
     !qnp_aurora_fixed_ht(:,:,:)  = interface_qnp_aurora(:,:,:)  never used lrm20121115
     !qtef_aurora_fixed_ht(:,:,:) = interface_qtef_aurora(:,:,:)  never used lrm20121115
-endif
+!endif
 
 
 elx_fixed_ht(:,:,:) = interface_elx(:,:,:)
