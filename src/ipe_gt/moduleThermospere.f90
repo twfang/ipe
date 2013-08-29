@@ -10,7 +10,7 @@ MODULE moduleTHERMOSPHERE
   PUBLIC :: GT_thermosphere_INIT
   PUBLIC :: GT_thermosphere
   PUBLIC :: Foster
-  PUBLIC :: readelec
+  !PUBLIC :: readelec - NOT USED
   PUBLIC :: calculate_magnetic_parameters_using_apex
   !PUBLIC :: high_lat_elecz  - NOT USED 
   PUBLIC :: low_lat_efield
@@ -20,11 +20,8 @@ MODULE moduleTHERMOSPHERE
   PRIVATE
 
   ! Parameters
-  !integer, parameter :: n_levels = 15
   integer, parameter :: n_levels = GT_ht_dim
-  !integer, parameter :: n_lats = 91
   integer, parameter :: n_lats = GT_lat_dim
-  !integer, parameter :: n_lons = 20
   integer, parameter :: n_lons = GT_lon_dim 
 
   real(kind=8), parameter :: secondsInDay = 86400.
@@ -51,9 +48,7 @@ MODULE moduleTHERMOSPHERE
   REAL(kind=8) :: temp0(91)
   REAL(kind=8) :: temp0av
   REAL(kind=8) :: dh0(91)
-  !REAL(kind=8) :: htold(91,20)
   REAL(kind=8) :: htold(n_lats,n_lons)
-  !REAL(kind=8) :: pressure(15)
   REAL(kind=8) :: pressure(n_levels)
 
   REAL(kind=8) :: examp
@@ -168,7 +163,10 @@ SUBROUTINE GT_thermosphere( &
       REAL*8, INTENT(IN) :: NO_plus_density_m3(15,91,20)  !Y:I:NO+ density[m3] in pres coords
       REAL*8, INTENT(IN) :: O2_plus_density_m3(15,91,20)  !Y:I:O2+ density[m3] in pres coords
       REAL*8, INTENT(IN) :: Ti_Oplus_K(15,91,20)          !Y:I: O+ ion temperature[Kelvin]
-      REAL*8, INTENT(IN) :: exns(2,45,20), eyns(2,45,20), ezns(2,45,20) !Y:I: electric field X/Y/Z components[V/m](needs improvement)
+
+      !Y:I: electric field X/Y/Z components[V/m](needs improvement)
+      REAL*8, INTENT(IN) :: exns(2,45,20), eyns(2,45,20), ezns(2,45,20)  
+
       REAL*8, INTENT(IN) :: Dip_angle_degrees(91,20)      !M:I:(unit175) read in from gip
       REAL*8, INTENT(IN) :: B_magnitude_nT(91,20)
       REAL*8, INTENT(IN) :: Magnetic_latitude_degrees(91,20)  !M:I
@@ -179,8 +177,6 @@ SUBROUTINE GT_thermosphere( &
       REAL*8, INTENT(IN) :: emaps(21,20,7) , cmaps(21,20,7) , profile(15,21) !M:I
 
       ! OUTPUTS ----------------------------------------
-      !REAL(kind=8), INTENT(OUT) :: wind_southwards_ms1_copy(15,91,20)
-      !REAL(kind=8), INTENT(OUT) :: wind_eastwards_ms1_copy(15,91,20)
       REAL(kind=8), INTENT(OUT) :: wind_southwards_ms1_copy(n_levels, n_lats, n_lons)  ! lrm20130731
       REAL(kind=8), INTENT(OUT) :: wind_eastwards_ms1_copy(n_levels, n_lats, n_lons)
 
@@ -192,7 +188,6 @@ SUBROUTINE GT_thermosphere( &
       REAL(kind=8), INTENT(OUT) :: O2_density_copy(15,91,20)
       REAL(kind=8), INTENT(OUT) :: N2_density_copy(15,91,20)
 
-      !REAL*8, INTENT(OUT) :: qion3d(15,91,20) lrm20130731
       REAL*8, INTENT(OUT) :: qion3d(n_levels,n_lats,n_lons)
 
       ! Local Variables -------------------------------------------------------
@@ -257,7 +252,6 @@ SUBROUTINE GT_thermosphere( &
       REAL*8 :: dt, dvydy, &
                 elecx , elecz
 
-      !REAL*8 :: edep(15)
       REAL*8 :: edep(n_levels)
 
       REAL*8 :: elecy , &
@@ -341,7 +335,6 @@ SUBROUTINE GT_thermosphere( &
            div(15) , c7_3d(15,91,20), &
            c77_3d(15,91,20)
 
-! REAL*8 :: effqia(15), neutral_density_1d(15)   lrm20130731
  REAL*8 :: effqia(n_levels), neutral_density_1d(n_levels)
  REAL*8 :: neutral_density_3d(n_levels, n_lats, n_lons)
 
@@ -4766,50 +4759,50 @@ END SUBROUTINE FOSTER
 
 
 
+! READELEC IS NOT BEING USED 
+!SUBROUTINE READELEC(IHEmi,EX,EY)
 
-SUBROUTINE READELEC(IHEmi,EX,EY)
+!IMPLICIT NONE
 
-IMPLICIT NONE
-
-      REAL*8 aex , aey , apot , disty , EX(22,20) , EY(22,20) , PI180
-      INTEGER i , IHEmi , j , k , l , m
+!      REAL*8 aex , aey , apot , disty , EX(22,20) , EY(22,20) , PI180
+!      INTEGER i , IHEmi , j , k , l , m
 !
-!  reads electric fields as given by heppner and digitised july 86
-!  from input stream  ie unit 5
+!!  reads electric fields as given by heppner and digitised july 86
+!!  from input stream  ie unit 5
 !
-      PARAMETER (PI180=3.14159/180.)
-      DIMENSION apot(23,20) , aex(22,20) , aey(22,20)
-      IF ( IHEmi == 1 ) READ (34,99001) ((apot(i,j),j=1,20),i=1,23)
-      IF ( IHEmi == 2 ) READ (35,99001) ((apot(i,j),j=1,20),i=1,23)
-      IF ( IHEmi == 1 ) CLOSE (34)
-      IF ( IHEmi == 2 ) CLOSE (35)
+!      PARAMETER (PI180=3.14159/180.)
+!      DIMENSION apot(23,20) , aex(22,20) , aey(22,20)
+!      IF ( IHEmi == 1 ) READ (34,99001) ((apot(i,j),j=1,20),i=1,23)
+!      IF ( IHEmi == 2 ) READ (35,99001) ((apot(i,j),j=1,20),i=1,23)
+!      IF ( IHEmi == 1 ) CLOSE (34)
+!      IF ( IHEmi == 2 ) CLOSE (35)
 
-      DO 100 i = 2 , 23
-         disty = 2001.5*SIN((i-1)*2.*PI180)
-         DO 50 j = 1 , 20
-            k = j - 1
-            m = i - 1
-            IF ( j  ==  1 ) k = 20
-            aey(m,j) = -((apot(m,j)+apot(i,j))/2.-(apot(m,k)+apot(i,k)) &
-                       /2.)/disty
-            aex(m,j) = -((apot(i,j)+apot(i,k))/2.-(apot(m,j)+apot(m,k)) &
-                       /2.)/220.
- 50      CONTINUE
- 100  CONTINUE
+!      DO 100 i = 2 , 23
+!         disty = 2001.5*SIN((i-1)*2.*PI180)
+!         DO 50 j = 1 , 20
+!            k = j - 1
+!            m = i - 1
+!            IF ( j  ==  1 ) k = 20
+!            aey(m,j) = -((apot(m,j)+apot(i,j))/2.-(apot(m,k)+apot(i,k)) &
+!                       /2.)/disty
+!            aex(m,j) = -((apot(i,j)+apot(i,k))/2.-(apot(m,j)+apot(m,k)) &
+!                       /2.)/220.
+! 50      CONTINUE
+! 100  CONTINUE
 
-      DO 200 l = 1 , 20
-         DO 150 m = 1 , 22
-            EX(m,l) = aex(m,l)
-            EY(m,l) = aey(m,l)
- 150     CONTINUE
- 200  CONTINUE
+!      DO 200 l = 1 , 20
+!         DO 150 m = 1 , 22
+!            EX(m,l) = aex(m,l)
+!            EY(m,l) = aey(m,l)
+! 150     CONTINUE
+! 200  CONTINUE
 
-RETURN
+!RETURN
 
 !c      read(5,4000,end=108) ((apot(i,j),j=1,20),i=1,23)
-99001 FORMAT (1x,10F7.2)
+!99001 FORMAT (1x,10F7.2)
 
-END SUBROUTINE READELEC
+!END SUBROUTINE READELEC
 
 
 
