@@ -78,10 +78,6 @@ LOGICAL, parameter :: debugStartupIPE = .FALSE.
  CHARACTER(LEN=*), PARAMETER :: debugStartIPEFileName = 'CheckStartIPE.dat'
 
 
-! ONLY FOR TESTING................
-!INTEGER(KIND=int_prec), POINTER :: IN, IS
-
-
 !------------------------------------------------------
 ! File unit number for checking thermosphere values :
 !------------------------------------------------------

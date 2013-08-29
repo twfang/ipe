@@ -132,33 +132,33 @@ REAL(kind=8) :: therm_qnp_aurora(ht_dim,lon_dim,lat_dim)
 REAL(kind=8) :: therm_qtef_aurora(ht_dim,lon_dim,lat_dim)
 
 ! Outputs ----------------------------
-REAL(kind=8), INTENT(OUT) :: interface_o_density(interface_hts,lat_dim,20)
-REAL(kind=8), INTENT(OUT) ::  interface_o2_density(interface_hts,lat_dim,20)
-REAL(kind=8), INTENT(OUT) ::  interface_n2_density(interface_hts,lat_dim,20)
+REAL(kind=8), INTENT(OUT) :: interface_o_density(interface_hts,lat_dim,lon_dim)
+REAL(kind=8), INTENT(OUT) ::  interface_o2_density(interface_hts,lat_dim,lon_dim)
+REAL(kind=8), INTENT(OUT) ::  interface_n2_density(interface_hts,lat_dim,lon_dim)
 
-!REAL(kind=8) :: NO_density_fixed_ht(interface_hts,lat_dim,20) ! was set but never used lrm20121108
-REAL(kind=8) :: N4S_density_fixed_ht(interface_hts,lat_dim,20)
-REAL(kind=8) :: N2D_density_fixed_ht(interface_hts,lat_dim,20)
+!REAL(kind=8) :: NO_density_fixed_ht(interface_hts,lat_dim,lon_dim) ! was set but never used lrm20121108
+REAL(kind=8) :: N4S_density_fixed_ht(interface_hts,lat_dim,lon_dim)
+REAL(kind=8) :: N2D_density_fixed_ht(interface_hts,lat_dim,lon_dim)
 
 
 ! Wind
-REAL(kind=8), INTENT(OUT) :: interface_East(interface_hts,lat_dim,20)
-REAL(kind=8), INTENT(OUT) :: interface_South(interface_hts,lat_dim,20)
-REAL(kind=8), INTENT(OUT) :: interface_Upward(interface_hts,lat_dim,20)
+REAL(kind=8), INTENT(OUT) :: interface_East(interface_hts,lat_dim,lon_dim)
+REAL(kind=8), INTENT(OUT) :: interface_South(interface_hts,lat_dim,lon_dim)
+REAL(kind=8), INTENT(OUT) :: interface_Upward(interface_hts,lat_dim,lon_dim)
 
 
 ! temperature
-REAL(kind=8), INTENT(OUT) ::  interface_Tn(interface_hts,lat_dim,20)
+REAL(kind=8), INTENT(OUT) ::  interface_Tn(interface_hts,lat_dim,lon_dim)
 
-REAL(kind=8) :: qion3d_fixed_ht(interface_hts,lat_dim,20)
-REAL(kind=8) :: elx_fixed_ht(interface_hts,lat_dim,20)
-REAL(kind=8) :: ely_fixed_ht(interface_hts,lat_dim,20)
+REAL(kind=8) :: qion3d_fixed_ht(interface_hts,lat_dim,lon_dim)
+REAL(kind=8) :: elx_fixed_ht(interface_hts,lat_dim,lon_dim)
+REAL(kind=8) :: ely_fixed_ht(interface_hts,lat_dim,lon_dim)
 
-REAL(kind=8) :: qo2p_aurora_fixed_ht(interface_hts,lat_dim,20)
-REAL(kind=8) :: qop_aurora_fixed_ht(interface_hts,lat_dim,20)
-REAL(kind=8) :: qn2p_aurora_fixed_ht(interface_hts,lat_dim,20)
-REAL(kind=8) :: qnp_aurora_fixed_ht(interface_hts,lat_dim,20)
-REAL(kind=8) :: qtef_aurora_fixed_ht(interface_hts,lat_dim,20)
+REAL(kind=8) :: qo2p_aurora_fixed_ht(interface_hts,lat_dim,lon_dim)
+REAL(kind=8) :: qop_aurora_fixed_ht(interface_hts,lat_dim,lon_dim)
+REAL(kind=8) :: qn2p_aurora_fixed_ht(interface_hts,lat_dim,lon_dim)
+REAL(kind=8) :: qnp_aurora_fixed_ht(interface_hts,lat_dim,lon_dim)
+REAL(kind=8) :: qtef_aurora_fixed_ht(interface_hts,lat_dim,lon_dim)
 
 
 ! Local variables -----------------------------------------
@@ -175,27 +175,27 @@ LOGICAL :: sw_input_Auroral_production_is_single_overall_rate
 REAL(kind=8) therm_height(ht_dim)
 
 
-REAL(kind=8) interface_NO_density(interface_hts,lat_dim,20)
-REAL(kind=8) interface_N4S_density(interface_hts,lat_dim,20)
-REAL(kind=8) interface_N2D_density(interface_hts,lat_dim,20)
+REAL(kind=8) interface_NO_density(interface_hts,lat_dim,lon_dim)
+REAL(kind=8) interface_N4S_density(interface_hts,lat_dim,lon_dim)
+REAL(kind=8) interface_N2D_density(interface_hts,lat_dim,lon_dim)
 
 
-REAL(kind=8) interface_qion3d(interface_hts,lat_dim,20)
-REAL(kind=8) interface_elx(interface_hts,lat_dim,20)
-REAL(kind=8) interface_ely(interface_hts,lat_dim,20)
-REAL(kind=8) interface_qo2p_aurora(interface_hts,lat_dim,20)
-REAL(kind=8) interface_qop_aurora(interface_hts,lat_dim,20)
-REAL(kind=8) interface_qn2p_aurora(interface_hts,lat_dim,20)
-REAL(kind=8) interface_qnp_aurora(interface_hts,lat_dim,20)
-REAL(kind=8) interface_qtef_aurora(interface_hts,lat_dim,20)
+REAL(kind=8) interface_qion3d(interface_hts,lat_dim,lon_dim)
+REAL(kind=8) interface_elx(interface_hts,lat_dim,lon_dim)
+REAL(kind=8) interface_ely(interface_hts,lat_dim,lon_dim)
+REAL(kind=8) interface_qo2p_aurora(interface_hts,lat_dim,lon_dim)
+REAL(kind=8) interface_qop_aurora(interface_hts,lat_dim,lon_dim)
+REAL(kind=8) interface_qn2p_aurora(interface_hts,lat_dim,lon_dim)
+REAL(kind=8) interface_qnp_aurora(interface_hts,lat_dim,lon_dim)
+REAL(kind=8) interface_qtef_aurora(interface_hts,lat_dim,lon_dim)
 
 
-INTEGER ilon_west_array(20)
-INTEGER ilon_east_array(20)
+INTEGER ilon_west_array(lon_dim)
+INTEGER ilon_east_array(lon_dim)
 INTEGER ilat_north_array(lat_dim)
 INTEGER ilat_south_array(lat_dim)
 REAL(kind=8) factor_lat_array(lat_dim)
-REAL(kind=8) factor_lon_array(20)
+REAL(kind=8) factor_lon_array(lon_dim)
 INTEGER ilon_west
 INTEGER ilon_east
 INTEGER ilat_north
@@ -203,21 +203,21 @@ INTEGER ilat_south
 REAL(kind=8) factor_lat
 REAL(kind=8) factor_lon
 
-INTEGER iht_above_west_north(interface_hts,lat_dim,20)
-INTEGER iht_below_west_north(interface_hts,lat_dim,20)
-INTEGER iht_above_east_north(interface_hts,lat_dim,20)
-INTEGER iht_below_east_north(interface_hts,lat_dim,20)
-INTEGER iht_above_west_south(interface_hts,lat_dim,20)
-INTEGER iht_below_west_south(interface_hts,lat_dim,20)
-INTEGER iht_above_east_south(interface_hts,lat_dim,20)
-INTEGER iht_below_east_south(interface_hts,lat_dim,20)
+INTEGER iht_above_west_north(interface_hts,lat_dim,lon_dim)
+INTEGER iht_below_west_north(interface_hts,lat_dim,lon_dim)
+INTEGER iht_above_east_north(interface_hts,lat_dim,lon_dim)
+INTEGER iht_below_east_north(interface_hts,lat_dim,lon_dim)
+INTEGER iht_above_west_south(interface_hts,lat_dim,lon_dim)
+INTEGER iht_below_west_south(interface_hts,lat_dim,lon_dim)
+INTEGER iht_above_east_south(interface_hts,lat_dim,lon_dim)
+INTEGER iht_below_east_south(interface_hts,lat_dim,lon_dim)
 INTEGER iht_above
 INTEGER iht_below
 
-REAL(kind=8) factor_ht_west_north(interface_hts,lat_dim,20)
-REAL(kind=8) factor_ht_east_north(interface_hts,lat_dim,20)
-REAL(kind=8) factor_ht_west_south(interface_hts,lat_dim,20)
-REAL(kind=8) factor_ht_east_south(interface_hts,lat_dim,20)
+REAL(kind=8) factor_ht_west_north(interface_hts,lat_dim,lon_dim)
+REAL(kind=8) factor_ht_east_north(interface_hts,lat_dim,lon_dim)
+REAL(kind=8) factor_ht_west_south(interface_hts,lat_dim,lon_dim)
+REAL(kind=8) factor_ht_east_south(interface_hts,lat_dim,lon_dim)
 
 REAL(kind=8) factor_ht12
 REAL(kind=8) factor_ht22
@@ -550,7 +550,7 @@ REAL(kind=8) qtef_aurora_p_2
 REAL(kind=8) qtef_aurora_p_1
 
 
-REAL(kind=8) interface_long(20)
+REAL(kind=8) interface_long(lon_dim)
 REAL(kind=8) interface_lat(lat_dim)
 REAL(kind=8) interface_height(interface_hts)
 
@@ -560,14 +560,14 @@ REAL(kind=8) interface_height(interface_hts)
 sw_External_model_provides_NO_N4S_densities = GIP_switches(5)
 sw_input_Auroral_production_is_single_overall_rate = GIP_switches(7)
 
-do ilon = 1 , 20 
+do ilon = 1 , lon_dim 
   interface_long(ilon) = float(ilon-1)*18.
   if ( thermospheric_model_name == 'TGCM' ) then
      if ( interface_long(ilon) >  180. ) interface_long(ilon) = interface_long(ilon) - 360.
   endif
 enddo
 
-do ilat = 1 , 91
+do ilat = 1 , lat_dim
   interface_lat(ilat) = float(ilat-46) * 2.
 enddo
 
@@ -594,11 +594,12 @@ enddo
 !------------------------------------------
 ! Loop over interface longitudes....
 !------------------------------------------
-do ilon = 1 , 20
+do ilon = 1 , lon_dim
 
     !longitude interpolation
 
     ! loop over thermosphere longs to find points east and west....
+   ! MAKE MORE EFFICIENT SEARCH ?????
    ispecial = 0
    do ilon_therm = 1 , lon_dim
       if ( therm_long(ilon_therm) > interface_long(ilon)) then
@@ -607,9 +608,11 @@ do ilon = 1 , 20
           goto 1500
      endif
    enddo
+
    ilon_east = 1
    ilon_west = lon_dim
    ispecial = 1
+
 1500 continue
 
    if (ispecial == 0) then
@@ -648,8 +651,14 @@ do ilon = 1 , 20
 
      factor_lat = (interface_lat(ilat) - therm_lat(ilat_south)) / (therm_lat(ilat_north) - therm_lat(ilat_south))
 
-     if(factor_lat < 0.0) factor_lat = 0.0
-     if(factor_lat > 1.0) factor_lat = 1.0
+     !if(factor_lat < 0.0) factor_lat = 0.0
+     !if(factor_lat > 1.0) factor_lat = 1.0  lrm20130829
+     if (factor_lat < 0.0) then
+        factor_lat = 0.0
+     else if (factor_lat > 1.0) then
+        factor_lat = 1.0
+     endif
+
 
      !print *,'factor_lat = ', factor_lat
 
@@ -665,29 +674,26 @@ do ilon = 1 , 20
 
         ! height interpolation....
 
-   do iht_therm = 1 , ht_dim
-      therm_height(iht_therm) = therm_Z(iht_therm,ilon_west,ilat_north) / 1000.
-      if ( therm_height(iht_therm) > interface_height(iht) ) then 
-         iht_above = iht_therm
-         iht_below = iht_therm - 1
-         goto 2500
-      endif
-   enddo 
+        do iht_therm = 1 , ht_dim
+           therm_height(iht_therm) = therm_Z(iht_therm,ilon_west,ilat_north) / 1000.
+           if ( therm_height(iht_therm) > interface_height(iht) ) then 
+              iht_above = iht_therm
+              iht_below = iht_therm - 1
+              goto 2500
+           endif
+       enddo 
 
-2500 continue
+2500   continue
 
-   if ( iht_above == 1 ) then 
-        iht_above = 2
-        iht_below = 1
-   endif
+       if ( iht_above == 1 ) then 
+          iht_above = 2
+          iht_below = 1
+       endif
 
-   factor_ht12 = (interface_height(iht) - therm_height(iht_below)) / &
+       factor_ht12 = (interface_height(iht) - therm_height(iht_below)) / &
               (therm_height(iht_above) - therm_height(iht_below))
 
    if( factor_ht12 < 0.0 ) factor_ht12 = 0.0
-
-   !print *,'factor_ht12 = ',factor_ht12
-
 
    factor_ht_west_north(iht,ilat,ilon) = factor_ht12
    iht_above_west_north(iht,ilat,ilon) = iht_above
@@ -777,41 +783,39 @@ do ilon = 1 , 20
    iht_below_east_south(iht,ilat,ilon) = iht_below
 
 
-
 enddo  ! heights
 enddo  ! lats
 enddo  ! lons
 
-     WHERE (factor_ht_east_south < 0.) 
-            factor_ht_east_south = 0.0
-     END WHERE
+WHERE (factor_ht_east_south < 0.) 
+       factor_ht_east_south = 0.0
+END WHERE
 
 
 ! Loop over interface longitudes....
 
-do ilon = 1 , 20
+do ilon = 1 , lon_dim
 
- factor_lon = factor_lon_array(ilon)
- ilon_west = ilon_west_array(ilon)
- ilon_east = ilon_east_array(ilon)
+   factor_lon = factor_lon_array(ilon)
+   ilon_west = ilon_west_array(ilon)
+   ilon_east = ilon_east_array(ilon)
 
-! Loop over interface latitudes....
+   ! Loop over interface latitudes....
 
-do ilat = 1 , lat_dim
-  factor_lat = factor_lat_array(ilat)
-  ilat_north = ilat_north_array(ilat)
-  ilat_south = ilat_south_array(ilat)
-
-
-  !--------------------------------
-  ! Loop over interface heights....
-  !--------------------------------
-  do iht = 1 , interface_hts
+   do ilat = 1 , lat_dim
+     factor_lat = factor_lat_array(ilat)
+     ilat_north = ilat_north_array(ilat)
+     ilat_south = ilat_south_array(ilat)
 
 
-   !-----------------------------------
-   ! height interpolation....
-   !-----------------------------------
+     !--------------------------------
+     ! Loop over interface heights....
+     !--------------------------------
+     do iht = 1 , interface_hts
+
+        !-----------------------------------
+        ! height interpolation....
+        !-----------------------------------
 
    factor_ht12 = factor_ht_west_north(iht,ilat,ilon)
    iht_above = iht_above_west_north(iht,ilat,ilon)
@@ -1659,8 +1663,6 @@ SUBROUTINE INTERFACE__FIXED_GEO_to_IONOSPHERE( &
   REAL(kind=8) ::  TN(NPTS) , O(NPTS) , O2(NPTS) , N2(NPTS) , GLAt(NPTS) , &
                    PZ(NPTS) , GLOnd(NPTS)
 
-  !REAL(kind=8) :: pz_1000(npts) not used lrm20121115
-
   REAL(kind=8) :: small_power, small_number
 
 
@@ -2012,16 +2014,19 @@ do mp = 1 , nmp   ! longitude sectors
               else
                   o11=small_number
               endif
+
               if(o12 > small_power) then
                   o12=10**o12
               else
                   o12=small_number
               endif
+
               if(o21 > small_power) then
                   o21=10**o21
               else
                   o21=small_number
               endif
+
               if(o22 > small_power) then
                   o22=10**o22
               else
@@ -2033,16 +2038,19 @@ do mp = 1 , nmp   ! longitude sectors
               else
                   oo11=small_number
               endif
+
               if(oo12 > small_power) then
                   oo12=10**oo12
               else
                   oo12=small_number
               endif
+
               if(oo21 > small_power) then
                   oo21=10**oo21
               else
                   oo21=small_number
               endif
+
               if(oo22 > small_power) then
                   oo22=10**oo22
               else
@@ -2080,16 +2088,19 @@ do mp = 1 , nmp   ! longitude sectors
               else
                   dNO11=small_number
               endif
+
               if(dNO12 > small_power) then
                   dNO12=10**dNO12
               else
                   dNO12=small_number
               endif
+
               if(dNO21 > small_power) then
                   dNO21=10**dNO21
               else
                   dNO21=small_number
               endif
+
               if(dNO22 > small_power) then
                   dNO22=10**dNO22
               else
@@ -2101,16 +2112,19 @@ do mp = 1 , nmp   ! longitude sectors
               else
                   dN4S11=small_number
               endif
+
               if(dN4S12 > small_power) then
                   dN4S12=10**dN4S12
               else
                   dN4S12=small_number
               endif
+
               if(dN4S21 > small_power) then
                   dN4S21=10**dN4S21
               else
                   dN4S21=small_number
               endif
+
               if(dN4S22 > small_power) then
                   dN4S22=10**dN4S22
               else
@@ -2122,16 +2136,19 @@ do mp = 1 , nmp   ! longitude sectors
               else
                   dN2D11=small_number
               endif
+
               if(dN2D12 > small_power) then
                   dN2D12=10**dN2D12
               else
                   dN2D12=small_number
               endif
+
               if(dN2D21 > small_power) then
                   dN2D21=10**dN2D21
               else
                   dN2D21=small_number
               endif
+
               if(dN2D22 > small_power) then
                   dN2D22=10**dN2D22
               else
@@ -2153,6 +2170,7 @@ do mp = 1 , nmp   ! longitude sectors
               tn1 = ((tn12-tn11)*faclon) + tn11
 !             te2 = ((te22-te21)*faclon) + te21
 !             te1 = ((te12-te11)*faclon) + te11
+
               south2 = ((south22-south21)*faclon) + south21
               south1 = ((south12-south11)*faclon) + south11
               east2 = ((east22-east21)*faclon) + east21
@@ -2173,7 +2191,7 @@ do mp = 1 , nmp   ! longitude sectors
               !to2p2 = ((to2p22-to2p21)*faclon) + to2p21
               !to2p1 = ((to2p12-to2p11)*faclon) + to2p11
 
-          if(sw_External_model_provides_NO_N4S_densities) then
+          if (sw_External_model_provides_NO_N4S_densities) then
               dNO2 = ((dNO22-dNO21)*faclon) + dNO21
               dNO1 = ((dNO12-dNO11)*faclon) + dNO11
               dN4S2 = ((dN4S22-dN4S21)*faclon) + dN4S21
@@ -2199,6 +2217,7 @@ do mp = 1 , nmp   ! longitude sectors
               south(i) = ((south2-south1)*faclat) + south1
               east(i) = ((east2-east1)*faclat) + east1
               upward(i) = ((upward2-upward1)*faclat) + upward1
+
               O(i) = ((do2-do1)*faclat) + do1
               if(o(i) < small_number) o(i) = small_number
               O2(i) = ((doo2-doo1)*faclat) + doo1
