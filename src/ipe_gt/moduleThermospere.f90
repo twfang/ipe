@@ -12,7 +12,7 @@ MODULE moduleTHERMOSPHERE
   PUBLIC :: Foster
   PUBLIC :: readelec
   PUBLIC :: calculate_magnetic_parameters_using_apex
-  PUBLIC :: high_lat_elecz
+  !PUBLIC :: high_lat_elecz  - NOT USED 
   PUBLIC :: low_lat_efield
   PUBLIC :: setThermoLatLons
   PUBLIC :: therm_model_geo_lat_deg, therm_model_geo_long_deg
@@ -4645,7 +4645,7 @@ END SUBROUTINE IONNEUT
 
 
 
-SUBROUTINE BACK (temp0, vy0, temp0av, dh0)  ! THIS IS NOT BEING USED ???!!! lrm20130827
+!SUBROUTINE BACK (temp0, vy0, temp0av, dh0)  ! THIS IS NOT BEING USED ???!!! lrm20130827
 ! ** soubroutine calculates background zonal winds and elevation
 ! ** of lower boundary pressure level, caused by zonally averaged
 ! ** background temperature field (read in from backtemp file).
@@ -4655,37 +4655,37 @@ SUBROUTINE BACK (temp0, vy0, temp0av, dh0)  ! THIS IS NOT BEING USED ???!!! lrm2
 ! ** IMW, August 1996
 ! **
 
-IMPLICIT NONE
+!IMPLICIT NONE
 
-      INTEGER :: m
-      REAL*8  :: temp0(91) , vy0(91) , temp0av , dh0(91)
-      !REAL*8  :: GSCON , OM , GRAV , lat , PI , dT , dTdx
-      REAL*8  :: GSCON , OM , GRAV , lat , dT , dTdx
-      !PARAMETER (GSCON=8.3141E+03, OM = 7.29E-05, GRAV=9.81, PI=3.1416)
-      PARAMETER (GSCON=8.3141E+03, OM = 7.29E-05, GRAV=9.81)
+!      INTEGER :: m
+!      REAL*8  :: temp0(91) , vy0(91) , temp0av , dh0(91)
+!      !REAL*8  :: GSCON , OM , GRAV , lat , PI , dT , dTdx
+!      REAL*8  :: GSCON , OM , GRAV , lat , dT , dTdx
+!      !PARAMETER (GSCON=8.3141E+03, OM = 7.29E-05, GRAV=9.81, PI=3.1416)
+!      PARAMETER (GSCON=8.3141E+03, OM = 7.29E-05, GRAV=9.81)
 
-      temp0av = 0.
-      DO m = 2, 90
-         lat = (m-1) - 90.
-         !lat = lat*PI/180.
-         lat = lat*DTR  ! convert degrees to radians lrm20130822
-         dTdx = (temp0(m+1) - temp0(m-1))/(4*450.4E+3)
-         IF (m /= 46) vy0(m) = -1./(2.*OM*SIN(lat))*GSCON/28.8*dTdx
-         temp0av = temp0av + temp0(m)
-      ENDDO
+!      temp0av = 0.
+!      DO m = 2, 90
+!         lat = (m-1) - 90.
+!         !lat = lat*PI/180.
+!         lat = lat*DTR  ! convert degrees to radians lrm20130822
+!         dTdx = (temp0(m+1) - temp0(m-1))/(4*450.4E+3)
+!         IF (m /= 46) vy0(m) = -1./(2.*OM*SIN(lat))*GSCON/28.8*dTdx
+!         temp0av = temp0av + temp0(m)
+!      ENDDO
 
-      vy0(1) = 0.
-      vy0(91) = 0.
-      vy0(46) = (vy0(45) + vy0(47)) / 2.
-      temp0av = temp0av/89.
+!      vy0(1) = 0.
+!      vy0(91) = 0.
+!      vy0(46) = (vy0(45) + vy0(47)) / 2.
+!      temp0av = temp0av/89.
 
-      DO m = 1, 91
-         dT = temp0(m) - temp0av
-         dh0(m) = GSCON*dT/(GRAV*28.8)
-      ENDDO
+!      DO m = 1, 91
+!         dT = temp0(m) - temp0av
+!         dh0(m) = GSCON*dT/(GRAV*28.8)
+!      ENDDO
 
-RETURN
-END SUBROUTINE BACK
+!RETURN
+!END SUBROUTINE BACK
 
 
 
@@ -4816,53 +4816,53 @@ END SUBROUTINE READELEC
 
 
 
+! THIS IS NOT BEING USED !!!!!!!!!!!!!!
+!SUBROUTINE DMSPM2(THMagd, ESSa, KP, QT, DEN, DMSpmod, PROfil2)
 
-SUBROUTINE DMSPM2(THMagd, ESSa, KP, QT, DEN, DMSpmod, PROfil2)
+!      IMPLICIT NONE
 
-      IMPLICIT NONE
+!      REAL*8 DEN , DMSpmod , ed , ESSa , PROfil2 , QT , ri , rj , th , &
+!           THMagd
+!      INTEGER i , i1 , i2 , j1 , j2 , KP , ld , n , nn
+!!
+!! routine to get ionisation profile on 15 press levels from
+!! form data in common block ( generated form dmsp data)
+!!  t. fuller-rowell may 85
+!!
+!      DIMENSION PROfil2(15,16) , ed(16) , QT(15) , DEN(15) , &
+!                DMSpmod(21,20,16,7)
 
-      REAL*8 DEN , DMSpmod , ed , ESSa , PROfil2 , QT , ri , rj , th , &
-           THMagd
-      INTEGER i , i1 , i2 , j1 , j2 , KP , ld , n , nn
-!
-! routine to get ionisation profile on 15 press levels from
-! form data in common block ( generated form dmsp data)
-!  t. fuller-rowell may 85
-!
-      DIMENSION PROfil2(15,16) , ed(16) , QT(15) , DEN(15) , &
-                DMSpmod(21,20,16,7)
+!      ld = KP + 1
 
-      ld = KP + 1
+!      ri = ESSa/18.0 + 11.
+!      i1 = ri
+!      ri = ri - i1
+!      IF ( i1 > 20 ) i1 = i1 - 20
+!      i2 = i1 + 1
+!      IF ( i2 > 20 ) i2 = i2 - 20
+!      th = ABS(THMagd) - 50.
+!      rj = th/2. + 1.
+!      j1 = rj
+!      rj = rj - j1
+!      j2 = j1 + 1
 
-      ri = ESSa/18.0 + 11.
-      i1 = ri
-      ri = ri - i1
-      IF ( i1 > 20 ) i1 = i1 - 20
-      i2 = i1 + 1
-      IF ( i2 > 20 ) i2 = i2 - 20
-      th = ABS(THMagd) - 50.
-      rj = th/2. + 1.
-      j1 = rj
-      rj = rj - j1
-      j2 = j1 + 1
+!      DO 100 i = 1 , 16
+!         ed(i) = rj*ri*DMSpmod(j2,i2,i,ld) + (1.-rj) &
+!                 *ri*DMSpmod(j1,i2,i,ld) + rj*(1.-ri) &
+!                 *DMSpmod(j2,i1,i,ld) + (1.-rj)*(1.-ri) &
+!                 *DMSpmod(j1,i1,i,ld)
+! 100  CONTINUE
 
-      DO 100 i = 1 , 16
-         ed(i) = rj*ri*DMSpmod(j2,i2,i,ld) + (1.-rj) &
-                 *ri*DMSpmod(j1,i2,i,ld) + rj*(1.-ri) &
-                 *DMSpmod(j2,i1,i,ld) + (1.-rj)*(1.-ri) &
-                 *DMSpmod(j1,i1,i,ld)
- 100  CONTINUE
+!      DO 200 nn = 1 , 15
+!         n = nn
+!         QT(n) = 0.0
+!         DO 150 i = 1 , 16
+!            QT(n) = QT(n) + ed(i)*PROfil2(nn,i)*DEN(n)
+! 150     CONTINUE
+! 200  CONTINUE
 
-      DO 200 nn = 1 , 15
-         n = nn
-         QT(n) = 0.0
-         DO 150 i = 1 , 16
-            QT(n) = QT(n) + ed(i)*PROfil2(nn,i)*DEN(n)
- 150     CONTINUE
- 200  CONTINUE
-
-RETURN
-END SUBROUTINE DMSPM2
+!RETURN
+!END SUBROUTINE DMSPM2
 
 
 
@@ -5193,32 +5193,32 @@ END SUBROUTINE TIDES
 
 
 
+!THIS IS NOT USED ********************
+!SUBROUTINE high_lat_elecz(exns, ezns)
 
-SUBROUTINE high_lat_elecz(exns, ezns)
+!      IMPLICIT NONE
 
-      IMPLICIT NONE
+!      REAL*8 &
+!        exns(2,45,20), ezns(2,45,20), dtr, thmag, cmag, dip
+!      INTEGER  m, l
 
-      REAL*8 &
-        exns(2,45,20), ezns(2,45,20), dtr, thmag, cmag, dip
-      INTEGER  m, l
+!!c  fill the arrays from 46 - 90 degrees latitude for ezns from
+!!c  exns value
 
-!c  fill the arrays from 46 - 90 degrees latitude for ezns from
-!c  exns value
+!      !dtr = 3.14159/180.
 
-      !dtr = 3.14159/180.
+!      do 10 m = 1,22
+!        thmag = (45.-m)*2.
+!        cmag = 90.-thmag
+!        dip = atan(2.*cos(cmag*dtr)/sin(cmag*dtr))
+!        do 20 l = 1,20
+!           ezns(1,m,l) = -exns(1,m,l)*cos(dip)/sin(dip)
+!           ezns(2,m,l) =  ezns(1,m,l)
+!   20   continue
+!   10   continue
 
-      do 10 m = 1,22
-        thmag = (45.-m)*2.
-        cmag = 90.-thmag
-        dip = atan(2.*cos(cmag*dtr)/sin(cmag*dtr))
-        do 20 l = 1,20
-           ezns(1,m,l) = -exns(1,m,l)*cos(dip)/sin(dip)
-           ezns(2,m,l) =  ezns(1,m,l)
-   20   continue
-   10   continue
-
-RETURN
-END SUBROUTINE high_lat_elecz
+!RETURN
+!END SUBROUTINE high_lat_elecz
 
 
 
