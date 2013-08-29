@@ -8,7 +8,8 @@ NETCDF = /apps/netcdf/3.6.3/intel
 FORTRAN=ifort
 #FFLAGS=-I$(NETCDF)/include -warn general -check all -traceback -ftrapuv -O0 -g -fpe:0 -fpstkchk
 
-ERRORFLAGS=-warn general -check all -traceback -ftrapuv -O0 -g -fpe:0 
+# enable gprof profiler w/ -pg
+ERRORFLAGS=-warn general -check all -traceback -ftrapuv -O0 -g -fpe:0 -pg
 
 FFLAGS=$(ERRORFLAGS) -I$(NETCDF)/include
 

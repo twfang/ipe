@@ -10,9 +10,7 @@ MODULE moduleTHERMOSPHERE
   PUBLIC :: GT_thermosphere_INIT
   PUBLIC :: GT_thermosphere
   PUBLIC :: Foster
-  !PUBLIC :: readelec - NOT USED
   PUBLIC :: calculate_magnetic_parameters_using_apex
-  !PUBLIC :: high_lat_elecz  - NOT USED 
   PUBLIC :: low_lat_efield
   PUBLIC :: setThermoLatLons
   PUBLIC :: therm_model_geo_lat_deg, therm_model_geo_long_deg
@@ -44,7 +42,9 @@ MODULE moduleTHERMOSPHERE
   REAL(kind=8) :: umut(n_levels)
 
 
-  REAL(kind=8) :: vy0(91)
+  !REAL(kind=8) :: vy0(91)
+  REAL(kind=8) :: vy0(n_lats) ! lrm20130829
+
   REAL(kind=8) :: temp0(91)
   REAL(kind=8) :: temp0av
   REAL(kind=8) :: dh0(91)
@@ -345,8 +345,6 @@ SUBROUTINE GT_thermosphere( &
                 vyw(15) , epsw(15) , htw(15) , vxs(15) , vys(15) , &
                 epss(15) , hts(15) , a8(15) , b8(15) , c10(15) , &
                 qeuv(15) , qir(15) 
-                !vx2(15,91) , vy2(15,91) , eps2(15,91) , &  moved below lrm20130731
-                !vxl(15,91) , vyl(15,91) , epsl(15,91) moved below lrm20130731
 
  REAL*8 :: vx2(n_levels,n_lats) , vy2(n_levels,n_lats) , eps2(n_levels,n_lats) 
  REAL*8 :: vxl(n_levels,n_lats) , vyl(n_levels,n_lats) , epsl(n_levels,n_lats)
@@ -764,9 +762,6 @@ qion3d = 0
  !************************
  !    longitude loop l   *
  !************************
-
- !DO 1740 l = 1 , 20
- !DO 1740 l = 1 , n_lons
  lonloop1740 : DO l = 1 , n_lons
 
     le = l + 1
@@ -927,7 +922,6 @@ qion3d = 0
         CALL SPECIFIC_HEAT(psao(1,m,l), psmo(1,m,l), psmn(1,m,l), cp)
 
 
-        !DO 1625 n = 1 , 15
         levelsloop1625 : DO n = 1 , n_levels
 
            nu = n + 1
@@ -1144,9 +1138,6 @@ qion3d = 0
     !-----------------------------
     ! call tiros if required
     !-----------------------------
-    !DO n = 1 , 15
-    !   qiont(n) = 0.0
-    !END DO
      qiont = 0.0 ! whole array assignment to 0 lrm20130731
 
      level = newl
@@ -1693,18 +1684,6 @@ qion3d = 0
          vy2(:,m) = Vy_1d_copy(:)
          eps2(:,m) = Eps_1d_copy(:)
 
-         !DO 1715 n = 1 , 15
-         !DO n = 1, n_levels
-                !vx2(n,m) = Vx_1d_copy(n)
-                !vy2(n,m) = Vy_1d_copy(n)
-                !eps2(n,m) = Eps_1d_copy(n)
-               ! IF ( l == 1 ) THEN
-               !      vxl(n,m) = Vx_1d_copy(n)
-               !      vyl(n,m) = Vy_1d_copy(n)
-               !      epsl(n,m) = Eps_1d_copy(n)
-               ! ENDIF
-         !END DO
-
          IF ( l == 1 ) THEN
             vxl(:,m) = Vx_1d_copy(:)
             vyl(:,m) = Vy_1d_copy(:)
@@ -1715,9 +1694,7 @@ qion3d = 0
 !g
 !g  End of the latitude, longitude loops.....
 !g
- ! 1720          CONTINUE
    END DO latloop1720
- ! 1740       CONTINUE
  END DO lonloop1740
 
 
@@ -4638,55 +4615,6 @@ END SUBROUTINE IONNEUT
 
 
 
-!SUBROUTINE BACK (temp0, vy0, temp0av, dh0)  ! THIS IS NOT BEING USED ???!!! lrm20130827
-! ** soubroutine calculates background zonal winds and elevation
-! ** of lower boundary pressure level, caused by zonally averaged
-! ** background temperature field (read in from backtemp file).
-! ** Equations are based on perfect gas law and geostrophic
-! ** balance equation.
-! **
-! ** IMW, August 1996
-! **
-
-!IMPLICIT NONE
-
-!      INTEGER :: m
-!      REAL*8  :: temp0(91) , vy0(91) , temp0av , dh0(91)
-!      !REAL*8  :: GSCON , OM , GRAV , lat , PI , dT , dTdx
-!      REAL*8  :: GSCON , OM , GRAV , lat , dT , dTdx
-!      !PARAMETER (GSCON=8.3141E+03, OM = 7.29E-05, GRAV=9.81, PI=3.1416)
-!      PARAMETER (GSCON=8.3141E+03, OM = 7.29E-05, GRAV=9.81)
-
-!      temp0av = 0.
-!      DO m = 2, 90
-!         lat = (m-1) - 90.
-!         !lat = lat*PI/180.
-!         lat = lat*DTR  ! convert degrees to radians lrm20130822
-!         dTdx = (temp0(m+1) - temp0(m-1))/(4*450.4E+3)
-!         IF (m /= 46) vy0(m) = -1./(2.*OM*SIN(lat))*GSCON/28.8*dTdx
-!         temp0av = temp0av + temp0(m)
-!      ENDDO
-
-!      vy0(1) = 0.
-!      vy0(91) = 0.
-!      vy0(46) = (vy0(45) + vy0(47)) / 2.
-!      temp0av = temp0av/89.
-
-!      DO m = 1, 91
-!         dT = temp0(m) - temp0av
-!         dh0(m) = GSCON*dT/(GRAV*28.8)
-!      ENDDO
-
-!RETURN
-!END SUBROUTINE BACK
-
-
-
-
-
-
-
-
 
 SUBROUTINE FOSTER(EXNs, EYNs, newl, GW, AMP, potential)
 
@@ -4755,107 +4683,6 @@ SUBROUTINE FOSTER(EXNs, EYNs, newl, GW, AMP, potential)
 
 END SUBROUTINE FOSTER
 
-
-
-
-
-! READELEC IS NOT BEING USED 
-!SUBROUTINE READELEC(IHEmi,EX,EY)
-
-!IMPLICIT NONE
-
-!      REAL*8 aex , aey , apot , disty , EX(22,20) , EY(22,20) , PI180
-!      INTEGER i , IHEmi , j , k , l , m
-!
-!!  reads electric fields as given by heppner and digitised july 86
-!!  from input stream  ie unit 5
-!
-!      PARAMETER (PI180=3.14159/180.)
-!      DIMENSION apot(23,20) , aex(22,20) , aey(22,20)
-!      IF ( IHEmi == 1 ) READ (34,99001) ((apot(i,j),j=1,20),i=1,23)
-!      IF ( IHEmi == 2 ) READ (35,99001) ((apot(i,j),j=1,20),i=1,23)
-!      IF ( IHEmi == 1 ) CLOSE (34)
-!      IF ( IHEmi == 2 ) CLOSE (35)
-
-!      DO 100 i = 2 , 23
-!         disty = 2001.5*SIN((i-1)*2.*PI180)
-!         DO 50 j = 1 , 20
-!            k = j - 1
-!            m = i - 1
-!            IF ( j  ==  1 ) k = 20
-!            aey(m,j) = -((apot(m,j)+apot(i,j))/2.-(apot(m,k)+apot(i,k)) &
-!                       /2.)/disty
-!            aex(m,j) = -((apot(i,j)+apot(i,k))/2.-(apot(m,j)+apot(m,k)) &
-!                       /2.)/220.
-! 50      CONTINUE
-! 100  CONTINUE
-
-!      DO 200 l = 1 , 20
-!         DO 150 m = 1 , 22
-!            EX(m,l) = aex(m,l)
-!            EY(m,l) = aey(m,l)
-! 150     CONTINUE
-! 200  CONTINUE
-
-!RETURN
-
-!c      read(5,4000,end=108) ((apot(i,j),j=1,20),i=1,23)
-!99001 FORMAT (1x,10F7.2)
-
-!END SUBROUTINE READELEC
-
-
-
-
-
-
-! THIS IS NOT BEING USED !!!!!!!!!!!!!!
-!SUBROUTINE DMSPM2(THMagd, ESSa, KP, QT, DEN, DMSpmod, PROfil2)
-
-!      IMPLICIT NONE
-
-!      REAL*8 DEN , DMSpmod , ed , ESSa , PROfil2 , QT , ri , rj , th , &
-!           THMagd
-!      INTEGER i , i1 , i2 , j1 , j2 , KP , ld , n , nn
-!!
-!! routine to get ionisation profile on 15 press levels from
-!! form data in common block ( generated form dmsp data)
-!!  t. fuller-rowell may 85
-!!
-!      DIMENSION PROfil2(15,16) , ed(16) , QT(15) , DEN(15) , &
-!                DMSpmod(21,20,16,7)
-
-!      ld = KP + 1
-
-!      ri = ESSa/18.0 + 11.
-!      i1 = ri
-!      ri = ri - i1
-!      IF ( i1 > 20 ) i1 = i1 - 20
-!      i2 = i1 + 1
-!      IF ( i2 > 20 ) i2 = i2 - 20
-!      th = ABS(THMagd) - 50.
-!      rj = th/2. + 1.
-!      j1 = rj
-!      rj = rj - j1
-!      j2 = j1 + 1
-
-!      DO 100 i = 1 , 16
-!         ed(i) = rj*ri*DMSpmod(j2,i2,i,ld) + (1.-rj) &
-!                 *ri*DMSpmod(j1,i2,i,ld) + rj*(1.-ri) &
-!                 *DMSpmod(j2,i1,i,ld) + (1.-rj)*(1.-ri) &
-!                 *DMSpmod(j1,i1,i,ld)
-! 100  CONTINUE
-
-!      DO 200 nn = 1 , 15
-!         n = nn
-!         QT(n) = 0.0
-!         DO 150 i = 1 , 16
-!            QT(n) = QT(n) + ed(i)*PROfil2(nn,i)*DEN(n)
-! 150     CONTINUE
-! 200  CONTINUE
-
-!RETURN
-!END SUBROUTINE DMSPM2
 
 
 
@@ -5179,41 +5006,6 @@ vyd = 0.
 
  200      RETURN
 END SUBROUTINE TIDES
-
-
-
-
-
-
-
-!THIS IS NOT USED ********************
-!SUBROUTINE high_lat_elecz(exns, ezns)
-
-!      IMPLICIT NONE
-
-!      REAL*8 &
-!        exns(2,45,20), ezns(2,45,20), dtr, thmag, cmag, dip
-!      INTEGER  m, l
-
-!!c  fill the arrays from 46 - 90 degrees latitude for ezns from
-!!c  exns value
-
-!      !dtr = 3.14159/180.
-
-!      do 10 m = 1,22
-!        thmag = (45.-m)*2.
-!        cmag = 90.-thmag
-!        dip = atan(2.*cos(cmag*dtr)/sin(cmag*dtr))
-!        do 20 l = 1,20
-!           ezns(1,m,l) = -exns(1,m,l)*cos(dip)/sin(dip)
-!           ezns(2,m,l) =  ezns(1,m,l)
-!   20   continue
-!   10   continue
-
-!RETURN
-!END SUBROUTINE high_lat_elecz
-
-
 
 
 
