@@ -308,15 +308,18 @@
 !           (0) self consistent electrodynamics comming soon...
 !           (1) WACCM E empirical model
 !           Ed1/2[V/m] at ( phi_t1(mp), theta_t1(lp) ), Be3[T]
-!           note: Be3 is constant along a magnetic field!!! 
-            ihem=1! For now
+!           note: Ed1_90, Ed2_90, and Be3 are constant along magnetic field lines!!! 
             midpoint = JMIN_IN(lp) + (JMAX_IS(lp) - JMIN_IN(lp))/2
 
-            v_e(1) =   Ed2_90(ihem,lp,mp) / Be3(lp,mp) !(4.18) +mag-east(d1?) 
-            v_e(2) = - Ed1_90(ihem,lp,mp) / Be3(lp,mp) !(4.19) +down/equatorward(d2?)
+!nm20130830: Ed1/2_90 should be constant along magnetic field lines!!!
+      if(mp==1) print *,lp,mp,'!nm20130830: ed1_90NH=',ed1_90(1,lp,mp)  &
+     &,' SH=',ed1_90(2,lp,mp)
+
+            v_e(1) =   Ed2_90(1,lp,mp) / Be3(lp,mp) !(4.18) +mag-east(d1?) 
+            v_e(2) = - Ed1_90(1,lp,mp) / Be3(lp,mp) !(4.19) +down/equatorward(d2?)
             if(sw_debug) then
               print *,'sub-StR:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]',    &
-     &           Ed1_90(ihem,lp,mp)*1.0E+3,' Be3[tesla]',Be3(lp,mp) 
+     &           Ed1_90(1,lp,mp)*1.0E+3,' Be3[tesla]',Be3(lp,mp) 
             endif
 !nm20130201
 ! EXB in geographic frame

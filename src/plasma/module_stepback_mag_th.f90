@@ -72,13 +72,13 @@ theta_t1(2) = plasma_grid_GL( JMAX_IS(lp),lp ) !SH
 !        END IF
 
 ! Ed1/2[V/m] at ( phi_t1(mp), theta_t1(lp) ), Be3[T]
-!note: Be3 is constant along a magnetic field!!! 
-        v_e(1) =   Ed2_90(ihem,lp,mp) / Be3(lp,mp) !(4.18) +mag-east(d1?) 
-        v_e(2) = - Ed1_90(ihem,lp,mp) / Be3(lp,mp) !(4.19) +down/equatorward(d2?)
+!note: Ed1_90, Ed2_90, Be3 are constant along magnetic field lines!!! 
+        v_e(1) =   Ed2_90(1,lp,mp) / Be3(lp,mp) !(4.18) +mag-east(d1?) 
+        v_e(2) = - Ed1_90(1,lp,mp) / Be3(lp,mp) !(4.19) +down/equatorward(d2?)
         
 !dbg
 if(sw_debug) &
-& print *,'sub-St:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]', Ed1_90(ihem,lp,mp)*1.0E+3,' Be3[tesla]',Be3(lp,mp) 
+& print *,'sub-St:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]', Ed1_90(1,lp,mp)*1.0E+3,' Be3[tesla]',Be3(lp,mp) 
 !dbg ,' BM-N',plasma_grid_3d( JMIN_IN(lp,mp) ,mp)%BM,' BM-S',plasma_grid_3d( JMAX_IS(lp,mp) ,mp)%BM
 
 
