@@ -78,7 +78,7 @@ print "('D2         =',6E12.4)", apexD(in,lp,mp,east,2),apexD(in,lp,mp,north,2),
 print "('D3         =',6E12.4)", apexD(in,lp,mp,east,3),apexD(in,lp,mp,north,3),apexD(in,lp,mp,up,3), apexD(is,lp,mp,east,3),apexD(is,lp,mp,north,3),apexD(is,lp,mp,up,3)
 print "('E1         =',2E12.4)", apexE(in,lp,mp,east,1), apexE(is,lp,mp,east,1)
 print "('E2         =',2E12.4)", apexE(in,lp,mp,east,2), apexE(is,lp,mp,east,2)
-print "('Be3 [T] NH/SH  =',2E12.4)", Be3(1,lp,mp), Be3(2,lp,mp)
+print "('Be3 [T]  =',E12.4)", Be3(lp,mp)
 
 print "('SL [m]     =',4E13.5)", plasma_grid_3d(in:in+1,lp,mp,ISL), plasma_grid_3d(is-1:is,lp,mp,ISL)
 print "('Z  [m]     =',4E13.5)",  plasma_grid_Z(in:in+1,lp),  plasma_grid_Z(is-1:is,lp)
@@ -128,7 +128,6 @@ IF ( sw_grid==0 ) THEN  !APEX
 !---
 
            apexDscalar(i,lp,mp) = &
-!plasma_grid_3d(i,mp)%BM / Be3(1,mp,lp)
                 &     ABS ( &
                 & c(1)*c(1) + c(2)*c(2) + c(3)*c(3) &
                 & )

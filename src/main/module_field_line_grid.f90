@@ -57,11 +57,12 @@
 
 
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: hrate_mks3d   (:,:,:,:)!MaxFluxTube,NLP,NMP,7 each component of Neutral heating rate(eV/kg/s)
-      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: Be3(:,:,:) ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]
+!nm20130830:      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: Be3(:,:) ! .. [T] Eq(4.13) Richmond 1995: "Ed1, Ed2, and Be3 are constant along magnetic field lines" 
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,dimension(:,:,:) :: ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k
 !SMS$DISTRIBUTE END
 !V_ExB m/s at the apex height
 !SMS$DISTRIBUTE(dh,1,2) BEGIN
+      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,DIMENSION(:,:) :: Be3    ! .. [T] Eq(4.13) Richmond 1995: "Ed1, Ed2, and Be3 are constant along magnetic field lines" !nm20130830
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,DIMENSION(:,:) :: VEXBup !DIMENSION(NMP,NLP)
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,DIMENSION(:,:) :: VEXBe  !DIMENSION(NMP,NLP)
 !SMS$DISTRIBUTE END

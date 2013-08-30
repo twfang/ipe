@@ -60,7 +60,7 @@
 !dbg20110927      REAL(KIND=real_prec), DIMENSION(3,NPTS2D,NMP) ::  E2_all    !.. Eq(3.12) Richmond 1995
 !JFM  REAL(KIND=real_prec), DIMENSION(2,NMP,NLP) ::  Be3_all         ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]
 !SMS$DISTRIBUTE(dh,NLP,NMP) BEGIN
-      REAL(KIND=real_prec), DIMENSION(NMP,NLP) ::  Be3_all1,Be3_all2 ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]
+      REAL(KIND=real_prec), DIMENSION(NMP,NLP) ::  Be3_all1,Be3_all2 ! .. Eq(4.13) Richmond 1995 at Hr=90km in the NH(1)/SH(2) foot point [T]: "Ed1, Ed2, and Be3 are constant along magnetic field lines"
 !SMS$DISTRIBUTE END
 
 !-------------local
@@ -214,13 +214,18 @@ enddo
 !JFM  READ (UNIT=LUN_pgrid, FMT=*) Be3_all(1,:,:),Be3_all(2,:,:) !Apex_BE3_N
       READ (UNIT=LUN_pgrid, FMT=*) Be3_all1,Be3_all2 !Apex_BE3_N
 !JFM  Be3(1:2,1:NMP,1:NLP)=    Be3_all(1:2,1:NMP,1:NLP)
+
+!nm20130830
+print *, "!nm20130830: make sure Be3 is constant!? Be3_all1=", Be3_all1(1,130)," Be3_all2=",Be3_all2(1,130)
+
       do mp=1,NMP
         do lp=1,NLP
-          Be3(1,lp,mp)=Be3_all1(mp,lp)
-          Be3(2,lp,mp)=Be3_all2(mp,lp)
+          Be3(lp,mp)=Be3_all1(mp,lp)
+!nm20130830: Be3 is constant along a flux tube!
+!nm20130830          Be3(2,lp,mp)=Be3_all2(mp,lp)
         enddo
       enddo
-      print *,"reading Be3 etc completed"
+      print *,"reading Be3 completed"
       CLOSE(UNIT=LUN_pgrid)
       print *,"global grid reading finished, file closed..."
 !SMS$SERIAL END

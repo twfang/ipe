@@ -44,11 +44,11 @@
 
 ! (1) WACCM E empirical model
 ! Ed1/2[V/m] at ( phi_t1(mp), theta_t1(lp) ), Be3[T]
-!note: Be3 should be constant along a magnetic field!!! 
-        v_e(1) =   Ed2_90(ihem,lp,mp) / Be3(ihem,lp,mp) !(4.18) +mag-east(d1?) 
-        v_e(2) = - Ed1_90(ihem,lp,mp) / Be3(ihem,lp,mp) !(4.19) +down/equatorward(d2?)
+!note: Be3 is constant along a magnetic field!!! 
+        v_e(1) =   Ed2_90(ihem,lp,mp) / Be3(lp,mp) !(4.18) +mag-east(d1?) 
+        v_e(2) = - Ed1_90(ihem,lp,mp) / Be3(lp,mp) !(4.19) +down/equatorward(d2?)
 if(sw_debug)&
-& print *,'sub-vexb:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]', Ed1_90(ihem,lp,mp)*1.0E+3,' be3[tesla]',Be3(ihem,lp,mp) 
+& print *,'sub-vexb:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]', Ed1_90(ihem,lp,mp)*1.0E+3,' Be3[tesla]',Be3(lp,mp) 
 
 
         i_loop: DO i=IN,IS
