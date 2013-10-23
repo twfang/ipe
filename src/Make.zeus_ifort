@@ -56,22 +56,34 @@ INCLUDE_PATH=-I
 USE_GPTL = yes
 ifeq ($(USE_GPTL),yes)
 # Set include path for GPTL
-  GPTL_CPPFLAGS = -I/scratch1/portfolios/BMC/fim/GPTL/gptl-4.3.1/include
+  #GPTL_CPPFLAGS = -I/scratch1/portfolios/BMC/fim/GPTL/gptl-4.3.1/include *** NO LONGER EXISTS lrm20131023
+
+    ifeq ($(PAR),sms)
+        GPTL_CPPFLAGS = -I/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/intel_mpi/include
+    else
+        GPTL_CPPFLAGS = -I/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/intel_nompi/include
+    endif
+
 # For auto-profiling of MPI functions, set USE_PMPI=yes. The name of the GPTL
 # library in this case is libgptl_pmpi.a. Otherwise the name is libgptl.a
   USE_PMPI = no
   ifeq ($(USE_PMPI),yes)
-    GPTL_LDFLAGS = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-4.3.1/lib -lgptl_pmpi
+    #GPTL_LDFLAGS = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-4.3.1/lib -lgptl_pmpi  *** NO LONGER EXISTS lrm20131023
+    GPTL_LDFLAGS = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/lib -lgptl_pmpi    # this pmpi doesn not exists in this directory  lrm20131023
+
 # When auto-profiling the MPI layer, set HAVE_IARGCGETARG=yes if the Fortran
 # compiler supports functions iargc and getarg.
     HAVE_IARGCGETARG = no
   else
     ifeq ($(PAR),sms)
-      GPTL_LDFLAGS = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-4.3.2/intel_mpi/lib -lgptl
+      #GPTL_LDFLAGS = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-4.3.2/intel_mpi/lib -lgptl  *** NO LONGER EXISTS lrm20131023
+      GPTL_LDFLAGS = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/intel_mpi/lib -lgptl
     else
-      GPTL_LDFLAGS = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-4.3.2/intel_nompi/lib -lgptl
+      #GPTL_LDFLAGS = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-4.3.2/intel_nompi/lib -lgptl  *** NO LONGER EXISTS lrm20131023
+      GPTL_LDFLAGS = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/intel_nompi/lib -lgptl
     endif
   endif
+
 # AUTOINST=yes enables function-level compiler-generated auto-profiling,
   AUTOINST = no
   ifeq ($(AUTOINST),yes)
