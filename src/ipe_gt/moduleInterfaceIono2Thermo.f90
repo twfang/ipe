@@ -243,12 +243,14 @@ SUBROUTINE INTERFACE__FIXED_GRID_to_THERMO ( &
          noplus_high_res_fixed, o2plus_high_res_fixed, &
          n2plus_high_res_fixed, nplus_high_res_fixed, &
          Te_high_res_fixed, Ti1_high_res_fixed, Ti2_high_res_fixed, &
+         useIPEHeatingRates, heatingRate_high_res_fixed, &  
          therm_geo_long_input, therm_geo_lat_input, &
          therm_Z, &
          therm_Ne_density, therm_oplus_density, therm_hplus_density, &
          therm_noplus_density, therm_o2plus_density, &
          therm_n2plus_density, therm_nplus_density, &
-         therm_Te, therm_Ti1, therm_Ti2)
+         therm_Te, therm_Ti1, therm_Ti2, &
+         neutralHeatingRates)
 
 IMPLICIT NONE
 
@@ -275,31 +277,27 @@ REAL(kind=8), intent(in) :: nplus_high_res_fixed(nFixedGridIonoHeights,nFixedGri
 REAL(kind=8), intent(in) :: Te_high_res_fixed(nFixedGridIonoHeights,nFixedGridIonoLats,nFixedGridIonoLons)
 REAL(kind=8), intent(in) :: Ti1_high_res_fixed(nFixedGridIonoHeights,nFixedGridIonoLats,nFixedGridIonoLons)
 REAL(kind=8), intent(in) :: Ti2_high_res_fixed(nFixedGridIonoHeights,nFixedGridIonoLats,nFixedGridIonoLons)
+
+!------------------------------------------------------
+! Neutral heating rates interpolated to fixed grid
+!------------------------------------------------------
+!INTEGER, intent(in) :: numHrate
+LOGICAL, intent(in) :: useIPEheatingRates
+REAL(kind=8), intent(in) :: heatingRate_high_res_fixed(nFixedGridIonoHeights, nFixedGridIonoLats, nFixedGridIonoLons)
+
+
 REAL(kind=8), intent(in) :: therm_geo_long_input(lon_dim)
 REAL(kind=8), intent(in) :: therm_geo_lat_input(lat_dim)
 
-!REAL(kind=8), intent(in) :: therm_Z(GT_ht_dim, lon_dim, lat_dim)
 ! using ht_from_gt instead of altitude_m_for_ipe (only difference is ht, lat, lon order)
 REAL(kind=8), intent(in) :: therm_Z(GT_ht_dim, lat_dim, lon_dim) ! lrm20120601  
 
-! nFixedGridIonoHeights, nFixedGridIonoLats, nFixedGridIonoLons
 
 !----------------------------------------------------
 ! Output Variables
 !----------------------------------------------------
 
 ! Switched lon, lat to match input variables lrm20120601
-!REAL(kind=8), intent(out) :: therm_Ne_density(GT_ht_dim, lon_dim, lat_dim)
-!REAL(kind=8), intent(out) :: therm_oplus_density(GT_ht_dim, lon_dim, lat_dim)
-!REAL(kind=8), intent(out) :: therm_hplus_density(GT_ht_dim, lon_dim, lat_dim)
-!REAL(kind=8), intent(out) :: therm_noplus_density(GT_ht_dim, lon_dim, lat_dim)
-!REAL(kind=8), intent(out) :: therm_o2plus_density(GT_ht_dim, lon_dim, lat_dim)
-!REAL(kind=8), intent(out) :: therm_n2plus_density(GT_ht_dim, lon_dim, lat_dim)
-!REAL(kind=8), intent(out) :: therm_nplus_density(GT_ht_dim, lon_dim, lat_dim)
-!REAL(kind=8), intent(out) :: therm_Te(GT_ht_dim, lon_dim, lat_dim)
-!REAL(kind=8), intent(out) :: therm_Ti1(GT_ht_dim, lon_dim, lat_dim)
-!REAL(kind=8), intent(out) :: therm_Ti2(GT_ht_dim, lon_dim, lat_dim)
-
 
 REAL(kind=8), intent(out) :: therm_Ne_density(GT_ht_dim, lat_dim, lon_dim)
 REAL(kind=8), intent(out) :: therm_oplus_density(GT_ht_dim, lat_dim, lon_dim)
@@ -311,6 +309,8 @@ REAL(kind=8), intent(out) :: therm_nplus_density(GT_ht_dim, lat_dim, lon_dim)
 REAL(kind=8), intent(out) :: therm_Te(GT_ht_dim, lat_dim, lon_dim)
 REAL(kind=8), intent(out) :: therm_Ti1(GT_ht_dim, lat_dim, lon_dim)
 REAL(kind=8), intent(out) :: therm_Ti2(GT_ht_dim, lat_dim, lon_dim)
+
+REAL(kind=8), intent(out) :: neutralHeatingRates(GT_ht_dim, lat_dim, lon_dim)
 
 
 
@@ -475,6 +475,23 @@ REAL(kind=8) :: oplus_south_east
     REAL(kind=8) :: Ti2_south_west 
     REAL(kind=8) :: Ti2_south_east 
 
+
+    REAL(kind=8) :: heatingRate_above_north_west
+    REAL(kind=8) :: heatingRate_below_north_west
+    REAL(kind=8) :: heatingRate_above_north_east
+    REAL(kind=8) :: heatingRate_below_north_east
+    REAL(kind=8) :: heatingRate_above_south_west
+    REAL(kind=8) :: heatingRate_below_south_west 
+    REAL(kind=8) :: heatingRate_above_south_east
+    REAL(kind=8) :: heatingRate_below_south_east
+
+    REAL(kind=8) :: heatingRate_north_west
+    REAL(kind=8) :: heatingRate_north_east
+    REAL(kind=8) :: heatingRate_south_west
+    REAL(kind=8) :: heatingRate_south_east 
+
+
+
     REAL(kind=8) :: ne_east 
     REAL(kind=8) :: ne_west 
     REAL(kind=8) :: oplus_east 
@@ -489,12 +506,17 @@ REAL(kind=8) :: oplus_south_east
     REAL(kind=8) :: n2plus_west 
     REAL(kind=8) :: nplus_east 
     REAL(kind=8) :: nplus_west 
+
     REAL(kind=8) :: Te_east 
     REAL(kind=8) :: Te_west 
+
     REAL(kind=8) :: Ti1_east 
     REAL(kind=8) :: Ti1_west 
     REAL(kind=8) :: Ti2_east 
     REAL(kind=8) :: Ti2_west 
+
+    REAL(kind=8) :: heatingRate_east 
+    REAL(kind=8) :: heatingRate_west 
 
     REAL(kind=8) :: high_res_long(nFixedGridIonoLons) 
     REAL(kind=8) :: high_res_lat(nFixedGridIonoLats) 
@@ -852,6 +874,25 @@ do ilon = 1 , lon_dim
          Ti2_south_west = ((Ti2_above_south_west - Ti2_below_south_west)*factor_ht) + Ti2_below_south_west
          Ti2_south_east = ((Ti2_above_south_east - Ti2_below_south_east)*factor_ht) + Ti2_below_south_east
 
+         !--------------------------------------------
+         ! interpolate neutral heating rates
+         !--------------------------------------------
+      if (useIPEHeatingRates) then
+         heatingRate_above_north_west = heatingRate_high_res_fixed(iht_above,ilat_north,ilon_west)
+         heatingRate_below_north_west = heatingRate_high_res_fixed(iht_below,ilat_north,ilon_west)
+         heatingRate_above_north_east = heatingRate_high_res_fixed(iht_above,ilat_north,ilon_east)
+         heatingRate_below_north_east = heatingRate_high_res_fixed(iht_below,ilat_north,ilon_east)
+         heatingRate_above_south_west = heatingRate_high_res_fixed(iht_above,ilat_south,ilon_west)
+         heatingRate_below_south_west = heatingRate_high_res_fixed(iht_below,ilat_south,ilon_west)
+         heatingRate_above_south_east = heatingRate_high_res_fixed(iht_above,ilat_south,ilon_east)
+         heatingRate_below_south_east = heatingRate_high_res_fixed(iht_below,ilat_south,ilon_east)
+
+         heatingRate_north_west = ((heatingRate_above_north_west - heatingRate_below_north_west)*factor_ht) + heatingRate_below_north_west
+         heatingRate_north_east = ((heatingRate_above_north_east - heatingRate_below_north_east)*factor_ht) + heatingRate_below_north_east
+         heatingRate_south_west = ((heatingRate_above_south_west - heatingRate_below_south_west)*factor_ht) + heatingRate_below_south_west
+         heatingRate_south_east = ((heatingRate_above_south_east - heatingRate_below_south_east)*factor_ht) + heatingRate_below_south_east
+     end if
+
 
          !------------------------------
          ! latitude interpolation....
@@ -878,20 +919,15 @@ do ilon = 1 , lon_dim
          Ti2_west =    ((Ti2_north_west - Ti2_south_west) * factor_lat) + Ti2_south_west
 
 
+       if (useIPEHeatingRates) then
+         heatingRate_east =     ((heatingRate_north_east - heatingRate_south_east) * factor_lat) + heatingRate_south_east
+         heatingRate_west =     ((heatingRate_north_west - heatingRate_south_west) * factor_lat) + heatingRate_south_west
+       end if
+
+
          !--------------------------------
          ! longitude interpolation....
          !--------------------------------
-         !therm_Ne_density(iht,ilon,ilat) =     ((ne_east - ne_west) * factor_lon) + ne_west
-         !therm_oplus_density(iht,ilon,ilat) =  ((oplus_east - oplus_west) * factor_lon) + oplus_west
-         !therm_hplus_density(iht,ilon,ilat) =  ((hplus_east - hplus_west) * factor_lon) + hplus_west
-         !therm_noplus_density(iht,ilon,ilat) = ((noplus_east - noplus_west) * factor_lon) + noplus_west
-         !therm_o2plus_density(iht,ilon,ilat) = ((o2plus_east - o2plus_west) * factor_lon) + o2plus_west
-         !therm_n2plus_density(iht,ilon,ilat) = ((n2plus_east - n2plus_west) * factor_lon) + n2plus_west
-         !therm_nplus_density(iht,ilon,ilat) =  ((nplus_east - nplus_west) * factor_lon) + nplus_west
-         !therm_Te(iht,ilon,ilat) =             ((Te_east - Te_west) * factor_lon) + Te_west
-         !therm_Ti1(iht,ilon,ilat) =            ((Ti1_east - Ti1_west) * factor_lon) + Ti1_west
-         !therm_Ti2(iht,ilon,ilat) =            ((Ti2_east - Ti2_west) * factor_lon) + Ti2_west
-
          therm_Ne_density(iht, ilat, ilon) =     ((ne_east - ne_west) * factor_lon) + ne_west
          therm_oplus_density(iht, ilat, ilon) =  ((oplus_east - oplus_west) * factor_lon) + oplus_west
          therm_hplus_density(iht, ilat, ilon) =  ((hplus_east - hplus_west) * factor_lon) + hplus_west
@@ -903,6 +939,9 @@ do ilon = 1 , lon_dim
          therm_Ti1(iht, ilat, ilon) =            ((Ti1_east - Ti1_west) * factor_lon) + Ti1_west
          therm_Ti2(iht, ilat, ilon) =            ((Ti2_east - Ti2_west) * factor_lon) + Ti2_west
 
+       if (useIPEHeatingRates) then
+         neutralHeatingRates(iht, ilat, ilon) =             ((heatingRate_east - heatingRate_west) * factor_lon) + heatingRate_west
+       endif 
 
        enddo ! iht
    enddo ! ilat

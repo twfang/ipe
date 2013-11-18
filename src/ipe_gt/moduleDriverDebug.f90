@@ -17,7 +17,7 @@ INTEGER, parameter :: unitPressureGridHeight = 7810
 !-----------------------------------------------------------------------------
 INTEGER, parameter :: unitCheckPressureInterp = 8900
 INTEGER, parameter :: unitCheckPressureHeight = 7820
-!INTEGER, parameter :: unitPressureGridHeight = 7810
+
 
 PRIVATE
 
@@ -127,6 +127,7 @@ Function openPressureInterpFiles(debugDir) result(j)
    OPEN (unitCheckPressureInterp+6, FILE=TRIM(debugDir)//TRIM('NePressureGrid.txt'), STATUS='REPLACE')
    OPEN (unitCheckPressureInterp+7, FILE=TRIM(debugDir)//TRIM('TePressureGrid.txt'), STATUS='REPLACE')
    OPEN (unitCheckPressureInterp+8, FILE=TRIM(debugDir)//TRIM('TiPressureGrid.txt'), STATUS='REPLACE')
+   OPEN (unitCheckPressureInterp+9, FILE=TRIM(debugDir)//TRIM('nHratePressureGrid.txt'), STATUS='REPLACE')
 
    OPEN (unitCheckPressureHeight, FILE=TRIM(debugDir)//TRIM('averagePressureHeightGrid.txt'), STATUS='REPLACE')
 
@@ -141,7 +142,7 @@ END FUNCTION openPressureInterpFiles
 
 ! ==================================================================================
 FUNCTION writeInterpThermo(time, Oplus, Hplus, Nplus, NOplus, O2plus,&
-                           N2plus, Ne, Te, Ti_Oplus, height)   result(j)
+                           N2plus, Ne, Te, Ti_Oplus, neutralHeatingRates, height)   result(j)
 
    USE module_precision
    USE modSizeThermo
@@ -161,6 +162,8 @@ FUNCTION writeInterpThermo(time, Oplus, Hplus, Nplus, NOplus, O2plus,&
    REAL*8, intent(in) :: NOplus(GT_ht_dim, GT_lat_dim, GT_lon_dim)
    REAL*8, intent(in) :: O2plus(GT_ht_dim, GT_lat_dim, GT_lon_dim)
    REAL*8, intent(in) :: Ti_Oplus(GT_ht_dim, GT_lat_dim, GT_lon_dim)
+   !INTEGER, intent(in) :: numHrate
+   REAL(kind=8), intent(in) :: neutralHeatingRates(GT_ht_dim, GT_lat_dim, GT_lon_dim)
    REAL(kind=8), intent(in) :: height(GT_ht_dim, GT_lat_dim, GT_lon_dim)
 
    INTEGER :: ii
@@ -177,9 +180,10 @@ FUNCTION writeInterpThermo(time, Oplus, Hplus, Nplus, NOplus, O2plus,&
    write(unitCheckPressureInterp + 6,*) Ne
    write(unitCheckPressureInterp + 7,*) Te
    write(unitCheckPressureInterp + 8,*) Ti_Oplus
+   write(unitCheckPressureInterp + 9,*) neutralHeatingRates
 
    ! write out the pressure grid heights
-   write(unitPressureGridHeight,*) height
+   write(unitCheckPressureHeight,*) height
 
    !--------------------------------------------------------------------
    ! Calculate and write out the average height for each pressure level

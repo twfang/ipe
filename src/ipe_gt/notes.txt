@@ -166,6 +166,11 @@ module_neutral_gt.3d.mpi.f90: call GT_thermosphere (...)
 
 ------------------------------------------------------------------------------------------------
 
+svn update in /scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/ACTUAL_IPE/ipe/trunk/src/ipe_gt/
+will update gt-ipe w/ latest stuff that has been checked in from directory $COUPLER
+
+-----------------------------------------------------------------------------------------------------
+
 Aug 22, 2013 :  for testing :
 
 nameListGTIPE_benchmark.txt : 
@@ -192,12 +197,160 @@ output of setting source1 = 0   is in :
 /scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/OUTPUT/ipe_640_25840/SOURCE1/
 /scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/DEBUG/ipe_640_25840/SOURCE1/
 
+---------------------------------------
+
+
+Oct 28, 2013
+
+Test gt-ipe coupler with the neutral heating terms
+
+1/2) - need to convert ipe plasma & nuetral heating test files using binary to ascii conversion code
+~/GTIPECOUPLER/BINARYtoASCII/
+
+see : ~/GTIPECOUPLER/BINARYtoASCII/readme.txt
+
+where binary plasma & ascii files are :
+/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/ACTUAL_IPE/ipe/trunk/run/ipe_S_19946/
+
+- need to edit this code to convert the heating rate files
 
 
 
+1) - set up code to read in neutral heating files 
+
+2) - need to write out & plot neutral heating terms - all 7, and the sum of all 7
+
+Oct 29, 2013 :
+
+need to edit nameListGTIPE.test_hrates.txt to use the short test output ascii files I created in :
+/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/INPUT/ipe_S_19946/
+
+Oct 30, 2013
+
+cp nameListGTIPE.test_hrates.txt nameListGTIPE.txt
+
+Nov 1, 2013
+
+MINVAL(neutralHeatingRate(:,:,ii))
+
+REAL(kind=8) :: neutralHeatingRate(NPTS, NMP, numHrate)  
+
+Meeting w/ Tim :  need to run IPE for longer (done), to get the nuetral heating rates
+           plot neutral heating rates in the GT pressure grid 
+
+
+Nov 8, 2013 :
+useIPEHeatingRates = .TRUE.   added to the namelist
+
+need to convert binary plasma & heating rate files from ipe/trunk/run/ipe_640_19811/  for the coupler to read
+~/GTIPECOUPLER/BINARYtoASCII/
+
+add arrays for fixed grid neutral heating rate :
+heatingRate_high_res_fixed 
+
+*** need to actually interpolate neutral heating rates from fixed grid to gt grid  **** :
+INTERFACE__FIXED_GRID_to_THERMO
+
+then use properly in gt_thermosphere  *** - what about gt_thermosphere_init ??????
+
+Use Te_high_res_fixed -> therm_Te as template for interpolating heatingRate_high_res_fixed -> neutralheatingrates
+
+if (useIPEHeatingRates) then 
+
+Nov 12, 2013  
+
+- need to add up ipe neutral rates before interpolating 
+
+!---------------------------------
+! Neutral heating rates from IPE
+!---------------------------------
+REAL(kind=8) :: neutralHeatingRate(NPTS, NMP, numHrate)  
+
+!-----------------------------------------
+! Sum of all ipe neutral heating rates
+!-----------------------------------------
+REAL(kind=8) :: sumNeutralHeatingRate(NPTS, NMP)  
+
+!------------------------------------------------------
+! Neutral heating rates interpolated to fixed grid
+!------------------------------------------------------
+REAL(kind=8) :: heatingRate_high_res_fixed(nFixedGridIonoHeights, nFixedGridIonoLats, nFixedGridIonoLons)
+
+
+fortran sum command :
+SUM(ARRAY, DIM, MASK)
+SUM(A, DIM = 1)  row sum
+SUM(A, DIM = 2, MASK > 0)  column sum, SUM only values > 0
 
 
 
+hRatePressureGrid.txt  nHrateAfter.txt	nHrateBefore.txt  - change all to nHratexxxxx.txt
+
+- stopped interactive run, moved output to :
+DEBUG/ipe_640_19811/test/
+OUTPUT/ipe_640_19811/test/
+
+now submit job :
+
+qsub qsub_runCoupler.sh  - this isn't working ***
+
+Nov 13, 2013
+
+- Don't know why 3 day neutral heating rate run only went to time step 86,  rerunning.
+Try plotting failed results w/ cve and look at the temperature values
+
+res-thermo-02 :
+/ipe/lmayer/COPY_IPE_TEST_GT/data/ipe_640_19811/
+
+scp $DTN:/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/OUTPUT/ipe_640_19811/test/*nc .
+
+ncdump -h output_Day_80_180_dipole_test.gt.20110913.v1.nc.graphics.nc  - 86 time steps
+
+edit :
+
+cve_leslie  NNTIME = 86
+
+
+Re-run 3 day heating rate run w/ useipeheating  = .false. - ran out of quota time, running again Nov 14, 2013
+
+
+re-run of 3 day neutral heating rates :  why did this happen after 33 15 minute time steps ???**
+ --- FIXED Grid ------------------------------------------
+Bus error (core dumped)
+
+
+ Nov 14, 2013 :
+
+need to plot neutral heating rates from gt-ipe run using ipe heating rates :
+
+/scratch1/portfolios/NCEPDEV/swpc/noscrub/Leslie.Mayer/DATA/IONO/gtgipIPE/DEBUG/ipe_640_19811/test/
+nHrateAfter.txt  nHrateBefore.txt  nHratePressureGrid.txt
+
+copy over to res-thermo-02 :
+
+/ipe/lmayer/COPY_IPE_TEST_GT/data/ipe_640_19811/DEBUG/ - done
+
+now plot on res-thermo-02 :
+
+/ipe/lmayer/PLOTgtgip/
+plotgtpressure.pro ??
+
+
+interactive run :  Nov 14, 2:33 MST
+
+driver_ipe_gt.3d : gtLoopTime =       102600
+ GT_thermosphere : SMOOTHING .....................................
+ GT_thermo : writing out netcdf for    102600.000000000     
+ driver_ipe_gt.3d : utime  =        102660
+Timeout, server zeus.fairmont.rdhpcs.noaa.gov. not responding.
+Connection to zeus.rdhpcs.noaa.gov closed.
+
+res-thermo-02 : idl plotting codes :
+
+/ipe/lmayer/PLOTgtipe/plotInterpVar2
+
+copy nHratePressureGrid.txt to res-thermo-02 :
+/ipe/lmayer/COPY_IPE_TEST_GT/data/ipe_640_19811/DEBUG/nHratePressureGrid.txt
 
 
 

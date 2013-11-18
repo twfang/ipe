@@ -107,6 +107,8 @@ SUBROUTINE GT_thermosphere( &
                  NO_plus_density_m3, &
                  O2_plus_density_m3, &
                  Ti_Oplus_K, &
+                 useIPEHeatingRates, &  ! input
+                 neutralHeatingRates, & ! input
                  exns, eyns, ezns, &   ! electric field, important for storm, will change dimensions eventually
                  Dip_angle_degrees, & ! doesn't change during the run (angle b/t horizon & magnetic field)
                  B_magnitude_nT, & ! magnitude of magnetic field (2D, no height variation for now)
@@ -163,6 +165,9 @@ SUBROUTINE GT_thermosphere( &
       REAL*8, INTENT(IN) :: NO_plus_density_m3(15,91,20)  !Y:I:NO+ density[m3] in pres coords
       REAL*8, INTENT(IN) :: O2_plus_density_m3(15,91,20)  !Y:I:O2+ density[m3] in pres coords
       REAL*8, INTENT(IN) :: Ti_Oplus_K(15,91,20)          !Y:I: O+ ion temperature[Kelvin]
+
+      LOGICAL, INTENT(IN) :: useIPEHeatingRates  ! Use the ipe neutral heating rate values ???
+      REAL(kind=8) :: neutralHeatingRates(GT_ht_dim, GT_lat_dim, GT_lon_dim)  ! neutral heating rates from ipe
 
       !Y:I: electric field X/Y/Z components[V/m](needs improvement)
       REAL*8, INTENT(IN) :: exns(2,45,20), eyns(2,45,20), ezns(2,45,20)  
@@ -401,7 +406,7 @@ INTEGER, parameter :: psmnUnit = 5030, rmtUnit = 5040, neutral_density_3dUnit = 
 INTEGER, parameter :: OplusUnit = 5060
 INTEGER, parameter :: a5Unit = 5070, b5Unit = 5080, c7Unit = 5090, k3Unit = 6000
 
-LOGICAL, parameter :: checkHeatingSources = .TRUE.
+LOGICAL, parameter :: checkHeatingSources = .FALSE.
 
 
 
@@ -1554,8 +1559,18 @@ qion3d = 0
 
            endif ! if n>= 7
 
+           !--------------------------------------------------------
+           !  replace w/ neutral heating rates read in from ipe 
+           !--------------------------------------------------------
+           if (useIPEheatingRates) then
+                ! keep qir(n) and add to neutral heating rate (add all 7) & need to add NO cooling
+                c6 = qir(n) + neutralHeatingRates(n,m,l)/2.0 ! Joules/kg/sec  lrm20131112
+            else
 
-           c6 = qir(n) + qeuv(n) + source1 + source2
+                c6 = qir(n) + qeuv(n) + source1 + source2    
+
+           endif
+                                                       
            sum3(n) = c1 + c2 + c3 + c4 + c5 + c6 + c7(n) &
                                + c8 + c10(n)
            volume = (ht(nu,m,l)-ht(nd,m,l)) &
@@ -3296,7 +3311,6 @@ end subroutine read_in_and_normalise_Hough_modes
 
 Subroutine calculate_magnetic_parameters_using_apex(inFileName, &
                  B_magnitude_apex_nT, B_dip_angle_apex_degrees, &
-                 ! B_declination_apex_degrees, & NOT USED
                  Magnetic_latitude_degrees, Magnetic_longitude_degrees)
 
   IMPLICIT NONE
@@ -3363,11 +3377,11 @@ Subroutine calculate_magnetic_parameters_using_apex(inFileName, &
      enddo ! ilat = 1 , 91
   enddo ! ilon = 1 , 20
 
-  print *,'calculate_magnetic_parameters_using_apex : Magnetic_latitude_degrees = ', &
-           Magnetic_latitude_degrees
-  print *,'calculate_magnetic_parameters_using_apex : '
-  print *,'calculate_magnetic_parameters_using_apex : Magnetic_longitude_degrees = ', &
-           Magnetic_longitude_degrees
+  !print *,'calculate_magnetic_parameters_using_apex : Magnetic_latitude_degrees = ', &
+  !         Magnetic_latitude_degrees
+  !print *,'calculate_magnetic_parameters_using_apex : '
+  !print *,'calculate_magnetic_parameters_using_apex : Magnetic_longitude_degrees = ', &
+  !         Magnetic_longitude_degrees
 
 
   close(fileUnit)

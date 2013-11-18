@@ -113,7 +113,7 @@ CHARACTER(LEN=30) :: ionoVarName(numIonoVars)
 !------------------------------------------------
 ! Write out the Ionospheric interpolated values??
 !------------------------------------------------
-LOGICAL, parameter :: debugIonoInterp = .FALSE.
+LOGICAL, parameter :: debugIonoInterp = .TRUE.
 ! THIS IS NOT BEING USED RIGHT NOW,  NEED TO WRITE TO THIS FILE
 ! INSTEAD OF PRINTING TO THE SCREEN ****************************** lrm20120830
 !CHARACTER(LEN=*), PARAMETER :: debugIonoInterpFileName = 'interpIonoOut.dat'
@@ -129,6 +129,12 @@ LOGICAL, parameter :: debugIonoFixedtoPressure = .TRUE.
 ! File unit number for IPE startup files
 !----------------------------------------
 INTEGER, parameter :: unitStartUp = 211
+INTEGER, parameter :: unithRate = 311
+
+!------------------------------------------
+! number of neutral heating rate variables
+!------------------------------------------
+INTEGER, parameter :: numHrate = 7
 
 !----------------------------------
 ! Output variables from GT model
@@ -168,9 +174,6 @@ INTEGER :: foster_level
 REAL*8 :: foster_power
 REAL*8 :: emaps(21,GT_lon_dim,7) , cmaps(21,GT_lon_dim,7)
 
-
-!REAL*8 :: magnetic_latitude_degrees(91,20)
-!REAL*8 :: magnetic_longitude_degrees(91,20)
 REAL*8 :: magnetic_latitude_degrees(GT_lat_dim, GT_lon_dim)
 REAL*8 :: magnetic_longitude_degrees(GT_lat_dim, GT_lon_dim)
 
@@ -211,6 +214,7 @@ REAL*8 :: Ne_density_FOR_GT(GT_ht_dim, GT_lat_dim, GT_lon_dim)
 REAL*8 :: NOplus_density_FOR_GT(GT_ht_dim, GT_lat_dim, GT_lon_dim)
 REAL*8 :: O2plus_density_FOR_GT(GT_ht_dim, GT_lat_dim, GT_lon_dim)
 REAL*8 :: Ti_Oplus_FOR_GT(GT_ht_dim, GT_lat_dim, GT_lon_dim)
+REAL(kind=8) :: sumNeutralHeatingRates_FOR_GT(GT_ht_dim, GT_lat_dim, GT_lon_dim)
 
 
 !-------------------------------------------------------------------------------
@@ -227,6 +231,17 @@ REAL(kind=8) :: Oplus2D_density_from_IPE(NPTS, NMP)
 REAL(kind=8) :: Oplus2P_density_from_IPE(NPTS, NMP)
 REAL(kind=8) :: Te_from_IPE(NPTS, NMP)  ! electron temperature
 REAL(kind=8) :: Ti_from_IPE(NPTS, NMP)  ! ion temperature
+
+!---------------------------------
+! Neutral heating rates from IPE
+!---------------------------------
+REAL(kind=8) :: neutralHeatingRate(NPTS, NMP, numHrate)  
+
+!-----------------------------------------
+! Sum of all ipe neutral heating rates
+!-----------------------------------------
+REAL(kind=8) :: sumNeutralHeatingRate(NPTS, NMP)  
+
 
 
 !--------------------------------------------------
@@ -249,6 +264,10 @@ REAL(kind=8) :: Ne_high_res_fixed(nFixedGridIonoHeights, nFixedGridIonoLats, nFi
 REAL(kind=8) :: Te_high_res_fixed(nFixedGridIonoHeights, nFixedGridIonoLats, nFixedGridIonoLons)
 REAL(kind=8) :: Ti_high_res_fixed(nFixedGridIonoHeights, nFixedGridIonoLats, nFixedGridIonoLons)
 
+!------------------------------------------------------
+! Neutral heating rates interpolated to fixed grid
+!------------------------------------------------------
+REAL(kind=8) :: sumHeatingRate_high_res_fixed(nFixedGridIonoHeights, nFixedGridIonoLats, nFixedGridIonoLons)
 
 !-------------------------------------
 ! Switches for Ionospheric parameters
@@ -387,9 +406,9 @@ character(len=140) :: staticFileDir
 character(len=140) :: debugDir
 CHARACTER(len=140) :: giptogeoFileName
 
-!------------------------------
-! time and f10.7 parameters
-!------------------------------
+!-------------------------------------
+! namelist time and f10.7 parameters
+!-------------------------------------
 INTEGER (KIND=int_prec) :: start_time  !=0  !UT[sec]
 INTEGER (KIND=int_prec) :: stop_time   !=60 !UT[sec]
 INTEGER (KIND=int_prec) :: time_step   !=60 ![sec]
@@ -398,23 +417,26 @@ INTEGER :: nday
 REAL*8  :: f107
 INTEGER :: GT_timestep_in_seconds
 
-!------------------
-! namelist inputs
-!-----------------
+!-------------------------
+! more namelist inputs
+!-------------------------
 TYPE(amplitudeType)  :: amplitude   ! replaces ampl11, ...
 TYPE(tidalPhaseType) :: tidalPhase  ! replaces lt11, ...
-    !-----------------------------------------
-    ! How often to smooth (in # of time steps)
-    !-----------------------------------------
+
+!-----------------------------------------
+! How often to smooth (in # of time steps)
+!-----------------------------------------
 INTEGER :: smoothingFrequency
 INTEGER :: neutralCompositionFrequency
 
 TYPE(switchesType) :: switches   ! replaces sw_, .......
 
+!------------------------------------------
+! Run w/ neutral heating rates from IPE ?
+!------------------------------------------
+LOGICAL :: useIPEHeatingRates 
+
 ! End of input namelist  ----------------------------------------
-
-
-!INTEGER :: nnstop , nnstrt  THESE AREN'T NEEDED ANYMORE lrm20130528
 
 
 !---------------------------
@@ -424,7 +446,7 @@ TYPE startUpType
   INTEGER :: unit
   CHARACTER(30) :: filename
   CHARACTER(7) :: speciesName
-  REAL(kind=8) :: species(NPTS, NMP)
+  !REAL(kind=8) :: species(NPTS, NMP) - not using this
 END TYPE startUpType
 
 integer, parameter :: numIonoStart = 11
@@ -433,18 +455,20 @@ INTEGER :: iii ! generic integer variable
 
 
 !! TO+ = TH+ = Ti  - just read above Ti & use for both TO+, TH+
-
-
+! plasma input files :
 type (startUpType) :: startUpFiles(numIonoStart)
+
+
+!-------------------------------
+! neutral heating rate files
+!-------------------------------
+type (startUpType) :: hrateFiles(numHrate)
 
 !-----------------------------------------------
 ! For timing how long driver code takes to run 
 !-----------------------------------------------
 REAL :: startCPUTime, endCPUTime
 
-! only for testing setting test = test8
-!real*8 :: test8
-!real :: test
 
 !-----------------------------------
 ! Namelist for input parameters :
@@ -454,40 +478,25 @@ NAMELIST /gtipeINPUTS/GT_input_dataset, GT_output_dataset, &
                       start_time, stop_time, time_step, ipeFileStartTime, &
                       nday, f107, GT_timestep_in_seconds, &
                       amplitude, tidalPhase, switches, &
-                      smoothingFrequency, neutralCompositionFrequency
+                      smoothingFrequency, neutralCompositionFrequency, useIPEHeatingRates
 
 
 ! BEGIN CODE ====================================================================================
-!test8 = 123456789123456.
-!test = test8
-!print *,'test8, test = ',test8, test
-!STOP
 
-
-
-!write(6,*) '*****************************************************************************************'
-!write(6,*) 'SETTING SOURCE 1 TO SOURCE1/4 IN gt_thermosphere FOR TESTING  ************************************'
-!write(6,*) '*****************************************************************************************'
 
 write(6,*) '*****************************************************************************************'
-write(6,*) 'SETTING source1, source2 to ctipe equations IN gt_thermosphere FOR TESTING  ************************************'
+write(6,*) 'SETTING source1, source2 to ctipe equations IN gt_thermosphere   ************************************'
 write(6,*) '*****************************************************************************************'
-
-
 
 write(6,*) '*****************************************************************************************'
 write(6,*) 'SETTING NEGATIVE DENSITIES TO 1 BEFORE PASSING TO GT ************************************'
 write(6,*) '*****************************************************************************************'
 
-!write(6,*) '*****************************************************************************************'
-!write(6,*) 'SETTING Ti_Oplus_for_gt = 1000. BEFORE PASSING TO GT ************************************'
-!write(6,*) '*****************************************************************************************'
-
-!write(6,*) '*****************************************************************************************'
-!write(6,*) 'IN GT, teff(n) = Temperature_K(n,m,l) FOR DEBUGGING *****************************'
-!write(6,*) '*******************************************************************************************'
-!write(6,*) ' '
-
+!-----------------------------------------------------------
+! Intitialize neutral heating rate values from IPE to 0
+!-----------------------------------------------------------
+neutralHeatingRate = 0
+sumNeutralHeatingRate = 0
 
 
 !----------------------------------------
@@ -519,7 +528,8 @@ print *,'driver_ipe_gt.3d : start_time, stop_time, time_step = ',start_time, sto
 print *,'driver_ipe_gt.3d : ipeFileStartTime = ', ipeFileStartTime
 print *,'driver_ipe_gt.3d : amplitude = ',amplitude
 print *,'driver_ipe_gt.3d : tidalPhase = ',tidalPhase
-print *,'driver_ipe_gt : GT_input_dataset = ', GT_input_dataset
+print *,'driver_ipe_gt.3d : GT_input_dataset = ', GT_input_dataset
+print *,'driver_ipe_gt.3d : useIPEHeatingRates = ', useIPEHeatingRates
 !print *,'driver_ipe_gt : namelist = ',gtipeINPUTS
 
 !-----------------------------------
@@ -569,6 +579,11 @@ startUpFiles%filename = (/ "plasma00.cmb.ascii", "plasma01.cmb.ascii", "plasma02
                            "plasma03.cmb.ascii", "plasma04.cmb.ascii", "plasma05.cmb.ascii", &
 		           "plasma06.cmb.ascii", "plasma07.cmb.ascii", "plasma08.cmb.ascii", &
 			   "plasma09.cmb.ascii", "plasma10.cmb.ascii"/)
+
+
+hrateFiles%filename = (/ "hrate01.cmb.ascii", "hrate02.cmb.ascii", "hrate03.cmb.ascii", &
+                "hrate04.cmb.ascii", "hrate05.cmb.ascii", "hrate06.cmb.ascii", &
+                "hrate07.cmb.ascii" /)
 			   
 
 !! TO+ = TH+ = Ti  - just read above Ti & use for both TO+, TH+
@@ -593,11 +608,26 @@ do ii = 1, numIonoStart
 enddo ! ii
 
 
+if (useIPEHeatingRates) then
 
+   !------------------------------------------------
+   ! Open IPE neutral heating rate files
+   ! One for each, with all time steps in it
+   !------------------------------------------------
+   do ii = 1, numhRate
+
+      hrateFiles(ii)%unit = unithRate + (ii - 1)
+
+      print *,'opening ', TRIM(ionoStartDir)//TRIM(hrateFiles(ii)%filename)
+   
+      OPEN(UNIT=hrateFiles(ii)%unit, FILE=TRIM(ionoStartDir)//TRIM(hrateFiles(ii)%filename), &
+              STATUS='old',FORM='formatted')
+
+   enddo ! ii
+
+end if ! useIPEHeatingRates
 
 ! ***************************************************************
-
-!!IF ( sw_neutral == 'GT' ) then
 
 
     !--------------------------------------
@@ -722,6 +752,10 @@ enddo ! ii
 
        OPEN (unitCheckIonoInterpBefore+8, FILE=TRIM(debugDir)//TRIM('TiBefore.txt'), STATUS='REPLACE')
        OPEN (unitCheckIonoInterpAfter+8, FILE=TRIM(debugDir)//TRIM('TiAfter.txt'), STATUS='REPLACE')
+
+       OPEN (unitCheckIonoInterpBefore+9, FILE=TRIM(debugDir)//TRIM('nHrateBefore.txt'), STATUS='REPLACE')
+       OPEN (unitCheckIonoInterpAfter+9, FILE=TRIM(debugDir)//TRIM('nHrateAfter.txt'), STATUS='REPLACE')
+
 
    end if !  (debugIonoInterp)
 
@@ -908,7 +942,6 @@ enddo ! ii
      CALL readIPEtoGeoGrid( giptogeoFileName)
 
 
-!endif ! sw_neutral == 'GT' 
 
 
 !------------------------------------------------
@@ -921,7 +954,7 @@ enddo ! ii
 !----------------------------------------------------
 print *,'driver : start_time, time_step = ',start_time, time_step
 print *,'driver : reading to ', start_time - time_step,' then start at ',start_time
-skip_ipe : do utime = ipeFileStartTime, start_time - time_step, time_step
+skip_ipe : do utime = ipeFileStartTime, start_time - time_step, time_step ! =========================================
 
   print *,'driver : skipping ipe time = ',utime
 
@@ -940,13 +973,23 @@ skip_ipe : do utime = ipeFileStartTime, start_time - time_step, time_step
   READ (UNIT=startUpFiles(10)%unit,FMT="(20E12.4)" ) Te_from_IPE  
   READ (UNIT=startUpFiles(11)%unit,FMT="(20E12.4)" ) Ti_from_IPE  
 
+  if (useIPEHeatingRates) then
 
-end do skip_ipe
+     read_hrate_skip : DO ii = 1, numHrate
+
+        print *,'reading heating rate unit ',hrateFiles(ii)%unit
+        READ (UNIT=hrateFiles(ii)%unit,FMT="(20E12.4)" ) neutralHeatingRate(:,:,ii)
+
+     END DO read_hrate_skip 
+
+  end if ! useIPEHeatingRates
+
+end do skip_ipe ! ========================================================================================================
 
 !-----------------------------------------------
 !  Ionospheric Loop :  time_loop is in seconds
 !-----------------------------------------------
-time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_step
+time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_step ! =========================================
   print *, 'driver_ipe_gt.3d : utime  =  ', utime
 
 
@@ -978,15 +1021,18 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
 
 ! WILL NEED TO READ VELOCITY FOR OPLUS AND HPLUS AND INTERPOLATE IN THE FUTURE may 1, 2012
 
-  !print *,'driver_ipe_gt.3d '
-  !print *,'driver_ipe_gt.3d : after reading all ipe startup files.......'
+  if (useIPEHeatingRates) then
 
-! DIVIDE OPLUS / 4  ONLY FOR TESTING ***********************************************
-! DIVIDE OPLUS / 4  ONLY FOR TESTING ***********************************************
-! DIVIDE OPLUS / 4  ONLY FOR TESTING ***********************************************
-!Oplus_density_from_IPE = Oplus_density_from_IPE*(.25)
+     read_hrate : DO ii = 1, numHrate
 
+        print *,'reading heating rate unit ',hrateFiles(ii)%unit
+        READ (UNIT=hrateFiles(ii)%unit,FMT="(20E12.4)" ) neutralHeatingRate(:,:,ii)
 
+     END DO read_hrate
+
+     sumNeutralHeatingRate =  SUM(neutralHeatingRate, DIM=3)  ! CHECK THIS *****
+
+  end if ! useIPEHeatingRates
 
   !--------------------------------------------------------------------------
   !Ne_density_from_IPE  = sum of all above ion densities  (not temperatures)
@@ -999,18 +1045,6 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
   
   If (debugStartupIPE) then !   *** MOVE TO DEBUG MODULE  ***
 
-      !print *,'driver_ipe_gt.3d : Oplus_density_from_IPE(1:5,1) = ', Oplus_density_from_IPE(1:5,1)
-      !print *,'driver_ipe_gt.3d : Hplus_density_from_IPE(1:5,1) = ', Hplus_density_from_IPE(1:5,1)
-       !print *,'driver_ipe_gt.3d : Heplus_density_from_IPE(1:5,1) = ', Heplus_density_from_IPE(1:5,1)
-       !print *,'driver_ipe_gt.3d : Nplus_density_from_IPE(1:5,1) = ', Nplus_density_from_IPE(1:5,1)
-       !print *,'driver_ipe_gt.3d : NOplus_density_from_IPE(1:5,1) = ', NOplus_density_from_IPE(1:5,1)
-       !print *,'driver_ipe_gt.3d : O2plus_density_from_IPE(1:5,1) = ', O2plus_density_from_IPE(1:5,1)
-       !print *,'driver_ipe_gt.3d : N2plus_density_from_IPE(1:5,1) = ', N2plus_density_from_IPE(1:5,1)
-       !print *,'driver_ipe_gt.3d : Oplus2D_density_from_IPE(1:5,1) = ', Oplus2D_density_from_IPE(1:5,1)
-       !print *,'driver_ipe_gt.3d : Oplus2P_density_from_IPE(1:5,1) = ', Oplus2P_density_from_IPE(1:5,1)
-       !print *,'driver_ipe_gt.3d : Te_from_IPE(1:5,1) = ', Te_from_IPE(1:5,1)
-       !print *,'driver_ipe_gt.3d : Ti_from_IPE(1:5,1) = ', Ti_from_IPE(1:5,1)
-       !print *,'driver_ipe_gt.3d : Ne_density_from_IPE(1:5,1) = ', Ne_density_from_IPE(1:5,1)
        !print *,'driver_ipe_gt.3d '
 
        !print *,'driver_ipe_gt.3d : inGIP1d(1:NLP) = ', inGIP1d(1:NLP)
@@ -1074,11 +1108,34 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
      write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MAXVAL(Ti_from_IPE) = ', MAXVAL(Ti_from_IPE), MAXLOC(Ti_from_IPE)
 
 
-     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MINVAL(Ne_density_from_IPE) = ', MINVAL(Ne_density_from_IPE), MINLOC(Ne_density_from_IPE)
-     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MAXVAL(Ne_density_from_IPE) = ', MAXVAL(Ne_density_from_IPE), MAXLOC(Ne_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MINVAL(Ne_density_from_IPE) = ', &
+                              MINVAL(Ne_density_from_IPE), MINLOC(Ne_density_from_IPE)
+     write(6,'(A,E12.4, 2I8)')'driver_ipe_gt.3d : MAXVAL(Ne_density_from_IPE) = ', &
+                              MAXVAL(Ne_density_from_IPE), MAXLOC(Ne_density_from_IPE)
 
+     if (useIPEHeatingRates) then 
+
+        DO ii = 1, numHrate
+
+           write(6,'(A, I2, A, E12.4, 2I8)')'driver_ipe_gt.3d : MINVAL(neutralHeatingRate(:,:,',ii,')) = ',  &
+                                  MINVAL(neutralHeatingRate(:,:,ii)), MINLOC(neutralHeatingRate(:,:,ii))
+           write(6,'(A, I2, A, E12.4, 2I8)')'driver_ipe_gt.3d : MAXVAL(neutralHeatingRate(:,:,',ii,')) = ', &
+                                  MAXVAL(neutralHeatingRate(:,:,ii)), MAXLOC(neutralHeatingRate(:,:,ii))
+
+        END DO
+
+        write(6,'(A, E12.4, 2I8)')'driver_ipe_gt.3d : MINVAL(sumNeutralHeatingRate) = ',  &
+                                  MINVAL(sumNeutralHeatingRate), MINLOC(sumNeutralHeatingRate)
+        write(6,'(A, E12.4, 2I8)')'driver_ipe_gt.3d : MAXVAL(sumNeutralHeatingRate) = ', &
+                                  MAXVAL(sumNeutralHeatingRate), MAXLOC(sumNeutralHeatingRate)
+
+
+     endif ! useIPEHeatingRates
+
+     !STOP
 
   endif ! debugStartupIPE
+
 
   If (debugIonoInterp) then  !  *** MOVE TO DEBUG MODULE ****
 
@@ -1093,6 +1150,7 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
       write(unitCheckIonoInterpBefore + 6,*) Ne_density_from_IPE
       write(unitCheckIonoInterpBefore + 7,*) Te_from_IPE
       write(unitCheckIonoInterpBefore + 8,*) Ti_from_IPE
+      write(unitCheckIonoInterpBefore + 9,*) sumNeutralHeatingRate
 
   end if
 
@@ -1164,6 +1222,20 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
                                    Ti_from_IPE, &      ! inputs
                                    Ti_high_res_fixed)   ! output	
 
+  !----------------------------------------------------
+  ! convert neutral heating rates arrays to fixed grid
+  !----------------------------------------------------
+  !iiIpetoFixed : do ii = 1, numHrate
+     CALL INTERFACE__MID_LAT_IONOSPHERE_to_FIXED_GEO( &
+                                   NPTS, NMP, NLP, &     ! inputs
+                                   nFixedGridIonoHeights, nFixedGridIonoLats, nFixedGridIonoLons, & ! inputs
+                                   sumNeutralHeatingRate, &      ! inputs
+                                   sumHeatingRate_high_res_fixed )   ! output
+
+  !enddo iiIpetoFixed
+
+
+
 	   
   If (debugIonoInterp) then !  *** MOVE TO DEBUG MODULE ***
       !print *,'driver_ipe_gt.3d : MINVAL(Oplus_high_res_fixed) = ', MINVAL(Oplus_high_res_fixed)
@@ -1177,9 +1249,10 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
       write(unitCheckIonoInterpAfter+6,*) Ne_high_res_fixed
       write(unitCheckIonoInterpAfter+7,*) Te_high_res_fixed
       write(unitCheckIonoInterpAfter+8,*) Ti_high_res_fixed
+      write(unitCheckIonoInterpAfter+9,*) sumHeatingRate_high_res_fixed
   end if
 
-      if (debugStartupIPE) then
+      if (debugStartupIPE) then !  *** MOVE TO DEBUG MODULE ***
 
         !--------------------------------------------------------------
         ! Check min, max values that are going into the fixed grid
@@ -1204,12 +1277,17 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
         write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of Hplus_high_res_fixed = ', &
                  MINLOC(Hplus_high_res_fixed),  MINVAL(Hplus_high_res_fixed), &
                  MAXLOC(Hplus_high_res_fixed),  MAXVAL(Hplus_high_res_fixed)
-        write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of Ti_Oplus_for_GT = ', &
-                 MINLOC(Ti_Oplus_for_GT),  MINVAL(Ti_Oplus_for_GT), &
-                 MAXLOC(Ti_Oplus_for_GT),  MAXVAL(Ti_Oplus_for_GT)
-        write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of Te_for_GT = ', &
-                 MINLOC(Te_for_GT),  MINVAL(Te_for_GT), &
-                 MAXLOC(Te_for_GT),  MAXVAL(Te_for_GT)
+
+        write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of Ti_high_res_fixed = ', &
+                 MINLOC(Ti_high_res_fixed),  MINVAL(Ti_high_res_fixed), &
+                 MAXLOC(Ti_high_res_fixed),  MAXVAL(Ti_high_res_fixed)
+        write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of Te_high_res_fixed = ', &
+                 MINLOC(Te_high_res_fixed),  MINVAL(Te_high_res_fixed), &
+                 MAXLOC(Te_high_res_fixed),  MAXVAL(Te_high_res_fixed)
+
+        write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of sumHeatingRate_high_res_fixed = ', &
+                 MINLOC(sumHeatingRate_high_res_fixed),  MINVAL(sumHeatingRate_high_res_fixed), &
+                 MAXLOC(sumHeatingRate_high_res_fixed),  MAXVAL(sumHeatingRate_high_res_fixed)
 
       endif
 
@@ -1218,7 +1296,7 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
    ! Loop here for the thermosphere time step
    !------------------------------------------
    thermosphereLoop : DO gtLoopTime = utime, utime + (time_step-GT_timestep_in_seconds), &
-                                      GT_timestep_in_seconds !------------------------
+                                      GT_timestep_in_seconds !--------------------------------------------------
 
       ! reset idump_gt to 0
       idump_gt = 0
@@ -1234,8 +1312,6 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
       nn = MOD(nnloop, number_of_GT_time_steps_in_24_hours)
       IF ( nn .EQ. 0 ) nn = number_of_GT_time_steps_in_24_hours
 
-      !print *, 'driver_ipe_gt.3d : utime, Universal_Time_seconds, nn, nnloop  =  ', &
-      !                             utime, Universal_Time_seconds, nn, nnloop
 
       !---------------------
       ! increment counters
@@ -1246,8 +1322,6 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
       !----------------------------------------
       ! Dump out the thermosphere values ???
       !----------------------------------------
-      !if (nnloop .eq. nnstop) idump_gt = 1
-
       if (gtLoopTime == (utime + time_step-GT_timestep_in_seconds)) idump_gt = 1
       !print *,'driver : nnloop, idump_gt = ',nnloop, idump_gt
 
@@ -1263,17 +1337,7 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
       !  - was INTERFACE__GIP_to_thermosphere
       ! Created an independent subroutine out of the module - 20120501lrm
       ! - renamed this ipe fixed grid to thermosphere - 20120501lrm
-      ! call INTERFACE__FIXED_GRID_to_THERMO ( &
-      !    thermospheric_model_name , therm_model_ht_dim , therm_model_lat_dim , therm_model_lon_dim, &
-      !    ne_high_res_fixed, Oplus_high_res_fixed, hplus_high_res_fixed, &
-      !    noplus_high_res_fixed, o2plus_high_res_fixed, &
-      !    n2plus_high_res_fixed, nplus_high_res_fixed, &
-      !    Te_high_res_fixed, Ti1_high_res_fixed, Ti2_high_res_fixed, &
-      !    therm_model_geo_long, therm_model_geo_lat, therm_model_ht_m, &
-      !    therm_model_Ne_density, therm_model_oplus_density, therm_model_hplus_density, &
-      !    therm_model_noplus_density, therm_model_o2plus_density, &
-      !    therm_model_n2plus_density, therm_model_nplus_density, &
-      !    therm_model_Te, therm_model_Ti1, therm_model_Ti2)
+
 
       ! from res-thermo-02 :
       !   call INTERFACE__GIP_to_thermosphere ( &
@@ -1308,13 +1372,15 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
          NOplus_high_res_fixed, O2plus_high_res_fixed, &                     ! inputs
          N2plus_high_res_fixed, Nplus_high_res_fixed, &                      ! inputs
          Te_high_res_fixed, Ti_high_res_fixed, Ti_high_res_fixed, &          ! inputs
+         useIPEHeatingRates, sumHeatingRate_high_res_fixed, &                                   ! inputs
          therm_model_geo_long_deg, therm_model_geo_lat_deg, &                ! inputs
          !Altitude_m_FOR_IPE, &                                               ! inputs   *** this is not set yet***
          Ht_FROM_GT, &                                               ! inputs   ht, lat, lon
          Ne_density_FOR_GT, Oplus_density_FOR_GT, Hplus_density_FOR_GT, &    ! outputs
          NOplus_density_FOR_GT, O2plus_density_FOR_GT, &                     ! outputs
          N2plus_density_FOR_GT, Nplus_density_FOR_GT, &                      ! outputs
-         Te_FOR_GT, Ti_Oplus_FOR_GT, Ti_Oplus_FOR_GT)                        ! outputs
+         Te_FOR_GT, Ti_Oplus_FOR_GT, Ti_Oplus_FOR_GT, &                      ! outputs
+         sumNeutralHeatingRates_FOR_GT )                                        ! outputs
 
 
       !--------------------------------------------------------
@@ -1325,7 +1391,11 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
             iii = writeInterpThermo(gtLoopTime, Oplus_density_for_GT, Hplus_density_for_GT, &
                                     Nplus_density_for_GT, NOplus_density_for_GT, &
                                     O2plus_density_for_GT, N2plus_density_for_GT, &
-                                    Ne_density_for_GT, Te_for_GT, Ti_Oplus_for_GT, ht_FROM_GT)
+                                    Ne_density_for_GT, Te_for_GT, Ti_Oplus_for_GT, &
+                                    sumNeutralHeatingRates_FOR_GT, &
+                                    ht_FROM_GT)
+
+            ! write out neutral heating rates if being used
 
       end if
 
@@ -1389,7 +1459,7 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
 
 
 
-      if (debugStartupIPE) then
+      if (debugStartupIPE) then  ! move to debug module
 
         !----------------------------------------------------
         ! Check min, max values that are going into GT
@@ -1420,6 +1490,15 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
         write(6,'(A, 3i7, E12.4, 3i7, E12.4)'),'driver_ipe_gt.3d : locations, min, max, of Te_for_GT = ', &
                  MINLOC(Te_for_GT),  MINVAL(Te_for_GT), &
                  MAXLOC(Te_for_GT),  MAXVAL(Te_for_GT)
+
+        !do ii = 1, numHrate
+           !write(6,'(A,i4)') 'ii = ', ii
+           write(6,'(A, 3i7, E12.4, 3i7, E12.4)'), &
+                 'driver_ipe_gt.3d : locations, min, max, of sumneutralHeatingRates_FOR_GT = ', &
+                 MINLOC(sumneutralHeatingRates_FOR_GT),  MINVAL(sumneutralHeatingRates_FOR_GT), &
+                 MAXLOC(sumneutralHeatingRates_FOR_GT),  MAXVAL(sumneutralHeatingRates_FOR_GT)
+        !enddo
+
      endif
 
 
@@ -1448,6 +1527,8 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
                       NOplus_density_FOR_GT, &  ! input
                       O2plus_density_FOR_GT, &  ! input
                       Ti_Oplus_FOR_GT, &        ! input
+                      useIPEHeatingRates, &               ! input
+                      sumNeutralHeatingRates_FOR_GT, & ! input
                       exns, eyns, ezns, &
                       B_dip_angle_apex_degrees, B_magnitude_apex_nT, &
                       Magnetic_latitude_degrees, Magnetic_longitude_degrees, &
@@ -1660,8 +1741,6 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
                        tts_fixed_ht, qion3d_fixed_ht, elx_fixed_ht, &
                        ely_fixed_ht)
 
-               !print *,'driver_ipe_gt.3d : STOPPING.............'
-               !STOP
            endif
 
            !------------------------------------------------------
@@ -1733,22 +1812,11 @@ time_loop: DO utime = (start_time + GT_timestep_in_seconds), stop_time, time_ste
        !---------------------------------------
        ! Write out interpolated inputs to IPE
        !---------------------------------------
-       if (debugThermoInterp) then ! *** MOVE TO DEBUG MODULE ***
+       if (debugThermoInterp) then ! 
 
           iii = writeThermoToIono(V_South_plasma, V_East_plasma, V_Upward_plasma, &
                                   TN_plasma_input_3d, O_plasma_input_3d, O2_plasma_input_3d, &
                                   N2_plasma_input_3d)
-
-       ! write(unitCheckThermoInterpFluxT,*) V_South_plasma
-       ! write(unitCheckThermoInterpFluxT+1,*) V_East_plasma
-       ! write(unitCheckThermoInterpFluxT+2,*) V_Upward_plasma
-       ! write(unitCheckThermoInterpFluxT+3,*) ! should be rmt , but the composition is not being used ***
-       ! write(unitCheckThermoInterpFluxT+4,*) TN_plasma_input_3d
-       ! write(unitCheckThermoInterpFluxT+5,*) O_plasma_input_3d
-       ! write(unitCheckThermoInterpFluxT+6,*) O2_plasma_input_3d
-       ! write(unitCheckThermoInterpFluxT+7,*) N2_plasma_input_3d
-       ! write(unitCheckThermoInterpFluxT+8,*) !qion3d_
-
 
        endif
 
@@ -1786,6 +1854,7 @@ print *,'driver_ipe_gt.3d : END OF driver_ipe_gt.3d '
 !----------------------------------------
 CALL CPU_TIME(endCPUTime)
 
+print *,'driver_ipe_gt.3d : NORMAL TERMINATION '
 print *,'driver_ipe_gt.3d : total cpu time of driver = ', endCPUTime - startCPUTime
 
 END PROGRAM  test_GT
