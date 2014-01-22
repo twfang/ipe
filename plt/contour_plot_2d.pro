@@ -5,7 +5,7 @@
  PRO  contour_plot_2d $
 , in2d,is2d,z_km,mlat_deg  $             ;input 
 , plot_z,plot_VEXB,n_read   $ ;input
-, uthr, plot_DIR, title_res,rundate,title_test,sw_debug, title_hemi,sw_anim,mp_plot, lt_hr,fac_window $
+, uthr, plot_DIR, title_res,rundate,title_test,sw_debug, title_hemi,sw_anim,mpstart,mpstop,mpstep, lt_hr,fac_window $
 , sw_output2file, TEST $
 , VarType_min $;=8L
 , VarType_max $;=8L ;PAR-1
@@ -24,32 +24,34 @@ n_read0=0L
 sw_plot_grid=0L  ;1: plot grid only
 sw_arrow_exb=0L
 reference_arrow=40L  ;m/s
+;factor_arrow=5.
 factor_arrow=5.
 
 lp_step_arrow=7
-lpmax_perp_trans=37;151-1
-mpstart=mp_plot;0
-mpstop=mp_plot;0
-mpstep=1
+;lpmax_perp_trans=37;151-1
+lpmax_perp_trans=149
+;mpstart=mp_plot-5;0
+;mpstop=mp_plot;0
+;mpstep=1
 ;debug
-for i=mpstart, mpstop  do print,' mp', i,' LT',lt_hr[i]
+for i=mpstart, mpstop  do print,' mp', (i+1),' LT',lt_hr[i]
 
 HTmin=90.  ;min(yy)   ;75.   ;400. ;
-HTmax=190.;700.;190. ;1.000000E+03;700.; 
+HTmax=800.;700.;190. ;1.000000E+03;700.; 
 ; plot range
 if ( title_hemi eq 'NH' ) then begin
-  gLATmax=+65.;+90.;-10.;
-  gLATmin=+5.;+50.;-gLATmax;-27.; 
+  gLATmax=+90.;+90.;-10.;
+  gLATmin=+60.;+50.;-gLATmax;-27.; 
 endif else if ( title_hemi eq 'SH' ) then begin
-  gLATmax=-0.;+90.;-10.;
-  gLATmin=-45.;+50.;-gLATmax;-27.; 
+  gLATmax=-55.;+90.;-10.;
+  gLATmin=-85.;+50.;-gLATmax;-27.; 
 endif else if ( title_hemi eq 'glb' ) then begin
-  gLATmax=+40.;-10.;
+  gLATmax=+35.;-10.;
   gLATmin=-gLATmax;-27.; 
 endif else if ( title_hemi eq 'eq' ) then begin
-  gLATmax=+30.;+90.;-10.;
-  gLATmin=-0.5;+50.;-gLATmax;-27.;
-  HTmax=1.001E+03 
+  gLATmax=-15.;+90.;-10.;
+  gLATmin=-33.;-gLATmax;-27.;
+;  HTmax=1.001E+03 
 endif
 
 
@@ -73,8 +75,10 @@ NPAR = size_result[2]
 
 
 N_LDCT=39;33
-lp_strt=40;1;28-1;  0+1 ;58;0;63 ;1-1L
-lp_stop=NLP-1-1 ;138L;
+;lp_strt=1;28-1;  0+1 ;58;0;63 ;1-1L
+lp_strt=0+1 ;58;0;63 ;1-1L
+;lp_stop=NLP-1-1 ;138L;
+lp_stop=NLP-2;138L;
 
 
 
@@ -135,8 +139,12 @@ Y=dblarr(4)
 if ( sw_dif eq 0 ) then begin
 
    ARY_min0=[ $
-0.,$                ;           3.,$
-178.8, 178.8, $
+;0.,$                
+3.2,$ ;3.,$
+;178.8,$
+154.,$
+ 178.8, $
+;0.,0.,0.,$
 0.,0.,0.,$
  -1.24 ,0.,0.,0.,0.,0., $ ;<190km
 ; 1.5 ,0.,0.,0.,0.,0., $ ;<700km
@@ -146,10 +154,14 @@ if ( sw_dif eq 0 ) then begin
          ] 
 
 ARY_max0=[ $
-           5.3,$;           7.,$
-800. ,800. ,$
-5.3, 5.3,5.3,$
-3.0, 5.3, 5.3,5.3,5.3,5.3, $  ;<190km
+6.1,$ ;7.,$
+;4.,$
+;800. ,$
+6083. ,$
+800. ,$
+;6.1, 3.5,3.5,$
+2.0, 3.5,3.5,$
+3.5, 3.5, 3.5,3.5,5.3,5.3, $  ;<190km
 ;6.0, 5.3, 5.3,5.3,5.3,5.3, $ ;<700km
 ; 7., 7., 7.  $ ;densities
 ;        ,  3600. ,   3600.  $    ;To+,Te
@@ -235,9 +247,9 @@ if ( device_type eq 'ps' ) then begin
   XSIZE=X_SIZE, YSIZE=Y_SIZE, XOFFSET=0.0, YOFFSET=X_SIZE
 endif else  if ( device_type eq 'png' ) then begin
 
-  !P.MULTI=[0,2,2,0,1]
-  ;1:# of plot columns
-  ;2:# of rows
+;  !P.MULTI=[4,4,2,0,1]
+;  ;1:# of plot columns
+;  ;2:# of rows
 
 if ( sw_debug eq 1 ) then  print, 'before',!P.BACKGROUND
   !P.BACKGROUND=0 ;255
@@ -314,31 +326,39 @@ for lp=lp_strt , lp_stop do begin
     endif
 
 
+;if ( mlat_deg[ is2d[lp]-1 ] ge -66. ) AND ( mlat_deg[ is2d[lp]-1 ] lt -62. ) THEN  begin
+;print,'check mlat!', is2d[lp], lp ,  mlat_deg[ is2d[lp]-1 ]
+;stop
+;endif
+
 
 ;if ( lp ge 50 ) then $
-  dXX=0.7; (mlat_deg[ in2d[lp-1] ]-mlat_deg[ in2d[lp] ])*0.95*factor ;nm20121130
+  ;dXX=0.7; (mlat_deg[ in2d[lp-1] ]-mlat_deg[ in2d[lp] ])*0.95*factor ;nm20121130
+  dXX=(mlat_deg[ in2d[lp-1] ]-mlat_deg[ in2d[lp] ])*0.9*factor ;nm20121130
 ;  dXX=(mlat_deg[ in2d[lp-1] ]-mlat_deg[ in2d[lp] ])*0.95*factor
 ;else $
 ;  dXX=1.00
 
     for ipts=istrt,istop,istep   do begin
 ;dYY=(z_km[ipts+1]-z_km[ipts] )*1.0 ;
-dYY=1.6;(z_km[ipts+1]-z_km[ipts] )*0.9 ;nm20121130
+;dYY=5.;1.6;(z_km[ipts+1]-z_km[ipts] )*0.9 ;nm20121130
+dYY=(z_km[ipts+1]-z_km[ipts] )*0.9 ;nm20121130
 
 if ( z_km(ipts  ) gt HTmin ) and ( z_km(ipts) lt (HTmax-dYY) ) then begin
 if ( mlat_deg(ipts ) gt gLATmin ) and ( mlat_deg(ipts) lt gLATmax ) then begin
 
 ;if ( mlat_deg[ipts] gt -37. ) AND (z_km[ipts] lt 300. ) then $
+;if (z_km[ipts] gt 340. ) AND (z_km[ipts] lt 360. ) then $
 ;print, lp,mlat_deg[ipts],z_km[ipts]
 
-Xa=mlat_deg(ipts)
-Xb=mlat_deg(ipts)   ;glatd(ipts  ,ifl)+dLAT  ;
-Xc=mlat_deg(ipts)+dXX  ;Xb  ;
-Xd=mlat_deg(ipts)+dXX  ;Xa  ;
-Ya=z_km(ipts)
-Yb=z_km(ipts)+dYY ;Ya ;
-Yc=z_km(ipts)+dYY ;Ya+dHT ;
-Yd=z_km(ipts)    ;Yc     ;
+Xa=mlat_deg(ipts) ;-dXX*.5
+Xb=mlat_deg(ipts) ;-dXX*.5   ;glatd(ipts  ,ifl)+dLAT  ;
+Xc=mlat_deg(ipts)+dXX ;*.5  ;Xb  ;
+Xd=mlat_deg(ipts)+dXX ;*.5  ;Xa  ;
+Ya=z_km(ipts) ;-dYY*.5
+Yb=z_km(ipts)+dYY ;*.5 ;Ya ;
+Yc=z_km(ipts)+dYY ;*.5 ;Ya+dHT ;
+Yd=z_km(ipts) ;-dYY*.5   ;Yc     ;
 
 
 
@@ -349,15 +369,17 @@ Yd=z_km(ipts)    ;Yc     ;
 if ( VarType eq 0 ) OR ( VarType ge 3 ) then begin
 
   density = $
-    plot_z[n_read,VarType, mp,ipts] * 1.0E-6  ;m-3 --> cm-3
+    plot_z[n_read,VarType, 0,ipts] * 1.0E-6  ;m-3 --> cm-3
 
   if ( density gt 0.0 ) then $
      Value= ALOG10( density ) $
   else $ 
      Value= ALOG10( 0.1 )
+;20131204
+Value=plot_z[n_read,VarType, 0,ipts]*1.0E-12
 
 endif else if ( VarType eq 1 ) or ( VarType eq 2 ) then $ ;Te/i
-  Value = plot_z[n_read,VarType,mp,ipts] ;
+  Value = plot_z[n_read,VarType,0,ipts] ;
 
 
 
@@ -439,10 +461,16 @@ endfor  ;ihem=1,1   do begin
 
 
 ;draw arrow of EXB drift at midpoint
+
+if ( z_km[midpoint] le HTmax ) AND ( z_km[midpoint] ge HTmin ) then  begin
+
 if ( sw_arrow_exb eq 1 ) AND (lp le lpmax_perp_trans) then begin
 if ( lp le 46 ) $ ;mlat-30 boundary
 OR ( lp eq lpmax_perp_trans ) $ ;transport boundary
 OR ( (lp MOD lp_step_arrow) eq 2  ) then begin
+
+;print, 'check exb!',n_read,mp,lp,plot_VEXB[n_read,mp,lp], z_km[midpoint]
+
 X0_arrow = mlat_deg[midpoint]
 Y0_arrow = z_km[midpoint]
 dX_arrow = 0.
@@ -467,6 +495,8 @@ LOADCT, N_LDCT
 endif ;( (lp MOD lp_step_arrow) eq 0  ) then begin
 endif ;( sw_arrow_exb ) then begin
 
+endif ;( z_km[midpoint] lt ) then  begin
+
 endfor  ;lp=lp_strt,lp_stop do begin
 
 
@@ -475,8 +505,8 @@ if ( sw_arrow_exb eq 1 ) then begin
 X0_arrow = gLATmax +  2.0
 Y0_arrow = HTmin   - 60.
 dX_arrow = 0.
-;dY_arrow = reference_arrow * factor_arrow
-dY_arrow = reference_arrow * fac_arw_para
+dY_arrow = reference_arrow * factor_arrow
+;dY_arrow = reference_arrow * fac_arw_para
 X1_arrow = X0_arrow + dX_arrow
 Y1_arrow = Y0_arrow + dY_arrow
 

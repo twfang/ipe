@@ -1,3 +1,4 @@
+;20131219: hinotori: Vartype in ctr_lon_lat needs to be zero to be able to output Ne. output files are saved in ~/wamns/hinotori/. sw_plot_contour=0 to run faster by saving plotting time.
 pro ctr_lon_lat $
 ,JMIN_IN,JMAX_IS,Z_km,mlat_deg $
 ;,je_3d $
@@ -8,20 +9,36 @@ pro ctr_lon_lat $
 ,sw_output2file $
 ,glon_deg,glat_deg,sw_frame $ ;=0 ;mag; 1geo
 ,fac_window ,TEST $
-,sw_debug
+,sw_debug $
+;20131209: output to ascii file
+,sw_output2file_ascii,luntmp,ncount $
+, Vn_ms1
 
+; X-axis range
+;1:0<lon<360
+;0:-180<lon<+180
+xmax360=1
+;note20131209: sw OFF only when sw_output2file_ascii=1 to run faster!!
+sw_plot_contour=1
+ltimemin=11.
+ltimemax=15.
+mlatmax=45.
+factor=1.;1.0E-10 ;for density
+; remember to modify zmin/max
 
-for VarType=0,0,5 do begin
+;debug20140108
+fac_wind=1.0;1.0E-2
+
+for VarType=3,3, 1 do begin
 
 print,'VarType=',VarType
-ht_plot =350.;95.;130.;250.;91.;380.;180.;900.;380.;280.;380.00 ;[km]
-;ht_plot =500.;280.;380.00 ;[km]
-;ht_plot =600.00 ;[km]
+ht_plot =350.;[km]
+
 
 
 sw_range=1L
 nano=1.0E-9
-unit=['[m-3]','K','K','[m-3]','[m-3]','[m-3]','m/s'];[nA/m2]'];[nA/m2]'
+unit=['[m-3]','K','K','[m-3]','[m-3]','[m/s]','[m/s]','[m-3]','[km]'] ;[nA/m2]'];[nA/m2]' ;20140108
 
  sw_plot_grid=0 ;1:retangular, 2:polar
 ; get n_read_max, ny_max
@@ -46,93 +63,181 @@ mlon_deg_min=0. ;default
 dmlon=4.50 ;deg
 mlon_deg=findgen(NMP)*dmlon
 for mp=0,nmp-1 do begin
-if ( mlon_deg[mp] lt mlon_deg_min ) then  mlon_deg[mp]=mlon_deg[mp]+360.
+  if ( mlon_deg[mp] lt mlon_deg_min ) then  mlon_deg[mp]=mlon_deg[mp]+360.
 endfor
 
 plot_zz=fltarr(nx_max,ny_max)
 plot_yy=fltarr(nx_max,ny_max)
 plot_xx=fltarr(nx_max,ny_max)
 
-VarTitle=['Ne','Te','Ti','O+','NO+','O2+','Vpar_o+']
+;VarTitle=['Ne','Te','Ti','o+','NO+','O2+','Vpar_o+','NmF2','HmF2']
+VarTitle=['Ne','Te','Ti','o+','NO+','UN','VN','NmF2','HmF2'] ;20140108
 ;VarTitle=['Ne','Te','Ti','N(NO+)','Vpar_o+']
 ;VarTitle=['Ne','Te','Ti','N(O2+)','Vpar_o+']
 ;VarTitle=['Ne','Te','Ti','N(N2+)','Vpar_o+']
 
+
 for mp=0,NMP-1 do begin
 for lp=0,NLP-1 do begin
 
+
   in = JMIN_IN[lp]-1L
   is = JMAX_IS[lp]-1L
-  midpoint=IN + ( IS - IN )/2
+  midpoint = IN + ( IS - IN )/2
 ;NH  
+  nel = fltarr(NPTS2D)*0.0000
   istep=+1
   for i=in,midpoint, istep  do begin
+
+   if ( VarType lt 7 ) then begin
     if ( z_km[i] le ht_plot ) AND ( z_km[i+istep] gt ht_plot ) then begin
-;print,'NH: mp',mp,' lp',lp,' i',i,' z_km',z_km[i] , ht_plot,XIONN_m3[VarType,i-20:i+20,mp] 
       if ( VarType eq 0 ) then $ 
-        for jth=0,ISPEC-1 do  plot_zz[mp,lp]=plot_zz[mp,lp]+XIONN_m3[jth,i,mp]*1.0E-10 $
+        for jth=0,ISPEC-1 do  plot_zz[mp,lp]=plot_zz[mp,lp]+XIONN_m3[jth,i,mp] * factor $
       else if ( VarType eq 1 ) then $
-        plot_zz[mp,lp] = TE_TI_k[3-1,i,mp] $;[K]
+        plot_zz[mp,lp] = TE_TI_k[3-1,i,mp] $;[K] ;Te
       else if ( VarType eq 2 ) then $
-        plot_zz[mp,lp] = TE_TI_k[1-1,i,mp] $;[K]
+        plot_zz[mp,lp] = TE_TI_k[1-1,i,mp] $;[K] ;Ti
       else if ( VarType eq 3 ) then $
-        plot_zz[mp,lp] = XIONN_m3[1-1,i,mp]*1.0E-10  $
+        plot_zz[mp,lp] = XIONN_m3[1-1,i,mp]*factor  $ ;o+
       else if ( VarType eq 4 ) then $
-        plot_zz[mp,lp] = XIONN_m3[4,i,mp]*1.0E-10  $ ;no+
+        plot_zz[mp,lp] = XIONN_m3[4,i,mp]*factor  $ ;no+
       else if ( VarType eq 5 ) then $
-        plot_zz[mp,lp] = XIONN_m3[5,i,mp]*1.0E-10  $ ;o2+
+        plot_zz[mp,lp] =$
+Vn_ms1[1-1,i,mp]*fac_wind $;[m/s] ;eastward  ;20140108
+; XIONN_m3[5,i,mp]*factor  $ ;o2+
       else if ( VarType eq 6 ) then $
-        plot_zz[mp,lp] = XIONV_ms1[1-1,i,mp] ;V//o+[m/s]
+        plot_zz[mp,lp] =$
+Vn_ms1[2-1,i,mp]*fac_wind ;[m/s] ;northward ;20140108
+; XIONV_ms1[1-1,i,mp] ;V//o+[m/s]
  
+      if ( sw_frame eq 0 ) then begin ;magnetic
+         plot_yy[mp,lp] = mlat_deg[i]
+
+
+;if (mp eq 0) and (lp eq 46) then begin
+;print,'check mlat', mlat_deg[i]
+;STOP
+;endif
+
+         plot_xx[mp,lp] = mlon_deg[mp]
+         if (xmax360 eq 0) AND (mlon_deg[mp] ge +180.) then plot_xx[mp,lp]=mlon_deg[mp]-360.
+      endif else if ( sw_frame eq 1 ) then begin ;geographic
+         plot_yy[mp,lp] = glat_deg[i,mp]
+         plot_xx[mp,lp] = glon_deg[i,mp]
+         if (xmax360 eq 0 ) AND (glon_deg[i,mp] ge +180.) then plot_xx[mp,lp]=glon_deg[i,mp]-360.
+      endif ;( sw_frame eq 0 ) then begin ;magnetic
+      BREAK ;exit from the i loop 
+    endif                       ;( z_km[i] le ht_plot ) AND ( z_km[i+istep] gt ht_plot ) then begin
+
+;nm20130523: added nmf2/hmf2
+  endif else begin  ;( VarType ge 7 ) then begin
+     for jth=0,ISPEC-1 do  nel[i]=nel[i]+XIONN_m3[jth,i,mp]
+
+     if ( i eq midpoint ) then begin
+       result = MAX( nel,Max_Subscript ) ;find NmF2
+;       print,'NH: NmF2', result,Max_Subscript, nel[Max_Subscript],Z_km[Max_Subscript],mp,lp
+       if ( VarType eq 7 ) then $
+         plot_zz[mp,lp] = nel[Max_Subscript] $ ;NmF2
+       else if ( VarType eq 8 ) then $
+         plot_zz[mp,lp] = Z_km[Max_Subscript]    ;hmF2
+
        if ( sw_frame eq 0 ) then begin ;magnetic
-          plot_yy[mp,lp] = mlat_deg[i]
+          plot_yy[mp,lp] = mlat_deg[Max_Subscript]
           plot_xx[mp,lp] = mlon_deg[mp]
-;          if (  mlon_deg[mp] ge 180.) then plot_xx[mp,lp]=mlon_deg[mp]-360.
+          if (xmax360 eq 0) AND (mlon_deg[mp] ge +180.) then plot_xx[mp,lp]=mlon_deg[mp]-360.
        endif else if ( sw_frame eq 1 ) then begin ;geographic
-          plot_yy[mp,lp] = glat_deg[i,mp]
-          plot_xx[mp,lp] = glon_deg[i,mp]
-;          if (  glon_deg[i,mp] ge 180.) then plot_xx[mp,lp]=glon_deg[i,mp]-360.
+          plot_yy[mp,lp] = glat_deg[Max_Subscript,mp]
+          plot_xx[mp,lp] = glon_deg[Max_Subscript,mp]
+          if (xmax360 eq 0) AND (glon_deg[Max_Subscript,mp] ge +180.) then plot_xx[mp,lp]=glon_deg[Max_Subscript,mp]-360.
        endif ;( sw_frame eq 0 ) then begin ;magnetic
-       BREAK 
-    endif
-  endfor ;i
+  
+    endif;     if ( i eq midpoint ) then 
+  endelse ;( VarType lt 7 ) then begin
+
+
+
+  endfor ;i=in,midpoint, istep  do begin
 
 ;SH  
   lps = NLP-1 + (NLP-1-lp)
+  nel = fltarr(NPTS2D)*0.0000
   istep=-1 
   for i=is,midpoint, istep  do begin
-    if ( z_km[i] le ht_plot ) AND ( z_km[i+istep] gt ht_plot )  then begin
-
-;print,'SH: mp',mp,' lp',lp,' i',i,' z_km',z_km[i] , ht_plot,XIONN_m3[VarType,i-20:i+20,mp] 
-
+   
+    if ( VarType lt 7 ) then begin
+      if ( z_km[i] le ht_plot ) AND ( z_km[i+istep] gt ht_plot )  then begin 
 ;       plot_zz[mp,lps] = XIONN_m3[VarType,i,mp] ;[m-3]  je_3d[VarType,i,mp]/nano
       if ( VarType eq 0 ) then $ 
-        for jth=0,ISPEC-1 do  plot_zz[mp,lps]=plot_zz[mp,lps]+XIONN_m3[jth,i,mp]*1.0E-10 $
+        for jth=0,ISPEC-1 do  plot_zz[mp,lps]=plot_zz[mp,lps]+XIONN_m3[jth,i,mp]*factor $
       else if ( VarType eq 1 ) then $
         plot_zz[mp,lps] = TE_TI_k[3-1,i,mp] $;[K]
       else if ( VarType eq 2 ) then $
         plot_zz[mp,lps] = TE_TI_k[1-1,i,mp] $;[K]
       else if ( VarType eq 3 ) then $
-        plot_zz[mp,lps] = XIONN_m3[1-1,i,mp]*1.0E-10 $
+        plot_zz[mp,lps] = XIONN_m3[1-1,i,mp]*factor $
       else if ( VarType eq 4 ) then $
-        plot_zz[mp,lps] = XIONN_m3[4,i,mp]*1.0E-10 $
+        plot_zz[mp,lps] = XIONN_m3[4,i,mp]*factor $
       else if ( VarType eq 5 ) then $
-        plot_zz[mp,lps] = XIONN_m3[5,i,mp]*1.0E-10 $
+        plot_zz[mp,lps] =$
+Vn_ms1[1-1,i,mp]*fac_wind $;[m/s] ;eastward  ;20140108
+; XIONN_m3[5,i,mp]*factor $
       else if ( VarType eq 6 ) then $
-        plot_zz[mp,lps] = XIONV_ms1[1-1,i,mp] ;V//o+[m/s]
+        plot_zz[mp,lps] = $
+Vn_ms1[2-1,i,mp]*fac_wind ;[m/s] ;northward ;20140108
+;XIONV_ms1[1-1,i,mp] ;V//o+[m/s]
 
        if ( sw_frame eq 0 ) then begin ;magnetic
           plot_yy[mp,lps] = mlat_deg[i]
           plot_xx[mp,lps] = mlon_deg[mp]
-;          if (  mlon_deg[mp] ge 180.) then plot_xx[mp,lps]=mlon_deg[mp]-360.
+          if (xmax360 eq 0) AND (mlon_deg[mp] ge +180.) then plot_xx[mp,lps]=mlon_deg[mp]-360.
        endif else if ( sw_frame eq 1 ) then begin ;geographic
           plot_yy[mp,lps] = glat_deg[i,mp]
           plot_xx[mp,lps] = glon_deg[i,mp]
-;          if (  glon_deg[i,mp] ge 180.) then plot_xx[mp,lps]=glon_deg[i,mp]-360.
+          if (xmax360 eq 0) AND (glon_deg[i,mp] ge +180.) then plot_xx[mp,lps]=glon_deg[i,mp]-360.
        endif ;( sw_frame eq 0 ) then begin ;magnetic
-       BREAK
-    endif
- endfor                         ;i
+
+;20131209output to file
+       if ( sw_output2file_ascii eq 1 ) AND ( ABS( mlat_deg[i]) le mlatmax ) then begin
+	  ltime=UT_hr + glon_deg[i,mp]/15.
+          if ( ltime ge 24. ) then ltime = ( ltime MOD 24. )
+          if ( ltime ge ltimemin) AND ( ltime le ltimemax ) then begin
+	    ncount=ncount+1
+	    printf, luntmp,UT_hr, plot_zz[mp,lps], TE_TI_k[3-1,i,mp], TE_TI_k[1-1,i,mp],mlat_deg[i], glon_deg[i,mp], ltime 
+          endif ;( ltime ge 11.) AND ( ltime le 15. ) then begin
+       endif ;( sw_output2file_ascii eq 1 ) then 
+
+
+       BREAK; exit from the i loop
+    endif; ( z_km[i] le ht_plot ) AND ( z_km[i+istep] gt ht_plot )  then begin 
+
+;nm20130523: SH added nmf2/hmf2
+   endif else begin ; ( VarType ge 7 ) then begin
+     for jth=0,ISPEC-1 do  nel[i]=nel[i]+XIONN_m3[jth,i,mp]
+
+     if ( i eq midpoint ) then  begin
+       result = MAX( nel,Max_Subscript ) ;find NmF2
+;       print,'SH: NmF2', result,Max_Subscript, nel[Max_Subscript],Z_km[Max_Subscript],mp,lp
+       if ( VarType eq 7 ) then $
+         plot_zz[mp,lps] = nel[Max_Subscript] $ ;NmF2
+       else if ( VarType eq 8 ) then $
+         plot_zz[mp,lps] = Z_km[Max_Subscript]    ;hmF2
+
+       if ( sw_frame eq 0 ) then begin ;magnetic
+          plot_yy[mp,lps] = mlat_deg[Max_Subscript]
+          plot_xx[mp,lps] = mlon_deg[mp]
+          if (xmax360 eq 0) AND (mlon_deg[mp] ge +180.) then plot_xx[mp,lps]=mlon_deg[mp]-360.
+       endif else if ( sw_frame eq 1 ) then begin ;geographic
+          plot_yy[mp,lps] = glat_deg[Max_Subscript,mp]
+          plot_xx[mp,lps] = glon_deg[Max_Subscript,mp]
+          if (xmax360 eq 0) AND (glon_deg[Max_Subscript,mp] ge +180.) then plot_xx[mp,lps]=glon_deg[Max_Subscript,mp]-360.
+       endif ;( sw_frame eq 0 ) then begin ;magnetic
+  
+    endif;     if ( i eq midpoint ) then 
+  endelse ;( VarType lt 7 ) then begin
+
+
+
+ endfor                         ; i=is,midpoint, istep  do begin
 
 endfor ;lp=0,NLP-1 do begin
 endfor ;mp=0,NMP-1 do begin
@@ -143,11 +248,12 @@ endfor ;mp=0,NMP-1 do begin
 if ( sw_range eq 1 ) then begin
       if ( VarType eq 0 ) then begin 
 ;f107-180
-        zmin=1.
-;        zmin=1.e+10
+;        zmin=-8.0E+10
+        zmin=1.e+10
 ;        zmax=7.5e+11
 ;        zmax=2.5e+1 ;E-region
-        zmax=2.5e+2 ;F-region
+        zmax=4.3e+12 ;F-region
+;        zmax=9.0E+11 ;dbg200km
 ;        zmax=5.58e+12
 ;92km
 ;        zmax=2.00e+11
@@ -156,16 +262,27 @@ if ( sw_range eq 1 ) then begin
 ;        zmin=1.e+10
 ;        zmax=1.77e+12
       endif else if ( VarType ge 1 ) AND (VarType le 2 ) then begin 
-        zmin=440.
-        zmax=640.
-      endif else if ( VarType ge 3 ) AND ( VarType le 5 ) then begin 
+        zmin=0.
+        zmax=3000.
+      endif else if ( VarType ge 3 ) AND ( VarType lt 5 ) then begin 
 ;        zmin=0.
 ;        zmax=8.
-        zmin=1.
-        zmax=2.5e+1
+;        zmin=1.
+;        zmax=2.5e+1
+        zmin=0.0
+        zmax=2.e+12 ;F-region
+      endif else if ( VarType eq 5 ) then begin 
+        zmin=-300.;zonal
+        zmax=+300.
       endif else if ( VarType eq 6 ) then begin 
-        zmin=-200.
-        zmax=+200.
+        zmin=-300.;meridional
+        zmax=+300.
+      endif else if ( VarType eq 7 ) then begin 
+        zmin=1.0e+10
+        zmax=1.983e+12
+      endif else if ( VarType eq 8 ) then begin 
+        zmin=100.
+        zmax=500.
       endif
 
 	where_result=where ( plot_zz gt zmax, count ) 
@@ -185,9 +302,14 @@ print,'max=',MAX(plot_zz),' min=',MIN(plot_zz)
 MAX_xymin=zmax ;1.0E+3
 n_levels=100L
 
-X_max=+360.;mlon_deg_min+360.
-X_min=  00.;mlon_deg_min ;  0.0
-Y_max=+90.;60.;90.;60.0
+if ( xmax360 eq 1 ) then begin
+  X_max=+360.
+  X_min=+  0.
+endif else if ( xmax360 eq 0 ) then begin
+  X_max=+180.
+  X_min=-X_max
+endif
+Y_max=+40.0
 Y_min=-Y_max
 if ( sw_frame eq 0 ) then $
   MAG_GEO='magnetic' $
@@ -197,14 +319,17 @@ else if ( sw_frame eq 1 ) then $
 X_TITLE=MAG_GEO+' longitude[deg]'
 Y_TITLE=MAG_GEO+' latitude[deg]'
 
-text_color=255.
+if ( sw_plot_contour eq 1 ) then begin
+	text_color=255.
 char_size=1.0
 char_thick=1.0
-n_ldct=39
-iwindow=1L
-DEVICE, RETAIN=2, DECOMPOSED=0
-WINDOW,iwindow,XSIZE=500*fac_window,YSIZE=500*fac_window
-loadct,n_ldct
+n_ldct=39;5;39
+	iwindow=1L
+	DEVICE, RETAIN=2, DECOMPOSED=0
+	WINDOW,iwindow,XSIZE=500*fac_window,YSIZE=500*fac_window ;*0.7
+	!p.multi=[0,1,1,0]
+	loadct,n_ldct
+endif ;( sw_plot_contour eq 1 ) then begin
 
 X0=0.10
 X1=0.90
@@ -278,12 +403,12 @@ RETURN
 endif ;( sw_plot_grid eq 1 ) then begin
 
 ;debug
-;mp=25L
-;for l=0,ny_max-1 do print,l,plot_zz(mp,l),plot_xx(mp,l),plot_yy(mp,l)
-;l=100
-;print,'lp==',l
-;for mp=0,nx_max-1  do print,mp,plot_zz(mp,l),plot_xx(mp,l),plot_yy(mp,l)
+;mp=0
+;print,'mp==',mp
+;for l=0,nlp-1 do print,plot_zz(mp,l),plot_xx(mp,l),plot_yy(mp,l)
 
+
+if ( sw_plot_contour eq 1 ) then begin
 contour,plot_zz,plot_xx,plot_yy $
 ,/irregular $
 ,/fill $
@@ -299,7 +424,7 @@ contour,plot_zz,plot_xx,plot_yy $
 
 if ( sw_debug eq 1 ) then  print,'MAX=',MAX(plot_zz),' MIN=',MIN(plot_zz)
 ; add MIN & MAX values
-xyouts, 0.6, 0.84 $
+xyouts, 0.5, 0.84 $
 , 'MIN='+STRTRIM(STRING( MIN(plot_zz), FORMAT='(E11.3)'),1)+' MAX='+STRTRIM(STRING( MAX(plot_zz), FORMAT='(E11.3)'),1)  $
 , charsize=1.0, charthick=1.0, /norm, /noclip
 
@@ -320,7 +445,9 @@ if ( sw_output2file eq 1 ) then begin
       title_frame='geo'
 Filename_png=plot_DIR+VarTitle[VarType]+'_ht'+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+'_ut'+STRTRIM( string(ut_hr, FORMAT='(F6.2)'),1 )+title_frame+'.png'
 output_png, Filename_png
-endif
+endif ;( sw_output2file eq 1 ) then begin
+
+endif ;( sw_plot_contour eq 1 ) then begin
 
 
 endfor ;VarType=1,1 do begin

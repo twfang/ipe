@@ -65,6 +65,9 @@ ipts=JMIN_IN(lpj)-1
     dum = fltarr( NMP_all+1 ) ;!rad
     readu, LUN[1], dum ;( 1: NMP_all+1 ) !rad
 if sw_debug eq 1 then print,'mlon[deg]',dum[mp]*180./!PI
+;for i=0,nmp_all-1 do print,'mlon[deg]',(i+1),dum[i]*180./!PI
+;for i=40,50 do print,'mlon[deg]',(i+1),dum[i]*180./!PI
+
 
     dum = Z_km
     readu, LUN[1], dum ;(     1:NPTS2D_dum) !meter
@@ -88,7 +91,13 @@ if sw_debug eq 1 then print,'GLON_rad-deg',dum[ipts, mp]*180./!PI
 ;     readu, LUN[1], JMIN_IN,JMAX_IS,Z_meter,GL_rad
 
 
-if sw_debug eq 1 then  print, 'plasma0: IN=',JMIN_IN[0],' IS=',JMAX_IS[0],Z_km[0],mlat_deg[0]
+lp=1-1L
+if sw_debug eq 1 then  print,lp,'plasma0: IN=',JMIN_IN[lp],' IS=',JMAX_IS[lp],' #grid points=',(JMAX_IS[lp]-JMIN_IN[lp]+1),' z_km=',Z_km[lp],' mlat=',mlat_deg[lp]
+;20140106debug
+;lp=NLP_all-1L
+;if sw_debug eq 1 then  print,lp,'plasma0: IN=',JMIN_IN[lp],' IS=',JMAX_IS[lp],' #grid points=',(JMAX_IS[lp]-JMIN_IN[lp]+1),' z_km=',Z_km[lp],' mlat=',mlat_deg[lp]
+;STOP
+
 
 if ( sw_save_grid eq 1 ) then  begin
   print,'saving grid to a file=',filename_grid_sav
@@ -96,5 +105,5 @@ if ( sw_save_grid eq 1 ) then  begin
   print,'saving grid finished'
 endif
 
-;STOP ;debug
+
 END ;PRO read_grid

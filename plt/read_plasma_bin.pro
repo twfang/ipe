@@ -1,5 +1,6 @@
 pro read_plasma_bin,LUN,UT_hr, XIONN_m3,XIONV_ms1,TE_TI_k,VEXB,sw_debug $
-,sw_3DJ,je_3d,sw_hr,hrate, sw_dif, sw_lun
+,sw_3DJ,je_3d,sw_hr,hrate, sw_dif, sw_lun $
+,NMP_in
 
 
 UT_sec=0L
@@ -10,10 +11,14 @@ record_number=0L
 print,' rec#',record_number,' UThr',UT_hr, UT_sec
 
 size_result=size(XIONN_m3)
-if ( sw_debug eq 1 ) then  print,size_result
+if ( sw_debug eq 1 ) then  $
+   print,size_result
+
 NPTS2D=size_result[2]
 NMP=size_result[3]
-
+if ( sw_debug eq 1 ) then  $
+  print, 'NMP',NMP
+if ( NMP_in eq 1 ) then NMP=NMP_in
 dum=fltarr(NPTS2D,NMP)
 
 if ( sw_lun[2] eq 1 ) then begin
@@ -117,6 +122,8 @@ if ( sw_dif eq 0 ) then begin
          print, 'VEXB_ms1=',VEXB[0,130],VEXB[0,120]
    endif                        ;( sw_lun[9] eq 1 ) then begin
 endif
+
+
 
 if ( sw_3DJ eq 1 ) then begin
      readf, LUN[6], je_3d

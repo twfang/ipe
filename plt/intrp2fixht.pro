@@ -26,7 +26,7 @@ d_y=20. ;20. ;km
 glat_max=+45.;140. ;90.+d_lat +10. ;-10.
 glat_min=-glat_max; 60.  ;90.-d_lat +10. ;-10.
 ht_min=100.  ;km  140.
-ht_max=2500. ;km  2500.;800.;
+ht_max=2500.;km  2500.;800.;
 
 
 
@@ -61,7 +61,7 @@ for lp=         0,nlp-1  do begin
 mlat=mlat_deg[i]/!DTOR ;[deg]
 
 ;010905:    if ( glat(i,mpx,lp) ge (glat_min-d_x) ) and ( glat(i,mpx,lp) le (glat_max+d_x) ) then begin
-    if ( mlat           ge (glat_min-20.) ) and ( mlat           le (glat_max+20.) ) then begin
+    if ( mlat           ge (glat_min-5.) ) and ( mlat           le (glat_max+5.) ) then begin
     if ( htkm(i) ge   (ht_min-100.) ) and ( htkm(i) le   (ht_max+500.) ) then begin
 
 n_size=n_size+1
@@ -71,7 +71,7 @@ w0(n_size)=elden[0,i]   ;electron density [m-3]
   if ( w0(n_size) gt 0. ) then w0(n_size)=ALOG10(w0(n_size))  $
                           else w0(n_size)=0.0001
 w01(n_size)=elden[1,i]   ;glat deg
-w02(n_size)=elden[2,i]   ;glat deg
+w02(n_size)=elden[2,i]   ;glon deg
  
     endif
     endif
@@ -134,17 +134,18 @@ ny=size_result(2)
 print,'nx',nx,'ny',ny
 tr_save[0,0:nx-1,0:ny-1]=trigrid_result[0:nx-1,0:ny-1]
 
-trigrid_result=trigrid(x1,y1,w11,tr  $
-, [d_x,d_y], [glat_min,ht_min,glat_max,ht_max] $
+;20130602 commented out why tr_save[1-2] are needed??
+;trigrid_result=trigrid(x1,y1,w11,tr  $
+;, [d_x,d_y], [glat_min,ht_min,glat_max,ht_max] $
+;;, NX=12, NY=24  $
+;)
+;tr_save[1,0:nx-1,0:ny-1]=trigrid_result[0:nx-1,0:ny-1]
+;
+;trigrid_result=trigrid(x1,y1,w12,tr  $
+;, [d_x,d_y], [glat_min,ht_min,glat_max,ht_max] $
 ;, NX=12, NY=24  $
-)
-tr_save[1,0:nx-1,0:ny-1]=trigrid_result[0:nx-1,0:ny-1]
-
-trigrid_result=trigrid(x1,y1,w12,tr  $
-, [d_x,d_y], [glat_min,ht_min,glat_max,ht_max] $
-;, NX=12, NY=24  $
-)
-tr_save[2,0:nx-1,0:ny-1]=trigrid_result[0:nx-1,0:ny-1]
+;)
+;tr_save[2,0:nx-1,0:ny-1]=trigrid_result[0:nx-1,0:ny-1]
 
 
 x_dsp=fltarr(nx,ny)
@@ -163,7 +164,7 @@ sw_icontour=0
 if ( sw_icontour eq 1 ) then $
 iContour, trigrid_result, x_dsp0,y_dsp0  $ 
 ;20120625 , TITLE='Linear Interpolation(trigrid):Ne[log/cm3]  LT'+string(fix(LT_tmp))  $
-, N_LEVELS=60
+, N_LEVELS=100
 ;, min=1.88586      max=6.29121  :sw1
 ;, min=1.01164      max=6.31277  :sw2wts
 
@@ -178,7 +179,7 @@ iContour, trigrid_result, x_dsp0,y_dsp0  $
 ;, POSITION=[X0 , Y0 , X1 , Y1 ] $
 ;,/NOERASE
 
-sw_ctr_fxht=0
+sw_ctr_fxht=1
 if ( sw_ctr_fxht eq 1 ) then begin
 x_min=MIN(x_dsp0)
 x_max=MAX(x_dsp0)
@@ -197,4 +198,5 @@ contour,trigrid_result, x_dsp0,y_dsp0 $
 endif ;( sw_ctr_fxht eq 1 ) then begin
 
 ;010905:jump0:  ;010905:
+STOP
 end ;PRO interpolate_ctip

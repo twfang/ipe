@@ -1,12 +1,12 @@
 pro dbg_prfl_ht
-sw_debug=1
-sw_plt_prfl=0
+sw_debug=1L
+sw_plt_prfl=1L
 
 ;lun0=0L
 ;open grid file
 filename_grid_sav= $
-;'/home/Naomi.Maruyama/sandbox/ipe/trunk/plt/grd/plasma_grid.low.sav' ;zeus
-'/home/maruyama/p2/ipe/trunk217/plt/grd/plasma_grid.low.sav'  ;jet
+'/home/Naomi.Maruyama/sandbox/ipe/trunk/plt/grd/plasma_grid.low.sav' ;zeus
+;'/home/maruyama/p2/ipe/trunk217/plt/grd/plasma_grid.low.sav'  ;jet
 ;openr, LUN0, '/home/Naomi.Maruyama/sandbox/ipe/trunk/plt/grd/', /GET_LUN $
 ;        , /F77_UNFORMATTED
 ;read_grid
@@ -59,7 +59,8 @@ if sw_debug eq 1 then  print, 'plasma0: IN=',JMIN_IN[0],' IS=',JMAX_IS[0],Z_km[0
 title_file='00'
 openr, LUN0, $
 ;'/home/Naomi.Maruyama/wamns/v57/but107100/plasma'+title_file $  ;zeus
-'/home/maruyama/p2/ipe/trunk217/run/ipe_7913/plasma'+title_file $  ;jet
+;'/home/maruyama/p2/ipe/trunk217/run/ipe_7913/plasma'+title_file $  ;jet
+'/scratch1/portfolios/NCEPDEV/swpc/noscrub/Yangyi.Sun/ipe_para/km_20130827/trunk/run/ipe_640_2392/plasma'+title_file $  ;zeus
 , /GET_LUN $
         , /F77_UNFORMATTED
 
@@ -73,6 +74,8 @@ if sw_debug eq 1 then  print, 'plasma',title_file,'[m-3]=',dum[60,0]
 
 ;plot profile
 if ( sw_plt_prfl eq 1 ) then begin
+sw_output2file=0 ;1'PNG' ;0NONE';
+sw_fort=168
    print,'calling prfl_ht',sw_output2file
    prfl_ht $
 ,plot_x,plot_y, title_hemi,mlat_title,ut_hr,lt_hr $
