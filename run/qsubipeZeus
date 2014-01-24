@@ -46,7 +46,8 @@ cp ../stup_ut_rec              .
 cp ../qsubipeZeus              .
 cp ../load_balance_groups1     .
 
-set DATADIR="/scratch2/portfolios/BMC/acb/IPEdata/IPEdata"
+#20140123 set DATADIR="/scratch2/portfolios/BMC/acb/IPEdata/IPEdata"
+set DATADIR="/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata"
 
 # Allow the test suite to override the data-files location.
 

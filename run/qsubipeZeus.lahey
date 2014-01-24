@@ -42,7 +42,8 @@ cp ../load_balance_groups1     .
 if ( $?IPEDATA ) then
   set DATADIR="$IPEDATA"
 else
-  set DATADIR="/scratch2/portfolios/BMC/acb/IPEdata/IPEdata"
+###20140123  set DATADIR="/scratch2/portfolios/BMC/acb/IPEdata/IPEdata"
+  set DATADIR="/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata"
 endif
   
 ln -s $DATADIR/* .
