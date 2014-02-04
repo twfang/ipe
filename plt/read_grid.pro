@@ -32,11 +32,15 @@ if sw_debug eq 1 then  print,'size jmax',SIZE(jmax_is)
 if sw_debug eq 1 then  print,'size z_km',SIZE(Z_km)
 if sw_debug eq 1 then  print,'size mlat_deg ',SIZE(mlat_deg)
 
+NMP0=0L
+NMP1=0L
 NMP_all=0L
 NLP_all=0L
 NPTS2D_dum=0L
 ; read plasma_grid
-if ( title_res eq 'dyn' ) OR ( title_res eq 'low20120709' ) OR ( title_res eq '2xdyn' ) then begin
+if ( title_res eq 'dyn' ) OR ( title_res eq 'low20120709' ) OR ( title_res eq '2xdyn' ) $
+;OR ( title_res eq 'td20120709' ) $
+then begin
    readu, LUN[1], NMP0
 if sw_debug eq 1 then    print,'NMP0',NMP0
    readu, LUN[1], NMP1

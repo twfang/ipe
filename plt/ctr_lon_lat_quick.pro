@@ -19,7 +19,7 @@ pro ctr_lon_lat_quick $
 ; X-axis range
 ;1:0<lon<360
 ;0:-180<lon<+180
-xmax360=1
+xmax360=0
 ;note20131209: sw OFF only when sw_output2file_ascii=1 to run faster!!
 sw_plot_contour=1
 ltimemin=11.
@@ -31,10 +31,11 @@ factor=1.;1.0E-10 ;for density
 ;debug20140108
 fac_wind=1.0;1.0E-2
 
-for VarType=3,3, 1 do begin
+;20140203: remember Vartype loop cannot be used for quick plot version!!!
+for VarType=0,0, 1 do begin
 
 print,'VarType=',VarType
-ht_plot =350.;[km]
+ht_plot =300.;[km]
 
 
 
@@ -251,10 +252,10 @@ if ( sw_range eq 1 ) then begin
       if ( VarType eq 0 ) then begin 
 ;f107-180
 ;        zmin=-8.0E+10
-        zmin=1.e+10
+        zmin=0.;1.e+10
 ;        zmax=7.5e+11
 ;        zmax=2.5e+1 ;E-region
-        zmax=4.3e+12 ;F-region
+        zmax=2.e+12 ;F-region
 ;        zmax=9.0E+11 ;dbg200km
 ;        zmax=5.58e+12
 ;92km
@@ -277,8 +278,8 @@ if ( sw_range eq 1 ) then begin
         zmin=-300.;zonal
         zmax=+300.
       endif else if ( VarType eq 6 ) then begin 
-        zmin=-300.;meridional
-        zmax=+300.
+        zmin=-100.;meridional
+        zmax=+100.
       endif else if ( VarType eq 7 ) then begin 
         zmin=1.0e+10
         zmax=1.983e+12
@@ -311,7 +312,7 @@ endif else if ( xmax360 eq 0 ) then begin
   X_max=+180.
   X_min=-X_max
 endif
-Y_max=+40.0
+Y_max=+60.0
 Y_min=-Y_max
 if ( sw_frame eq 0 ) then $
   MAG_GEO='magnetic' $
@@ -336,7 +337,7 @@ if  ( n_read eq 0 ) then begin
 	DEVICE, RETAIN=2, DECOMPOSED=0
 	WINDOW,iwindow,XSIZE=1100*fac_window,YSIZE=1000*fac_window
 ;                   columns,rows
-	!p.multi=[0,6,5,0]
+	!p.multi=[0,4,5,0]
 	loadct,n_ldct
 endif  ;( n_read eq 0 ) then begin 
 endif ;( sw_plot_contour eq 1 ) then begin
@@ -419,6 +420,7 @@ endif ;( sw_plot_grid eq 1 ) then begin
 
 
 if ( sw_plot_contour eq 1 ) then begin
+ut_hr_disp= ut_hr MOD 24.
 contour,plot_zz,plot_xx,plot_yy $
 ,/irregular $
 ,/fill $
@@ -427,7 +429,7 @@ contour,plot_zz,plot_xx,plot_yy $
 ,yrange=[Y_min,Y_max], /ystyle $
 ,XTITLE=X_TITLE,YTITLE=Y_TITLE $
 ;,TITLE=VarTitle[VarType]+unit[VarType]+'  ht='+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+'km  UT[hr]='+STRTRIM( string(ut_hr, FORMAT='(F6.2)'),1 )+'_'+TEST $
-,TITLE='UT '+STRTRIM( string(ut_hr, FORMAT='(F6.2)'),1 ) $
+,TITLE='UT '+STRTRIM( string(ut_hr_disp, FORMAT='(F6.2)'),1 ) $
 ;,POSITION=[X0,Y0,X1,Y1] $
 ,COLOR=text_color $
 ,charsize=char_size,charthick=char_thick $
@@ -441,9 +443,9 @@ if ( sw_debug eq 1 ) then  print,'MAX=',MAX(plot_zz),' MIN=',MIN(plot_zz)
 ;, charsize=1.0, charthick=1.0, /norm, /noclip
 
 if ( n_read eq n_read_max-1 ) then begin
-xyouts, 0.50, 0.04 $
+xyouts, 0.35, 0.04 $
 ,VarTitle[VarType]+unit[VarType]+'  ht='+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+'km'+' '+input_DIR0 $
-, charsize=1.0, charthick=1.0, /norm, /noclip
+, charsize=0.85, charthick=0.8, /norm, /noclip
 
 charsize_colorbar=4.0
 format_colorbar='(E9.1)'
