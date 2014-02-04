@@ -7,11 +7,12 @@
 , in2d,is2d,z_km,mlat_deg  $             ;input 
 , plot_z,plot_VEXB,n_read   $ ;input
 , uthr, plot_DIR, title_res,rundate,title_test,sw_debug, title_hemi,sw_anim,mpstart,mpstop,mpstep, lt_hr,fac_window $
-, sw_output2file, TEST $
+, sw_output2file $
 , VarType_min $;=8L
 , VarType_max $;=8L ;PAR-1
 , VarType_step $;=4L
-,n_read_max ;
+,n_read_max $;
+, input_DIR0, TEST, TEST1, TEST2, glon_deg2D  ;$
 ;
 ;VarType_min=3L
 ;VarType_max=3L ;PAR-1
@@ -38,7 +39,7 @@ lpmax_perp_trans=149
 for i=mpstart, mpstop  do print,' mp', (i+1),' LT',lt_hr[i]
 
 HTmin=90.  ;min(yy)   ;75.   ;400. ;
-HTmax=800.;700.;190. ;1.000000E+03;700.; 
+HTmax=400.;800.;700.;190. ;1.000000E+03;700.; 
 ; plot range
 if ( title_hemi eq 'NH' ) then begin
   gLATmax=+90.;+90.;-10.;
@@ -47,7 +48,7 @@ endif else if ( title_hemi eq 'SH' ) then begin
   gLATmax=-55.;+90.;-10.;
   gLATmin=-85.;+50.;-gLATmax;-27.; 
 endif else if ( title_hemi eq 'glb' ) then begin
-  gLATmax=+35.;-10.;
+  gLATmax=+60.;-10.;
   gLATmin=-gLATmax;-27.; 
 endif else if ( title_hemi eq 'eq' ) then begin
   gLATmax=-15.;+90.;-10.;
@@ -82,16 +83,16 @@ lp_strt=0+1 ;58;0;63 ;1-1L
 lp_stop=NLP-2;138L;
 
 
-
+uthr_disp=uthr MOD 24.
 ;if ( uthr le 0.00 ) then $
 ;  time_string='00'+STRTRIM(STRING( uthr-24.0, FORMAT='(F8.4)'),1)+'UT' $
 ;else 
-if ( uthr lt 1.0E+01 ) then $
-  time_string='00'+STRTRIM(STRING( uthr, FORMAT='(F8.4)'),1)+'UT'  $
-else if ( uthr lt 1.0E+02 ) then $
-  time_string='0'+STRTRIM(STRING( uthr, FORMAT='(F8.4)'),1)+'UT'  $
+if ( uthr_disp lt 1.0E+01 ) then $
+  time_string='00'+STRTRIM(STRING( uthr_disp, FORMAT='(F8.4)'),1)+'UT'  $
+else if ( uthr_disp lt 1.0E+02 ) then $
+  time_string='0'+STRTRIM(STRING( uthr_disp, FORMAT='(F8.4)'),1)+'UT'  $
 else $ ;if ( uthr ge 1.0E+02 ) then $
-  time_string=STRTRIM(STRING( uthr, FORMAT='(F8.4)'),1)+'UT'
+  time_string=STRTRIM(STRING( uthr_disp, FORMAT='(F8.4)'),1)+'UT'
 
 for mp=mpstart,mpstop, mpstep do begin
 if ( sw_debug eq 1 ) then  print, 'mp=',mp
@@ -106,7 +107,10 @@ VarTitle=[ $
 'Ti',$ 
 ;'O+','H+','He+','N+','NO+','O2+','N2+','O+2D','O+2P' $
 ;tmp20121128 temporary o+ is assigned to plot_z(6)(n+) instead of 3 for faster debug molecular ions
-'O+','H+','He+','O+','NO+','O2+','N2+','O+2D','O+2P' $
+'O+','H+' $
+;,'He+'$
+,'Un'$
+,'O+','NO+','O2+','N2+','O+2D','O+2P' $
 ,'Vo+' $
 ;'o+flux'$
 ;'hr4',$
@@ -116,7 +120,10 @@ VarUnit=[ $
 '[log!D10!N cm-3]',$
 '[K]', $ ;Te
 '[K]', $ ;Ti
-'[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]' $
+'[log!D10!N cm-3]','[log!D10!N cm-3]' $
+;,'[log!D10!N cm-3]'$
+,'[m/s]'$
+,'[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]' $
 ;'[m/s]',$
 ;,'[cm2 s-1]' $
 ;'[J/kg/s]', $;hrate
@@ -151,7 +158,7 @@ if ( sw_dif eq 0 ) then begin
 154.,$
  178.8, $
 ;0.,0.,0.,$
-0.,0.,0.,$
+0.,0.,-60.,$
  -1.24 ,0.,0.,0.,0.,0., $ ;<190km
 ; 1.5 ,0.,0.,0.,0.,0., $ ;<700km
 ;        ,  178.8        ,  178.8  $      ;To+;Te
@@ -166,7 +173,7 @@ ARY_max0=[ $
 6083. ,$
 800. ,$
 ;6.1, 3.5,3.5,$
-2.0, 3.5,3.5,$
+2.0, 3.5,+60.,$
 3.5, 3.5, 3.5,3.5,5.3,5.3, $  ;<190km
 ;6.0, 5.3, 5.3,5.3,5.3,5.3, $ ;<700km
 ; 7., 7., 7.  $ ;densities
@@ -265,12 +272,19 @@ if ( sw_debug eq 1 ) then  print, 'after',!P.BACKGROUND
 ; plot height profile
   device, decomposed = 0 ,retain=2
 ;  window, 0 ,XSIZE=1000*fac_window,YSIZE=800*fac_window
-  window, 0 ,XSIZE=1100*fac_window,YSIZE=1000*fac_window
+  window, 0 ,XSIZE=1200*fac_window,YSIZE=1200*fac_window
 
-  !P.MULTI=[0,5,6,0,1] ;plot goes vertically downward 
+;print, 'X.MARGIN', !X.MARGIN
+;print, 'Y.MARGIN', !Y.MARGIN
+;!X.MARGIN=[7,5] ;left,right
+;!Y.MARGIN=[4,10] ;bottom,top
+
+;  !P.MULTI=[0,4,4,0,1] ;plot goes vertically downward 
+  !P.MULTI=[0,5,4,0,0] ;plot goes vertically downward 
 ;  !P.MULTI=[0,2,2,0] ;plot goes horizontally from left to right
 ;  ;1:# of plot columns
 ;  ;2:# of rows
+
 
 ;t  axis_color = 0.0 ;255.99 $
 ;t  char_size = 1.5
@@ -384,15 +398,16 @@ Yd=z_km(ipts) ;-dYY*.5   ;Yc     ;
 
 if ( VarType eq 0 ) OR ( VarType ge 3 ) then begin
 
-  density = $
-    plot_z[n_read,VarType, 0,ipts] * 1.0E-6  ;m-3 --> cm-3
-
+  
+  density=plot_z[n_read,VarType, 0,ipts] * 1.0E-6  ;m-3 --> cm-3
   if ( density gt 0.0 ) then $
      Value= ALOG10( density ) $
   else $ 
      Value= ALOG10( 0.1 )
+
 ;20131204
-Value=plot_z[n_read,VarType, 0,ipts]*1.0E-12
+;Value=plot_z[n_read,VarType, 0,ipts]*1.0E-12  ;debug o+density
+;Value=plot_z[n_read,VarType, 0,ipts]  ;wind
 
 endif else if ( VarType eq 1 ) or ( VarType eq 2 ) then $ ;Te/i
   Value = plot_z[n_read,VarType,0,ipts] ;
@@ -548,8 +563,23 @@ endif ;( sw_arrow_exb ) then begin
 
 
 
+;20140121 
+  if ( n_read eq n_read_max-1 ) then begin
 ;Draw_Colorbar, ARY_min0(VarType), ARY_max0(VarType), N_LVLs $
 ;, col_min, col_max, X1, Y1, dX1, dY1, X_SIZE, Y_SIZE, VarType
+charsize_colorbar=3.0
+format_colorbar='(E9.1)'
+font=1 ;true-type 
+;20140130 i dont understand why vertical keyword doesnt work???
+position=[0.20, 0.17, 0.80, 0.18] ;for horizontal bar
+COLORBAR, BOTTOM=bottom, CHARSIZE=charsize_colorbar, COLOR=color, DIVISIONS=divisions $
+        , FORMAT=format_colorbar, POSITION=position $
+, MAXRANGE=ARY_max0[VarType] $
+, MINRANGE=ARY_min0[VarType] $
+        , NCOLORS=ncolors,TITLE=title,VERTICAL=vertical,TOP=top,RIGHT=right $
+        , MINOR=minor, RANGE=range, FONT=font, TICKLEN=ticklen $
+        , _EXTRA=extra, INVERTCOLORS=invertcolors, TICKNAMES=ticknames
+endif ;( n_read eq n_read_max-1 ) then begin
 
 ;LT
 ;xyouts, (X0-2.)/X_SIZE, (Y0+dY+2.45)/Y_SIZE, STRTRIM(STRING( zthr, FORMAT='(F5.2)'),1)+'LT'  $
@@ -560,6 +590,22 @@ print,'MIN',ary_minz,' MAX',ary_maxz
 ; add MIN & MAX values
 ;20140121 xyouts, (X0-0.8)/X_SIZE, (Y0+dY+0.6)/Y_SIZE, 'MIN='+STRTRIM(STRING( ARY_minZ, FORMAT='(E11.3)'),1)+' MAX='+STRTRIM(STRING( ARY_maxZ, FORMAT='(E11.3)'),1)  $
 ;, charsize=1.0, charthick=1.0, /norm, /noclip
+
+
+;20140121 
+  if ( n_read eq n_read_max-1 ) then begin
+x_xyouts=0.8
+y_xyouts=0.1
+dy_xyo=0.03
+xyouts, 0.75, 0.10 $
+, MainTitle+' mp'+STRTRIM(STRING( (mp+1), FORMAT='(i3)'),1)+' glon'+STRTRIM(STRING( glon_deg2D[mp], FORMAT='(i4)'),1)+'[deg]' $ ;mp+1:ipe convention
+, charsize=0.85, charthick=0.8, /norm, /noclip
+
+xyouts, 0.5, 0.070 $
+;, TEST+'_ipe_'+TEST2+'_'+TEST1 $
+, input_DIR0 $
+, charsize=0.85, charthick=0.8, /norm, /noclip
+endif ;( n_read eq n_read_max-1 ) then begin
 
 
 ;STOP
