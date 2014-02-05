@@ -312,8 +312,8 @@
             midpoint = JMIN_IN(lp) + (JMAX_IS(lp) - JMIN_IN(lp))/2
 
 !nm20130830: Ed1/2_90 should be constant along magnetic field lines!!!
-      if(mp==1) print *,lp,mp,'!nm20130830: ed1_90NH=',ed1_90(1,lp,mp)  &
-     &,' SH=',ed1_90(2,lp,mp)
+      if(sw_debug.AND.mp==1) print *,lp,mp,'!nm20130830: ed1_90NH='     &
+     &,  ed1_90(1,lp,mp),' SH=',ed1_90(2,lp,mp) 
 
             v_e(1) =   Ed2_90(1,lp,mp) / Be3(lp,mp) !(4.18) +mag-east(d1?) 
             v_e(2) = - Ed1_90(1,lp,mp) / Be3(lp,mp) !(4.19) +down/equatorward(d2?)
