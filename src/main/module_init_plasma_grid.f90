@@ -58,8 +58,8 @@ apex_longitude_loop: DO mp = 1,NMP
 !dbg20130814 IF ( sw_debug) THEN
 
 !dbg20120305
-midpoint = IN + ( IS - IN )/2
-print *,'midpoint',midpoint,plasma_grid_Z(midpoint,lp)
+      midpoint = IN + ( IS - IN )/2
+      if ( sw_debug ) print *,'midpoint',midpoint,plasma_grid_Z(midpoint,lp)
 
 !dbg20130814
 IF ( sw_debug) THEN
