@@ -5,7 +5,7 @@
 !v11: 20111101: ksi fac 1.0
 !v15: 20111212: included Te/i transport
 ! DATE: 08 September, 2011
-!********************************************
+!
 !***      Copyright 2011 NAOMI MARUYAMA   ***
 !***      ALL RIGHTS RESERVED             ***
 !********************************************
@@ -25,7 +25,7 @@
       USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,ht90,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,plasma_3d_old, mlon_rad
       USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,sw_ksi,mype,lps,lpe,mps,mpe
       USE module_plasma,ONLY:plasma_1d 
-      USE module_IPE_dimension,ONLY: ISPEC,ISPET,IPDIM, ISTOT
+      USE module_IPE_dimension,ONLY: ISPEC,ISPET,IPDIM, ISTOT, NMP
       USE module_physical_constants,ONLY: earth_radius,pi,zero
       USE module_Qinterpolation,ONLY:Qinterpolation
       IMPLICIT NONE
@@ -44,7 +44,8 @@
 
 
       REAL(KIND=real_prec) :: factor, factor_ksi
-      REAL(KIND=real_prec), DIMENSION(2) :: ksi_fac  !dim:ilp
+!nm20140206      REAL(KIND=real_prec), DIMENSION(2) :: ksi_fac  !dim:ilp
+      REAL(KIND=real_prec) :: ksi_fac 
       REAL(KIND=real_prec),DIMENSION(0:2) :: r,lambda_m,rapex,B0,x
       INTEGER (KIND=int_prec),PARAMETER :: TSP=3      !N(1:3) perp.transport
       INTEGER (KIND=int_prec),PARAMETER :: iT=ISPEC+3   !add T(1:3)
@@ -55,6 +56,8 @@
       REAL(KIND=real_prec) :: Qint(iR,IPDIM,2,2)  !1d:species; ; 4d:imp; 5d:ilp
       REAL(KIND=real_prec) :: Qint_dum(iR,IPDIM)  !1d:species;
       REAL(KIND=real_prec),DIMENSION(ISTOT,IPDIM,2) :: plasma_2d !3d:imp
+!dbg20140205 debug zonal transport
+      REAL(KIND=real_prec) :: mlon1,mlon2
 !---
 
 !array initialization: may not be necessary because they are local parameters...
@@ -62,8 +65,13 @@
 !nm20130228      n0(:,:)=zero
 
 !dbg
-if(sw_debug) print *,'lp_t0',lp_t0
-if(sw_debug) print *,'mp_t0',mp_t0
+      if(sw_debug) then
+        print *,'!dbg20140205 lp_t0(1)',lp_t0(1,1)
+        print *,'!dbg20140205 lp_t0(2)',lp_t0(1,2)
+        !if(sw_debug) 
+        print *,'!dbg20140205 mp_t0(1)',mp_t0(1,1)
+        print *,'!dbg20140205 mp_t0(2)',mp_t0(1,2)
+      end if
 
 !dbg20120509: IF ( sw_perp_transport(mp)==1 ) THEN !THETA only transport included
 IF ( sw_perp_transport==1 ) THEN !THETA only transport included
@@ -97,7 +105,7 @@ IF ( lp_t0(ihem,1)>=1 ) THEN
 ! however Q values are not identical in all mp!!! 
 mp_t0_loop: DO imp=1,imp_max
   mp0 = mp_t0(ihem,imp)
-if(sw_debug) print *,ihem,imp,'mp_t0',mp_t0(ihem,imp),' mp0',mp0
+  if(sw_debug) print *,'!dbg20140205 mp=',mp,' ihem',ihem,' imp',imp,' mp_t0',mp_t0(ihem,imp),' mp0',mp0
 
 !(1) Q interpolation: from Q_T0(mp_t0,lp_t0) --> Q_T1(mp,lp) for all 4 flux tubes
   lp_t0_loop: DO ilp=1,2 !outer/inner flux tubes
@@ -196,10 +204,10 @@ if(sw_debug) print "('r0=',4E12.4)",factor,r(0:2)
 
 
 !dbg20120503:
-if ( sw_debug.and.lp==149 ) then
-write(unit=7000,fmt="(i6,i3,3E13.5)") i,i1d,  Qint(iR,i1d,imp,1), r(0),Qint(iR,i1d,imp,2)
-write(unit=7001,fmt="(i6,i3,5F11.5)") i,i1d, (Qint(iR,i1d,imp,1)-earth_radius)*1.0E-3, (r(0)-earth_radius)*1.0e-3,(Qint(iR,i1d,imp,2)-earth_radius)*1.0e-3, plasma_grid_z(i,lp)*1.0e-3, plasma_grid_3d(i,lp,mp,IQ) 
-endif
+!if ( sw_debug.and.mp==80.and.lp==15 ) then
+!write(unit=7000,fmt="(i6,i3,3E13.5)") i,i1d,  Qint(iR,i1d,imp,1), r(0),Qint(iR,i1d,imp,2)
+!write(unit=7001,fmt="(i6,i3,5F11.5)") i,i1d, (Qint(iR,i1d,imp,1)-earth_radius)*1.0E-3, (r(0)-earth_radius)*1.0e-3,(Qint(iR,i1d,imp,2)-earth_radius)*1.0e-3, plasma_grid_z(i,lp)*1.0e-3, plasma_grid_3d(i,lp,mp,IQ) 
+!endif
 
 
 
@@ -235,26 +243,28 @@ if(sw_debug) print "('v14:B=',3E12.4)",B0(0) !,B0(1),B0(2)
 
 
 !dbg20120503:
-if (sw_debug.and. lp==149 ) then
-write(unit=7002,fmt="(i6,i3,4E13.5)") i,i1d, Qint(iB,i1d,imp,1), B0(0),Qint(iB,i1d,imp,2),plasma_grid_3d(i,lp,mp,IBM)
-endif
+!if (sw_debug.and. lp==149 ) then
+!write(unit=7002,fmt="(i6,i3,4E13.5)") i,i1d, Qint(iB,i1d,imp,1), B0(0),Qint(iB,i1d,imp,2),plasma_grid_3d(i,lp,mp,IBM)
+!endif
 
 
 
 
 
     if ( sw_ksi==0 ) then
-      ksi_fac(1:2) =1.000
+!nm20140206      ksi_fac(1:2) =1.000
+      ksi_fac =1.000
     else if ( sw_ksi==1 ) then
-      ksi_fac(1:2) = B0(0) / Qint(iB,i1d,imp,1:2)
+!nm20140206      ksi_fac(1:2) = B0(0) / Qint(iB,i1d,imp,1:2)
 WRITE(6,*)'!STOP! INVALID option! sw_ksi=',sw_ksi
 STOP
 
 !dbg20120330: new and CORRECT method to apply the ksi factor!
     else if ( sw_ksi==2 ) then
-      ksi_fac(1) = plasma_grid_3d(i,lp,mp,IBM) / B0(0) 
+!nm20140206      ksi_fac(1) = plasma_grid_3d(i,lp,mp,IBM) / B0(0) 
+      ksi_fac = plasma_grid_3d(i,lp,mp,IBM) / B0(0) 
     end if
-if(sw_debug) print "('ksi=',2E12.4)", ksi_fac(1:2)*ksi_fac(1:2)
+if(sw_debug) print "('ksi=',2E12.4)", ksi_fac*ksi_fac
 
 !???1:in; 2:out???
     jth_loop3: DO jth=1,iT !=TSP+3
@@ -265,9 +275,9 @@ IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop3
 
 
 !(2)  IF ( jth<=TSP ) THEN  !for densities
-! factor1 = ksi_fac(1)*ksi_fac(1)
+! factor1 = ksi_fac*ksi_fac
 ! ELSE !ID(jth>TSP) THEN
-! factor1 = ksi_fac(1)**(4./3.) 
+! factor1 = ksi_fac**(4./3.) 
 ! END IF
 ! plasma_1d(jth,i1d) = factor1 * ( (x(1)-x(0))*n0(jth,2) + (x(0)-x(2))*n0(jth,1) ) / ( x(1)-x(2) )
 
@@ -285,19 +295,19 @@ IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop4
              IF (plasma_2d(jth,i1d,imp)<=0.) THEN
 
 
-                print "('sub-int:!STOP! INVALID density/temp',3E12.4,5i7)" & 
-                     &, Qint(jth,i1d,imp,1), plasma_2d(jth,i1d,imp) , Qint(jth,i1d,imp,2),jth,i1d,i,mp,lp
+                print "('sub-int:!STOP! INVALID density/temp',3E12.4,6i7)" & 
+                     &, Qint(jth,i1d,imp,1), plasma_2d(jth,i1d,imp) , Qint(jth,i1d,imp,2),jth,i1d,i,mp,lp,imp
                 print "('!check X!=',3E12.4)",x(1),x(0),x(2)
                 print "('!check B!=',3E12.4)",B0(1),B0(0),B0(2)
                 STOP
              END IF
 
              IF ( jth<=TSP ) THEN
-                plasma_2d(jth,i1d,imp) = plasma_2d(jth,i1d,imp) *(ksi_fac(1)*ksi_fac(1))
+                plasma_2d(jth,i1d,imp) = plasma_2d(jth,i1d,imp) *(ksi_fac*ksi_fac)
 
              ELSE !             IF ( jth>TSP ) THEN
 
-                plasma_2d(jth,i1d,imp) = plasma_2d(jth,i1d,imp) *(ksi_fac(1)**(4./3.))
+                plasma_2d(jth,i1d,imp) = plasma_2d(jth,i1d,imp) *(ksi_fac**(4./3.))
 
           END IF !             IF ( jth<=TSP ) THEN
        ELSE
@@ -323,37 +333,48 @@ flux_tube_loopT1_fac1: DO i=JMIN_IN(lp),JMAX_IS(lp)
 
 !---
     IF ( sw_perp_transport>=2 ) THEN
-       IF ( (mlon_rad(mp_t0(ihem,1))-mlon_rad(mp_t0(ihem,2)))/=0.) THEN
 
-          IF (  mlon_rad(mp_t0(ihem,1)) < mlon_rad(mp_t0(ihem,2)) ) THEN
+!dbg20140205
+!replace with mlon1&2
+      mlon1=mlon_rad(mp_t0(ihem,1))
+      mlon2=mlon_rad(mp_t0(ihem,2))
+      if ( mp==nmp.AND.mp_t0(ihem,1)==nmp.AND.mp_t0(ihem,2)==1) then
+        mlon2=mlon_rad(mp_t0(ihem,2))+360.
+      end if
+
+       IF ( (mlon1-mlon2)/=0.) THEN
+
+
+
+          IF (  mlon1 < mlon2 ) THEN
 
 ! B interpolation
-             B0(0) = ( (mlon_rad(mp_t0(ihem,1)) - phi_t0(ihem)           ) * plasma_grid_3d(i,lp,mp_t0(ihem,2),IBM)   &
-     &               + (phi_t0(ihem)            - mlon_rad(mp_t0(ihem,2))) * plasma_grid_3d(i,lp,mp_t0(ihem,1),IBM)   &
-     &             ) / (mlon_rad(mp_t0(ihem,1)) - mlon_rad(mp_t0(ihem,2)) )
+             B0(0)             = ( (mlon1        - phi_t0(ihem) ) * plasma_grid_3d(i,lp,mp_t0(ihem,2),IBM)   &
+     &                           + (phi_t0(ihem) - mlon2        ) * plasma_grid_3d(i,lp,mp_t0(ihem,1),IBM)   &
+     &                           ) / (mlon1 - mlon2)
 
-            plasma_1d(jth,i1d) = ( (mlon_rad(mp_t0(ihem,1)) - phi_t0(ihem)            ) * plasma_2d(jth,i1d,2)   &
-     &                           + (phi_t0(ihem)            - mlon_rad(mp_t0(ihem,2)) ) * plasma_2d(jth,i1d,1)   &
-     &                         ) / (mlon_rad(mp_t0(ihem,1)) - mlon_rad(mp_t0(ihem,2)) )
+            plasma_1d(jth,i1d) = ( (mlon1        - phi_t0(ihem) ) * plasma_2d(jth,i1d,2)   &
+     &                           + (phi_t0(ihem) - mlon2        ) * plasma_2d(jth,i1d,1)   &
+     &                           ) / (mlon1 - mlon2)
 
 ! calculate ksi_factor
-            ksi_fac(1) = plasma_grid_3d(i,lp,mp,IBM) / B0(0)  !is this correct???
+            ksi_fac = plasma_grid_3d(i,lp,mp,IBM) / B0(0)  !is this correct???
 
 !apply ksi_factor to plasma_1d
             IF ( jth<=TSP ) THEN
-               factor_ksi = ksi_fac(1) * ksi_fac(1)
+               factor_ksi = ksi_fac * ksi_fac
             ELSE !             IF ( jth>TSP ) THEN
-               factor_ksi = ksi_fac(1)**(4./3.)
+               factor_ksi = ksi_fac**(4./3.)
             END IF !             IF ( jth<=TSP ) THEN
             plasma_1d(jth,i1d) = plasma_1d(jth,i1d) * factor_ksi
 
-         ELSE !    mlon_rad(mp_t0(ihem,1)) >= mlon_rad(mp_t0(ihem,2))
+         ELSE !    mlon1 >= mlon2
 !
-print *, 'sub-interp:!STOP! INVALID mlon order!',ihem,mp,lp,mp_t0(ihem,1),mp_t0(ihem,2),mlon_rad(mp_t0(ihem,1)),mlon_rad(mp_t0(ihem,2))
+print *, 'sub-interp:!STOP! INVALID mlon order!',ihem,mp,lp,mp_t0(ihem,1),mp_t0(ihem,2),mlon1,mlon2
            STOP
         END IF
-     ELSE    ! IF ( (mlon_rad(mp_t0(ihem,1))-mlon_rad(mp_t0(ihem,2)))==0.) THEN
-        print *, 'sub-interp:!STOP! INVALID same mlon1&2!',ihem,mp,lp,mp_t0(ihem,1),mp_t0(ihem,2),mlon_rad(mp_t0(ihem,1)),mlon_rad(mp_t0(ihem,2))
+     ELSE    ! IF ( (mlon1-mlon2)==0.) THEN
+        print *, 'sub-interp:!STOP! INVALID same mlon1&2!',ihem,mp,lp,mp_t0(ihem,1),mp_t0(ihem,2),mlon1,mlon2
         STOP
 !       plasma_1d(jth,i1d) = plasma_2d(jth,i1d,1)
      END IF
