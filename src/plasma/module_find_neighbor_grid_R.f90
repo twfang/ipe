@@ -36,10 +36,14 @@
 !---local
       INTEGER (KIND=int_prec) :: ihem,ihem_max
       REAL(KIND=real_prec) :: Z_t0
-      INTEGER (KIND=int_prec),DIMENSION(2,2), INTENT(OUT) :: mp_t0,lp_t0
+      INTEGER (KIND=int_prec),DIMENSION(2,2), INTENT(OUT) :: mp_t0,lp_t0 !1st rank ihem=2 is not used
       INTEGER (KIND=int_prec) :: lp_min,l
       INTEGER (KIND=int_prec) :: lp1,lp2,midpoint1,midpoint2,mpx,mpp,mpm,lpx,lpp,lpm
+      INTEGER (KIND=int_prec),PARAMETER :: missing_value=-9999       
 !---
+!array initialization
+mp_t0 = missing_value
+lp_t0 = missing_value
 
 !3:both THETA&PHI:transport included, NH/SH flux tubes are moving separately with different ExB drift
 !dbg20120509 IF ( sw_perp_transport(mp)==3 ) THEN 
@@ -74,6 +78,11 @@ which_hemisphere: DO ihem=1,1  !ihem_max
     IF(mlon_rad(mpp)<=phi_t0(ihem).AND.phi_t0(ihem)<mlon_rad(mpp+1)) THEN
       mp_t0(ihem,1) =mpp
       mp_t0(ihem,2) =mpp+1
+
+!dbg20140205 debug zonal transport
+if( mpp==nmp ) then
+print *,'!dbg20140205(1) mp=',mp, mp_t0(ihem,1), mp_t0(ihem,2), phi_t0(ihem)*rtd,mpp,ihem
+endif
       EXIT mpx_loop
     END IF
     IF(mpm>1.and.mlon_rad(mpm)<=phi_t0(ihem).AND.phi_t0(ihem)<mlon_rad(mpm-1)) THEN
@@ -82,9 +91,16 @@ which_hemisphere: DO ihem=1,1  !ihem_max
       EXIT mpx_loop
     END IF
   END DO mpx_loop !: DO mpx=0,NMP
-!dbg20120125:
-if(sw_debug) print *,'dbg20120125! sub-find_neighbor_grid_R:', mp_t0(ihem,1:2),phi_t0(ihem)*rtd, mlon_rad(mp_t0(ihem,1:2))*rtd
-!STOP
+
+!if(sw_debug) 
+if (mp==1.OR.mp==nmp) print *,'dbg20140205! sub-find_neighbor_grid_R:mp=',mp, mp_t0(ihem,1:2),phi_t0(ihem)*rtd, mlon_rad(mp_t0(ihem,1:2))*rtd
+!dbg20140205: correction if mp>nmp
+if (mp==nmp.and.mp_t0(ihem,2)>nmp ) then
+   print *,'!dbg20140205! mp_t0',mp_t0(ihem,2),mp
+   mp_t0(ihem,2)=mp_t0(ihem,2)-nmp 
+   print *,'!dbg20140205! corrected mp_t0',mp_t0(ihem,2)
+endif
+
 
 !find  lp0_t0:NH
 IF (ihem==1) THEN
@@ -92,7 +108,7 @@ IF (ihem==1) THEN
 !check pole regions!
 !not totally sure whether I should use theta_t0 or r0_apex???
 IF ( theta_t0(ihem) < minTheta ) THEN 
-   lp_t0(ihem,1)=-999
+   lp_t0(ihem,1)=missing_value !-999
    lp_t0(ihem,2)=1
    print *,'sub-Fi_R: mp',mp,' lp',lp,'needs special pole interpolation'
    RETURN
@@ -156,9 +172,10 @@ lp1 = lp_t0(ihem,1)
 midpoint1 = midpnt(lp1)
 lp2 = lp_t0(ihem,2) !=l+1
 midpoint2 = midpnt(lp2)
-if(sw_debug) print *,lp1,midpoint1,lp2,midpoint2
+if(sw_debug) print *,'lp1=',lp1,midpoint1,' lp2=',lp2,midpoint2
 if(sw_debug) print *,'sub-Fi_R: check R',(earth_radius+plasma_grid_Z(midpoint1,lp1)),(earth_radius+Z_t0),(earth_radius+plasma_grid_Z(midpoint2,lp2))
 
+if(sw_debug) print *,'sub-Fi_R: mp1=',mp_t0(ihem,1),' mp2=',mp_t0(ihem,2)
 if(sw_debug) print *,'sub-Fi_R: mlon',mlon_rad(mp_t0(ihem,1))*rtd, phi_t0(ihem)*rtd, mlon_rad(mp_t0(ihem,2))*rtd, mp_t0(ihem,1:2)
 if(sw_debug) print *,'sub-Fi_R: mlat',(90.-plasma_grid_GL( JMIN_IN(lp_t0(ihem,1)),lp_t0(ihem,1) )*rtd), (90.-theta_t0(ihem)*rtd),(90.- plasma_grid_GL( JMIN_IN(lp_t0(ihem,2)),lp_t0(ihem,2) )*rtd)
 
