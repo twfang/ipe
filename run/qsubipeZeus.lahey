@@ -43,7 +43,7 @@ if ( $?IPEDATA ) then
   set DATADIR="$IPEDATA"
 else
 ###20140123  set DATADIR="/scratch2/portfolios/BMC/acb/IPEdata/IPEdata"
-  set DATADIR="/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata"
+  set DATADIR="/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/data"
 endif
   
 ln -s $DATADIR/* .
