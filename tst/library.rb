@@ -36,9 +36,11 @@ module Library
 
   def lib_dataspecs
     f="ipedata.tgz"
-    path="/scratch2/portfolios/BMC/acb/IPEdata/ipedata.tgz"
+#nm20140206    path="/scratch2/portfolios/BMC/acb/IPEdata/ipedata.tgz"
+    path="/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/ipedata.tgz"
     cmd="cp --force #{path} data.tgz"
-    md5='8598ce1c1eee6f9fce573335ab3f3714'
+#nm20140206    md5='8598ce1c1eee6f9fce573335ab3f3714'
+    md5='d2c71804a4c097db143e6b4745cac9d2'
     [cmd,md5]
   end
 
