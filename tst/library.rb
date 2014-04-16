@@ -40,7 +40,8 @@ module Library
     path="/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/ipedata.tgz"
     cmd="cp --force #{path} data.tgz"
 #nm20140206    md5='8598ce1c1eee6f9fce573335ab3f3714'
-    md5='d2c71804a4c097db143e6b4745cac9d2'
+#nm20140415    md5='d2c71804a4c097db143e6b4745cac9d2'
+    md5='f944709c93f2daf6a62ce10ed8d93006'
     [cmd,md5]
   end
 

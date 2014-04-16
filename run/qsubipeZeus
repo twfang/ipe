@@ -2,7 +2,7 @@
 #
 #0:original grid; 1: new_grid20120705
 #make sure to check which grid you wish to choose.
-set sw_grid = 1
+set sw_grid = 0
 #
 set queue_time=00:20:00
 if ( $#argv == 0 ) then
@@ -153,7 +153,7 @@ if ( $?IPEQUEUE ) then
   set QUEUE="$IPEQUEUE"
 endif
 
-set jobid=`qsub -N $name -A gm -q $QUEUE -l procs=$run_tasks -l walltime=$queue_time -j oe ./runscript`
+set jobid=`qsub -N $name -A swpc -q $QUEUE -l procs=$run_tasks -l walltime=$queue_time -j oe ./runscript`
 
 if ( $status != 0 ) then
   echo "qsub failed"
