@@ -39,7 +39,7 @@ lpmax_perp_trans=149
 for i=mpstart, mpstop  do print,' mp', (i+1),' LT',lt_hr[i]
 
 HTmin=90.  ;min(yy)   ;75.   ;400. ;
-HTmax=400.;800.;700.;190. ;1.000000E+03;700.; 
+HTmax=600.;800.;700.;190. ;1.000000E+03;700.; 
 ; plot range
 if ( title_hemi eq 'NH' ) then begin
   gLATmax=+90.;+90.;-10.;
@@ -48,7 +48,7 @@ endif else if ( title_hemi eq 'SH' ) then begin
   gLATmax=-55.;+90.;-10.;
   gLATmin=-85.;+50.;-gLATmax;-27.; 
 endif else if ( title_hemi eq 'glb' ) then begin
-  gLATmax=+60.;-10.;
+  gLATmax=+90.;-10.;
   gLATmin=-gLATmax;-27.; 
 endif else if ( title_hemi eq 'eq' ) then begin
   gLATmax=-15.;+90.;-10.;
@@ -173,7 +173,7 @@ ARY_max0=[ $
 6083. ,$
 800. ,$
 ;6.1, 3.5,3.5,$
-2.0, 3.5,+60.,$
+6.7033, 3.5,+60.,$
 3.5, 3.5, 3.5,3.5,5.3,5.3, $  ;<190km
 ;6.0, 5.3, 5.3,5.3,5.3,5.3, $ ;<700km
 ; 7., 7., 7.  $ ;densities

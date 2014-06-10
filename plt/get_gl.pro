@@ -1,8 +1,9 @@
 pro get_gl, mlat90_1,title_res,sw_debug
 
 ;title_res='low'
-
-filename_grid_sav='grd/plasma_grid.'+title_res+'.sav'
+path='/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/grid/plt/'
+;20140221 filename_grid_sav='grd/plasma_grid.'+title_res+'.sav'
+filename_grid_sav=path+'plasma_grid.'+title_res+'.sav'
 restore, filename=filename_grid_sav
 print,'restoring the grid file=',filename_grid_sav
 
