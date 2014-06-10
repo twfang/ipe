@@ -6,33 +6,31 @@
 ;20111205: sw_save=2 to save plotting time!!!
 ;include parallel plasma velocity to help the debug!!!
 pro plt_ipe
+TEST='r336tmp'
+TEST2='S';80';640';
+TEST1='20999'
+n_read_max=3
+plot_UT    =0.
+plot_UT_end=plot_UT+3600.*24.*6.; [sec]
 sw_output2file=1 ;1'PNG' ;0NONE';
 sw_quickplot=1
 ;20140117; plot every X hour
 sw_hourly_plot=0
 plotXhr=1.0 
 print, 'plot every',plotXhr,' hour'
-sw_read_wind=1
+
+title_res= $
+;'low20120709';
+'td20120709';
+;'2xdyn';
+;'low'; 'high'
+
+sw_read_wind=0
 ;20131209: output to ascii file
 sw_output2file_ascii=0
 ;difutmin=60./60.;15./60. - 0.00001;=0.24999 ;output_freq=15min
 ;difutmin=16./60. - 0.00001 ;output_freq=16min
 ;print,'difutmin=',difutmin
-TEST2='S';640';80';640';
-TEST=$
-;'r319' ;other F107
-;'r319.3' ;YYS debug
-'r319.2' ;timegcm
-;'YYS'
-;'astrid';sarah'
-;'leslie'
-TEST1=$
-'22152';26024';4454';3800';
-;'7866';YYS
-;'U_120_356'
-;'18702' ;astrid no-sww
-;'31695' ;withOUT V// effect
-;'27576' ;with V// effect
 if ( sw_output2file_ascii eq 1 ) then begin
    if ( f107 eq 150 ) then  TEST1='23994' else $ ;F107=150
       if ( f107 eq 180 ) then  TEST1='31695' else $ ;F107=180
@@ -71,13 +69,6 @@ if ( sw_output2file_ascii eq 1 ) then begin
 endif ;( sw_output2file_ascii eq 1 ) then begin
 fac_window=1.0
 ;!!!CAUTION!!! plot_UT needs to be float (INT has limited digit!!!)
-plot_UT    =694800.;432000.0;604800.0;518400.;432000+3600*17;
-plot_UT_end=777600.;plot_UT+3600.*22.; [sec]
-n_read_max=$
-;1;4;1
-97-4-4;mpstop1
-;28-13+1; mpstop80 
-;97-8; for original time step 300
 input_DIR0=$
 ;'/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/reu/tmp20130703reu/trunk/run/ipe_'+TEST2+'_'+TEST1+'/';ipe_640_8787'
 '/home/Naomi.Maruyama/wamns/'+TEST+'/trunk/run/ipe_'+TEST2+'_'+TEST1+'/'
@@ -91,23 +82,23 @@ input_DIR0=$
 ;'/scratch2/portfolios/BMC/idea/Sarah.Millholland/IPE_runs/r292.3/trunk/run/ipe_640_'+TEST1+'/'
 ;'/home/Naomi.Maruyama/wamns/reu/tmp20130703reu/trunk/run/ipe_'+TEST2+'_'+TEST1+'/'
 
-title_res='low20120709';td20120709';2xdyn';low';;low';dyn';'low' ; 'high'
-plot_type=0L ;0:contour; 1:ht profile; 2:LT-LAT contour; 3:LON-LAT contour; 4:refilling: 5:psphere, 6:tec
+
+plot_type=3L ;0:contour; 1:ht profile; 2:LT-LAT contour; 3:LON-LAT contour; 4:refilling: 5:psphere, 6:tec
 ;if plot_type eq 0 then begin
   mp_plot=1-1L ; longitude sector to plot
 mpstart=mp_plot
 mpstop=mpstart
 mpstep=1
 
-  VarType_min=0
-  VarType_max=0
+  VarType_min=3
+  VarType_max=3
   VarType_step=1
 ;endif ;plot_type eq 0 then begin
 
 
 sw_debug=0L
 ;0:mag; 1:geo
-sw_frame=1L
+sw_frame=0L
 sw_dif=0L
 sw_hr=0L
 sw_3DJ=0L
@@ -130,7 +121,7 @@ STOP_TIME='230406'
 rundate='20121121'
 TEST0='trans'
 title_test=TEST0+'.'+TEST  ;trans.'+TEST
-title_hemi='glb';SH';glb';SH';glb';SH'eq';
+title_hemi='glb';SH';glb';SH'eq';
 
 version='3d'
 
@@ -189,13 +180,9 @@ endif
 
 
 
-;mlat_title='79.56'
-;which_endian='big_endian'
 
-plot_DIR=$
- ;HOME_DIR+'../figures/glb/nmp80/fpasp0.3/'
- fig_DIR+'fig/'+TEST+'/'+TEST1+'/'
-;'/home/Naomi.Maruyama/ptmp/ipe4gsd/fig/'
+plot_DIR=fig_DIR+'fig/'
+; fig_DIR+'fig/'+TEST+'/'+TEST1+'/'
 ;if ( sw_dif eq 1 ) then $
 ;  plot_DIR=plot_DIR+'dif/'
 if ( sw_frame eq 0 ) then $
@@ -221,7 +208,7 @@ endif else if title_res eq 'dyn' then  begin
   NPTS2D=15857L ;high res
 endif
 
-NMP=1L;80L
+NMP=80L
 ISPEC=9L
 ISPEV=4L
 MaxFluxTube=1115L ;=FLDIM
@@ -231,7 +218,7 @@ MaxFluxTube=1115L ;=FLDIM
   UT_hr = 0.00D0
   UT_hr_save = fltarr(n_read_max)
 ;  LT_hr = fltarr(  NMP,NLP)
-NPAR   =6L;
+NPAR   =8L;
 ;i should be aware of the memory limit!!!
 if ( plot_type eq 0 ) or ( plot_type eq 2 ) or ( plot_type eq 4 ) then begin
 ;  plot_z = fltarr(n_read_max,NPAR, NMP,NPTS2D)
@@ -321,7 +308,7 @@ if ( sw_dif eq 1 ) then $
 ,sw_debug
 
 ;need to debug when sw_save=2 
-for ht_plot=400., 400., htstep  do begin
+for ht_plot=340., 340., htstep  do begin
 for VarType=1, 1  do begin
 
 if ( sw_save eq 2 ) then begin
@@ -432,7 +419,7 @@ if ( plot_type eq 0 ) or ( plot_type eq 2 ) or ( plot_type eq 4 )  then begin
 
 ;3-11  ion densities 
 ;for k=3,3+8 do begin
-for k=3,3 do begin
+for k=3,7 do begin
   jth=k-3
       for ipts=0L,NPTS2D-1L do $ 
        plot_z[n_read,k,0,ipts] = XIONN_m3[jth,ipts,mp] 
@@ -492,7 +479,8 @@ endif
   , plot_zz,plot_xx,plot_yy,n_read $
   , VarType $
 ,ht_plot,sw_output2file $
-,glon_deg,glat_deg,sw_frame
+,glon_deg,glat_deg,sw_frame $
+, plot_UT
   endif ;plot_type eq 0
 
 
@@ -533,7 +521,7 @@ else if ( sw_quickplot eq 1 ) then $
   , UT_hr, plot_DIR $
   , n_read $
   , sw_output2file $
-  ,glon_deg,glat_deg,sw_frame,fac_window, TEST $
+  ,glon_deg,glat_deg,sw_frame,fac_window, TEST, TEST1 $
   , sw_debug $
 ;20131209: output to ascii file
 , sw_output2file_ascii,luntmp,ncount $
@@ -623,7 +611,7 @@ IF ( UT_hr ge plot_UT/3600. ) THEN BEGIN
 ;glon_deg=fltarr(NPTS2D,NMP)
 ;jicamarca
 
-if ( title_res eq 'low') OR ( title_res eq 'low20120709' )  then $
+if ( title_res eq 'low') OR ( title_res eq 'low20120709' ) OR ( title_res eq 'td20120709' )  then $
   lp=129L $;low
 else if title_res eq '2xdyn' then $
   lp=70L $;2xdyn
@@ -649,17 +637,17 @@ endfor
 if( sw_debug eq 1 ) then  print,'plot_type',plot_type
 
 ;20130523 houly plot
-IF ( UT_hr lt plot_UT/3600. ) THEN CONTINUE
+;tmp20140217 IF ( UT_hr lt plot_UT/3600. ) THEN CONTINUE
 ;IF ( UT_hr gt plot_UT_end/3600. ) THEN BREAK
 ;fut_hr=FIX(UT_hr)*1.0000
 ;difut=UT_hr-fut_hr
 ;print,'plot_type',plot_type,fut_hr,difut
 ;if( difut gt 0.24999 ) THEN CONTINUE
-if  (sw_hourly_plot eq 1) AND ( (UT_hr MOD plotXhr) ne 0. ) then continue
+;tmp20140217 if  (sw_hourly_plot eq 1) AND ( (UT_hr MOD plotXhr) ne 0. ) then continue
 
 ;20140130 every 2 hours starting at 1UT
-ut_hr1=ut_hr MOD 24.
-if ( (ut_hr1 MOD 2.) ne 1. ) then continue
+;tmp20140217 ut_hr1=ut_hr MOD 24.
+;tmp20140217 if ( (ut_hr1 MOD 2.) ne 1. ) then continue
 
 ;dbg20140121
 if ( sw_quickplot eq 0 ) then $
@@ -671,7 +659,7 @@ if ( sw_quickplot eq 0 ) then $
 ,VarType_min $
 ,VarType_max $
 ,VarType_step $
-, input_DIR0,TEST,  TEST1, TEST2 $
+;, input_DIR0,TEST,  TEST1, TEST2 $
 else if ( sw_quickplot eq 1 ) then $
      ctr_lat_ht_quick    $ 
   , JMIN_IN,JMAX_IS,Z_km,mlat_deg  $ 

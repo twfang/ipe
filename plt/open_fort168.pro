@@ -2,7 +2,8 @@
 pro open_fort168, n_file,LUN,sw_debug,title_hemi,lp_title,sw_fort,TEST
 
 HOME_DIR=$
-'/home/Naomi.Maruyama/iper/'
+'/home/Naomi.Maruyama/wamns/r336tmp/trunk/run/'
+;'/home/Naomi.Maruyama/iper/'
 ;'/lfs0/projects/idea/maruyama/sandbox/ipe/run/'
 
 input_DIR=['','','','']

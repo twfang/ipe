@@ -5,12 +5,12 @@
 PRO  prfl_ht $
 ,plot_x,plot_y, title_hemi,mlat_title,ut_hr,lt_hr $
 ,plot_DIR,FLDIM_plot,mp_plot,sw_debug,sw_fort $
-,sw_dif,sw_output2file,n_file,fac_window
+,sw_dif,sw_output2file,n_file,fac_window,TEST
 
 print,'prfl_ht',sw_output2file ;debug
 
 y_min = 90.
-y_max =1000.;680.;220.;680.;  2.0E+04 ;18783.500 ;MAX(zn)
+y_max =30000.;1000.;680.;220.;680.;  2.0E+04 ;18783.500 ;MAX(zn)
 if ( sw_debug eq 1 ) then  print, "y_max=", y_max
 
 if ( sw_fort eq 168L ) then begin
@@ -102,7 +102,7 @@ if ( sw_debug eq 1 ) then  print,'plot_type=',plot_type," x_min=", x_min[plot_ty
 
 
 i=0
-title_plot=title_hemi+': mlat[deg]='+mlat_title+'  UT[hrs]='+STRTRIM( string(ut_hr[i_plot[i]], FORMAT='(f7.2)'), 1)+'  LT[hrs]='+STRTRIM( string(lt_hr[i_plot[i]], FORMAT='(f7.2)'), 1)
+title_plot=TEST+'_'+title_hemi+': mlat[deg]='+mlat_title+'  UT[hrs]='+STRTRIM( string(ut_hr[i_plot[i]], FORMAT='(f7.2)'), 1)+'  LT[hrs]='+STRTRIM( string(lt_hr[i_plot[i]], FORMAT='(f7.2)'), 1)
 
 ;plotting NH only
 ;if ( title_hemi eq 'NH' ) then begin
@@ -173,7 +173,7 @@ else if ( sw_dif eq 1 ) then $
    title_dif='dif.png'
 
 if ( sw_output2file eq 1 ) then begin
-   filename=plot_DIR+'prfl_ht'+STRTRIM( string(sw_fort, FORMAT='(i3)'), 1)+'.mlat'+mlat_title+'_UT'+STRTRIM( string(ut_hr[0], FORMAT='(f7.2)'), 1)+'_'+title_hemi+'_mp'+STRTRIM( string((mp_plot+1), FORMAT='(i2)'), 1)+title_dif
+   filename=plot_DIR+'prfl'+STRTRIM( string(sw_fort, FORMAT='(i3)'), 1)+TEST+'.mlat'+mlat_title+'_UT'+STRTRIM( string(ut_hr[0], FORMAT='(f7.2)'), 1)+'_'+title_hemi+'_mp'+STRTRIM( string((mp_plot+1), FORMAT='(i2)'), 1)+title_dif
 
 print,filename ;dbg
    output_png, filename

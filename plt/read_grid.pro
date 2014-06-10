@@ -2,6 +2,7 @@
 ;ipe/plt/grd/plasma_grid.XXX
 pro read_grid,LUN,JMIN_IN,JMAX_IS,Z_km,mlat_deg,sw_debug,glat_deg,glon_deg,title_res
 
+
 ;20121025: .save did not save too much time as compared to the
 ;original binary file.....
 sw_save_grid=0
@@ -58,9 +59,11 @@ if sw_debug eq 1 then print,'NPTS2D_dum',NPTS2D_dum
 lpj=0L
 
     readu, LUN[1], JMIN_IN ;(1:NLP_all)
-if sw_debug eq 1 then print,lpj,'JMIN_IN(1)',JMIN_IN[lpj]
+if sw_debug eq 1 then print,' lpj=',lpj,' JMIN_IN(lpj)=',JMIN_IN;[0:5]
     readu, LUN[1], JMAX_IS ;(1:NLP_all)
-if sw_debug eq 1 then print,'JMAX_IS(1)',JMAX_IS[lpj],JMIN_IN[lpj+1]
+if sw_debug eq 1 then print,'JMAX_IS(lpj)',JMAX_IS;[0:5],JMIN_IN[lpj+1]
+
+if ( title_res eq 'td20120709' ) then  recalculate_jmin_max, JMIN_IN, JMAX_IS, NLP_ALL,sw_debug
 
 ;lpj=129L ;low
 ;lpj=34L ;dyn

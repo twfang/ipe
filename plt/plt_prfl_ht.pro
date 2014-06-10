@@ -4,8 +4,11 @@ fac_window=1.
 sw_dif=0
 sw_output2file=1
 
-HOME_DIR='/home/Naomi.Maruyama/wamns'
-TEST='v57/but91800';43';
+HOME_DIR='/home/Naomi.Maruyama/wamns/r336tmp/trunk/run'
+TEST=$
+;'ipe_S_10540' ;TD
+'ipe_S_10099' ;apex
+;'v57/but91800';43';
 plot_UT =$
 24.0
 ;16.00
@@ -52,7 +55,8 @@ else if ( lp_title eq 100 ) then $
 
 sw_debug=1L
 plot_DIR=$
-HOME_DIR+'/fig/'+TEST+'/'
+"/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/fig/prfl/"
+;HOME_DIR+'/fig/'+TEST+'/'
 ;'../figures/discon/1dnewflipgrid/fort'+STRTRIM( string(sw_fort, FORMAT='(i3)'), 1)+'/'
 n_file=1L
 
@@ -68,8 +72,9 @@ n_file=1L
 ;if ( mlat_title ge '85' ) then  FLDIM = 4501L
 FLDIM0=LONARR(n_file)
 FLDIM0=[ $
+490L ]
 ; 161L ];lp=100 APEX grid v43
- 401L ];lp=100 FLIP grid v55
+ ;401L ];lp=100 FLIP grid v55
 ;401L,401L,401L,401L]
 ;769L, 769L]
 ;769L, 695L, 651L, 843L];, 769L]
@@ -109,6 +114,8 @@ FLDIM_plot=LONARR(n_file)
      for i = 0, n_file-1  do begin
 print,'i',i,'n_file',n_file
 FLDIM=FLDIM0[i]
+print,'FLDIM0=',FLDIM0
+print,'FLDIM=',FLDIM
 FLDIM_plot[i]=FLDIM
 
      Z0 = fltarr(FLDIM)
@@ -263,7 +270,7 @@ print,'plt_prfl',sw_output2file ;debug
 ;       profile_ht_3d $
        prfl_ht $
 ,plot_x,plot_y, title_hemi,mlat_title,ut_hr,lt_hr,plot_DIR,FLDIM_plot,mp_plot,sw_debug,sw_fort $
-,sw_dif,sw_output2file,n_file,fac_window
+,sw_dif,sw_output2file,n_file,fac_window, TEST
 
 BREAK ;exit from the while loop
 

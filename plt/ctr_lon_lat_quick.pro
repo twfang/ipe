@@ -9,7 +9,7 @@ pro ctr_lon_lat_quick $
 ,n_read $
 ,sw_output2file $
 ,glon_deg,glat_deg,sw_frame $ ;=0 ;mag; 1geo
-,fac_window ,TEST $
+,fac_window ,TEST, TEST1 $
 ,sw_debug $
 ;20131209: output to ascii file
 ,sw_output2file_ascii,luntmp,ncount $
@@ -312,7 +312,7 @@ endif else if ( xmax360 eq 0 ) then begin
   X_max=+180.
   X_min=-X_max
 endif
-Y_max=+60.0
+Y_max=+80.0
 Y_min=-Y_max
 if ( sw_frame eq 0 ) then $
   MAG_GEO='magnetic' $
@@ -337,7 +337,7 @@ if  ( n_read eq 0 ) then begin
 	DEVICE, RETAIN=2, DECOMPOSED=0
 	WINDOW,iwindow,XSIZE=1100*fac_window,YSIZE=1000*fac_window
 ;                   columns,rows
-	!p.multi=[0,4,5,0]
+	!p.multi=[0,2,3,0]
 	loadct,n_ldct
 endif  ;( n_read eq 0 ) then begin 
 endif ;( sw_plot_contour eq 1 ) then begin
@@ -463,7 +463,7 @@ if ( n_read eq n_read_max-1 ) AND ( sw_output2file eq 1 ) then begin
       title_frame='mag' $
    else if ( sw_frame eq 1 ) then $ ;geographic
       title_frame='geo'
-Filename_png=plot_DIR+VarTitle[VarType]+'_ht'+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+title_frame+'.quick.png'
+Filename_png=plot_DIR+'quick/'+TEST+'_'+TEST1+'_'+VarTitle[VarType]+'_ht'+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+title_frame+'.quick.png'
 output_png, Filename_png
 endif ;( sw_output2file eq 1 ) then begin
 
