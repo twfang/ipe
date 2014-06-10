@@ -17,13 +17,13 @@ pro ctr_lon_lat $
 ; X-axis range
 ;1:0<lon<360
 ;0:-180<lon<+180
-xmax360=1
+xmax360=0
 ;note20131209: sw OFF only when sw_output2file_ascii=1 to run faster!!
 sw_plot_contour=1
 ltimemin=11.
 ltimemax=15.
 mlatmax=45.
-factor=1.;1.0E-10 ;for density
+factor=1.0E-12;1.0E-10 ;for density
 ; remember to modify zmin/max
 
 ;debug20140108
@@ -249,10 +249,10 @@ if ( sw_range eq 1 ) then begin
       if ( VarType eq 0 ) then begin 
 ;f107-180
 ;        zmin=-8.0E+10
-        zmin=1.e+10
+        zmin=0.;1.e+10
 ;        zmax=7.5e+11
 ;        zmax=2.5e+1 ;E-region
-        zmax=4.3e+12 ;F-region
+        zmax=2.e+12 ;F-region
 ;        zmax=9.0E+11 ;dbg200km
 ;        zmax=5.58e+12
 ;92km
@@ -270,7 +270,7 @@ if ( sw_range eq 1 ) then begin
 ;        zmin=1.
 ;        zmax=2.5e+1
         zmin=0.0
-        zmax=2.e+12 ;F-region
+        zmax=1.28 ;F-region
       endif else if ( VarType eq 5 ) then begin 
         zmin=-300.;zonal
         zmax=+300.
@@ -309,7 +309,7 @@ endif else if ( xmax360 eq 0 ) then begin
   X_max=+180.
   X_min=-X_max
 endif
-Y_max=+40.0
+Y_max=+90.0
 Y_min=-Y_max
 if ( sw_frame eq 0 ) then $
   MAG_GEO='magnetic' $
