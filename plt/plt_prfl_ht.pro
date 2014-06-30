@@ -1,3 +1,4 @@
+;20140610: sw_dif: underconstruction
 ;pro plot_profile_ht
 pro plt_prfl_ht
 fac_window=1.
@@ -22,7 +23,7 @@ freq_plot_hr=900./3600.;0.25000
 title_hemi='NH'
 ;READ, title_hemi,PROMPT="Enter which hemisphere?: NH or SH" 
 
-sw_fort=168L
+sw_fort=167L;168L
 ;READ, sw_fort,PROMPT="Enter which fort?: 167 or 168"
 
 
@@ -53,7 +54,7 @@ else if ( lp_title eq 100 ) then $
 ;else if ( lp_title eq 46 ) then $
 
 
-sw_debug=1L
+sw_debug=0L
 plot_DIR=$
 "/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/fig/prfl/"
 ;HOME_DIR+'/fig/'+TEST+'/'
@@ -72,7 +73,7 @@ n_file=1L
 ;if ( mlat_title ge '85' ) then  FLDIM = 4501L
 FLDIM0=LONARR(n_file)
 FLDIM0=[ $
-490L ]
+497L ]
 ; 161L ];lp=100 APEX grid v43
  ;401L ];lp=100 FLIP grid v55
 ;401L,401L,401L,401L]
@@ -133,6 +134,14 @@ SUMION0 = fltarr(3,FLDIM)  ;SUMION(1,7,J)+SUMION(2,4,J)+SUMION(2,5,J)
  eqn2d0 = fltarr(FLDIM)
 nplsrd0 = fltarr(FLDIM)
 
+if ( sw_dif eq 1 ) then begin
+     N1 = fltarr(4,FLDIM)
+    TI1 = fltarr(3,FLDIM)
+ PHION1 = fltarr(FLDIM)
+    UN1 = fltarr(FLDIM) ;cm/s
+SUMION1 = fltarr(3,FLDIM)  ;SUMION(1,7,J)+SUMION(2,4,J)+SUMION(2,5,J)
+endif
+
 endif else if ( sw_fort eq 167 ) then begin
 SL = fltarr(FLDIM)
 GL = fltarr(FLDIM)
@@ -152,6 +161,7 @@ if ( i eq 0 ) then sw_version = 1  else $
 if ( i eq 1 ) then sw_version = 3  else $
 if ( i eq 2 ) then sw_version = 3  else $
 if ( i eq 3 ) then sw_version = 3
+print,' sw_version=', sw_version
 
 ;       if ( i ge 0 and i le 1) then $
 ;if ( sw_fort eq 168L ) then $
@@ -169,6 +179,7 @@ if ( sw_fort eq 167L ) then $
 else if ( sw_fort eq 168L ) then begin
            mp_read=1-1L
            read_fort168_3d, LUN[i],UT_hr0,LT_hr0,Z0,TNX0,UN0,NNO0,EHT0,TI0,N0,PHION0,VOP0,SUMION0,sw_version,mp_plot,mp_read,sw_debug   
+if ( sw_dif eq 1 ) then  read_fort168_3d, LUN[i],UT_hr0,LT_hr0,Z0,TNX0,UN1,NNO0,EHT0,TI1,N1,PHION1,VOP0,SUMION1,sw_version,mp_plot,mp_read,sw_debug    
 endif
 ;         endif ;else if ( i eq 2 ) then begin 
 ;       endif ;else if ( i ge 1 ) then begin 
@@ -201,10 +212,23 @@ i_window=0L
 ;         N(3,J)=XIONN(4,J)+XIONN(5,J)+XIONN(6,J)+XIONN(7,J)+XIONN(8,J)
 
 ;       plot_x[0,  4,0:FLDIM-1,i] =   ALOG10 ( NNO[   0:FLDIM-1] ) ;[NO]
+if ( sw_dif eq 1 ) then begin 
+       plot_x[i_window,  0,0:FLDIM-1,i] =   ALOG10 ( N1[1-1,0:FLDIM-1] ) - ALOG10 ( N0[1-1,0:FLDIM-1] )  ;[o+]
+       plot_x[i_window,  1,0:FLDIM-1,i] =   ALOG10 ( N1[2-1,0:FLDIM-1] ) - ALOG10 ( N0[2-1,0:FLDIM-1] ) ;[h+]
+;     if ( sw_version eq 3 ) then $  ;yet 20110810another new version
+;       plot_x[i_window,  2,0:FLDIM-1,i] =   ALOG10 ( XIONN0[3-1,0:FLDIM-1] )  $ ;
+;     else $
+       plot_x[i_window,  2,0:FLDIM-1,i] =   ALOG10 ( N1[4-1,0:FLDIM-1] ) - ALOG10 ( N0[4-1,0:FLDIM-1] ) ;[he+]
+       plot_x[i_window,  3,0:FLDIM-1,i] =   ALOG10 ( N1[3-1,0:FLDIM-1] ) - ALOG10 ( N0[3-1,0:FLDIM-1] ) ;[Min+]
+endif ;( sw_dif eq 1 ) then 
 
 i_window=1L
        plot_x[i_window,  0,0:FLDIM-1,i] =   TI0[1-1,0:FLDIM-1] ;Ti
        plot_x[i_window,  1,0:FLDIM-1,i] =   TI0[3-1,0:FLDIM-1] ;Te
+if ( sw_dif eq 1 ) then begin
+       plot_x[i_window,  0,0:FLDIM-1,i] =   TI1[1-1,0:FLDIM-1] - TI0[1-1,0:FLDIM-1] ;Ti
+       plot_x[i_window,  1,0:FLDIM-1,i] =   TI1[3-1,0:FLDIM-1] - TI0[3-1,0:FLDIM-1] ;Te
+endif
 ;       plot_x[1,  2,0:FLDIM-1,i] =   TNX0[   0:FLDIM-1] ;Tn
 
 ;       plot_x[2,  0,0:FLDIM-1,i] =   VOP0[0:FLDIM-1] *1.E-01
@@ -212,14 +236,24 @@ i_window=1L
 ;       plot_x[2,  2,0:FLDIM-1,i] =   N0[1-1,0:FLDIM-1] * VOP0[0:FLDIM-1] * 1.E-06
 
        plot_x[2,  0,0:FLDIM-1,i] =   PHION0[0:FLDIM-1]
+
+if ( sw_dif eq 1 ) then $
+       plot_x[2,  0,0:FLDIM-1,i] =   PHION1[0:FLDIM-1] - PHION0[0:FLDIM-1]
+
 ;       plot_x[3,  0,0:FLDIM-1,i] =   EHT0[  0:FLDIM-1]
        plot_x[3,  0,0:FLDIM-1,i] =   UN0[  0:FLDIM-1]*1.0E-2 ;cm-1-->m-s
+
+if ( sw_dif eq 1 ) then $
+       plot_x[3,  0,0:FLDIM-1,i] =   UN1[  0:FLDIM-1]*1.0E-2 - UN0[  0:FLDIM-1]*1.0E-2 ;cm-1-->m-s
 
 print ,'check Un',MAX(UN0),MIN(UN0)
 if ( sw_version ge 1 ) then begin
        plot_x[2,  1,0:FLDIM-1,i] =   SUMION0[0,0:FLDIM-1]  ;SUMION(1,7,J)
 ;       plot_x[3,  2,0:FLDIM-1,i] =   SUMION0[1,0:FLDIM-1] 
 ;       plot_x[3,  3,0:FLDIM-1,i] =   SUMION0[2,0:FLDIM-1]
+
+if ( sw_dif eq 1 ) then $
+       plot_x[2,  1,0:FLDIM-1,i] =   SUMION1[0,0:FLDIM-1] - SUMION0[0,0:FLDIM-1]  ;SUMION(1,7,J)
 endif 
 
 ;if ( sw_debug eq 1 ) then $
@@ -279,8 +313,10 @@ BREAK ;exit from the while loop
      endif ;( UT_hr[0] eq plot_UT ) then begin
 
  endwhile                       ; ( EOF(LUN168) ne 0 ) then begin
+;print, '!dbg20140610 endwhile'
 
 ;JUMP1: 
 for i = 0, n_file-1  do    FREE_LUN, LUN[i]
+print, 'plt_prfl_ht finished successfully!'
 end ;pro plot_profile_ht
-end ;pro plt_prfl_ht
+;end ;pro plt_prfl_ht

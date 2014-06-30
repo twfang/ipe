@@ -6,13 +6,13 @@
 ;20111205: sw_save=2 to save plotting time!!!
 ;include parallel plasma velocity to help the debug!!!
 pro plt_ipe
+sw_output2file=1 ;1'PNG' ;0NONE';
 TEST='r336tmp'
 TEST2='S';80';640';
-TEST1='20999'
-n_read_max=3
+TEST1='9781'
+n_read_max=2
 plot_UT    =0.
 plot_UT_end=plot_UT+3600.*24.*6.; [sec]
-sw_output2file=1 ;1'PNG' ;0NONE';
 sw_quickplot=1
 ;20140117; plot every X hour
 sw_hourly_plot=0
@@ -98,7 +98,7 @@ mpstep=1
 
 sw_debug=0L
 ;0:mag; 1:geo
-sw_frame=0L
+sw_frame=1L
 sw_dif=0L
 sw_hr=0L
 sw_3DJ=0L

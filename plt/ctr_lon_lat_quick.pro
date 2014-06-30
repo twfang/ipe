@@ -337,7 +337,7 @@ if  ( n_read eq 0 ) then begin
 	DEVICE, RETAIN=2, DECOMPOSED=0
 	WINDOW,iwindow,XSIZE=1100*fac_window,YSIZE=1000*fac_window
 ;                   columns,rows
-	!p.multi=[0,2,3,0]
+	!p.multi=[0,2,2,0]
 	loadct,n_ldct
 endif  ;( n_read eq 0 ) then begin 
 endif ;( sw_plot_contour eq 1 ) then begin

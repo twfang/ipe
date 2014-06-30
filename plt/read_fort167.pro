@@ -1,6 +1,6 @@
 pro read_fort167,LUN167,UT_hr,LT_hr,Z,SL,GL,BM,GR,SZA,O0,H0,N20,O20,HE0,N4S0,sw_debug, title_hemi
 
-read_special=1L
+read_special=0L;1L
 
   ;get FLDIM
    size_result = size(Z)
@@ -70,32 +70,33 @@ if ( sw_debug eq 1 ) then      print, 'NH',string_tmp4
 
 
 
-   for j=1-1,(FLDIM/2)+1-1 DO begin
+for j=1-1,(FLDIM/2)+1-1 DO begin
 ;NH
    readf, LUN167, Zj,SLj,GLj,BMj,GRj,SZAj,Oj,Hj,N2j,O2j,HEj,N4Sj , FORMAT='(F10.2,E14.7,21E9.2)'
+   Z(J) =zj
+   SL(J) =SLj
+   GL(J) =GLj
+   BM(J) =BMj
+   GR(J) =GRj
+   SZA(J) =SZAj
+   O0(J) =Oj
+   H0(J) =Hj
+   N20(J) =N2j
+   O20(J) =O2j
+   HE0(J) =HEj
+   N4S0(J) =N4Sj
 
-  Z(J) =zj
- SL(J) =SLj
- GL(J) =GLj
- BM(J) =BMj
- GR(J) =GRj
-SZA(J) =SZAj
-  O0(J) =Oj
-  H0(J) =Hj
- N20(J) =N2j
- O20(J) =O2j
- HE0(J) =HEj
-N4S0(J) =N4Sj
 
-
-;if ( sw_debug eq 1 ) then $
+if ( sw_debug eq 1 ) then $
 ;   if ( j eq 5 ) then  $
-;print, j, Zj,SLj,GLj,BMj,GRj,SZAj,Oj,Hj,N2j,O2j,HEj,N4Sj , FORMAT='(i4,F10.2,22E9.2)'
+print, j, Zj,SLj,GLj,BMj,GRj,SZAj,Oj,Hj,N2j,O2j,HEj,N4Sj , FORMAT='(i4,F10.2,22E9.2)'
 
 
 
 
-   ENDFOR
+ENDFOR
+
+
 if ( read_special eq 1 ) then begin
 ;dbg20120304:
 n_read=1000
@@ -114,4 +115,6 @@ if ( a0 le 1.5 ) $
 then break
 endfor
 endif ;( read_special eq 1 ) then begin
+
+if ( sw_debug eq 1 ) then  print,'read_fort167 finished successfully!'
 END ;pro read_fort167

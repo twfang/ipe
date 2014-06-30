@@ -10,18 +10,18 @@ PRO  prfl_ht $
 print,'prfl_ht',sw_output2file ;debug
 
 y_min = 90.
-y_max =30000.;1000.;680.;220.;680.;  2.0E+04 ;18783.500 ;MAX(zn)
+y_max =500.;54107.;1000.;680.;220.;680.;  2.0E+04 ;18783.500 ;MAX(zn)
 if ( sw_debug eq 1 ) then  print, "y_max=", y_max
 
 if ( sw_fort eq 168L ) then begin
 ;x_min=[-15.,   +100.,     0. ,     0.]
 ;x_min=[-1.,    +400.,     0. ,     -25.]
-x_min=[0.,    +400.,     0. ,     -25.]
+x_min=[-1.,    +200.,     0. ,     -25.]
 ;x_max=[ 6.5,  +2200.,  +1000. ,    +25.]
 x_max=[ 7.,  +2200.,  +1000. ,    +25.]
 ;x_max=[ 4.0,  +1300.,  +700. , +7000.]
 endif else if ( sw_fort eq 167L ) then begin
-x_min=[ 5.2,  + 60.,   -1. ,   0.]
+x_min=[ 5.2,  + 0.,   -1. ,   0.]
 x_max=[ 11.,  +180.,   +0.6, +14.]
 endif
 
@@ -113,7 +113,8 @@ title_plot=TEST+'_'+title_hemi+': mlat[deg]='+mlat_title+'  UT[hrs]='+STRTRIM( s
 ;  j1=FLDIM_plot[0] -1L
 ;endif
 
-;dbg print,'!debug plot_y',plot_y[j0:j1,i_plot[i]]
+;dbg 
+;d  if ( plot_type eq 0 ) then for j=j0,j1  do print,'plot_type=',plot_type,' i=',i,'!debug plot: j=',j,plot_x[plot_type,0,j,i_plot[i]],plot_y[j,i_plot[i]]
 ;frame only
 if ( plot_type eq 0 ) then begin  ;densities
   plot, plot_x[plot_type,0,j0:j1,i_plot[i]], plot_y[j0:j1,i_plot[i]] $;, /xlog $ 
