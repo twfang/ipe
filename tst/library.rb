@@ -102,7 +102,8 @@ module Library
     re2=Regexp.new(lib_re_str_run_dir)
     datadir=valid_dir(File.join(FileUtils.pwd,"data"))
     ipedata="IPEDATA=#{datadir}"
-    ipequeue="IPEQUEUE=debug"
+#nm20140702    ipequeue="IPEQUEUE=debug"
+    ipequeue="IPEQUEUE=batch"
     cmd="cd #{rundir} && #{ipedata} #{ipequeue} ./#{runspec['qsubcmd']} #{runspec['tasks']}"
     logd "Submitting job with command: #{cmd}"
     output,status=ext(cmd,{:msg=>"ERROR: Job submission failed"})
