@@ -84,7 +84,7 @@ echo "DATADIR for startup files:"  $DATADIR
 ln -s $DATADIR/ut_rec   ./stup_ut_rec
 set j=0
 while ( $j <= 11 )
-    echo "symlink $j"
+###    echo "symlink $j"
     if ( $j <= 9 ) then
         set flnm  = $DATADIR/plasma0"$j"
         set flnm1 = stup0"$j"
@@ -93,7 +93,7 @@ while ( $j <= 11 )
         set flnm1 = stup"$j"
     endif
     if ( $j == 0 ) then
-      echo filename is $flnm $flnm1
+###      echo filename is $flnm $flnm1
     endif
     ln -s $flnm ./$flnm1
     @ j++
