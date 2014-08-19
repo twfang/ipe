@@ -1,2 +1,1 @@
-#!/bin/bash
-ulimit -Su 512 && java -jar jruby.jar --1.9 -I. ts.rb $*
+ddts

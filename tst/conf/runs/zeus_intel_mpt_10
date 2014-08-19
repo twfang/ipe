@@ -1,9 +1,0 @@
-extends: 'zeus_common'
-baseline: 'zeus_intel'
-build: 'zeus_intel_mpt'
-inpfile: 'IPE.inp.100'
-qsubcmd: 'qsubipeZeus'
-tasks: '10'
-namelists:
-  smsnamelist:
-    set_process_layout: !unquoted '.true.'
