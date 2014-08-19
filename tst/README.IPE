@@ -1,0 +1,19 @@
+To run the zeus test suite:
+
+  $ ipets zeus
+
+To see the definition of a suite:
+
+  $ ipets show suite <suite_name>
+
+To see the definition of a run listed in a suite definition:
+
+  $ ipets show run <run_name>
+
+To execute a single run from a suite:
+
+  $ ipets run <run_name>
+
+For other options:
+
+  $ ipets help

@@ -1,48 +1,38 @@
 module Library
 
-  def lib_build(buildspec,lock,activejobs)
-    cmd="cd #{buildspec['buildsrc']} && #{buildspec['cmd']}"
-    ext(cmd,{:msg=>"Build failed"})
+  # REQUIRED METHODS (CALLED BY DRIVER)
+
+  def lib_build(env,prepkit)
+    cmd="cd #{prepkit[:srcdir]} && #{env.build.cmd}"
+    Thread.exclusive { ext(cmd,{:msg=>"Build failed"}) }
+    prepkit
   end
 
-  def lib_build_post(buildspec,output=nil)
-    buildspec['buildrun']
+  def lib_build_post(env,buildkit)
+    buildkit
   end
 
-  def lib_build_prep(buildspec)
-    def copy_files(desc,name,key,rsync_args,topdir,dstdir,buildspec)
-      src=valid_dir(File.join(topdir,name))
-      dst=File.join(dstdir,name)
-      FileUtils.mkdir_p(dst) unless Dir.exist?(dst)
-      cmd="rsync #{rsync_args} #{src}/* #{dst}"
-      ext(cmd)
-      logd "Copied #{src} into #{dst}"
-      d=valid_dir(dst)
-      buildspec[key]=d
-      logd "Set build #{desc} directory: #{d}"
-    end
-    dstdir=File.join(buildspec['buildroot'],buildspec['build'])
-    FileUtils.mkdir_p(dstdir) unless Dir.exist?(dstdir)
-    logd "Made directory: #{dstdir}"
-    topdir=File.expand_path("..")
-    copy_files('source','src','buildsrc','-av',topdir,dstdir,buildspec)
-    copy_files('run','run','buildrun','-av --no-recursive',topdir,dstdir,buildspec)
-    ['bin'].each do |e|
-      d=File.join(dstdir,e)
-      FileUtils.mkdir_p(d) unless Dir.exist?(d)
-      logd "Made directory: #{d}"
-    end
+  def lib_build_prep(env)
+    srcdir=File.join(env.build.ddts_root,"src")
+    cmd="rsync -a #{File.join($DDTSHOME,"..","src")}/ #{srcdir}"
+    Thread.exclusive { ext(cmd,{:msg=>"Error copying 'src' to '#{srcdir}'"}) }
+    rundir=File.join(env.build.ddts_root,"run")
+    cmd="rsync -a --no-recursive #{File.join($DDTSHOME,"..","run")}/* #{rundir}"
+    Thread.exclusive {ext(cmd,{:msg=>"Error copying 'run' to '#{rundir}'"}) }
+    bindir=File.join(env.build.ddts_root,"bin")
+    FileUtils.mkdir_p(bindir)
+    {:bindir=>bindir,:rundir=>rundir,:srcdir=>srcdir}
   end
 
-  def lib_dataspecs
-    f="ipedata.tgz"
-    path="/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/ipedata.tgz"
-    cmd="cp --force #{path} data.tgz"
+  def lib_data_zeus(env)
+    f="/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/ipedata.tgz"
+    cmd="cp --force #{f} data.tgz"
     md5='f944709c93f2daf6a62ce10ed8d93006'
     [cmd,md5]
   end
 
-  def lib_outfiles(path)
+  # def lib_outfiles(path)
+  def lib_outfiles(env,path)
     restrs=['(.*/)(plasma\d\d)','(.*/)(fort\.20\d\d)']
     res=restrs.map { |e| Regexp.new(e) }
     outs=[]
@@ -58,51 +48,24 @@ module Library
     outs
   end
 
-  def lib_prep_job(rundir,runspec)
-    buildrun=runspec['buildrun']
-    logd "Copying #{buildrun} -> #{rundir}"
-    FileUtils.cp_r(buildrun,rundir)
-    bindir=File.expand_path(File.join(buildrun,"..","bin"))
-    logd "Linking #{bindir} -> #{rundir}"
-    FileUtils.ln_s(bindir,rundir)
-    rundir=File.join(rundir,File.basename(buildrun))
-    inpsrc=valid_file(File.join(rundir,runspec['inpfile']))
-    inpdst=File.join(rundir,"IPE.inp")
-    logd "Copying #{inpsrc} -> #{inpdst}"
-    FileUtils.rm_f(inpdst)
-    FileUtils.cp(inpsrc,inpdst)
-    nlfile=valid_file(File.join(rundir,'SMSnamelist'))
-    mod_namelist_file(nlfile,runspec['namelists'])
-    rundir
-  end
-
-  def lib_queue_del_cmd
+  def lib_queue_del_cmd(env)
     'qdel'
   end
 
-  def lib_re_str_job_id
-    'The job (\d+).* has been submitted.'
-  end
+  #### HERE ####
 
-  def lib_re_str_run_dir
-    'Created (.*)'
-  end
-
-  def lib_re_str_success
-    'IPE completed successfully'
-  end
-
-  def lib_run_job(rundir,runspec,lock,activejobs)
+  # def lib_run_job(rundir,runspec,lock,activejobs)
+  def lib_run(env,prepkit)
     jobid=nil
     subdir=nil
-    re1=Regexp.new(lib_re_str_job_id)
-    re2=Regexp.new(lib_re_str_run_dir)
+    re1=Regexp.new(re_str_job_id)
+    re2=Regexp.new(re_str_run_dir)
     datadir=valid_dir(File.join(FileUtils.pwd,"data"))
     ipedata="IPEDATA=#{datadir}"
     ipequeue="IPEQUEUE=batch"
     cmd="cd #{rundir} && #{ipedata} #{ipequeue} ./#{runspec['qsubcmd']} #{runspec['tasks']}"
     logd "Submitting job with command: #{cmd}"
-    output,status=ext(cmd,{:msg=>"ERROR: Job submission failed"})
+    Thread.exclusive { output,status=ext(cmd,{:msg=>"ERROR: Job submission failed"}) }
     output.each do |e|
       e.chomp!
       logd e unless e=~/^\s*$/
@@ -125,6 +88,31 @@ module Library
     lib_wait_for_job(jobid)
     lock.synchronize { activejobs.delete(jobid) }
     valid_file(File.join(rundir,'output'))
+  end
+
+  def lib_run_check(env,postkit)
+  end
+
+  def lib_run_prep(env)
+    uniq=env.run.ddts_root
+    run=env.build.ddts_result[:rundir]
+    logd "Copying #{run} -> #{uniq}"
+    FileUtils.cp_r(run,uniq)
+    bin=env.build.ddts_result[:bindir]
+    logd "Linking #{bin} -> #{uniq}"
+    FileUtils.ln_s(bin,uniq)
+    rundir=File.join(uniq,File.basename(run))
+    inpsrc=valid_file(File.join(rundir,env.run.inpfile))
+    inpdst=File.join(rundir,"IPE.inp")
+    logd "Copying #{inpsrc} -> #{inpdst}"
+    FileUtils.rm_f(inpdst)
+    FileUtils.cp(inpsrc,inpdst)
+    nlfile=valid_file(File.join(rundir,'SMSnamelist'))
+    mod_namelist_file(nlfile,env.run.namelists)
+    rundir
+  end
+
+  def lib_run_post(env,runkit)
   end
 
   def lib_wait_for_job(jobid)
@@ -169,6 +157,35 @@ module Library
       return m[1].to_i if m
     end
     'unknown'
+  end
+
+  # CUSTOM METHODS (NOT CALLED BY DRIVER)
+
+# def lib_re_str_success
+#   'IPE completed successfully'
+# end
+
+  def mod_namelist_file(nlfile,nlenv)
+    h=convert_o2h(nlenv)
+    sets=h.reduce([]) do |m0,(n,kv)|
+      inner=kv.reduce([]) do |m1,(k,v)|
+        v="\"#{quote_string(v)}\""
+        logd "Set namelist #{n}:#{k}=#{v}"
+        m1.push("-s #{n}:#{k}=#{v}")
+      end
+      m0.concat(inner)
+    end
+    nml=valid_file(File.expand_path(File.join($DDTSHOME,"nml")))
+    cmd="#{nml} -i #{nlfile} -o #{nlfile} #{sets.join(" ")}"
+    Thread.exclusive { ext(cmd,{:msg=>"Failed to edit #{nlfile}"}) }
+  end
+
+  def re_str_job_id
+    'The job (\d+).* has been submitted.'
+  end
+
+  def re_str_run_dir
+    'Created (.*)'
   end
 
 end

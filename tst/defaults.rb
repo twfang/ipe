@@ -12,12 +12,12 @@ module Library
     true
   end
 
-  def lib_outfiles(env,path)
-    []
-  end
-
   def lib_data(env)
     true
+  end
+
+  def lib_outfiles(env,path)
+    []
   end
 
   def lib_run(env,prepkit)
