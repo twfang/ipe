@@ -18,20 +18,16 @@ module Library
     Thread.exclusive { ext(cmd,{:msg=>"Error copying 'src' to '#{srcdir}'"}) }
     rundir=File.join(env.build.ddts_root,"run")
     cmd="rsync -a --no-recursive #{File.join($DDTSHOME,"..","run")}/* #{rundir}"
-    Thread.exclusive {ext(cmd,{:msg=>"Error copying 'run' to '#{rundir}'"}) }
+    Thread.exclusive { ext(cmd,{:msg=>"Error copying 'run' to '#{rundir}'"}) }
     bindir=File.join(env.build.ddts_root,"bin")
     FileUtils.mkdir_p(bindir)
     {:bindir=>bindir,:rundir=>rundir,:srcdir=>srcdir}
   end
 
   def lib_data_zeus(env)
-    f="/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/ipedata.tgz"
-    cmd="cp --force #{f} data.tgz"
-    md5='f944709c93f2daf6a62ce10ed8d93006'
-    [cmd,md5]
+    get_data("/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/ipedata.tgz")
   end
 
-  # def lib_outfiles(path)
   def lib_outfiles(env,path)
     restrs=['(.*/)(plasma\d\d)','(.*/)(fort\.20\d\d)']
     res=restrs.map { |e| Regexp.new(e) }
@@ -52,45 +48,45 @@ module Library
     'qdel'
   end
 
-  #### HERE ####
-
-  # def lib_run_job(rundir,runspec,lock,activejobs)
   def lib_run(env,prepkit)
+    rundir=prepkit
+    qsubcmd=env.run.qsubcmd
+    tasks=env.run.tasks
+    ipedata="IPEDATA=#{valid_dir(File.join(tmp_dir,"data"))}"
+    ipequeue="IPEQUEUE=batch"
+    cmd="cd #{rundir} && #{ipedata} #{ipequeue} ./#{qsubcmd} #{tasks}"
+    logd "Submitting job with command: #{cmd}"
+    output,status=Thread.exclusive do
+      ext(cmd,{:msg=>"ERROR: Job submission failed"})
+    end
+    re1=Regexp.new('The job (\d+).* has been submitted.')
+    re2=Regexp.new('Created (.*)')
     jobid=nil
     subdir=nil
-    re1=Regexp.new(re_str_job_id)
-    re2=Regexp.new(re_str_run_dir)
-    datadir=valid_dir(File.join(FileUtils.pwd,"data"))
-    ipedata="IPEDATA=#{datadir}"
-    ipequeue="IPEQUEUE=batch"
-    cmd="cd #{rundir} && #{ipedata} #{ipequeue} ./#{runspec['qsubcmd']} #{runspec['tasks']}"
-    logd "Submitting job with command: #{cmd}"
-    Thread.exclusive { output,status=ext(cmd,{:msg=>"ERROR: Job submission failed"}) }
     output.each do |e|
       e.chomp!
-      logd e unless e=~/^\s*$/
+      logd e
       jobid=e.gsub(re1,'\1') if re1.match(e)
       subdir=e.gsub(re2,'\1') if re2.match(e)
     end
-    if jobid.nil?
-      logi "ERROR: Job ID not found in queue-submission output"
-      return nil
-    end
-    lock.synchronize { activejobs[jobid]=self }
-    if subdir.nil?
-      logi "ERROR: Run directory not found in queue-submission output"
-      return nil
-    end
-    runspec['subdir']=subdir
-    rundir.replace(File.join(rundir,subdir))
-    qs="Queued with job ID #{jobid}"
-    logi qs
-    lib_wait_for_job(jobid)
-    lock.synchronize { activejobs.delete(jobid) }
-    valid_file(File.join(rundir,'output'))
+    die "ERROR: Job ID not found in submit-command output" if jobid.nil?
+    job_activate(jobid,self)
+    die "ERROR: Run directory not found in submit-command output" if subdir.nil?
+    logi "Queued with job ID #{jobid}"
+    wait_for_job(jobid)
+    job_deactivate(jobid)
+    valid_file(File.join(rundir,subdir))
   end
 
   def lib_run_check(env,postkit)
+    outputdir=postkit
+    stdout=valid_file(File.join(outputdir,"output"))
+    return outputdir if job_check(stdout,'IPE completed successfully')
+    nil
+  end
+
+  def lib_run_post(env,runkit)
+    outputdir=runkit
   end
 
   def lib_run_prep(env)
@@ -112,10 +108,35 @@ module Library
     rundir
   end
 
-  def lib_run_post(env,runkit)
+  # CUSTOM METHODS (NOT CALLED BY DRIVER)
+
+  def get_data(f)
+    cs0="f944709c93f2daf6a62ce10ed8d93006"
+    cs1=Digest::MD5.file(f).to_s
+    unless cs1 == cs0
+      die "ERROR: Expected checksum #{cs0} for data archive '#{f}', got #{cs1})"
+    end
+    cmd="cd #{tmp_dir} && tar xvzf #{f}"
+    msg="ERROR: Failed to extract data archive '#{f}'"
+    Thread.exclusive { ext(cmd,{:msg=>msg}) }
   end
 
-  def lib_wait_for_job(jobid)
+  def mod_namelist_file(nlfile,nlenv)
+    h=convert_o2h(nlenv)
+    sets=h.reduce([]) do |m0,(n,kv)|
+      inner=kv.reduce([]) do |m1,(k,v)|
+        v="\"#{quote_string(v)}\""
+        logd "Set namelist #{n}:#{k}=#{v}"
+        m1.push("-s #{n}:#{k}=#{v}")
+      end
+      m0.concat(inner)
+    end
+    nml=valid_file(File.expand_path(File.join($DDTSHOME,"nml")))
+    cmd="#{nml} -i #{nlfile} -o #{nlfile} #{sets.join(" ")}"
+    Thread.exclusive { ext(cmd,{:msg=>"Failed to edit #{nlfile}"}) }
+  end
+
+  def wait_for_job(jobid)
     ok=%w[E H Q R T W S]
     # 'tolerance' is the number of seconds the batch system retains information
     # about completed jobs. If this interval passes without a non-error response
@@ -157,35 +178,6 @@ module Library
       return m[1].to_i if m
     end
     'unknown'
-  end
-
-  # CUSTOM METHODS (NOT CALLED BY DRIVER)
-
-# def lib_re_str_success
-#   'IPE completed successfully'
-# end
-
-  def mod_namelist_file(nlfile,nlenv)
-    h=convert_o2h(nlenv)
-    sets=h.reduce([]) do |m0,(n,kv)|
-      inner=kv.reduce([]) do |m1,(k,v)|
-        v="\"#{quote_string(v)}\""
-        logd "Set namelist #{n}:#{k}=#{v}"
-        m1.push("-s #{n}:#{k}=#{v}")
-      end
-      m0.concat(inner)
-    end
-    nml=valid_file(File.expand_path(File.join($DDTSHOME,"nml")))
-    cmd="#{nml} -i #{nlfile} -o #{nlfile} #{sets.join(" ")}"
-    Thread.exclusive { ext(cmd,{:msg=>"Failed to edit #{nlfile}"}) }
-  end
-
-  def re_str_job_id
-    'The job (\d+).* has been submitted.'
-  end
-
-  def re_str_run_dir
-    'Created (.*)'
   end
 
 end
