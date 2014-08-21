@@ -96,12 +96,14 @@ zeus_lahey_serial:
 
 ipe:
 	$(if $(filter 0,$(MAKELEVEL)),$(call USAGE))
-	$(MAKE) -C main    "$(VARS)" EXTRADEP="-d module_decomp.o"
+	$(MAKE) -C main "$(VARS)" EXTRADEP="-d module_decomp.o"
 	$(MAKE) -C neutral "$(VARS)"
+	$(MAKE) -C flip "$(VARS)"
 
 clean:
-	$(MAKE) -C main    clean
+	$(MAKE) -C main clean
 	$(MAKE) -C neutral clean
+	$(MAKE) -C flip clean
 
 #TEST=v18
 #PACKAGE=../bin/ipe_${TEST}.$(COMPILER)$(PAR).exe

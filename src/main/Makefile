@@ -2,24 +2,25 @@
 
 TOP=..
 
-PBASES=allocate_arrays                \
-       get_flip_grid                  \
-       module_decomp                  \
-       module_field_line_grid         \
-       module_init_plasma_grid        \
-       module_input_parameters        \
-       module_open_output_files       \
-       module_read_plasma_grid_global \
-       output_plasma_grid stop
+PSRCS=allocate_arrays.f90                \
+      get_flip_grid.f90                  \
+      module_decomp.f90                  \
+      module_field_line_grid.f90         \
+      module_init_plasma_grid.f90        \
+      module_input_parameters.f90        \
+      module_open_output_files.f90       \
+      module_read_plasma_grid_global.f90 \
+      output_plasma_grid.f90             \
+      stop.f90
 
-SBASES=module_close_files             \
-       module_io                      \
-       module_IPE_dimension           \
-       module_open_file               \
-       module_output                  \
-       module_physical_constants      \
-       module_precision               \
-       module_unit_conversion
+SSRCS=module_close_files.f90             \
+      module_io.f90                      \
+      module_IPE_dimension.f90           \
+      module_open_file.f90               \
+      module_output.f90                  \
+      module_physical_constants.f90      \
+      module_precision.f90               \
+      module_unit_conversion.f90
 
 include $(TOP)/common
 

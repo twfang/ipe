@@ -1,13 +1,13 @@
 # common Makefile
 
-f90s=$(addsuffix .f90,$(PBASES) $(SBASES))
-INCS=-I$(TOP)/main -I$(TOP)/neutral -I$(TOP)/plasma -I$(TOP)/eldyn
-POBJS=$(filter-out module_decomp.o,$(addsuffix .o,$(PBASES)))
-SOBJS=$(addsuffix .o,$(SBASES))
+INCS = -I$(TOP)/main -I$(TOP)/neutral -I$(TOP)/plasma -I$(TOP)/eldyn
+POBJ = $(filter-out module_decomp.o,$(addsuffix .o,$(basename $(PSRCS))))
+SOBJ = $(addsuffix .o,$(basename $(SSRCS)))
+SRCS = $(PSRCS) $(SSRCS)
 
-all: $(POBJS) $(SOBJS)
+all: $(POBJ) $(SOBJ)
 
-$(POBJS): %.o: %.f90
+$(POBJ): %.o: %.f90
 ifeq ($(PARALLELISM),parallel)
 	$(PPP) $(PPP_FLAGS) -o $*_sms.f90 $<
 	$(ENVSET) && $(FCP) -c $(FFLAGS) $(INCS) $(SMSFLAGS) -o $@ $*_sms.f90
@@ -15,16 +15,19 @@ else
 	$(ENVSET) && $(FCS) -c $(FFLAGS) $(INCS) -o $@ $<
 endif
 
-$(SOBJS): %.o: %.f90
+%.o: %.f90
+	$(ENVSET) && $(FCS) -c $(FFLAGS) $(INCS) -o $@ $<
+
+%.o: %.f
 	$(ENVSET) && $(FCS) -c $(FFLAGS) $(INCS) -o $@ $<
 
 clean:
 	$(RM) *.mod *.o *_sms.f90 *.tmp Filepath Srcfiles
 
-DEPENDENCIES: $(f90s)
+DEPENDENCIES: $(SRCS)
 	$(RM) Filepath Srcfiles
 	echo "." > Filepath
-	echo $(f90s) | sed 's/  */\n/g' > Srcfiles
+	echo $(SRCS) | sed 's/  */\n/g' > Srcfiles
 	$(TOP)/mkDepends -m $(EXTRADEP) Filepath Srcfiles > $@
 
 -include DEPENDENCIES
