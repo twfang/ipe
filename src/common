@@ -1,6 +1,7 @@
 # common Makefile
 
 f90s=$(addsuffix .f90,$(PBASES) $(SBASES))
+INCS=-I$(TOP)/main -I$(TOP)/neutral -I$(TOP)/plasma -I$(TOP)/eldyn
 POBJS=$(filter-out module_decomp.o,$(addsuffix .o,$(PBASES)))
 SOBJS=$(addsuffix .o,$(SBASES))
 
@@ -9,13 +10,13 @@ all: $(POBJS) $(SOBJS)
 $(POBJS): %.o: %.f90
 ifeq ($(PARALLELISM),parallel)
 	$(PPP) $(PPP_FLAGS) -o $*_sms.f90 $<
-	$(ENVSET) && $(FCP) -c $(FFLAGS) $(SMSFLAGS) -o $@ $*_sms.f90
+	$(ENVSET) && $(FCP) -c $(FFLAGS) $(INCS) $(SMSFLAGS) -o $@ $*_sms.f90
 else
-	$(ENVSET) && $(FCS) -c $(FFLAGS) -o $@ $<
+	$(ENVSET) && $(FCS) -c $(FFLAGS) $(INCS) -o $@ $<
 endif
 
 $(SOBJS): %.o: %.f90
-	$(ENVSET) && $(FCS) -c $(FFLAGS) -o $@ $<
+	$(ENVSET) && $(FCS) -c $(FFLAGS) $(INCS) -o $@ $<
 
 clean:
 	$(RM) *.mod *.o *_sms.f90 *.tmp Filepath Srcfiles

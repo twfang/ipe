@@ -10,7 +10,6 @@ GPTL_CPPFLAGS=-I../dummygptl
 GPTL_LDFLAGS=-L../../dummygptl -lgptl
 GPTL_USE_GPTL=no
 GPTL_USE_PMPI=no
-INCLUDE_PATH=-I
 LDLIBS=-lm
 PPP_FLAGS=--Fmodule=module_decomp --Free --comment --HaloSize=10
 PROF=gprof
@@ -97,10 +96,12 @@ zeus_lahey_serial:
 
 ipe:
 	$(if $(filter 0,$(MAKELEVEL)),$(call USAGE))
-	$(MAKE) -C main "$(VARS)" EXTRADEP="-d module_decomp.o"
+	$(MAKE) -C main    "$(VARS)" EXTRADEP="-d module_decomp.o"
+	$(MAKE) -C neutral "$(VARS)"
 
 clean:
-	$(MAKE) -C main clean
+	$(MAKE) -C main    clean
+	$(MAKE) -C neutral clean
 
 #TEST=v18
 #PACKAGE=../bin/ipe_${TEST}.$(COMPILER)$(PAR).exe
