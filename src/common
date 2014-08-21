@@ -1,0 +1,29 @@
+# common Makefile
+
+f90s=$(addsuffix .f90,$(PBASES) $(SBASES))
+POBJS=$(filter-out module_decomp.o,$(addsuffix .o,$(PBASES)))
+SOBJS=$(addsuffix .o,$(SBASES))
+
+all: $(POBJS) $(SOBJS)
+
+$(POBJS): %.o: %.f90
+ifeq ($(PARALLELISM),parallel)
+	$(PPP) $(PPP_FLAGS) -o $*_sms.f90 $<
+	$(ENVSET) && $(FCP) -c $(FFLAGS) $(SMSFLAGS) -o $@ $*_sms.f90
+else
+	$(ENVSET) && $(FCS) -c $(FFLAGS) -o $@ $<
+endif
+
+$(SOBJS): %.o: %.f90
+	$(ENVSET) && $(FCS) -c $(FFLAGS) -o $@ $<
+
+clean:
+	$(RM) *.mod *.o *_sms.f90 *.tmp Filepath Srcfiles
+
+DEPENDENCIES: $(f90s)
+	$(RM) Filepath Srcfiles
+	echo "." > Filepath
+	echo $(f90s) | sed 's/  */\n/g' > Srcfiles
+	$(TOP)/mkDepends -m $(EXTRADEP) Filepath Srcfiles > $@
+
+-include DEPENDENCIES
