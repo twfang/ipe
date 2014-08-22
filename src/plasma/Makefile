@@ -1,18 +1,24 @@
-#SHELL=/bin/bash
-OBJ=$(notdir $(OBJS))
-FC=$(FC90)
-FFLAGS90=$(FFLAGS) 
-LFLAGS=$(LFLAGS)
-HOME_dev=$(HOME_dev)
-all:
-	echo plasma compiler $(FC) $(FCparallel)
-	echo plasma par $(PAR)
-	echo plasma FFLAGS $(FFLAGS)
-ifeq ($(PAR),sms)
-	echo building sms
-	echo $(FCparallel)
-	make -f  $(HOME_dev)/Makefile.sms OBJ="$(OBJ)" FC=$(FCparallel) FFLAGS90="$(FFLAGS)" LFLAGS="$(LFLAGS)" HOME_dev=$(HOME_dev)
-else
-	echo building serial
-	make -f  $(HOME_dev)/Makefile.original OBJ="$(OBJ)" FC=$(FC) FFLAGS90="$(FFLAGS)" LFLAGS="$(LFLAGS)" HOME_dev=$(HOME_dev)
-endif
+# plasma Makefile
+
+TOP=..
+
+TEST=v18
+
+PSRCS=flux_tube_solver.f90               \
+      get_pvalue_dipole.f90              \
+      get_sinim.f90                      \
+      get_sza.f90                        \
+      interpolate_flux_tube_$(TEST).f90  \
+      io_plasma_bin.f90                  \
+      module_find_neighbor_grid_R.f90    \
+      module_find_neighbor_grid_th.f90   \
+      module_heating_rate.f90            \
+      module_perpendicular_transport.f90 \
+      module_plasma.f90                  \
+      module_Qinterpolation.f90          \
+      module_stepback_mag_R.f90          \
+      module_stepback_mag_th.f90         \
+      module_sub_plasma.f90              \
+      read_vexb.f90
+
+include $(TOP)/common

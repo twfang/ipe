@@ -11,6 +11,7 @@ GPTL_LDFLAGS=-L../../dummygptl -lgptl
 GPTL_USE_GPTL=no
 GPTL_USE_PMPI=no
 LDLIBS=-lm
+MAKETHREADS=8
 PPP_FLAGS=--Fmodule=module_decomp --Free --comment --HaloSize=10
 PROF=gprof
 TARGETS=zeus_intel_parallel zeus_intel_serial zeus_lahey_serial clean
@@ -20,6 +21,7 @@ TARGETS=zeus_intel_parallel zeus_intel_serial zeus_lahey_serial clean
 CPP_FLAGS=-traditional -P $(GPTL_CPPFLAGS)
 FFLAGS=$(OPT_FLAG) $(DEBUG_FLAGS) $(GPTL_CPPFLAGS) $(GPTL_LDFLAGS)
 LDFLAGS=$(OPT_FLAG) $(DEBUG_FLAGS)
+PARALLEL_MAKE=$(MAKE) -j $(MAKETHREADS)
 PPP=$(SMS)/bin/ppp
 SMS_LDFLAGS=-L$(SMS)/lib -lsms
 SMSFLAGS=-I $(SMS)/include
@@ -33,7 +35,7 @@ ifeq ($(MACHINE),zeus)
     FCS=ifort
     GPTL_LDFLAGS=-L/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/lib -lgptl_pmpi
     OPT_FLAG=-O3 -fp-model precise
-    SMS=/home/Jacques.Middlecoff/SMS/SMS_r395_intel_mpt/
+    SMS=/contrib/acs/SMS/legacy_r616/zeus-intel-mpt
     ifeq ($(DEBUG),yes)
       DEBUG_FLAGS=-g -O0 -ftz -traceback -check bounds -fpe0
     endif
@@ -58,7 +60,7 @@ ifeq ($(MACHINE),zeus)
     ENVSET=module load lahey mpt
     FCP=mpif90
     FCS=lf95
-    SMS=/home/Jacques.Middlecoff/SMS/SMS_r395_lahey_mpt/
+    SMS=/contrib/acs/SMS/legacy_r616/zeus-lahey-mpt
     ifeq ($(PARALLELISM),parallel)
     endif
     ifeq ($(PARALLELISM),serial)
@@ -86,24 +88,28 @@ all:
 	$(call $(USAGE))
 
 zeus_intel_parallel:
-	$(MAKE) ipe MACHINE=zeus COMPILER=intel PARALLELISM=parallel
+	$(PARALLEL_MAKE) ipe MACHINE=zeus COMPILER=intel PARALLELISM=parallel
 
 zeus_intel_serial:
-	$(MAKE) ipe MACHINE=zeus COMPILER=intel PARALLELISM=serial
+	$(PARALLEL_MAKE) ipe MACHINE=zeus COMPILER=intel PARALLELISM=serial
 
 zeus_lahey_serial:
-	$(MAKE) ipe MACHINE=zeus COMPILER=lahey PARALLELISM=serial
+	$(PARALLEL_MAKE) ipe MACHINE=zeus COMPILER=lahey PARALLELISM=serial
 
 ipe:
 	$(if $(filter 0,$(MAKELEVEL)),$(call USAGE))
-	$(MAKE) -C main "$(VARS)" EXTRADEP="-d module_decomp.o"
+	$(MAKE) -C main    "$(VARS)" EXTRADEP="-d module_decomp.o"
 	$(MAKE) -C neutral "$(VARS)"
-	$(MAKE) -C flip "$(VARS)"
+	$(MAKE) -C flip    "$(VARS)"
+	$(MAKE) -C eldyn   "$(VARS)"
+#	$(MAKE) -C plasma  "$(VARS)"
 
 clean:
 	$(MAKE) -C main clean
 	$(MAKE) -C neutral clean
 	$(MAKE) -C flip clean
+	$(MAKE) -C eldyn clean
+	$(MAKE) -C plasma clean
 
 #TEST=v18
 #PACKAGE=../bin/ipe_${TEST}.$(COMPILER)$(PAR).exe
@@ -199,53 +205,53 @@ clean:
 ##dbg20120509	${DR3}/activate_perp_transport.f90 \
 ## DR6: eldyn
 #SRC6S	=\
+#	${DR6}/apex_sunloc.f \
 #	${DR6}/efield.f \
-#	${DR6}/module_ff.f \
-#	${DR6}/module_pnm.f \
-#	${DR6}/module_prep_pnm.f \
-#	${DR6}/module_index_quiet.f \
 #	${DR6}/module_adj_S_a.f \
-#	${DR6}/module_constants.f \
-#	${DR6}/module_prep_fk.f \
-#	${DR6}/module_set_fkflfs.f \
-#	${DR6}/module_efield_mid.f \
-#	${DR6}/module_FSVal.f \
-#	${DR6}/module_SetModel.f \
 #	${DR6}/module_ADJUST.f \
-#	${DR6}/module_JULDAY.f \
+#	${DR6}/module_bnd_sinus.f \
+#	${DR6}/module_constants.f \
+#	${DR6}/module_DerivPotential.f \
+#	${DR6}/module_efield_mid.f \
+#	${DR6}/module_efield_sunloc.f \
+#	${DR6}/module_EpotVal.f \
+#	${DR6}/module_ff.f \
+#	${DR6}/module_FSVal.f \
+#	${DR6}/module_fun_MagLong.f \
+#	${DR6}/module_fun_MLT.f \
+#	${DR6}/module_GECMP.f \
+#	${DR6}/module_get_efield.f \
 #	${DR6}/module_GET_TILT.f \
-#	${DR6}/module_prep_weimer.f \
+#	${DR6}/module_GlobalElPotential.f \
+#	${DR6}/module_highlat_adjust.f \
+#	${DR6}/module_highlat_getbnd.f \
+#	${DR6}/module_index_quiet.f \
+#	${DR6}/module_interp_poten.f \
+#	${DR6}/module_JULDAY.f \
+#	${DR6}/module_LEGENDRE.f \
+#	${DR6}/module_magfield.f \
+#	${DR6}/module_pnm.f \
 #	${DR6}/module_pot_latsmo.f \
 #	${DR6}/module_pot_latsmo2.f \
 #	${DR6}/module_pot_lonsmo.f \
-#	${DR6}/module_efield_sunloc.f \
-#	${DR6}/module_fun_MLT.f \
-#	${DR6}/module_fun_MagLong.f \
-#	${DR6}/module_highlat_adjust.f \
-#	${DR6}/module_interp_poten.f \
-#	${DR6}/module_DerivPotential.f \
-#	${DR6}/module_LEGENDRE.f \
-#	${DR6}/module_EpotVal.f \
-#	${DR6}/module_GECMP.f \
+#	${DR6}/module_prep_fk.f \
+#	${DR6}/module_prep_pnm.f \
+#	${DR6}/module_prep_weimer.f \
 #	${DR6}/module_ReadCoef.f \
-#	${DR6}/module_highlat_getbnd.f \
+#	${DR6}/module_set_fkflfs.f \
+#	${DR6}/module_SetModel.f \
+#	${DR6}/module_sunloc.f \
 #	${DR6}/module_svbksb.f \
 #	${DR6}/module_svdcmp.f \
-#	${DR6}/module_bnd_sinus.f \
-#	${DR6}/module_GlobalElPotential.f \
-#	${DR6}/module_get_efield.f \
-#	${DR6}/module_magfield.f \
-#	${DR6}/module_sunloc.f \
-#	${DR6}/apex_sunloc.f \
 #	${DR6}/supim_exb.f
 #SRC6P	=\
-#	${DR6}/module_read_acoef.f \
+#	${DR6}/get_efield90km.f
 #	${DR6}/module_efield_init.f \
 #	${DR6}/module_eldyn.f      \
 #	${DR6}/module_init_eldyn.f \
-#       ${DR6}/module_cal_monthday.f \
+#	${DR6}/module_read_acoef.f \
 #	${DR6}/module_sub_eldyn.f  \
-#	${DR6}/get_efield90km.f
+# ${DR6}/module_cal_monthday.f \
 ## DR4: main driver
 #SRC4P	=\
 #	${DR4}/driver_ipe.f90

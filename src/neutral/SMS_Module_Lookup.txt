@@ -1,10 +1,1 @@
-module_decomp ../main/module_decomp_sms.f.tmp
-module_field_line_grid_mks ../main/module_field_line_grid_sms.f.tmp
-module_input_parameters ../main/module_input_parameters_sms.f.tmp
-module_io ../main/module_io.f90
-module_ipe_dimension ../main/module_IPE_dimension.f90
 module_neutral_mks ./module_neutral_sms.f.tmp
-module_open_file ../main/module_open_file.f90
-module_physical_constants ../main/module_physical_constants.f90
-module_precision ../main/module_precision.f90
-module_unit_conversion ../main/module_unit_conversion.f90

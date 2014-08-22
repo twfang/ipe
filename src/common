@@ -1,13 +1,18 @@
 # common Makefile
 
-INCS = -I$(TOP)/main -I$(TOP)/neutral -I$(TOP)/plasma -I$(TOP)/eldyn
-POBJ = $(filter-out module_decomp.o,$(addsuffix .o,$(basename $(PSRCS))))
-SOBJ = $(addsuffix .o,$(basename $(SSRCS)))
-SRCS = $(PSRCS) $(SSRCS)
+INCS   = -I$(TOP)/eldyn -I$(TOP)/main -I$(TOP)/neutral -I$(TOP)/plasma
+POBJ77 = $(addsuffix .o,$(basename $(filter %.f,                                 $(PSRCS))))
+POBJ90 = $(addsuffix .o,$(basename $(filter %.f90,$(filter-out module_decomp.f90,$(PSRCS)))))
+SOBJ77 = $(addsuffix .o,$(basename $(filter %.f,                                 $(SSRCS))))
+SOBJ90 = $(addsuffix .o,$(basename $(filter %.f90,                               $(SSRCS))))
+SRCS   = $(PSRCS) $(SSRCS)
 
-all: $(POBJ) $(SOBJ)
+all: $(POBJ77) $(POBJ90) $(SOBJ77) $(SOBJ90)
 
-$(POBJ): %.o: %.f90
+$(POBJ77) $(SOBJ77): %.o: %.f
+$(POBJ90) $(SOBJ90): %.o: %.f90
+
+$(POBJ77) $(POBJ90):
 ifeq ($(PARALLELISM),parallel)
 	$(PPP) $(PPP_FLAGS) -o $*_sms.f90 $<
 	$(ENVSET) && $(FCP) -c $(FFLAGS) $(INCS) $(SMSFLAGS) -o $@ $*_sms.f90
@@ -15,14 +20,11 @@ else
 	$(ENVSET) && $(FCS) -c $(FFLAGS) $(INCS) -o $@ $<
 endif
 
-%.o: %.f90
-	$(ENVSET) && $(FCS) -c $(FFLAGS) $(INCS) -o $@ $<
-
-%.o: %.f
+$(SOBJ77) $(SOBJ90):
 	$(ENVSET) && $(FCS) -c $(FFLAGS) $(INCS) -o $@ $<
 
 clean:
-	$(RM) *.mod *.o *_sms.f90 *.tmp Filepath Srcfiles
+	$(RM) *.mod *.o *_sms.f *_sms.f90 *.tmp *.ppptmp* *~ Filepath Srcfiles
 
 DEPENDENCIES: $(SRCS)
 	$(RM) Filepath Srcfiles

@@ -1,12 +1,6 @@
 module_decomp ./module_decomp_sms.f.tmp
-module_field_line_grid_mks ./module_field_line_grid_sms.f.tmp
-module_init_plasma_grid ./module_init_plasma_grid_sms.f.tmp
 module_input_parameters ./module_input_parameters_sms.f.tmp
-module_io ./module_io.f90
-module_ipe_dimension ./module_IPE_dimension.f90
-module_open_file ./module_open_file.f90
-module_open_output_files ./module_open_output_files_sms.f.tmp
-module_physical_constants ./module_physical_constants.f90
-module_precision ./module_precision.f90
+module_field_line_grid_mks ./module_field_line_grid_sms.f.tmp
 module_read_plasma_grid_global ./module_read_plasma_grid_global_sms.f.tmp
-module_unit_conversion ./module_unit_conversion.f90
+module_init_plasma_grid ./module_init_plasma_grid_sms.f.tmp
+module_open_output_files ./module_open_output_files_sms.f.tmp
