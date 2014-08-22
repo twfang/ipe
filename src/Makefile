@@ -1,6 +1,6 @@
 # IPE Makefile
 
-# Static/Unconditional/Default Variables
+# Static / Unconditional / Default variables
 
 DEBUG         = no
 DIRS          = main neutral flip eldyn plasma dummygptl
@@ -12,7 +12,7 @@ PPP_FLAGS     = --Fmodule=module_decomp --Free --comment --HaloSize=10
 TARGETS       = clean zeus_intel_parallel zeus_intel_serial zeus_lahey_serial
 TEST          = v18
 
-# Dynamic/Conditional Variables
+# Dynamic / Conditional variables
 
 EXE           = $(CURDIR)/../bin/ipe_${TEST}_$(MACHINE)_$(COMPILER)_$(PARALLELISM).exe
 FFLAGS        = $(OPT_FLAG) $(DEBUG_FLAGS) $(GPTL_INCFLAGS) $(GPTL_LDFLAGS)

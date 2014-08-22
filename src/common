@@ -1,5 +1,7 @@
 # common Makefile
 
+# Dynamic variables
+
 INCS   = $(addprefix -I$(TOP)/,$(DIRS))
 POBJ77 = $(addsuffix .o,$(basename $(filter %.f,                                 $(PSRCS))))
 POBJ90 = $(addsuffix .o,$(basename $(filter %.f90,$(filter-out module_decomp.f90,$(PSRCS)))))
@@ -7,10 +9,16 @@ SOBJ77 = $(addsuffix .o,$(basename $(filter %.f,                                
 SOBJ90 = $(addsuffix .o,$(basename $(filter %.f90,                               $(SSRCS))))
 SRCS   = $(PSRCS) $(SSRCS)
 
+# Default rule
+
 all: $(POBJ77) $(POBJ90) $(SOBJ77) $(SOBJ90)
+
+# Prerequisites for serial and parallel objects, respectively
 
 $(POBJ77) $(SOBJ77): %.o: %.f
 $(POBJ90) $(SOBJ90): %.o: %.f90
+
+# Rule for building parallel objects
 
 $(POBJ77) $(POBJ90):
 ifeq ($(PARALLELISM),parallel)
@@ -20,11 +28,12 @@ else
 	$(ENVSET) && $(FCS) -c $(FFLAGS) $(INCS) -o $@ $<
 endif
 
+# Rule for building serial objects
+
 $(SOBJ77) $(SOBJ90):
 	$(ENVSET) && $(FCS) -c $(FFLAGS) $(INCS) -o $@ $<
 
-clean:
-	$(RM) *.mod *.o *_sms.f *_sms.f90 *.tmp *.ppptmp* *~ Filepath Srcfiles
+# Rule for generating dependencies
 
 DEPENDENCIES: $(SRCS)
 	$(RM) Filepath Srcfiles
@@ -33,3 +42,8 @@ DEPENDENCIES: $(SRCS)
 	$(TOP)/mkDepends -m $(EXTRADEP) Filepath Srcfiles > $@
 
 -include DEPENDENCIES
+
+# Rule for cleaning
+
+clean:
+	$(RM) *.mod *.o *_sms.f *_sms.f90 *.tmp *.ppptmp* *~ Filepath Srcfiles
