@@ -2,8 +2,6 @@
 
 TOP=..
 
-TEST=v18
-
 PSRCS=flux_tube_solver.f90               \
       get_pvalue_dipole.f90              \
       get_sinim.f90                      \

@@ -24,6 +24,18 @@ SSRCS=module_close_files.f90             \
 
 include $(TOP)/common
 
+BIN  = $(TOP)/../bin/$(EXE)
+OBJS = $(wildcard $(addprefix ../,$(addsuffix /*.o,$(DIRS))))
+
+bin: $(BIN)
+
+$(BIN): $(OBJS) driver_ipe.f90
+ifeq ($(PARALLELISM),parallel)
+	$(ENVSET) && $(FCP) $(FFLAGS) $(INCS) -o $@ $^ $(SMSFLAGS) $(SMS_LDFLAGS)
+else
+	$(ENVSET) && $(FCS) $(FFLAGS) $(INCS) -o $@ $^
+endif
+
 module_decomp.o: module_decomp.f90
 ifeq ($(PARALLELISM),parallel)
 	$(PPP) $(filter-out --Fmodule=module_decomp,$(PPP_FLAGS)) -o $*_sms.f90 $<

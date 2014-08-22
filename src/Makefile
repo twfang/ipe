@@ -4,56 +4,56 @@
 
 CPP=/lib/cpp
 DEBUG=no
-GPTL_AUTOINST=no
-GPTL_HAVE_PAPI=no
+DIRS=main neutral flip eldyn plasma dummygptl
+#GPTL_AUTOINST=no
 GPTL_CPPFLAGS=-I../dummygptl
-GPTL_LDFLAGS=-L../../dummygptl -lgptl
+#GPTL_HAVE_PAPI=no
+GPTL_LDFLAGS=-L../dummygptl -lgptl
 GPTL_USE_GPTL=no
-GPTL_USE_PMPI=no
+#GPTL_USE_PMPI=no
 LDLIBS=-lm
 MAKETHREADS=8
 PPP_FLAGS=--Fmodule=module_decomp --Free --comment --HaloSize=10
 PROF=gprof
 TARGETS=zeus_intel_parallel zeus_intel_serial zeus_lahey_serial clean
+TEST=v18
 
 # Dynamic/Conditional Variables
 
 CPP_FLAGS=-traditional -P $(GPTL_CPPFLAGS)
+EXE=ipe_${TEST}_$(MACHINE)_$(COMPILER)_$(PARALLELISM).exe
 FFLAGS=$(OPT_FLAG) $(DEBUG_FLAGS) $(GPTL_CPPFLAGS) $(GPTL_LDFLAGS)
 LDFLAGS=$(OPT_FLAG) $(DEBUG_FLAGS)
 PARALLEL_MAKE=$(MAKE) -j $(MAKETHREADS)
 PPP=$(SMS)/bin/ppp
 SMS_LDFLAGS=-L$(SMS)/lib -lsms
-SMSFLAGS=-I $(SMS)/include
-
-TOP=$(CURDIR)
+SMSFLAGS=-I$(SMS)/include
 
 ifeq ($(MACHINE),zeus)
   ifeq ($(COMPILER),intel)
     ENVSET=module load intel mpt
     FCP=mpif90
     FCS=ifort
-    GPTL_LDFLAGS=-L/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/lib -lgptl_pmpi
     OPT_FLAG=-O3 -fp-model precise
     SMS=/contrib/acs/SMS/legacy_r616/zeus-intel-mpt
     ifeq ($(DEBUG),yes)
       DEBUG_FLAGS=-g -O0 -ftz -traceback -check bounds -fpe0
     endif
     ifeq ($(PARALLELISM),parallel)
-      ifeq ($(GPTL_USE_GPTL),yes)
-        GPTL_CPPFLAGS=-I/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/intel_mpi/include
-        ifeq ($(GPTL_USE_PMPI),no)
-          GPTL_LDFLAGS=-L/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/intel_mpi/lib -lgptl
-        endif
-      endif
+#     ifeq ($(GPTL_USE_GPTL),yes)
+#       GPTL_CPPFLAGS=
+##       ifeq ($(GPTL_USE_PMPI),no)
+##         GPTL_LDFLAGS=
+##       endif
+#     endif
     endif
     ifeq ($(PARALLELISM),serial)
-      ifeq ($(GPTL_USE_GPTL),yes)
-        GPTL_CPPFLAGS=-I/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/intel_nompi/include
-        ifeq ($(GPTL_USE_PMPI),no)
-          GPTL_LDFLAGS=-L/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/intel_nompi/lib -lgptl
-        endif
-      endif
+#     ifeq ($(GPTL_USE_GPTL),yes)
+#       GPTL_CPPFLAGS=
+##       ifeq ($(GPTL_USE_PMPI),no)
+##         GPTL_LDFLAGS=
+##       endif
+#     endif
     endif
   endif
   ifeq ($(COMPILER),lahey)
@@ -68,21 +68,23 @@ ifeq ($(MACHINE),zeus)
   endif
 endif
 
-ifeq ($(GPTL_AUTOINST),yes)
-  GPTL_LDFLAGS+=-finstrument-functions
-endif
+#ifeq ($(GPTL_AUTOINST),yes)
+# GPTL_LDFLAGS+=-finstrument-functions
+#endif
 
-ifeq ($(GPTL_HAVE_PAPI),yes)
-  GPTL_LDFLAGS+=-L/path/to/papi/lib -lpapi -lpfm
-endif
+#ifeq ($(GPTL_HAVE_PAPI),yes)
+# GPTL_LDFLAGS+=-L/path/to/papi/lib -lpapi -lpfm
+#endif
 
-VARS="ENVSET="$(ENVSET)" FCP="$(FCP)" FCS="$(FCS)" FFLAGS="$(FFLAGS)" PARALLELISM="$(PARALLELISM)" PPP="$(PPP)" PPP_FLAGS="$(PPP_FLAGS)" SMSFLAGS="$(SMSFLAGS)""
+VARS="DIRS="$(DIRS)" ENVSET="$(ENVSET)" FCP="$(FCP)" FCS="$(FCS)" FFLAGS="$(FFLAGS)" PARALLELISM="$(PARALLELISM)" PPP="$(PPP)" PPP_FLAGS="$(PPP_FLAGS)" SMSFLAGS="$(SMSFLAGS)""
 
 # Functions
 
 USAGE=$(error Valid targets: $(TARGETS))
 
 # Targets
+
+.PHONY: clean
 
 all:
 	$(call $(USAGE))
@@ -102,16 +104,12 @@ ipe:
 	$(MAKE) -C neutral   "$(VARS)"
 	$(MAKE) -C flip      "$(VARS)"
 	$(MAKE) -C eldyn     "$(VARS)"
-	$(MAKE) -C plasma    "$(VARS)"
+	$(MAKE) -C plasma    "$(VARS)" TEST="$(TEST)"
 	$(MAKE) -C dummygptl "$(VARS)"
+	$(MAKE) -C main bin  "$(VARS)" EXE="$(EXE)" SMS_LDFLAGS="$(SMS_LDFLAGS)"
 
 clean:
-	$(MAKE) -C main      clean
-	$(MAKE) -C neutral   clean
-	$(MAKE) -C flip      clean
-	$(MAKE) -C eldyn     clean
-	$(MAKE) -C plasma    clean
-	$(MAKE) -C dummygptl clean
+	$(foreach x,$(DIRS),$(MAKE) -C $(x) clean;)
 
 #TEST=v18
 #PACKAGE=../bin/ipe_${TEST}.$(COMPILER)$(PAR).exe

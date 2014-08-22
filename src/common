@@ -1,6 +1,6 @@
 # common Makefile
 
-INCS   = -I$(TOP)/eldyn -I$(TOP)/main -I$(TOP)/neutral -I$(TOP)/plasma
+INCS   = $(addprefix -I$(TOP)/,$(DIRS))
 POBJ77 = $(addsuffix .o,$(basename $(filter %.f,                                 $(PSRCS))))
 POBJ90 = $(addsuffix .o,$(basename $(filter %.f90,$(filter-out module_decomp.f90,$(PSRCS)))))
 SOBJ77 = $(addsuffix .o,$(basename $(filter %.f,                                 $(SSRCS))))
