@@ -98,18 +98,20 @@ zeus_lahey_serial:
 
 ipe:
 	$(if $(filter 0,$(MAKELEVEL)),$(call USAGE))
-	$(MAKE) -C main    "$(VARS)" EXTRADEP="-d module_decomp.o"
-	$(MAKE) -C neutral "$(VARS)"
-	$(MAKE) -C flip    "$(VARS)"
-	$(MAKE) -C eldyn   "$(VARS)"
-	$(MAKE) -C plasma  "$(VARS)"
+	$(MAKE) -C main      "$(VARS)" EXTRADEP="-d module_decomp.o"
+	$(MAKE) -C neutral   "$(VARS)"
+	$(MAKE) -C flip      "$(VARS)"
+	$(MAKE) -C eldyn     "$(VARS)"
+	$(MAKE) -C plasma    "$(VARS)"
+	$(MAKE) -C dummygptl "$(VARS)"
 
 clean:
-	$(MAKE) -C main    clean
-	$(MAKE) -C neutral clean
-	$(MAKE) -C flip    clean
-	$(MAKE) -C eldyn   clean
-	$(MAKE) -C plasma  clean
+	$(MAKE) -C main      clean
+	$(MAKE) -C neutral   clean
+	$(MAKE) -C flip      clean
+	$(MAKE) -C eldyn     clean
+	$(MAKE) -C plasma    clean
+	$(MAKE) -C dummygptl clean
 
 #TEST=v18
 #PACKAGE=../bin/ipe_${TEST}.$(COMPILER)$(PAR).exe

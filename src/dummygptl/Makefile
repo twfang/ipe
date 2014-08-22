@@ -1,13 +1,18 @@
-SRCS = $(shell ls *.F90)
+# dummygptl Makefile
+
+TOP=..
+
+ARCV = libgptl.a
+SRCS = $(wildcard *.F90)
 OBJS = $(addsuffix .o, $(basename $(SRCS)))
 
-all: $(OBJS)
+all: $(ARCV)
 
-.SUFFIXES:
-.SUFFIXES: .o .F90
+$(ARCV): $(OBJS)
+	ar rc $@ $^
 
-.F90.o:
-	$(FC) -c $<
-	ar rc libgptl.a *.o
+%.o: %.F90
+	$(ENVSET) && $(FCS) -c $<
+
 clean:
 	$(RM) *.o *.a
