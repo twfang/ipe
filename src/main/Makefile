@@ -22,14 +22,14 @@ SSRCS=module_close_files.f90             \
       module_precision.f90               \
       module_unit_conversion.f90
 
+EXTRADEP = "-d module_decomp.o"
+OBJS     = $(wildcard $(addprefix ../,$(addsuffix /*.o,$(DIRS))))
+
 include $(TOP)/common
 
-BIN  = $(TOP)/../bin/$(EXE)
-OBJS = $(wildcard $(addprefix ../,$(addsuffix /*.o,$(DIRS))))
+exe: $(EXE)
 
-bin: $(BIN)
-
-$(BIN): $(OBJS) driver_ipe.f90
+$(EXE): $(OBJS) driver_ipe.f90
 ifeq ($(PARALLELISM),parallel)
 	$(ENVSET) && $(FCP) $(FFLAGS) $(INCS) -o $@ $^ $(SMS_INCFLAGS) $(SMS_LDFLAGS)
 else

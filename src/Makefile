@@ -6,16 +6,15 @@ DEBUG         = no
 DIRS          = main neutral flip eldyn plasma dummygptl
 GPTL_INCFLAGS = -I../dummygptl
 GPTL_LDFLAGS  = -L../dummygptl -lgptl
-GPTL_USE_GPTL = no
+GPTL_USE_GPTL = yes
 MAKETHREADS   = 8
 PPP_FLAGS     = --Fmodule=module_decomp --Free --comment --HaloSize=10
-PROF          = gprof
-TARGETS       = zeus_intel_parallel zeus_intel_serial zeus_lahey_serial clean
+TARGETS       = clean zeus_intel_parallel zeus_intel_serial zeus_lahey_serial
 TEST          = v18
 
 # Dynamic/Conditional Variables
 
-EXE           = ipe_${TEST}_$(MACHINE)_$(COMPILER)_$(PARALLELISM).exe
+EXE           = $(CURDIR)/../bin/ipe_${TEST}_$(MACHINE)_$(COMPILER)_$(PARALLELISM).exe
 FFLAGS        = $(OPT_FLAG) $(DEBUG_FLAGS) $(GPTL_INCFLAGS) $(GPTL_LDFLAGS)
 PARALLEL_MAKE = $(MAKE) -j $(MAKETHREADS)
 PPP           = $(SMS)/bin/ppp
@@ -33,12 +32,16 @@ ifeq ($(MACHINE),zeus)
       DEBUG_FLAGS = -g -O0 -ftz -traceback -check bounds -fpe0
     endif
     ifeq ($(PARALLELISM),parallel)
-#     ifeq ($(GPTL_USE_GPTL),yes)
-#     endif
+      ifeq ($(GPTL_USE_GPTL),yes)
+        GPTL_INCFLAGS = -I/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/intel_mpi/include
+        GPTL_LDFLAGS  = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/intel_mpi/lib -lgptl
+      endif
     endif
     ifeq ($(PARALLELISM),serial)
-#     ifeq ($(GPTL_USE_GPTL),yes)
-#     endif
+      ifeq ($(GPTL_USE_GPTL),yes)
+        GPTL_INCFLAGS = -I/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/intel_nompi/include
+        GPTL_LDFLAGS  = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/intel_nompi/lib -lgptl
+      endif
     endif
   endif
   ifeq ($(COMPILER),lahey)
@@ -46,22 +49,30 @@ ifeq ($(MACHINE),zeus)
     FCP    = mpif90
     FCS    = lf95
     SMS    = /contrib/acs/SMS/legacy_r616/zeus-lahey-mpt
-    ifeq ($(PARALLELISM),parallel)
-    endif
-    ifeq ($(PARALLELISM),serial)
+    ifeq ($(DEBUG),yes)
+      DEBUG_FLAGS = --chk -g --trap --trace --info
     endif
   endif
 endif
 
-VARS="DIRS="$(DIRS)" ENVSET="$(ENVSET)" FCP="$(FCP)" FCS="$(FCS)" FFLAGS="$(FFLAGS)" PARALLELISM="$(PARALLELISM)" PPP="$(PPP)" PPP_FLAGS="$(PPP_FLAGS)" SMS_INCFLAGS="$(SMS_INCFLAGS)""
+VARS = DIRS="$(DIRS)"                 \
+       ENVSET="$(ENVSET)"             \
+       EXE="$(EXE)"                   \
+       FCP="$(FCP)"                   \
+       FCS="$(FCS)"                   \
+       FFLAGS="$(FFLAGS)"             \
+       PARALLELISM="$(PARALLELISM)"   \
+       PPP="$(PPP)"                   \
+       PPP_FLAGS="$(PPP_FLAGS)"       \
+       SMS_INCFLAGS="$(SMS_INCFLAGS)" \
+       SMS_LDFLAGS="$(SMS_LDFLAGS)"   \
+       TEST="$(TEST)"
 
 # Functions
 
 USAGE=$(error Valid targets: $(TARGETS))
 
 # Targets
-
-.PHONY: clean
 
 all:
 	$(call $(USAGE))
@@ -77,33 +88,8 @@ zeus_lahey_serial:
 
 ipe:
 	$(if $(filter 0,$(MAKELEVEL)),$(call USAGE))
-	$(MAKE) -C main      "$(VARS)" EXTRADEP="-d module_decomp.o"
-	$(MAKE) -C neutral   "$(VARS)"
-	$(MAKE) -C flip      "$(VARS)"
-	$(MAKE) -C eldyn     "$(VARS)"
-	$(MAKE) -C plasma    "$(VARS)" TEST="$(TEST)"
-	$(MAKE) -C dummygptl "$(VARS)"
-	$(MAKE) -C main bin  "$(VARS)" EXE="$(EXE)" SMS_LDFLAGS="$(SMS_LDFLAGS)"
+	$(foreach x,$(DIRS),$(MAKE) -C $(x) $(VARS);)
+	$(MAKE) -C main exe $(VARS)
 
 clean:
 	$(foreach x,$(DIRS),$(MAKE) -C $(x) clean;)
-
-#tar:
-#	@echo $(PACKAGE)-$(VER) > .package
-#	@$(RM) -r `cat .package`
-#	@mkdir `cat .package`
-#	@ln $(FILES) `cat .package`
-#	tar cvf - `cat .package` | gzip -9 > `cat .package`.tar.gz
-#	@$(RM) -r `cat .package` .package
-#
-#zip:
-#	zip -9 $(PACKAGE)-$(VER).zip $(FILES)
-#
-#
-#prof: run
-#	$(PROF) $(PACKAGE) | less
-#
-#run: all
-#	./$(PACKAGE) < sample-data | less
-#
-
