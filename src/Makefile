@@ -102,14 +102,14 @@ ipe:
 	$(MAKE) -C neutral "$(VARS)"
 	$(MAKE) -C flip    "$(VARS)"
 	$(MAKE) -C eldyn   "$(VARS)"
-#	$(MAKE) -C plasma  "$(VARS)"
+	$(MAKE) -C plasma  "$(VARS)"
 
 clean:
-	$(MAKE) -C main clean
+	$(MAKE) -C main    clean
 	$(MAKE) -C neutral clean
-	$(MAKE) -C flip clean
-	$(MAKE) -C eldyn clean
-	$(MAKE) -C plasma clean
+	$(MAKE) -C flip    clean
+	$(MAKE) -C eldyn   clean
+	$(MAKE) -C plasma  clean
 
 #TEST=v18
 #PACKAGE=../bin/ipe_${TEST}.$(COMPILER)$(PAR).exe
