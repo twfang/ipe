@@ -31,7 +31,7 @@ bin: $(BIN)
 
 $(BIN): $(OBJS) driver_ipe.f90
 ifeq ($(PARALLELISM),parallel)
-	$(ENVSET) && $(FCP) $(FFLAGS) $(INCS) -o $@ $^ $(SMSFLAGS) $(SMS_LDFLAGS)
+	$(ENVSET) && $(FCP) $(FFLAGS) $(INCS) -o $@ $^ $(SMS_INCFLAGS) $(SMS_LDFLAGS)
 else
 	$(ENVSET) && $(FCS) $(FFLAGS) $(INCS) -o $@ $^
 endif
@@ -39,7 +39,7 @@ endif
 module_decomp.o: module_decomp.f90
 ifeq ($(PARALLELISM),parallel)
 	$(PPP) $(filter-out --Fmodule=module_decomp,$(PPP_FLAGS)) -o $*_sms.f90 $<
-	$(ENVSET) && $(FCP) -c $(FFLAGS) $(SMSFLAGS) -o $@ $*_sms.f90
+	$(ENVSET) && $(FCP) -c $(FFLAGS) $(SMS_INCFLAGS) -o $@ $*_sms.f90
 else
 	$(ENVSET) && $(FCS) -c $(FFLAGS) -o $@ $<
 endif

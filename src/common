@@ -15,7 +15,7 @@ $(POBJ90) $(SOBJ90): %.o: %.f90
 $(POBJ77) $(POBJ90):
 ifeq ($(PARALLELISM),parallel)
 	$(PPP) $(PPP_FLAGS) -o $*_sms.f90 $<
-	$(ENVSET) && $(FCP) -c $(FFLAGS) $(INCS) $(SMSFLAGS) -o $@ $*_sms.f90
+	$(ENVSET) && $(FCP) -c $(FFLAGS) $(INCS) $(SMS_INCFLAGS) -o $@ $*_sms.f90
 else
 	$(ENVSET) && $(FCS) -c $(FFLAGS) $(INCS) -o $@ $<
 endif
