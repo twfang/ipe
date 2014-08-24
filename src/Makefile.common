@@ -3,11 +3,12 @@
 # Dynamic variables
 
 INCS   = $(addprefix -I$(TOP)/,$(DIRS))
-POBJ77 = $(addsuffix .o,$(basename $(filter %.f,                                 $(PSRCS))))
-POBJ90 = $(addsuffix .o,$(basename $(filter %.f90,$(filter-out module_decomp.f90,$(PSRCS)))))
-SOBJ77 = $(addsuffix .o,$(basename $(filter %.f,                                 $(SSRCS))))
-SOBJ90 = $(addsuffix .o,$(basename $(filter %.f90,                               $(SSRCS))))
-SRCS   = $(PSRCS) $(SSRCS)
+POBJ77 = $(addsuffix .o,$(basename $(filter %.f,  $(PSRCS))))
+POBJ90 = $(addsuffix .o,$(basename $(filter %.f90,$(PSRCS))))
+SOBJ77 = $(addsuffix .o,$(basename $(filter %.f,  $(SSRCS))))
+SOBJ90 = $(addsuffix .o,$(basename $(filter %.f90,$(SSRCS))))
+SRCS   = $(strip $(PSRCS) $(SSRCS))
+VPATH  = $(shell echo $(addprefix $(TOP)/,$(DIRS)) | sed 's/ /:/g')
 
 .PHONY: clean objs
 
@@ -24,7 +25,7 @@ $(POBJ90) $(SOBJ90): %.o: %.f90
 
 $(POBJ77) $(POBJ90):
 ifeq ($(PARALLELISM),parallel)
-	$(PPP) $(PPP_FLAGS) -o $*_sms.f90 $<
+	$(PPP) $(shell echo $(PPP_FLAGS) | sed 's/--Fmodule=$*//') -o $*_sms.f90 $<
 	$(ENVSET) && $(FCP) -c $(FFLAGS) $(INCS) $(SMS_INCFLAGS) -o $@ $*_sms.f90
 else
 	$(ENVSET) && $(FCS) -c $(FFLAGS) $(INCS) -o $@ $<
@@ -41,7 +42,7 @@ DEPENDENCIES: $(SRCS)
 	$(RM) Filepath Srcfiles
 	echo "." > Filepath
 	echo $(SRCS) | sed 's/  */\n/g' > Srcfiles
-	$(TOP)/mkDepends -m $(EXTRADEP) Filepath Srcfiles > $@
+	$(TOP)/mkDepends -m -d module_decomp.o Filepath Srcfiles > $@
 
 -include DEPENDENCIES
 

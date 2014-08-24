@@ -1,1 +1,1 @@
-cmd: make zeus_intel_serial
+cmd: make clean && make zeus_intel_serial

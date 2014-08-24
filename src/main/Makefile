@@ -22,14 +22,4 @@ SSRCS = module_close_files.f90             \
         module_precision.f90               \
         module_unit_conversion.f90
 
-EXTRADEP = -d module_decomp.o
-
 include $(TOP)/Makefile.common
-
-module_decomp.o: module_decomp.f90
-ifeq ($(PARALLELISM),parallel)
-	$(PPP) $(filter-out --Fmodule=module_decomp,$(PPP_FLAGS)) -o $*_sms.f90 $<
-	$(ENVSET) && $(FCP) -c $(FFLAGS) $(SMS_INCFLAGS) -o $@ $*_sms.f90
-else
-	$(ENVSET) && $(FCS) -c $(FFLAGS) -o $@ $<
-endif

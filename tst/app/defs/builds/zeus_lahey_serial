@@ -1,1 +1,1 @@
-cmd: make zeus_lahey_serial
+cmd: make clean && make zeus_lahey_serial

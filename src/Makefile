@@ -7,7 +7,7 @@ DIRS          = main neutral flip eldyn plasma dummygptl driver
 GPTL_INCFLAGS = -I../dummygptl
 GPTL_LDFLAGS  = -L../dummygptl -lgptl
 GPTL_USE_GPTL = yes
-MAKETHREADS   = 8
+MAKEJOBS      = 8
 PPP_FLAGS     = --Fmodule=module_decomp --Free --comment --HaloSize=10
 TARGETS       = clean zeus_intel_parallel zeus_intel_serial zeus_lahey_serial
 TEST          = v18
@@ -15,8 +15,8 @@ TEST          = v18
 # Dynamic / Conditional variables
 
 EXE           = $(CURDIR)/../bin/ipe_${TEST}_$(MACHINE)_$(COMPILER)_$(PARALLELISM).exe
-FFLAGS        = $(OPT_FLAG) $(DEBUG_FLAGS) $(GPTL_INCFLAGS) $(GPTL_LDFLAGS)
-PARALLEL_MAKE = $(MAKE) -j $(MAKETHREADS)
+FFLAGS        = $(strip $(OPT_FLAG) $(DEBUG_FLAGS) $(GPTL_INCFLAGS) $(GPTL_LDFLAGS))
+PARALLEL_MAKE = $(MAKE) -j $(MAKEJOBS)
 PPP           = $(SMS)/bin/ppp
 SMS_INCFLAGS  = -I$(SMS)/include
 SMS_LDFLAGS   = -L$(SMS)/lib -lsms
@@ -81,17 +81,17 @@ all:
 	$(call $(USAGE))
 
 zeus_intel_parallel:
-	$(PARALLEL_MAKE) ipe MACHINE=zeus COMPILER=intel PARALLELISM=parallel
+	$(MAKE) ipe MACHINE=zeus COMPILER=intel PARALLELISM=parallel
 
 zeus_intel_serial:
-	$(PARALLEL_MAKE) ipe MACHINE=zeus COMPILER=intel PARALLELISM=serial
+	$(MAKE) ipe MACHINE=zeus COMPILER=intel PARALLELISM=serial
 
 zeus_lahey_serial:
-	$(PARALLEL_MAKE) ipe MACHINE=zeus COMPILER=lahey PARALLELISM=serial
+	$(MAKE) ipe MACHINE=zeus COMPILER=lahey PARALLELISM=serial
 
 ipe:
 	$(if $(filter 0,$(MAKELEVEL)),$(call USAGE))
-	$(foreach x,$(DIRS),$(MAKE) -C $(x) $(VARS);)
+	$(foreach x,$(DIRS),$(PARALLEL_MAKE) -C $(x) $(VARS) &&) true
 
 clean:
-	$(foreach x,$(DIRS),$(MAKE) -C $(x) clean;)
+	$(foreach x,$(DIRS),$(MAKE) -C $(x) clean &&) true
