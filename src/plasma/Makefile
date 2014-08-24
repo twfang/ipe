@@ -1,6 +1,6 @@
 # plasma Makefile
 
-TOP=..
+TOP = ..
 
 PSRCS = flux_tube_solver.f90               \
         get_pvalue_dipole.f90              \
@@ -19,4 +19,4 @@ PSRCS = flux_tube_solver.f90               \
         module_sub_plasma.f90              \
         read_vexb.f90
 
-include $(TOP)/common
+include $(TOP)/Makefile.common

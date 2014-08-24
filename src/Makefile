@@ -3,7 +3,7 @@
 # Static / Unconditional / Default variables
 
 DEBUG         = no
-DIRS          = main neutral flip eldyn plasma dummygptl
+DIRS          = main neutral flip eldyn plasma dummygptl driver
 GPTL_INCFLAGS = -I../dummygptl
 GPTL_LDFLAGS  = -L../dummygptl -lgptl
 GPTL_USE_GPTL = yes
@@ -27,7 +27,7 @@ ifeq ($(MACHINE),zeus)
     FCP      = mpif90
     FCS      = ifort
     OPT_FLAG = -O3 -fp-model precise
-    SMS      = /contrib/acs/SMS/legacy_r616/zeus-intel-mpt
+    SMS      = /contrib/acs/SMS/legacy_r617/zeus-intel-mpt
     ifeq ($(DEBUG),yes)
       DEBUG_FLAGS = -g -O0 -ftz -traceback -check bounds -fpe0
     endif
@@ -48,14 +48,15 @@ ifeq ($(MACHINE),zeus)
     ENVSET = module load lahey mpt
     FCP    = mpif90
     FCS    = lf95
-    SMS    = /contrib/acs/SMS/legacy_r616/zeus-lahey-mpt
+    SMS    = /contrib/acs/SMS/legacy_r617/zeus-lahey-mpt
     ifeq ($(DEBUG),yes)
       DEBUG_FLAGS = --chk -g --trap --trace --info
     endif
   endif
 endif
 
-VARS = DIRS="$(DIRS)"                 \
+VARS =                                \
+       DIRS="$(DIRS)"                 \
        ENVSET="$(ENVSET)"             \
        EXE="$(EXE)"                   \
        FCP="$(FCP)"                   \
@@ -74,6 +75,8 @@ USAGE=$(error Valid targets: $(TARGETS))
 
 # Targets
 
+.PHONY: $(TARGETS) ipe
+
 all:
 	$(call $(USAGE))
 
@@ -89,7 +92,6 @@ zeus_lahey_serial:
 ipe:
 	$(if $(filter 0,$(MAKELEVEL)),$(call USAGE))
 	$(foreach x,$(DIRS),$(MAKE) -C $(x) $(VARS);)
-	$(MAKE) -C main exe $(VARS)
 
 clean:
 	$(foreach x,$(DIRS),$(MAKE) -C $(x) clean;)

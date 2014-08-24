@@ -1,12 +1,11 @@
 # flip Makefile
 
-TOP=..
+TOP = ..
 
 SSRCS=CMINOR.f                       \
       CTIPE-int.f                    \
       ELECXS.f                       \
       FLIP_GRID.f                    \
-      get_divdrift_velocity.f        \
       initialize_module_parameters.f \
       INIT-PROFILES.f                \
       KEMPRN.f                       \
@@ -22,4 +21,4 @@ SSRCS=CMINOR.f                       \
       RSPRIM.f                       \
       RSTEMC_EXB.f
 
-include $(TOP)/common
+include $(TOP)/Makefile.common

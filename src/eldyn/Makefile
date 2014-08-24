@@ -1,6 +1,6 @@
 # eldyn Makefile
 
-TOP=..
+TOP = ..
 
 PSRCS = get_efield90km.f           \
         module_cal_monthday.f      \
@@ -50,4 +50,4 @@ SSRCS = apex_sunloc.f              \
         module_svdcmp.f            \
         supim_exb.f
 
-include $(TOP)/common
+include $(TOP)/Makefile.common

@@ -1,6 +1,6 @@
 # dummygptl Makefile
 
-TOP=..
+TOP = ..
 
 ARCV = libgptl.a
 SRCS = $(wildcard *.F90)

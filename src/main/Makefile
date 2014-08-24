@@ -1,6 +1,6 @@
 # main Makefile
 
-TOP=..
+TOP = ..
 
 PSRCS = allocate_arrays.f90                \
         get_flip_grid.f90                  \
@@ -23,18 +23,8 @@ SSRCS = module_close_files.f90             \
         module_unit_conversion.f90
 
 EXTRADEP = -d module_decomp.o
-OBJS     = $(wildcard $(addprefix ../,$(addsuffix /*.o,$(DIRS))))
 
-include $(TOP)/common
-
-exe: $(EXE)
-
-$(EXE): $(OBJS) driver_ipe.f90
-ifeq ($(PARALLELISM),parallel)
-	$(ENVSET) && $(FCP) $(FFLAGS) $(INCS) -o $@ $^ $(SMS_INCFLAGS) $(SMS_LDFLAGS)
-else
-	$(ENVSET) && $(FCS) $(FFLAGS) $(INCS) -o $@ $^
-endif
+include $(TOP)/Makefile.common
 
 module_decomp.o: module_decomp.f90
 ifeq ($(PARALLELISM),parallel)
