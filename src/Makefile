@@ -2,7 +2,6 @@
 
 # Static / Unconditional / Default variables
 
-DEBUG         = no
 DIRS          = main neutral flip eldyn plasma dummygptl driver
 GPTL_INCFLAGS = -I../dummygptl
 GPTL_LDFLAGS  = -L../dummygptl -lgptl
@@ -20,6 +19,10 @@ PARALLEL_MAKE = $(MAKE) -j $(MAKEJOBS)
 PPP           = $(SMS)/bin/ppp
 SMS_INCFLAGS  = -I$(SMS)/include
 SMS_LDFLAGS   = -L$(SMS)/lib -lsms
+
+ifndef DEBUG
+  DEBUG = no
+endif
 
 ifeq ($(MACHINE),zeus)
   ifeq ($(COMPILER),intel)
