@@ -37,10 +37,11 @@ mkdir $rundir
 echo Created $rundir
 cd  $rundir
 if ( $par == 'parallel' ) then
-  cp ../../bin/ipe_v18.ifortsms.exe .
+  set exe = ipe_v18_zeus_intel_parallel.exe
 else
-  cp ../../bin/ipe_v18.ifort.exe .
+  set exe = ipe_v18_zeus_intel_serial.exe
 endif
+cp ../../bin/$exe .
 cp ../coef*                    .
 cp ../GPTLnamelist             .
 cp ../SMSnamelist              .
@@ -126,9 +127,9 @@ cat << EOF >! runscript
   cat /proc/cpuinfo
   if ($par == 'parallel') then
     module load mpt
-    set cmd = "time mpiexec_mpt -np $compute_tasks ./ipe_v18.ifortsms.exe"
+    set cmd = "time mpiexec_mpt -np $compute_tasks ./$exe"
   else
-    set cmd = "time ./ipe_v18.ifort.exe"
+    set cmd = "time ./$exe"
   endif
   module list
   echo "running \$cmd" > output
