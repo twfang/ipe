@@ -1,0 +1,159 @@
+#!/bin/bash
+
+# Control variables
+
+sw_grid=0
+sw_neutral=1
+test=v18
+
+# Functions
+
+compiler_check() {
+  test -z "$1" && fail "$0: No list of valid compilers provided."
+  test -z "$2" && fail "$0: No compiiler name specified."
+  test -z "$3" && fail "$0: No machine name specified."
+  echo $1 | grep -q $2 || usage "$scr: Machine $3 supports compilers: $1"
+}
+
+fail() {
+  test -n "$1" && echo $1
+  exit 1
+}
+
+linksafe() {
+  test -z "$1" && fail "$0: No target supplied."
+  test -e "$1" || fail "$0: No such target: $1."
+  test -z "$2" && link="." || link="$2"
+  ln -s $1 $link
+}
+
+runscript_zeus() {
+  echo "#!/bin/bash"
+  echo "#PBS -A $acct"
+  echo "#PBS -d $PWD"
+  echo "#PBS -j oe"
+  echo "#PBS -l procs=$tasks"
+  echo "#PBS -l walltime=$queue_time"
+  echo "#PBS -q $queue"
+  echo "#PBS -W umask=022"
+  echo "export MPI_BUFS_PER_HOST=2048 MPI_BUFS_PER_PROC=256"
+  echo "$(../../src/modcmd $machine $compiler)"
+  echo "module list"
+  test $parallelism == parallel && extra="mpiexec_mpt -np $tasks "
+  echo "time $extra./$(basename $exe) >output 2>&1 && echo 'ipe finished' && exit 0"
+  echo "echo 'ipe failed' && exit 23"
+}
+
+usage() {
+  test -n "$1" && echo -e "\n$1"
+  echo
+  echo "USAGE: ipesub <machine> <compiler> <parallelism> [tasks]"
+  echo
+  echo "Where: machine     is one of: $machines"
+  echo "       compiler    is one of: $compilers (valid values depend on <machine>)"
+  echo "       parallelism is one of: $parallelisms"
+  echo "       tasks       is the number of compute tasks for parallel runs (minimum 2)"
+  echo
+  exit 1
+}
+
+# Set the script name, for use in error messages.
+
+scr=$(basename $0)
+
+# Set up some lists of valid options for error checking.
+
+compilers="cray intel lahey pgi"
+machines="trillian zeus"
+parallelisms="parallel serial"
+
+# Set variables for command-line arguments.
+
+machine=$1
+compiler=$2
+parallelism=$3
+tasks=$4
+
+# Ensure that mandatory arguments were supplied.
+
+test -z "$machine" -o -z "$compiler" -o -z "$parallelism" && usage
+
+# Error-check the supplied command-line arguments.
+
+echo $machines | grep -q $machine || usage "$scr: Unknown machine '$machine'."
+echo $compilers | grep -q $compiler || usage "$scr: Unknown compiler '$compiler'."
+echo $parallelisms | grep -q $parallelism || usage "$scr: Unknown parallelism '$parallelism'."
+test $parallelism == parallel -a -z "$tasks" && usage "$scr: The <tasks> option is required for parallel runs."
+test $parallelism == serial -a -n "$tasks" && usage "$scr: No <tasks> option allowed for serial runs."
+test $parallelism == parallel && test $tasks -lt 2 && usage "$scr: Parallel jobs require at least 2 tasks."
+
+# Set tasks=1 for serial runs.
+
+test $parallelism == serial && tasks=1
+
+# Set variables based on machine and compiler.
+
+case $machine in
+  "zeus")
+    compiler_check "intel lahey" $compiler $machine
+#   acct=swpc
+    acct=fim
+    datadir=/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/data
+    gridir=/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/grid
+    mpi=mpt
+    queue=batch
+    queue_cmd=qsub
+    queue_time=00:20:00
+    winddir=/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/reu/tmp20130717reu/bkup20140130
+    case $sw_grid in
+      0) gridfile=/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/data/ipe_grid ;;
+      1) gridfile=$gridir/apex/GIP_apex_coords_global_lowres_new20120705                         ;;
+      2) gridfile=$gridir/apex/GIP_apex_coords_global_lowres_new_2dynamo20120709                 ;;
+      3) gridfile=$gridir/tldp/GIP_apex_coords_global_lowres_new_tilt20120709                    ;;
+      *) fail "$0: Grid ID '$sw_grid' unknown."                                                  ;;
+    esac
+    ;;
+  "trillian")
+    compiler_check "cray pgi" $compiler $machine
+    ;;
+esac
+
+pre=ipe_${test}_${machine}_${compiler}_${parallelism}
+exe=../bin/${pre}.exe
+test -x $exe || fail "$0: Cannot find executable '$exe'."
+test $parallelism == serial && jobname=ipe_s || jobname=ipe_$tasks
+
+# Allow override of data directory or queue name via the IPEDATA and IPEQUEUE
+# environment variables, respectively.
+
+test -n "$IPEDATA" && datadir=$IPEDATA
+test -n "$IPEQUEUE" && queue=$IPEQUEUE
+
+# Create unique run directory and copy/link files into it.
+
+rundir=$(date +%s)_$pre
+mkdir $rundir || fail
+echo Created run directory: $rundir
+for x in $exe coef* GPTLnamelist IPE.inp load_balance_groups1 SMSnamelist wei96.cofcnts; do
+  cp $x $rundir || fail
+done
+linksafe $gridfile $rundir/ipe_grid
+linksafe $datadir/ut_rec $rundir/stup_ut_rec
+for j in $(seq 0 11); do
+  test $j -lt 10 && pad=0 || pad=
+  linksafe $datadir/plasma${pad}${j} $rundir/stup${pad}${j}
+done
+if [ $sw_neutral -eq 3 ]; then
+  linksafe $winddir/ut_input $rundir/ut_input2009017
+  linksafe $winddir/wind_input $rundir/wind_input2009017
+fi
+
+# Enter the run directory, edit SMSnamelist, create and submit the run script.
+
+cd $rundir || fail
+if [ $parallelism == parallel ]; then
+  ../../tst/nml -i SMSnamelist -o SMSnamelist -s smsnamelist:process_layout=1,$tasks || fail
+fi
+echo "$(runscript_$machine)" > runscript
+chmod 755 runscript
+$queue_cmd runscript

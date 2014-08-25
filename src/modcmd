@@ -1,0 +1,40 @@
+#!/bin/sh
+
+unknown() {
+  echo "Unknown compiler '$2' for machine '$1'."
+  exit 1
+}
+
+usage() {
+  echo "USAGE: $(basename $0) <machine> <compiler>"
+  exit 1
+}
+
+test -z "$1" -o -z "$2" && usage
+
+case $1 in
+  "trillian")
+    case $2 in
+      "cray")
+        echo 'module switch $(module list 2>&1 | grep PrgEnv | sed 's/.*\(PrgEnv[^/]*\).*/\1/') PrgEnv-cray'
+          ;;
+      "pgi")
+        echo 'module switch $(module list 2>&1 | grep PrgEnv | sed 's/.*\(PrgEnv[^/]*\).*/\1/') PrgEnv-pgi'
+          ;;
+      *) unknown $1 $2
+        ;;
+    esac
+    ;;
+  "zeus")
+    case $2 in
+      "intel")
+        echo 'module purge && module load intel mpt'
+          ;;
+      "lahey")
+        echo 'module purge && module load lahey mpt'
+          ;;
+      *) unknown $1 $2
+        ;;
+    esac
+    ;;
+esac

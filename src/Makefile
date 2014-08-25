@@ -26,7 +26,7 @@ endif
 
 ifeq ($(MACHINE),zeus)
   ifeq ($(COMPILER),intel)
-    ENVSET   = module load intel mpt
+    MODCMD   = $(shell ./modcmd zeus intel)
     FCP      = mpif90
     FCS      = ifort
     OPT_FLAG = -O3 -fp-model precise
@@ -48,7 +48,7 @@ ifeq ($(MACHINE),zeus)
     endif
   endif
   ifeq ($(COMPILER),lahey)
-    ENVSET = module load lahey mpt
+    MODCMD = $(shell ./modcmd zeus lahey)
     FCP    = mpif90
     FCS    = lf95
     SMS    = /contrib/acs/SMS/legacy_r617/zeus-lahey-mpt
@@ -60,11 +60,11 @@ endif
 
 VARS =                                \
        DIRS="$(DIRS)"                 \
-       ENVSET="$(ENVSET)"             \
        EXE="$(EXE)"                   \
        FCP="$(FCP)"                   \
        FCS="$(FCS)"                   \
        FFLAGS="$(FFLAGS)"             \
+       MODCMD="$(MODCMD)"             \
        PARALLELISM="$(PARALLELISM)"   \
        PPP="$(PPP)"                   \
        PPP_FLAGS="$(PPP_FLAGS)"       \
