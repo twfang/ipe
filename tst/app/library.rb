@@ -50,17 +50,19 @@ module Library
 
   def lib_run(env,prepkit)
     rundir=prepkit
-    qsubcmd=env.run.qsubcmd
-    tasks=env.run.tasks
-    ipedata="IPEDATA=#{valid_dir(File.join(tmp_dir,"data"))}"
-    ipequeue="IPEQUEUE=batch"
-    cmd="cd #{rundir} && #{ipedata} #{ipequeue} ./#{qsubcmd} #{tasks}"
+    da="IPEDATA=#{valid_dir(File.join(tmp_dir,"data"))}"
+    qu="IPEQUEUE=batch"
+    ma=env.run.machine
+    co=env.run.compiler
+    pa=env.run.parallelism
+    ta=env.run.tasks
+    cmd="cd #{rundir} && #{da} #{qu} ./qsubipe #{ma} #{co} #{pa} #{ta}"
     logd "Submitting job with command: #{cmd}"
     output,status=Thread.exclusive do
       ext(cmd,{:msg=>"ERROR: Job submission failed"})
     end
     re1=Regexp.new('The job (\d+).* has been submitted.')
-    re2=Regexp.new('Created (.*)')
+    re2=Regexp.new('Created run directory: (.*)')
     jobid=nil
     subdir=nil
     output.each do |e|
@@ -103,6 +105,9 @@ module Library
     logd "Copying #{inpsrc} -> #{inpdst}"
     FileUtils.rm_f(inpdst)
     FileUtils.cp(inpsrc,inpdst)
+    modcmd=valid_file(File.join(env.build.ddts_root,"src","modcmd"))
+    logd "Copying #{modcmd} -> #{rundir}"
+    FileUtils.cp(modcmd,rundir)
     nlfile=valid_file(File.join(rundir,'SMSnamelist'))
     mod_namelist_file(nlfile,env.run.namelists)
     rundir
@@ -149,7 +154,7 @@ module Library
       sleep 10
       tolog=[]
       cmd="qstat -f #{jobid}"
-      output,status=ext(cmd,{:die=>false,:out=>false})
+      output,status=Thread.exclusive { ext(cmd,{:die=>false,:out=>false}) }
       if status==0
         live=false
         last_response=Time.now

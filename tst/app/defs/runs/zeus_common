@@ -1,2 +1,3 @@
-ddts_extends: ipe_common
-lib_data: lib_data_zeus
+ddts_extends: 'ipe_common'
+lib_data: 'lib_data_zeus'
+machine: 'zeus'

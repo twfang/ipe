@@ -20,6 +20,14 @@ fail() {
   exit 1
 }
 
+function findabove {
+  (
+    until test -e $1 -o $PWD = "/" ; do cd .. ; done
+    test -e $1 || fail "$0: Could not find $1"
+    echo $PWD/$1
+  )
+}
+
 linksafe() {
   test -z "$1" && fail "$0: No target supplied."
   test -e "$1" || fail "$0: No such target: $1."
@@ -27,17 +35,25 @@ linksafe() {
   ln -s $1 $link
 }
 
+nml() {
+  nml=../../tst/nml
+  test -x $nml || nml=$(findabove nml)
+  echo $nml
+}
+
 runscript_zeus() {
   echo "#!/bin/bash"
   echo "#PBS -A $acct"
   echo "#PBS -d $PWD"
   echo "#PBS -j oe"
-  echo "#PBS -l procs=$tasks"
+  echo "#PBS -l procs=$taskreq"
   echo "#PBS -l walltime=$queue_time"
+  echo "#PBS -N $jobname"
+  echo "#PBS -o output.batch"
   echo "#PBS -q $queue"
   echo "#PBS -W umask=022"
   echo "export MPI_BUFS_PER_HOST=2048 MPI_BUFS_PER_PROC=256"
-  echo "$(../../src/modcmd $machine $compiler)"
+  echo "$($modcmd $machine $compiler)"
   echo "module list"
   test $parallelism == parallel && extra="mpiexec_mpt -np $tasks "
   echo "time $extra./$(basename $exe) >output 2>&1 && echo 'ipe finished' && exit 0"
@@ -85,11 +101,21 @@ echo $compilers | grep -q $compiler || usage "$scr: Unknown compiler '$compiler'
 echo $parallelisms | grep -q $parallelism || usage "$scr: Unknown parallelism '$parallelism'."
 test $parallelism == parallel -a -z "$tasks" && usage "$scr: The <tasks> option is required for parallel runs."
 test $parallelism == serial -a -n "$tasks" && usage "$scr: No <tasks> option allowed for serial runs."
-test $parallelism == parallel && test $tasks -lt 2 && usage "$scr: Parallel jobs require at least 2 tasks."
+test $parallelism == serial -a -n "$COMPARE_VAR" && fail "COMPARE_VAR requires a parallel run."
 
-# Set tasks=1 for serial runs.
+# Request at least 2 cores to obtain sufficient memory.
 
-test $parallelism == serial && tasks=1
+test -z "$tasks" && taskreq=2 || taskreq=$tasks
+test $taskreq -lt 2 && taskreq=2
+
+# Handle SMS compare_var option.
+
+if [ -n "$COMPARE_VAR" ]; then
+  echo $COMPARE_VAR | grep -Eq "[0-9]+,[0-9]+" || fail "Bad COMPARE_VAR value '$COMPARE_VAR'."
+  cv1=$(echo $COMPARE_VAR | cut -d, -f1)
+  cv2=$(echo $COMPARE_VAR | cut -d, -f2)
+  test $(expr $cv1 + $cv2) -eq $tasks || fail "Sum of COMPARE_VAR values must equal tasks ($tasks)."
+fi
 
 # Set variables based on machine and compiler.
 
@@ -103,7 +129,6 @@ case $machine in
     mpi=mpt
     queue=batch
     queue_cmd=qsub
-    queue_time=00:20:00
     winddir=/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/reu/tmp20130717reu/bkup20140130
     case $sw_grid in
       0) gridfile=/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/data/ipe_grid ;;
@@ -111,6 +136,18 @@ case $machine in
       2) gridfile=$gridir/apex/GIP_apex_coords_global_lowres_new_2dynamo20120709                 ;;
       3) gridfile=$gridir/tldp/GIP_apex_coords_global_lowres_new_tilt20120709                    ;;
       *) fail "$0: Grid ID '$sw_grid' unknown."                                                  ;;
+    esac
+    case $compiler in
+      intel)
+        envvars="MPI_BUFS_PER_HOST=2048 MPI_BUFS_PER_PROC=256"
+        inp=IPE.inp
+        queue_time=00:20:00
+        ;;
+      lahey)
+        envvars="MPI_BUFS_PER_HOST=1024 MPI_BUFS_PER_PROC=128"
+        inp=IPE.inp.lahey
+        queue_time=00:30:00
+        ;;
     esac
     ;;
   "trillian")
@@ -121,7 +158,9 @@ esac
 pre=ipe_${test}_${machine}_${compiler}_${parallelism}
 exe=../bin/${pre}.exe
 test -x $exe || fail "$0: Cannot find executable '$exe'."
-test $parallelism == serial && jobname=ipe_s || jobname=ipe_$tasks
+test $parallelism == serial && jobname=ipe_${compiler}_s || jobname=ipe_${compiler}_$tasks
+modcmd=../../src/modcmd # manual job submissions
+test -x $modcmd || modcmd=../modcmd # test-suite job submissions
 
 # Allow override of data directory or queue name via the IPEDATA and IPEQUEUE
 # environment variables, respectively.
@@ -134,7 +173,8 @@ test -n "$IPEQUEUE" && queue=$IPEQUEUE
 rundir=$(date +%s)_$pre
 mkdir $rundir || fail
 echo Created run directory: $rundir
-for x in $exe coef* GPTLnamelist IPE.inp load_balance_groups1 SMSnamelist wei96.cofcnts; do
+cp $inp $rundir/IPE.inp
+for x in $exe coef* GPTLnamelist load_balance_groups1 SMSnamelist wei96.cofcnts; do
   cp $x $rundir || fail
 done
 linksafe $gridfile $rundir/ipe_grid
@@ -152,8 +192,21 @@ fi
 
 cd $rundir || fail
 if [ $parallelism == parallel ]; then
-  ../../tst/nml -i SMSnamelist -o SMSnamelist -s smsnamelist:process_layout=1,$tasks || fail
+  if [ -n "$COMPARE_VAR" ]; then
+    sets=""
+    sets+=" -s smsnamelist:compare_var_on=t"
+    sets+=" -s smsnamelist:compare_var_ntasks_1=$cv1"
+    sets+=" -s smsnamelist:compare_var_ntasks_2=$cv2"
+    sets+=" -s smsnamelist:set_process_layout=f"
+    jobname+="_cv"
+  else
+    sets="-s smsnamelist:process_layout=1,$tasks"
+  fi
+  $(nml) -i SMSnamelist -o SMSnamelist $sets || fail
 fi
 echo "$(runscript_$machine)" > runscript
 chmod 755 runscript
-$queue_cmd runscript
+jobid=$($queue_cmd runscript || echo FAIL)
+test $jobid == FAIL && fail "$0: Failed to submit job."
+echo "The job $jobid has been submitted."
+exit 0

@@ -1,6 +1,6 @@
-ddts_extends: 'zeus_common'
+ddts_extends: 'zeus_lahey_common'
 ddts_baseline: 'zeus_lahey'
 ddts_build: 'zeus_lahey_serial'
 inpfile: 'IPE.inp.lahey'
-qsubcmd: 'qsubipeZeus.lahey'
+parallelism: 'serial'
 tasks: ''
