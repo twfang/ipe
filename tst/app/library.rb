@@ -24,6 +24,10 @@ module Library
     {:bindir=>bindir,:rundir=>rundir,:srcdir=>srcdir}
   end
 
+  def lib_data_trilliam=n(env)
+    get_data("/mnt/lustre/lus0/space/madden/IPE/ipedata.tgz")
+  end
+
   def lib_data_zeus(env)
     get_data("/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/ipedata.tgz")
   end
@@ -50,13 +54,15 @@ module Library
 
   def lib_run(env,prepkit)
     rundir=prepkit
-    da="IPEDATA=#{valid_dir(File.join(tmp_dir,"data"))}"
+    datadir=valid_dir(File.join(tmp_dir,"data"))
+    da="IPEDATA=#{datadir}"
     qu="IPEQUEUE=batch"
+    wi="IPEWIND=#{datadir}"
     ma=env.run.machine
     co=env.run.compiler
     pa=env.run.parallelism
     ta=env.run.tasks
-    cmd="cd #{rundir} && #{da} #{qu} ./qsubipe #{ma} #{co} #{pa} #{ta}"
+    cmd="cd #{rundir} && #{da} #{qu} #{wi} ./qsubipe #{ma} #{co} #{pa} #{ta}"
     logd "Submitting job with command: #{cmd}"
     output,status=Thread.exclusive do
       ext(cmd,{:msg=>"ERROR: Job submission failed"})

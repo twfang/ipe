@@ -41,8 +41,24 @@ nml() {
   echo $nml
 }
 
+runscript_trillian() {
+  echo "#!/bin/bash -x"
+  echo "#PBS -j oe"
+  echo "#PBS -l nodes=$(expr $taskreq / 32 + 1):ppn=32"
+  echo "#PBS -l walltime=$queue_time"
+  echo "#PBS -N $jobname"
+  echo "#PBS -o output.batch"
+  echo "#PBS -W umask=022"
+  echo "export $envvars"
+  echo "$($modcmd $machine $compiler)"
+  echo "module list"
+  echo "cd $PWD"
+  echo "time aprun -n $tasks ./$(basename $exe) >output 2>&1 && echo 'ipe finished' && exit 0"
+  echo "echo 'ipe failed' && exit 23"
+}
+
 runscript_zeus() {
-  echo "#!/bin/bash"
+  echo "#!/bin/bash -x"
   echo "#PBS -A $acct"
   echo "#PBS -d $PWD"
   echo "#PBS -j oe"
@@ -52,7 +68,7 @@ runscript_zeus() {
   echo "#PBS -o output.batch"
   echo "#PBS -q $queue"
   echo "#PBS -W umask=022"
-  echo "export MPI_BUFS_PER_HOST=2048 MPI_BUFS_PER_PROC=256"
+  echo "export $envvars"
   echo "$($modcmd $machine $compiler)"
   echo "module list"
   test $parallelism == parallel && extra="mpiexec_mpt -np $tasks "
@@ -79,7 +95,8 @@ scr=$(basename $0)
 
 # Set up some lists of valid options for error checking.
 
-compilers="cray intel lahey pgi"
+#compilers="cray intel lahey pgi"
+compilers="intel lahey pgi"
 machines="trillian zeus"
 parallelisms="parallel serial"
 
@@ -105,8 +122,8 @@ test $parallelism == serial -a -n "$COMPARE_VAR" && fail "COMPARE_VAR requires a
 
 # Request at least 2 cores to obtain sufficient memory.
 
-test -z "$tasks" && taskreq=2 || taskreq=$tasks
-test $taskreq -lt 2 && taskreq=2
+test -z "$tasks" && tasks=1
+test $tasks -lt 2 && taskreq=2 || taskreq=$tasks
 
 # Handle SMS compare_var option.
 
@@ -120,53 +137,65 @@ fi
 # Set variables based on machine and compiler.
 
 case $machine in
+
+  "trillian")
+#   compiler_check "cray pgi" $compiler $machine
+    compiler_check "pgi" $compiler $machine
+    datadir=/mnt/lustre/lus0/space/madden/IPE/data
+    envvars="OMP_NUM_THREADS=1"
+    inp=IPE.inp
+    queue=workq
+    queue_cmd=qsub
+    winddir=$datadir
+    test $parallelism == parallel && queue_time=00:10:00 || queue_time=00:30:00
+    case $sw_grid in
+      0) gridfile=$datadir/ipe_grid             ;;
+      *) fail "$0: Grid ID '$sw_grid' unknown." ;;
+    esac
+    ;;
+
   "zeus")
     compiler_check "intel lahey" $compiler $machine
 #   acct=swpc
     acct=fim
     datadir=/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/data
-    gridir=/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/grid
-    mpi=mpt
+    griddir=/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/grid
     queue=batch
     queue_cmd=qsub
-    winddir=/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/reu/tmp20130717reu/bkup20140130
+    winddir=/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/wind
+    test $parallelism == parallel && queue_time=00:20:00 || queue_time=00:30:00
     case $sw_grid in
-      0) gridfile=/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/data/ipe_grid ;;
-      1) gridfile=$gridir/apex/GIP_apex_coords_global_lowres_new20120705                         ;;
-      2) gridfile=$gridir/apex/GIP_apex_coords_global_lowres_new_2dynamo20120709                 ;;
-      3) gridfile=$gridir/tldp/GIP_apex_coords_global_lowres_new_tilt20120709                    ;;
-      *) fail "$0: Grid ID '$sw_grid' unknown."                                                  ;;
+      0) gridfile=$datadir/ipe_grid                                               ;;
+      1) gridfile=$griddir/apex/GIP_apex_coords_global_lowres_new20120705         ;;
+      2) gridfile=$griddir/apex/GIP_apex_coords_global_lowres_new_2dynamo20120709 ;;
+      3) gridfile=$griddir/tldp/GIP_apex_coords_global_lowres_new_tilt20120709    ;;
+      *) fail "$0: Grid ID '$sw_grid' unknown."                                   ;;
     esac
     case $compiler in
       intel)
         envvars="MPI_BUFS_PER_HOST=2048 MPI_BUFS_PER_PROC=256"
         inp=IPE.inp
-        queue_time=00:20:00
         ;;
       lahey)
         envvars="MPI_BUFS_PER_HOST=1024 MPI_BUFS_PER_PROC=128"
         inp=IPE.inp.lahey
-        queue_time=00:30:00
         ;;
     esac
     ;;
-  "trillian")
-    compiler_check "cray pgi" $compiler $machine
-    ;;
+
 esac
 
 pre=ipe_${test}_${machine}_${compiler}_${parallelism}
 exe=../bin/${pre}.exe
 test -x $exe || fail "$0: Cannot find executable '$exe'."
 test $parallelism == serial && jobname=ipe_${compiler}_s || jobname=ipe_${compiler}_$tasks
-modcmd=../../src/modcmd # manual job submissions
-test -x $modcmd || modcmd=../modcmd # test-suite job submissions
 
-# Allow override of data directory or queue name via the IPEDATA and IPEQUEUE
-# environment variables, respectively.
+# Allow override of internal variables via environment variables (e.g. set by
+# the test suite software).
 
 test -n "$IPEDATA" && datadir=$IPEDATA
 test -n "$IPEQUEUE" && queue=$IPEQUEUE
+test -n "$IPEWIND" && winddir=$IPEWIND
 
 # Create unique run directory and copy/link files into it.
 
@@ -204,6 +233,8 @@ if [ $parallelism == parallel ]; then
   fi
   $(nml) -i SMSnamelist -o SMSnamelist $sets || fail
 fi
+modcmd=../../src/modcmd # for manual runs
+test -x $modcmd || modcmd=../modcmd # for test-suite runs
 echo "$(runscript_$machine)" > runscript
 chmod 755 runscript
 jobid=$($queue_cmd runscript || echo FAIL)
