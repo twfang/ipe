@@ -96,8 +96,7 @@ scr=$(basename $0)
 
 # Set up some lists of valid options for error checking.
 
-#compilers="cray intel lahey pgi"
-compilers="intel lahey pgi"
+compilers="cray intel lahey pgi"
 machines="trillian zeus"
 parallelisms="parallel serial"
 
@@ -140,8 +139,7 @@ fi
 case $machine in
 
   "trillian")
-#   compiler_check "cray pgi" $compiler $machine
-    compiler_check "pgi" $compiler $machine
+    compiler_check "cray pgi" $compiler $machine
     datadir=/mnt/lustre/lus0/space/madden/IPE/data
     envvars="OMP_NUM_THREADS=1"
     inp=IPE.inp
@@ -156,8 +154,7 @@ case $machine in
 
   "zeus")
     compiler_check "intel lahey" $compiler $machine
-#   acct=swpc
-    acct=fim
+    acct=swpc
     datadir=/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/data
     griddir=/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/grid
     queue=batch
