@@ -24,7 +24,7 @@ module Library
     {:bindir=>bindir,:rundir=>rundir,:srcdir=>srcdir}
   end
 
-  def lib_data_trilliam=n(env)
+  def lib_data_trillian(env)
     get_data("/mnt/lustre/lus0/space/madden/IPE/ipedata.tgz")
   end
 
@@ -81,9 +81,10 @@ module Library
     job_activate(jobid,self)
     die "ERROR: Run directory not found in submit-command output" if subdir.nil?
     logi "Queued with job ID #{jobid}"
-    wait_for_job(jobid)
+    outputdir=valid_dir(File.join(rundir,subdir))
+    invoke(:wait_for_job,:run,env,jobid,outputdir)
     job_deactivate(jobid)
-    valid_file(File.join(rundir,subdir))
+    outputdir
   end
 
   def lib_run_check(env,postkit)
@@ -121,8 +122,25 @@ module Library
 
   # CUSTOM METHODS (NOT CALLED BY DRIVER)
 
+# 037327a5c67ca47e33c304966fe4ce12  ipe_grid
+# 103d1974df32b5084d6697bd44e05b1d  plasma00
+# 236305d3a437c7195392994a48ad4fe3  plasma01
+# 818360354487d808e1285b3b364902e4  plasma02
+# 7918b93f407d0f5d8300b2252d101145  plasma03
+# 6ee788632b3d3d7773b7496b8fd2d535  plasma04
+# 236182b31bbe0d019b2033e93f2834c5  plasma05
+# d2a0b3ea7dfd092683cb203a4134ca54  plasma06
+# 246ed6ad760085b6abc56b76ac549b52  plasma07
+# ce9fed92dd54fc835e3edb6d807fe915  plasma08
+# 1ab6bbbbdb77e28c7e70add4b6df2379  plasma09
+# 070f4cbd83e896ecda6ca13c300e198f  plasma10
+# 070f4cbd83e896ecda6ca13c300e198f  plasma11
+# 282e3bfa655cd85329faeca13efeb6da  ut_input
+# 926b18e8268259bf96d0f1dcee7a4c31  ut_rec
+# 5d88f51319c8f919c63e71b850ed91e9  wind_input
+
   def get_data(f)
-    cs0="f944709c93f2daf6a62ce10ed8d93006"
+    cs0="9d8b0f4dc0bbcd422b1f840a8afca48e"
     cs1=Digest::MD5.file(f).to_s
     unless cs1 == cs0
       die "ERROR: Expected checksum #{cs0} for data archive '#{f}', got #{cs1})"
@@ -147,8 +165,22 @@ module Library
     Thread.exclusive { ext(cmd,{:msg=>"Failed to edit #{nlfile}"}) }
   end
 
-  def wait_for_job(jobid)
-    ok=%w[E H Q R T W S]
+  def wait_for_job_trillian(env,jobid,outputdir)
+    ok=%w[E H M Q R S T W]
+    begin
+      sleep 30
+      cmd="qstat -f #{jobid}"
+      output,status=Thread.exclusive { ext(cmd,{:die=>false,:out=>false}) }
+      live=false
+      output.each do |e|
+        logd e
+        live=true if ok.include?(e.chomp.sub(/^ *job_state = (.)$/,'\1'))
+      end
+    end while live or not File.exist?(File.join(outputdir,"output.batch"))
+  end
+
+  def wait_for_job_zeus(env,jobid,outputdir)
+    ok=%w[E H Q R S T W]
     # 'tolerance' is the number of seconds the batch system retains information
     # about completed jobs. If this interval passes without a non-error response
     # to queries, we may never receive confirmation that the job completed.
@@ -157,7 +189,7 @@ module Library
     batch_failure=false
     last_response=Time.now
     begin
-      sleep 10
+      sleep 30
       tolog=[]
       cmd="qstat -f #{jobid}"
       output,status=Thread.exclusive { ext(cmd,{:die=>false,:out=>false}) }

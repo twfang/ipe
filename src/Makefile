@@ -40,7 +40,7 @@ endif
 
 ifeq ($(MACHINE),trillian)
   GPTL_USE_GPTL = no
-  MAKEJOBS      = 6
+  MAKEJOBS      = 12
   ifeq ($(GPTL_USE_GPTL),yes)
     $(error GPTL support currently unavailable on trillian)
   endif
@@ -70,7 +70,7 @@ endif
 
 ifeq ($(MACHINE),zeus)
   GPTL_USE_GPTL = yes
-  MAKEJOBS      = 8
+  MAKEJOBS      = 16
   ifeq ($(COMPILER),intel)
     MODCMD    = $(shell ./modcmd zeus intel)
     FCP       = mpif90

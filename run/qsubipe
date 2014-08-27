@@ -2,6 +2,7 @@
 
 # Control variables
 
+queue_time=00:30:00
 sw_grid=0
 sw_neutral=1
 test=v18
@@ -147,7 +148,6 @@ case $machine in
     queue=workq
     queue_cmd=qsub
     winddir=$datadir
-    test $parallelism == parallel && queue_time=00:10:00 || queue_time=00:30:00
     case $sw_grid in
       0) gridfile=$datadir/ipe_grid             ;;
       *) fail "$0: Grid ID '$sw_grid' unknown." ;;
@@ -163,7 +163,6 @@ case $machine in
     queue=batch
     queue_cmd=qsub
     winddir=/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/wind
-    test $parallelism == parallel && queue_time=00:20:00 || queue_time=00:30:00
     case $sw_grid in
       0) gridfile=$datadir/ipe_grid                                               ;;
       1) gridfile=$griddir/apex/GIP_apex_coords_global_lowres_new20120705         ;;
@@ -195,6 +194,7 @@ test $parallelism == serial && jobname=ipe_${compiler}_s || jobname=ipe_${compil
 
 test -n "$IPEDATA" && datadir=$IPEDATA
 test -n "$IPEQUEUE" && queue=$IPEQUEUE
+test -n "$IPETIME" && queue_time=$IPETIME
 test -n "$IPEWIND" && winddir=$IPEWIND
 
 # Create unique run directory and copy/link files into it.
