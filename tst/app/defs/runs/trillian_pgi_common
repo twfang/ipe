@@ -3,5 +3,4 @@ ddts_baseline: 'trillian_pgi'
 ddts_build: 'trillian_pgi_parallel'
 
 compiler: 'pgi'
-inpfile: 'IPE.inp.100'
 parallelism: 'parallel'

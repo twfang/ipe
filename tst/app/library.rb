@@ -25,11 +25,11 @@ module Library
   end
 
   def lib_data_trillian(env)
-    get_data("/mnt/lustre/lus0/space/madden/IPE/ipedata.tgz")
+    link_data("/mnt/lustre/lus0/space/madden/IPE/test-suite-data")
   end
 
   def lib_data_zeus(env)
-    get_data("/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/ipedata.tgz")
+    link_data("/scratch1/portfolios/NCEPDEV/swpc/noscrub/Paul.A.Madden/IPE/test-suite-data")
   end
 
   def lib_outfiles(env,path)
@@ -107,11 +107,6 @@ module Library
     logd "Linking #{bin} -> #{uniq}"
     FileUtils.ln_s(bin,uniq)
     rundir=File.join(uniq,File.basename(run))
-    inpsrc=valid_file(File.join(rundir,env.run.inpfile))
-    inpdst=File.join(rundir,"IPE.inp")
-    logd "Copying #{inpsrc} -> #{inpdst}"
-    FileUtils.rm_f(inpdst)
-    FileUtils.cp(inpsrc,inpdst)
     modcmd=valid_file(File.join(env.build.ddts_root,"src","modcmd"))
     logd "Copying #{modcmd} -> #{rundir}"
     FileUtils.cp(modcmd,rundir)
@@ -122,32 +117,11 @@ module Library
 
   # CUSTOM METHODS (NOT CALLED BY DRIVER)
 
-# 037327a5c67ca47e33c304966fe4ce12  ipe_grid
-# 103d1974df32b5084d6697bd44e05b1d  plasma00
-# 236305d3a437c7195392994a48ad4fe3  plasma01
-# 818360354487d808e1285b3b364902e4  plasma02
-# 7918b93f407d0f5d8300b2252d101145  plasma03
-# 6ee788632b3d3d7773b7496b8fd2d535  plasma04
-# 236182b31bbe0d019b2033e93f2834c5  plasma05
-# d2a0b3ea7dfd092683cb203a4134ca54  plasma06
-# 246ed6ad760085b6abc56b76ac549b52  plasma07
-# ce9fed92dd54fc835e3edb6d807fe915  plasma08
-# 1ab6bbbbdb77e28c7e70add4b6df2379  plasma09
-# 070f4cbd83e896ecda6ca13c300e198f  plasma10
-# 070f4cbd83e896ecda6ca13c300e198f  plasma11
-# 282e3bfa655cd85329faeca13efeb6da  ut_input
-# 926b18e8268259bf96d0f1dcee7a4c31  ut_rec
-# 5d88f51319c8f919c63e71b850ed91e9  wind_input
-
-  def get_data(f)
-    cs0="9d8b0f4dc0bbcd422b1f840a8afca48e"
-    cs1=Digest::MD5.file(f).to_s
-    unless cs1 == cs0
-      die "ERROR: Expected checksum #{cs0} for data archive '#{f}', got #{cs1})"
-    end
-    cmd="cd #{tmp_dir} && tar xvzf #{f}"
-    msg="ERROR: Failed to extract data archive '#{f}'"
-    Thread.exclusive { ext(cmd,{:msg=>msg}) }
+  def link_data(dir)
+    validate_data(dir)
+    link=File.join(tmp_dir,"data")
+    FileUtils.rm_f(link)
+    FileUtils.ln_s(dir,link)
   end
 
   def mod_namelist_file(nlfile,nlenv)
@@ -163,6 +137,44 @@ module Library
     nml=valid_file(File.expand_path(File.join($DDTSHOME,"nml")))
     cmd="#{nml} -i #{nlfile} -o #{nlfile} #{sets.join(" ")}"
     Thread.exclusive { ext(cmd,{:msg=>"Failed to edit #{nlfile}"}) }
+  end
+
+  def validate_data(dir)
+    logd "Validating data..."
+    expected={
+      'ipe_grid'   => '037327a5c67ca47e33c304966fe4ce12',
+      'plasma00'   => '103d1974df32b5084d6697bd44e05b1d',
+      'plasma01'   => '236305d3a437c7195392994a48ad4fe3',
+      'plasma02'   => '818360354487d808e1285b3b364902e4',
+      'plasma03'   => '7918b93f407d0f5d8300b2252d101145',
+      'plasma04'   => '6ee788632b3d3d7773b7496b8fd2d535',
+      'plasma05'   => '236182b31bbe0d019b2033e93f2834c5',
+      'plasma06'   => 'd2a0b3ea7dfd092683cb203a4134ca54',
+      'plasma07'   => '246ed6ad760085b6abc56b76ac549b52',
+      'plasma08'   => 'ce9fed92dd54fc835e3edb6d807fe915',
+      'plasma09'   => '1ab6bbbbdb77e28c7e70add4b6df2379',
+      'plasma10'   => '070f4cbd83e896ecda6ca13c300e198f',
+      'plasma11'   => '070f4cbd83e896ecda6ca13c300e198f',
+      'ut_input'   => '282e3bfa655cd85329faeca13efeb6da',
+      'ut_rec'     => '926b18e8268259bf96d0f1dcee7a4c31',
+      'wind_input' => '5d88f51319c8f919c63e71b850ed91e9'
+    }
+    actual=Dir.glob("#{dir}/**/*")
+    actual=actual.delete_if { |e| File.directory?(e) }
+    actual=actual.reduce({}) do
+      |m,e| m.merge!({e.sub(/#{dir}\/?/,'')=>Digest::MD5.file(e).to_s})
+    end
+    actual.keys.sort.each do |k|
+      die "Unexpected data file: #{k}" unless expected[k]
+      unless actual[k]==expected[k]
+        logd "Checksum validation failed for #{dir}/#{k}"
+        logd "  Expected #{expected[k]}"
+        logd "    Actual #{actual[k]}"
+        die "Error validating test-suite data, see #{logfile}"
+      end
+      logd "  #{k}: OK"
+    end
+    logd "Validating data: OK"
   end
 
   def wait_for_job_trillian(env,jobid,outputdir)

@@ -6,7 +6,7 @@ PSRCS = flux_tube_solver.f90               \
         get_pvalue_dipole.f90              \
         get_sinim.f90                      \
         get_sza.f90                        \
-        interpolate_flux_tube_$(TEST).f90  \
+        interpolate_flux_tube.f90          \
         io_plasma_bin.f90                  \
         module_find_neighbor_grid_R.f90    \
         module_find_neighbor_grid_th.f90   \

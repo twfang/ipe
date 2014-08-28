@@ -6,7 +6,6 @@ DIRS          = main neutral flip eldyn plasma dummygptl driver
 GPTL_INCFLAGS = -I../dummygptl
 GPTL_LDFLAGS  = -L../dummygptl -lgptl
 PPP_FLAGS     = --Fmodule=module_decomp --Free --comment --HaloSize=10
-TEST          = v18
 
 TARGETS = clean                  \
           trillian_cray_parallel \
@@ -19,7 +18,7 @@ TARGETS = clean                  \
 
 # Dynamic / Conditional variables
 
-EXE           = $(CURDIR)/../bin/ipe_${TEST}_$(MACHINE)_$(COMPILER)_$(PARALLELISM).exe
+EXE           = $(CURDIR)/../bin/ipe_$(MACHINE)_$(COMPILER)_$(PARALLELISM).exe
 FFLAGS        = $(strip $(OPT_FLAGS) $(DEBUG_FLAGS) $(GPTL_INCFLAGS) $(GPTL_LDFLAGS))
 PARALLEL_MAKE = $(MAKE) -j $(MAKEJOBS)
 PPP           = $(SMS)/bin/ppp
@@ -109,8 +108,7 @@ VARS =                                \
        PPP="$(PPP)"                   \
        PPP_FLAGS="$(PPP_FLAGS)"       \
        SMS_INCFLAGS="$(SMS_INCFLAGS)" \
-       SMS_LDFLAGS="$(SMS_LDFLAGS)"   \
-       TEST="$(TEST)"
+       SMS_LDFLAGS="$(SMS_LDFLAGS)"
 
 # Targets
 

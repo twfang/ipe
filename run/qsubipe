@@ -5,7 +5,6 @@
 queue_time=00:30:00
 sw_grid=0
 sw_neutral=1
-test=v18
 
 # Functions
 
@@ -94,6 +93,12 @@ usage() {
 
 scr=$(basename $0)
 
+# Initialize some variables for accumulating modifications to the IPE and SMS
+# namelist files.
+
+ipe_sets=""
+sms_sets=""
+
 # Set up some lists of valid options for error checking.
 
 compilers="cray intel lahey pgi"
@@ -138,11 +143,12 @@ fi
 
 case $machine in
 
+  # trillian stanza
+
   "trillian")
     compiler_check "cray pgi" $compiler $machine
     datadir=/mnt/lustre/lus0/space/madden/IPE/data
     envvars="OMP_NUM_THREADS=1"
-    inp=IPE.inp
     queue=workq
     queue_cmd=qsub
     winddir=$datadir
@@ -151,6 +157,8 @@ case $machine in
       *) fail "$0: Grid ID '$sw_grid' unknown." ;;
     esac
     ;;
+
+  # zeus stanza
 
   "zeus")
     compiler_check "intel lahey" $compiler $machine
@@ -170,18 +178,17 @@ case $machine in
     case $compiler in
       intel)
         envvars="MPI_BUFS_PER_HOST=2048 MPI_BUFS_PER_PROC=256"
-        inp=IPE.inp
         ;;
       lahey)
         envvars="MPI_BUFS_PER_HOST=1024 MPI_BUFS_PER_PROC=128"
-        inp=IPE.inp.lahey
+        ipe_sets+=" -s nmswitch:mpstop=2"
         ;;
     esac
     ;;
 
 esac
 
-pre=ipe_${test}_${machine}_${compiler}_${parallelism}
+pre=ipe_${machine}_${compiler}_${parallelism}
 exe=../bin/${pre}.exe
 test -x $exe || fail "$0: Cannot find executable '$exe'."
 test $parallelism == serial && jobname=ipe_${compiler}_s || jobname=ipe_${compiler}_$tasks
@@ -199,8 +206,9 @@ test -n "$IPEWIND" && winddir=$IPEWIND
 rundir=$(date +%s)_$pre
 mkdir $rundir || fail
 echo Created run directory: $rundir
-cp $inp $rundir/IPE.inp
-for x in $exe coef* GPTLnamelist load_balance_groups1 SMSnamelist wei96.cofcnts; do
+inp=IPE.inp
+smsnl=SMSnamelist
+for x in $exe coef* GPTLnamelist $inp load_balance_groups1 $smsnl wei96.cofcnts; do
   cp $x $rundir || fail
 done
 linksafe $gridfile $rundir/ipe_grid
@@ -219,17 +227,17 @@ fi
 cd $rundir || fail
 if [ $parallelism == parallel ]; then
   if [ -n "$COMPARE_VAR" ]; then
-    sets=""
-    sets+=" -s smsnamelist:compare_var_on=t"
-    sets+=" -s smsnamelist:compare_var_ntasks_1=$cv1"
-    sets+=" -s smsnamelist:compare_var_ntasks_2=$cv2"
-    sets+=" -s smsnamelist:set_process_layout=f"
+    sms_sets+=" -s smsnamelist:compare_var_on=t"
+    sms_sets+=" -s smsnamelist:compare_var_ntasks_1=$cv1"
+    sms_sets+=" -s smsnamelist:compare_var_ntasks_2=$cv2"
+    sms_sets+=" -s smsnamelist:set_process_layout=f"
     jobname+="_cv"
   else
-    sets="-s smsnamelist:process_layout=1,$tasks"
+    sms_sets="-s smsnamelist:process_layout=1,$tasks"
   fi
-  $(nml) -i SMSnamelist -o SMSnamelist $sets || fail
+  $(nml) -i $smsnl -o $smsnl $sms_sets || fail "$0: Could not edit $smsnl"
 fi
+$(nml) -i $inp -o $inp $ipe_sets || fail "$0: Could not edit $inp"
 modcmd=../../src/modcmd # for manual runs
 test -x $modcmd || modcmd=../modcmd # for test-suite runs
 echo "$(runscript_$machine)" > runscript
