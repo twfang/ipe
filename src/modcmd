@@ -28,10 +28,10 @@ case $1 in
   "zeus")
     case $2 in
       "intel")
-        echo "module purge && module load intel mpt"
+        echo "source /usr/share/Modules/init/sh && module purge && module load intel mpt"
         ;;
       "lahey")
-        echo "module purge && module load lahey mpt"
+        echo "source /usr/share/Modules/init/sh && module purge && module load lahey mpt"
         ;;
       *) unknown $1 $2
         ;;
