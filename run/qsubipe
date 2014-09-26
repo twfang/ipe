@@ -130,7 +130,11 @@ test $parallelism == serial -a -n "$COMPARE_VAR" && fail "COMPARE_VAR requires a
 test -z "$tasks" && tasks=1
 test $tasks -lt 2 && taskreq=2 || taskreq=$tasks
 
-# Handle SMS compare_var option.
+# Handle SMS compare_var option. For a compare_var run, execute e.g.
+#
+#  COMPARE_VAR=1,2 qsubipe zeus intel parallel 11
+#
+# for a 1-task-vs-2-task run.
 
 if [ -n "$COMPARE_VAR" ]; then
   echo $COMPARE_VAR | grep -Eq "[0-9]+,[0-9]+" || fail "Bad COMPARE_VAR value '$COMPARE_VAR'."
@@ -148,13 +152,20 @@ case $machine in
   "trillian")
     compiler_check "cray pgi" $compiler $machine
     datadir=/mnt/lustre/lus0/space/madden/IPE/data
-    envvars="OMP_NUM_THREADS=1"
     queue=workq
     queue_cmd=qsub
     winddir=$datadir
     case $sw_grid in
       0) gridfile=$datadir/ipe_grid             ;;
       *) fail "$0: Grid ID '$sw_grid' unknown." ;;
+    esac
+    case $compiler in
+      cray)
+        envvars="OMP_NUM_THREADS=1"
+        ;;
+      pgi)
+        envvars="OMP_NUM_THREADS=1 NO_STOP_MESSAGE=1"
+        ;;
     esac
     ;;
 

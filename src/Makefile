@@ -1,5 +1,8 @@
 # IPE Makefile
 
+# NOTE: Build parallelism can be controlled from the command line by setting the
+#       MAKEJOBS variable, e.g.: MAKEJOBS=1 make zeus_intel_parallel
+
 # Static / Unconditional / Default variables
 
 DIRS          = main neutral flip eldyn plasma dummygptl driver
@@ -33,7 +36,9 @@ endif
 
 ifeq ($(MACHINE),trillian)
   GPTL_USE_GPTL = no
+ifndef MAKEJOBS
   MAKEJOBS      = 12
+endif
   ifeq ($(GPTL_USE_GPTL),yes)
     $(error GPTL support currently unavailable on trillian)
   endif
@@ -41,7 +46,7 @@ ifeq ($(MACHINE),trillian)
     MODCMD    = $(shell ./modcmd trillian cray)
     FCP       = ftn
     FCS       = ftn
-    OPT_FLAGS = -O3 -em -ef -eZ -ra -h noomp
+    OPT_FLAGS = -O2 -em -ef -eZ -ra -hnoomp
     SMS       = /mnt/lustre/lus0/space/madden/SMS/legacy_r618/trillian-cray
     ifeq ($(DEBUG),yes)
       DEBUG_FLAGS = -g -O0
@@ -63,7 +68,9 @@ endif
 
 ifeq ($(MACHINE),zeus)
   GPTL_USE_GPTL = yes
+ifndef MAKEJOBS
   MAKEJOBS      = 16
+endif
   ifeq ($(COMPILER),intel)
     MODCMD    = $(shell ./modcmd zeus intel)
     FCP       = mpif90

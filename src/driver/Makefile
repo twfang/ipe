@@ -4,7 +4,7 @@ TOP = ..
 
 PSRCS = driver_ipe.f90
 
-OBJS = $(wildcard $(addprefix ../,$(addsuffix /*.o,$(DIRS))))
+OBJS   = $(wildcard $(addprefix ../,$(addsuffix /*.o,$(filter-out driver,$(DIRS)))))
 
 .PHONY: exe
 
