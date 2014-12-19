@@ -150,7 +150,7 @@ case $machine in
   # trillian stanza
 
   "trillian")
-    compiler_check "cray pgi" $compiler $machine
+    compiler_check "cray intel pgi" $compiler $machine
     datadir=/mnt/lustre/lus0/space/madden/IPE/data
     queue=workq
     queue_cmd=qsub

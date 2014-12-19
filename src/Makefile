@@ -10,13 +10,15 @@ GPTL_INCFLAGS = -I../dummygptl
 GPTL_LDFLAGS  = -L../dummygptl -lgptl
 PPP_FLAGS     = --Fmodule=module_decomp --Free --comment --HaloSize=10
 
-TARGETS = clean                  \
-          trillian_cray_parallel \
-          trillian_cray_serial   \
-          trillian_pgi_parallel  \
-          trillian_pgi_serial    \
-          zeus_intel_parallel    \
-          zeus_intel_serial      \
+TARGETS = clean                   \
+          trillian_cray_parallel  \
+          trillian_cray_serial    \
+          trillian_intel_parallel \
+          trillian_intel_serial   \
+          trillian_pgi_parallel   \
+          trillian_pgi_serial     \
+          zeus_intel_parallel     \
+          zeus_intel_serial       \
           zeus_lahey_serial
 
 # Dynamic / Conditional variables
@@ -32,7 +34,7 @@ ifndef DEBUG
   DEBUG = no
 endif
 
-# trilian stanza
+# trillian stanza
 
 ifeq ($(MACHINE),trillian)
   GPTL_USE_GPTL = no
@@ -46,10 +48,20 @@ endif
     MODCMD    = $(shell ./modcmd trillian cray)
     FCP       = ftn
     FCS       = ftn
-    OPT_FLAGS = -O2 -em -ef -eZ -ra -hnoomp
-    SMS       = /mnt/lustre/lus0/space/madden/SMS/legacy_r618/trillian-cray
+    OPT_FLAGS = -O3 -em -ef -eZ -ra
+    SMS       = /mnt/lustre/lus0/space/madden/SMS/legacy_r686/trillian-cray
     ifeq ($(DEBUG),yes)
-      DEBUG_FLAGS = -g -O0
+      DEBUG_FLAGS = -g -O0 -em -ef -eZ -ra
+    endif
+  endif
+  ifeq ($(COMPILER),intel)
+    MODCMD    = $(shell ./modcmd trillian intel)
+    FCP       = ftn
+    FCS       = ftn
+    OPT_FLAGS = -O3 -fp-model precise
+    SMS       = /mnt/lustre/lus0/space/madden/SMS/legacy_r686/trillian-intel
+    ifeq ($(DEBUG),yes)
+      DEBUG_FLAGS = -g -O0 -ftz -traceback -check bounds -fpe0
     endif
   endif
   ifeq ($(COMPILER),pgi)
@@ -57,7 +69,7 @@ endif
     FCP       = ftn
     FCS       = ftn
     OPT_FLAGS = -O2
-    SMS       = /mnt/lustre/lus0/space/madden/SMS/legacy_r618/trillian-pgi
+    SMS       = /mnt/lustre/lus0/space/madden/SMS/legacy_r686/trillian-pgi
     ifeq ($(DEBUG),yes)
       DEBUG_FLAGS = -g -O0 -Mbounds
     endif
@@ -131,6 +143,12 @@ trillian_cray_parallel:
 
 trillian_cray_serial:
 	$(MAKE) ipe MACHINE=trillian COMPILER=cray PARALLELISM=serial
+
+trillian_intel_parallel:
+	$(MAKE) ipe MACHINE=trillian COMPILER=intel PARALLELISM=parallel
+
+trillian_intel_serial:
+	$(MAKE) ipe MACHINE=trillian COMPILER=intel PARALLELISM=serial
 
 trillian_pgi_parallel:
 	$(MAKE) ipe MACHINE=trillian COMPILER=pgi PARALLELISM=parallel

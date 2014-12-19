@@ -1,8 +1,9 @@
-Valid IPE test suite names are: trillian zeus
 
 1. To run a test suite:
 
   $ ipets <suite_name>
+
+Valid IPE test suite names are: trillian zeus
 
 2. To see the definition of a suite:
 
@@ -35,3 +36,4 @@ Valid IPE test suite names are: trillian zeus
 9. For other options:
 
   $ ipets help
+

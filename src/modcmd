@@ -14,24 +14,32 @@ test -z "$1" -o -z "$2" && usage
 
 case $1 in
   "trillian")
+    init="source /opt/modules/default/init/sh"
+    this="$($init && module list 2>&1 | grep PrgEnv | sed 's/.*\(PrgEnv[^/]*\).*/\1/')"
+    goto="$init && module switch $this"
     case $2 in
       "cray")
-        echo "source /opt/modules/default/init/sh && module purge && module load PrgEnv-cray cray-mpich2 xpmem dmapp ugni udreg"
+        echo "$goto PrgEnv-cray"
+        ;;
+      "intel")
+        echo "$goto PrgEnv-intel"
         ;;
       "pgi")
-        echo "source /opt/modules/default/init/sh && module purge && module load PrgEnv-pgi cray-mpich2 xpmem dmapp ugni udreg"
+        echo "$goto PrgEnv-pgi"
         ;;
       *) unknown $1 $2
         ;;
     esac
     ;;
   "zeus")
+    init="source /usr/share/Modules/init/sh"
+    goto="$init && module purge && module load"
     case $2 in
       "intel")
-        echo "source /usr/share/Modules/init/sh && module purge && module load intel mpt"
+        echo "$goto intel mpt"
         ;;
       "lahey")
-        echo "source /usr/share/Modules/init/sh && module purge && module load lahey mpt"
+        echo "$goto lahey mpt"
         ;;
       *) unknown $1 $2
         ;;
