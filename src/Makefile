@@ -48,8 +48,8 @@ endif
     MODCMD    = $(shell ./modcmd trillian cray)
     FCP       = ftn
     FCS       = ftn
-    OPT_FLAGS = -O3 -em -ef -eZ -ra
-    SMS       = /mnt/lustre/lus0/space/madden/SMS/legacy_r686/trillian-cray
+    OPT_FLAGS = -O3 -em -ef -eZ -ra -h fp0
+    SMS       = /mnt/lustre/lus0/space/madden/SMS/legacy_r689/trillian-cray
     ifeq ($(DEBUG),yes)
       DEBUG_FLAGS = -g -O0 -em -ef -eZ -ra
     endif
@@ -59,7 +59,7 @@ endif
     FCP       = ftn
     FCS       = ftn
     OPT_FLAGS = -O3 -fp-model precise
-    SMS       = /mnt/lustre/lus0/space/madden/SMS/legacy_r686/trillian-intel
+    SMS       = /mnt/lustre/lus0/space/madden/SMS/legacy_r689/trillian-intel
     ifeq ($(DEBUG),yes)
       DEBUG_FLAGS = -g -O0 -ftz -traceback -check bounds -fpe0
     endif
@@ -69,7 +69,7 @@ endif
     FCP       = ftn
     FCS       = ftn
     OPT_FLAGS = -O2
-    SMS       = /mnt/lustre/lus0/space/madden/SMS/legacy_r686/trillian-pgi
+    SMS       = /mnt/lustre/lus0/space/madden/SMS/legacy_r689/trillian-pgi
     ifeq ($(DEBUG),yes)
       DEBUG_FLAGS = -g -O0 -Mbounds
     endif
@@ -131,7 +131,7 @@ VARS =                                \
 
 # Targets
 
-.PHONY: $(TARGETS) ipe
+.PHONY: $(TARGETS) all ipe
 
 all:
 	$(info Valid targets are:)

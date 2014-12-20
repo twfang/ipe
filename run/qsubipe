@@ -215,6 +215,7 @@ test -n "$IPEWIND" && winddir=$IPEWIND
 # Create unique run directory and copy/link files into it.
 
 rundir=$(date +%s)_$pre
+test "$parallelism" = "parallel" && rundir+="_$tasks"
 mkdir $rundir || fail
 echo Created run directory: $rundir
 inp=IPE.inp

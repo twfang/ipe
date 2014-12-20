@@ -1,5 +1,5 @@
 group_trillian_cray:
-#  - trillian_cray_parallel_1
+  - trillian_cray_parallel_1
 #  - trillian_cray_parallel_10
 #  - trillian_cray_parallel_20
   - trillian_cray_serial
