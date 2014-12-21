@@ -3,92 +3,48 @@
 pro plt_prfl_ht
 fac_window=1.
 sw_dif=0
-sw_output2file=1
+sw_output2file=1L
 
-HOME_DIR='/home/Naomi.Maruyama/wamns/r336tmp/trunk/run'
+HOME_DIR='/home/Naomi.Maruyama/wamns/r319/trunk/run'
+;CHANGE!!!
 TEST=$
-;'ipe_S_10540' ;TD
-'ipe_S_10099' ;apex
-;'v57/but91800';43';
-plot_UT =$
-24.0
-;16.00
-;24.002;v55
-;23.07;v43
-;23.83;v45
-; freq_plot_hr = (60.*12.)/60. ;frequency of plotting in hr
-freq_plot_hr=900./3600.;0.25000
+;'ipe_80_17352dbg' ;lp=44
+'ipe_80_7459dbg' ;lp=48
+plot_UT =2.0
+;frequency of plotting in hr
+freq_plot_hr=3600./3600.
 ;READ, freq_plot_hr,PROMPT='Enter frequency of plotting in hour:' 
 
-title_hemi='NH'
+title_hemi='SH'
 ;READ, title_hemi,PROMPT="Enter which hemisphere?: NH or SH" 
 
-sw_fort=167L;168L
+sw_fort=168L;167L;168L
 ;READ, sw_fort,PROMPT="Enter which fort?: 167 or 168"
 
 
+mp_plot=33-1L ;<--read from the 167 file!
 
-sw_output2fil1e='PNG' ;NONE'
-mp_plot=4-1L
-lp_title=100 ;64;11 ;46
-if ( lp_title eq 10 ) then $
-  mlat_title='79.5' $
-else if ( lp_title eq 11 ) then $
-  mlat_title='78.4' $
-else if ( lp_title eq 65 ) then $
-  mlat_title='24.98' $
-else if ( lp_title eq 64 ) then $
-  mlat_title='25.26'  $
-else if ( lp_title eq 100 ) then $
-  mlat_title='16.664'  ;$
-;if ( lp_title eq 41 ) then $
-;  mlat_title='38'  $
-;else if ( lp_title eq 42 ) then $
-;  mlat_title='37'  $
-;else if ( lp_title eq 43 ) then $
-;  mlat_title='36'  $
-;else if ( lp_title eq 44 ) then $
-;  mlat_title='35'  $
-;else if ( lp_title eq 45 ) then $
-;  mlat_title='32'  $
-;else if ( lp_title eq 46 ) then $
+n_file=1L
+FLDIM0=LONARR(n_file)
 
+;CHANGE!!!
+if ( TEST eq 'ipe_80_17352dbg' ) then begin
+  lp_title    =44-1L ;<--read from the 167 file!
+   mlat_title ='34.37' ;<--read from 167 file! =GL/!PI*180. lp=44
+   FLDIM0     =[ 395L ] ;<--read from the 167 file! lp=44
+endif else if ( TEST eq 'ipe_80_7459dbg' ) then begin
+  lp_title    =48-1L
+  mlat_title  ='29.67' ;<--read from 167 file! =GL/!PI*180. lp=48
+  FLDIM0     =[ 313L ] ;<--read from the 167 file! lp=48
+endif
 
 sw_debug=0L
 plot_DIR=$
 "/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/fig/prfl/"
 ;HOME_DIR+'/fig/'+TEST+'/'
 ;'../figures/discon/1dnewflipgrid/fort'+STRTRIM( string(sw_fort, FORMAT='(i3)'), 1)+'/'
-n_file=1L
 
-;high resolution
-;if ( mlat_title eq '10' ) then  FLDIM =  265L  else $
-;if ( mlat_title eq '31' ) then  FLDIM =  495L  else $
-;if ( mlat_title eq '32' ) then  FLDIM = 1317L  else $
-;if ( mlat_title eq '35' ) then  FLDIM = 1357L  else $
-;if ( mlat_title eq '36' ) then  FLDIM = 1393L  else $  ;lp=43, mlat=35.8159
-;if ( mlat_title eq '37' ) then  FLDIM = 1435L  else $  ;lp=42
-;if ( mlat_title eq '38' ) then  FLDIM = 1473L  else $  ;lp=41
-;if ( mlat_title eq '60' ) then  FLDIM = 2141L  else $
-;if ( mlat_title ge '85' ) then  FLDIM = 4501L
-FLDIM0=LONARR(n_file)
-FLDIM0=[ $
-497L ]
-; 161L ];lp=100 APEX grid v43
- ;401L ];lp=100 FLIP grid v55
-;401L,401L,401L,401L]
-;769L, 769L]
-;769L, 695L, 651L, 843L];, 769L]
-; 769L, 695L, 769L]
-; 769L, 695L, 651L];, 769L]
-; 769L, 695L,3831L, 3629L ]
-;3831L, 3629L, 769L, 695L]
-;3831L, 3629L, 3831L, 3629L]
-;3831L, 3831L, 3831L, 3831L]  ;lp10, 3629 ;831L]
-;3629L,3629L,3629L,3629L]        ; lp11
-;431L, 431L, 431L, 431L]        ; lp65   
-;433L, 433L, 433L, 433L]        ; lp64   
-;433L, 431L,  433L, 431L ]
+
   LUN  = INTARR(n_file)
  UT_hr = fltarr(n_file)
  LT_hr = fltarr(n_file)
@@ -283,16 +239,14 @@ endif else if ( sw_fort eq 167 ) then begin
 
      endfor ;i = 0, n_file-1 do begin
 
-;dbg20110804
-;if ( UT_hr[0] ge 40.97 ) then  $
-;print, ( (UT_hr[0]-UT_hr0_save) MOD freq_plot_hr ), (UT_hr[0]-UT_hr0_save),freq_plot_hr, UT_hr[0],UT_hr0_save  ;$
-;else  GOTO, JUMP1
 
 
+
+IF (  ((UT_hr[0]-UT_hr0_save) MOD freq_plot_hr) GE 0.08 ) then continue
 
 print,'UT_hr[0]',UT_hr[0],'plot_UT',plot_UT
      if ( UT_hr[0] ge plot_UT ) $
-;AND  ( (UT_hr[0]-UT_hr0_save) MOD freq_plot_hr LT 0.0001 )$
+;AND  ( ((UT_hr[0]-UT_hr0_save) MOD freq_plot_hr) LT 0.0001 )$
  then begin
 
 
@@ -306,7 +260,7 @@ print,'plt_prfl',sw_output2file ;debug
 ,plot_x,plot_y, title_hemi,mlat_title,ut_hr,lt_hr,plot_DIR,FLDIM_plot,mp_plot,sw_debug,sw_fort $
 ,sw_dif,sw_output2file,n_file,fac_window, TEST
 
-BREAK ;exit from the while loop
+;dbg20140828 BREAK ;exit from the while loop
 
 ;STOP
 ;JUMP1:
