@@ -162,9 +162,10 @@ test $tasks -lt 2 && taskreq=2 || taskreq=$tasks
 
 # Handle SMS compare_var option. For a compare_var run, execute e.g.
 #
-#  COMPARE_VAR=1,2 qsubipe zeus intel parallel 11
+#  COMPARE_VAR=1,2 qsubipe zeus intel parallel 3
 #
-# for a 1-task-vs-2-task run.
+# for a 1-task-vs-2-task run. The final core request must be the sum of the two
+# numbers assigned to the COMPARE_VAR environment variable.
 
 if [ -n "$COMPARE_VAR" ]; then
   echo $COMPARE_VAR | grep -Eq "[0-9]+,[0-9]+" || fail "Bad COMPARE_VAR value '$COMPARE_VAR'."
