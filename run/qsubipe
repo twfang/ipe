@@ -2,16 +2,18 @@
 
 # Control variables
 
-queue_time=00:30:00
 sw_grid=0
 sw_neutral=1
 
 # Functions
 
 compiler_check() {
-  test -z "$1" && fail "$0: No list of valid compilers provided."
-  test -z "$2" && fail "$0: No compiiler name specified."
-  test -z "$3" && fail "$0: No machine name specified."
+
+  # Ensure the specified compiler is supported.
+
+  test -z "$1" && fail "$FUNCNAME: No list of valid compilers provided."
+  test -z "$2" && fail "$FUNCNAME: No compiiler name specified."
+  test -z "$3" && fail "$FUNCNAME: No machine name specified."
   echo $1 | grep -q $2 || usage "$scr: Machine $3 supports compilers: $1"
 }
 
@@ -21,31 +23,43 @@ fail() {
 }
 
 function findabove {
+
+  # Locate the specified item in the current directory, or any parent thereof.
+
   (
     until test -e $1 -o $PWD = "/" ; do cd .. ; done
-    test -e $1 || fail "$0: Could not find $1"
+    test -e $1 || fail "$FUNCNAME: Could not find $1"
     echo $PWD/$1
   )
 }
 
 linksafe() {
-  test -z "$1" && fail "$0: No target supplied."
-  test -e "$1" || fail "$0: No such target: $1."
+
+  # Create symlink only if target exists.
+
+  test -z "$1" && fail "$FUNCNAME: No target supplied."
+  test -e "$1" || fail "$FUNCNAME: No such target: $1."
   test -z "$2" && link="." || link="$2"
   ln -s $1 $link
 }
 
 nml() {
+
+  # Return the path to the nearest 'nml' utility.
+
   nml=../../tst/nml
   test -x $nml || nml=$(findabove nml)
   echo $nml
 }
 
 runscript_trillian() {
+
+  # Produce a script to run IPE on trillian.
+
   echo "#!/bin/bash -x"
   echo "#PBS -j oe"
   echo "#PBS -l nodes=$(expr $taskreq / 32 + 1):ppn=32"
-  echo "#PBS -l walltime=$queue_time"
+  echo "#PBS -l walltime=$IPETIME"
   echo "#PBS -N $jobname"
   echo "#PBS -o output.batch"
   echo "#PBS -W umask=022"
@@ -58,15 +72,18 @@ runscript_trillian() {
 }
 
 runscript_zeus() {
+
+  # Produce a script to run IPE on zeus.
+
   echo "#!/bin/bash -x"
   echo "#PBS -A $acct"
   echo "#PBS -d $PWD"
   echo "#PBS -j oe"
   echo "#PBS -l procs=$taskreq"
-  echo "#PBS -l walltime=$queue_time"
+  echo "#PBS -l walltime=$IPETIME"
   echo "#PBS -N $jobname"
   echo "#PBS -o output.batch"
-  echo "#PBS -q $queue"
+  echo "#PBS -q $IPEQUEUE"
   echo "#PBS -W umask=022"
   echo "export $envvars"
   echo "$($modcmd $machine $compiler)"
@@ -76,7 +93,20 @@ runscript_zeus() {
   echo "echo 'ipe failed' && exit 23"
 }
 
+setc() {
+
+  # Set variable to value only if variable is currently undefined.
+
+  test -z "$1" && fail "$FUNCNAME: No variable name supplied"
+  test -z "$2" && fail "$FUNCNAME: No value supplied"
+  test $# != 2 && fail "$FUNCNAME: usage: $FUNCNAME variable value"
+  test -z "$(eval echo \$$1)" && eval "$1=$2"
+}
+
 usage() {
+
+  # Show this script's supported usage, and exit with an error code.
+
   test -n "$1" && echo -e "\n$1"
   echo
   echo "USAGE: ipesub <machine> <compiler> <parallelism> [tasks]"
@@ -151,12 +181,13 @@ case $machine in
 
   "trillian")
     compiler_check "cray intel pgi" $compiler $machine
-    datadir=/mnt/lustre/lus0/space/madden/IPE/data
-    queue=workq
+    setc IPEDATA  /mnt/lustre/lus0/space/madden/IPE/data
+    setc IPEQUEUE workq
+    setc IPETIME  00:30:00
+    setc IPEWIND  $IPEDATA
     queue_cmd=qsub
-    winddir=$datadir
     case $sw_grid in
-      0) gridfile=$datadir/ipe_grid             ;;
+      0) gridfile=$IPEDATA/ipe_grid             ;;
       *) fail "$0: Grid ID '$sw_grid' unknown." ;;
     esac
     case $compiler in
@@ -173,14 +204,15 @@ case $machine in
 
   "zeus")
     compiler_check "intel lahey" $compiler $machine
+    setc IPEDATA  /scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/data
+    setc IPEQUEUE batch
+    setc IPETIME  00:30:00
+    setc IPEWIND  /scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/wind
     acct=swpc
-    datadir=/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/data
     griddir=/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/grid
-    queue=batch
     queue_cmd=qsub
-    winddir=/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/wind
     case $sw_grid in
-      0) gridfile=$datadir/ipe_grid                                               ;;
+      0) gridfile=$IPEDATA/ipe_grid                                               ;;
       1) gridfile=$griddir/apex/GIP_apex_coords_global_lowres_new20120705         ;;
       2) gridfile=$griddir/apex/GIP_apex_coords_global_lowres_new_2dynamo20120709 ;;
       3) gridfile=$griddir/tldp/GIP_apex_coords_global_lowres_new_tilt20120709    ;;
@@ -204,14 +236,6 @@ exe=../bin/${pre}.exe
 test -x $exe || fail "$0: Cannot find executable '$exe'."
 test $parallelism == serial && jobname=ipe_${compiler}_s || jobname=ipe_${compiler}_$tasks
 
-# Allow override of internal variables via environment variables (e.g. set by
-# the test suite software).
-
-test -n "$IPEDATA" && datadir=$IPEDATA
-test -n "$IPEQUEUE" && queue=$IPEQUEUE
-test -n "$IPETIME" && queue_time=$IPETIME
-test -n "$IPEWIND" && winddir=$IPEWIND
-
 # Create unique run directory and copy/link files into it.
 
 rundir=$(date +%s)_$pre
@@ -224,14 +248,14 @@ for x in $exe coef* GPTLnamelist $inp load_balance_groups1 $smsnl wei96.cofcnts;
   cp $x $rundir || fail
 done
 linksafe $gridfile $rundir/ipe_grid
-linksafe $datadir/ut_rec $rundir/stup_ut_rec
+linksafe $IPEDATA/ut_rec $rundir/stup_ut_rec
 for j in $(seq 0 11); do
   test $j -lt 10 && pad=0 || pad=
-  linksafe $datadir/plasma${pad}${j} $rundir/stup${pad}${j}
+  linksafe $IPEDATA/plasma${pad}${j} $rundir/stup${pad}${j}
 done
 if [ $sw_neutral -eq 3 ]; then
-  linksafe $winddir/ut_input $rundir/ut_input2009017
-  linksafe $winddir/wind_input $rundir/wind_input2009017
+  linksafe $IPEWIND/ut_input $rundir/ut_input2009017
+  linksafe $IPEWIND/wind_input $rundir/wind_input2009017
 fi
 
 # Enter the run directory, edit SMSnamelist, create and submit the run script.
