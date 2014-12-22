@@ -1,2 +1,0 @@
-build: zeus_lahey_serial
-cmd: tcsh -c "source setup_ipe.zeus.lahey.tcsh && make cln && make"

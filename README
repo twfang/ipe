@@ -1,32 +1,41 @@
-date: 20120514
-brief instruction on how to compile & run the ipe
+Brief instructions on compiling and running IPE
 
-go to the directory where makefile is located
-$ cd src
+Building
+--------
 
-Depending on your shell, set up the environment by doing one of the following:
-$ source setup_ipe.zeus.tcsh
-$ source setup_ipe.jet.tcsh
-$ source setup_ipe.jet.lahey.tcsh
-$ source setup_ipe.jet.bash
+From the IPE root directory:
 
-clean before compile 
-$ make cln
+1. cd src
+2. make clean
+3. make <target>
 
-compile serial
-$ make
-compile parallel
-$ make PAR=sms
+e.g.: make trillian_pgi_parallel
 
-go to the run directory
-cd ../run
-copy the desired IPE.inp.* into IPE.inp
+Run 'make' with no options to see usage information.
 
-run the executable
-$ ../src/ipe.v18.exe
+Running
+-------
 
-or submit a job:
-#For zeus:
-$ qsubipe
-#For JET
-$ qsubipejET
+From the IPE root directory:
+
+1. cd run
+2. qsubipe <machine> <compiler> <parallelism> [tasks]
+
+e.g. qsubipe trillian pgi serial
+e.g. qsubipe trillian pgi parallel 10
+
+Run 'qsubipe' with no options to see usage information.
+
+Testing
+-------
+
+From the IPE root directory:
+
+1. cd tst
+2. ipets <suite>
+
+e.g. ipets trillian
+
+Run 'ipets' with no options to see usage information.
+
+See tst/REAME.IPE for more testing instructions.

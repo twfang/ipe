@@ -775,7 +775,7 @@ C... Written by P. Richards September 2010
          IF ( sw_ERSTOP_flip==1 )  STOP
       END IF
  31   FORMAT(/'  Convergence failure in He+ solution (XION).'
-     >  ,2X,'Time step less than minimum.')
+     >  ,2X,'Time step less than minimum.',i3,'lp',i4)
       IF(EFLAG(3,2).NE.0) THEN
          WRITE(PRUNIT,32)mp,lp
          IF ( sw_ERSTOP_flip==1 )  STOP

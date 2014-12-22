@@ -1,6 +1,0 @@
-extends: 'zeus_common'
-baseline: 'zeus_lahey'
-build: 'zeus_lahey_serial'
-inpfile: 'IPE.inp.lahey'
-qsubcmd: 'qsubipeZeus.lahey'
-tasks: ''

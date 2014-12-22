@@ -1,2 +1,0 @@
-build: zeus_intel_serial
-cmd: tcsh -c "source setup_ipe.zeus.tcsh && make cln && make"

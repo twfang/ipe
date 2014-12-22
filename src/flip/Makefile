@@ -1,7 +1,24 @@
-#SHELL=/bin/bash
-OBJ=$(notdir $(OBJ2))
-FC=$(FC)
-FFLAGS=$(FFLAG2) 
-LFLAGS=$(LFLAG2)
-HOME_dev=$(HOME_dev)
-include  $(HOME_dev)/Makefile.original
+# flip Makefile
+
+TOP = ..
+
+SSRCS=CMINOR.f                       \
+      CTIPE-int.f                    \
+      ELECXS.f                       \
+      FLIP_GRID.f                    \
+      initialize_module_parameters.f \
+      INIT-PROFILES.f                \
+      KEMPRN.f                       \
+      MINORA.f                       \
+      Neut_Heating.f                 \
+      Photoel-Freqs.f                \
+      Rates.f                        \
+      RSDENA_EXB.f                   \
+      RSJACA.f                       \
+      RSLPSD.f                       \
+      RSLPST.f                       \
+      RSPE2B.f                       \
+      RSPRIM.f                       \
+      RSTEMC_EXB.f
+
+include $(TOP)/Makefile.common
