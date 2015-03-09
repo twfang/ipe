@@ -7,18 +7,16 @@
 ;20111205: sw_save=2 to save plotting time!!!
 ;include parallel plasma velocity to help the debug!!!
 pro plt_ipe
-sw_output2file=1;1'PNG' ;0NONE';
-TEST='r336.2';19';.2.4';345.1';336.2';r319';r345';
-TEST2='S';80';S;640'
+sw_output2file=1;'PNG' ;0NONE';
+TEST='r336.2';r319';r345';
+TEST2='S';80';640';80';S;640'
 sw_output2file_ascii=0
 f107=130;165;100;72
 TEST1=$
-;'15166'
-;'7563';
-;'5524';
-;'25717';
-;'18740';
-'9445';7490';4866';
+;'16606'
+;'27321'
+;'20022'
+'16756'
 alt=350.
 
    if ( f107 eq 165 ) then begin
@@ -36,6 +34,7 @@ alt=350.
 
 luntmp =100L
 luntmp1=101L
+openw,luntmp,'tmp.dat', /GET_LUN
 if ( sw_output2file_ascii eq 1 ) then begin
    chr_title='F107='+STRTRIM( string(f107, FORMAT='(i3)'), 1)
    chr_title1=STRTRIM( string(alt, FORMAT='(F5.0)'), 1)+'km'
@@ -45,17 +44,16 @@ if ( sw_output2file_ascii eq 1 ) then begin
 
 endif ;( sw_output2file_ascii eq 1 ) then begin
 
+
 ;n_plt_max=97L ;for quick plot
 n_read_max=$
-;43-25+1
-;121-1+1
-127-108+1
-plot_UT    =432000.;86400.;0.;432000.;54000.;432000.;54000.;432000. ;+ 3600.*16.;
-plot_UT_end=434280.;88560.;432000.;434280;plot_UT+86400.; + 3600.*24.;*6.; [sec]
-sw_quickplot=1
+1L;97L
+plot_UT    =432000.
+plot_UT_end=plot_UT +86400.
+sw_quickplot=0
 ;20140117; plot every X hour
 sw_hourly_plot=0
-plotXhr=4.0 
+plotXhr=1.0 
 print, 'plot every',plotXhr,' hour'
 
 title_res= $
@@ -98,15 +96,15 @@ input_DIR0=$
 
 
 
-plot_type=0L ;0:contour; 1:ht profile; 2:LT-LAT contour; 3:LON-LAT contour; 4:refilling: 5:psphere, 6:tec
+plot_type=3L ;0:contour; 1:ht profile; 2:LT-LAT contour; 3:LON-LAT contour; 4:refilling: 5:psphere, 6:tec
 ;if plot_type eq 0 then begin
-  mp_plot=10-1L ; longitude sector to plot
+  mp_plot=80-1L ; longitude sector to plot
 mpstart=mp_plot
 mpstop=mpstart
 mpstep=1
 
-  VarType_min=1
-  VarType_max=1;11
+  VarType_min=7
+  VarType_max=7;11
   VarType_step=1
 ;endif ;plot_type eq 0 then begin
 
@@ -136,7 +134,7 @@ STOP_TIME='230406'
 rundate='20121121'
 TEST0='trans'
 title_test=TEST0+'.'+TEST  ;trans.'+TEST
-title_hemi='NH';glb';SH'eq';
+title_hemi='glb';SH'eq';
 
 version='3d'
 
@@ -168,19 +166,19 @@ sw_LUN  = INTARR(n_file)
 sw_lun[0:1]=1
 sw_lun[2]=1 ;o+
 sw_lun[4]=0 ;vo+
-sw_lun[6]=1 ;h+
-sw_lun[8]=1 ;he+
-sw_lun[9]=1 ;n+
-sw_lun[10]=1 ;no+
-sw_lun[11]=1 ;o2+
-sw_lun[12]=1 ;n2+
-sw_lun[13]=1 ;o+(2D)
-sw_lun[14]=1 ;o+(2P)
-sw_lun[3]=1 ;Te
-sw_lun[7]=1 ;Ti
-sw_lun[5]=0 ;vexbup
-sw_lun[15]=0 ;vexbe
-sw_lun[16]=0 ;vexbth
+sw_lun[6]=0 ;h+
+sw_lun[8]=0 ;he+
+sw_lun[9]=0 ;n+
+sw_lun[10]=0 ;no+
+sw_lun[11]=0 ;o2+
+sw_lun[12]=0 ;n2+
+sw_lun[13]=0 ;o+(2D)
+sw_lun[14]=0 ;o+(2P)
+sw_lun[3]=0 ;Te
+sw_lun[7]=0 ;Ti
+sw_lun[5]=1 ;vexbup
+sw_lun[15]=1 ;vexbe
+sw_lun[16]=1 ;vexbth
 if ( sw_dif eq 1 ) then begin
 LUNq  = INTARR(n_file)
    input_flnmq =input_flnm
@@ -234,14 +232,14 @@ NMP=80L ;=mpstop in IPE.inp
 ISPEC=9L
 ISPEV=4L
 MaxFluxTube=1115L ;=FLDIM
-FLDIM=651;577L;415L  ;???used when plot_type=1
+FLDIM=345l;577L;415L  ;???used when plot_type=1
 
   
   sunlons1 =  -1.92900  ;tmp20140701 i will need to read in every time within the loop
   UT_hr = 0.00D0
   UT_hr_save = fltarr(n_read_max)
 ;  LT_hr = fltarr(  NMP,NLP)
-NPAR   = 4L;
+NPAR   = 5L;
 ;i should be aware of the memory limit!!!
 if ( plot_type eq 0 ) or ( plot_type eq 2 ) or ( plot_type eq 4 ) then begin
 ;  plot_z = fltarr(n_read_max,NPAR, NMP,NPTS2D)
@@ -264,6 +262,10 @@ if ( sw_hr eq 1 ) then $
 XIONN_m3 =fltarr(ISPEC,NPTS2D,NMP)
 XIONV_ms1=fltarr(1,NPTS2D,NMP) ;fltarr(ISPEV,NPTS2D,NMP)
 TE_TI_k  =fltarr(3,NPTS2D,NMP)
+
+;dbg20141208
+TE_TI_k_save  =fltarr(3,NPTS2D,NMP)
+
 VEXB=fltarr(NMP,NLP,3) ;before2011-11-16.v18 only meridional transport version
 ;after 2011-11-16.v18: VEXB=fltarr(2,NPTS2D,NMP) ;zonal transport version
 ;NHEAT_mks=dblarr(      NPTS2D,NMP)
@@ -382,6 +384,7 @@ n_plt=-1L
   UT_hr_save[n_read]=UT_hr
 
 
+
 ;dbg20141016
 ;if ( n_read ge 60) then begin
 ;in=JMIN_IN[57]-1
@@ -460,8 +463,8 @@ if ( plot_type eq 0 ) or ( plot_type eq 2 ) or ( plot_type eq 4 )  then begin
       k=2L                    
 ;      if ( sw_lun[4] eq 1 ) then $
         for ipts=0L,NPTS2D-1L do  $
-; plot_z[n_read,k,0,ipts] = TE_TI_k[jth,ipts,mp] 
-plot_z[n_read,k,0,ipts] = XIONV_ms1[0,ipts,mp] ;dbg20141015 vo+
+ plot_z[n_read,k,0,ipts] = TE_TI_k[jth,ipts,mp] 
+;plot_z[n_read,k,0,ipts] = XIONV_ms1[0,ipts,mp] ;dbg20141015 vo+
 
 
 ;3-11  ion densities 
@@ -731,7 +734,7 @@ if ( sw_quickplot eq 0 ) then $
 ;, input_DIR0,TEST,  TEST1, TEST2 $
 else if ( sw_quickplot eq 1 ) then begin;$
 rundir = 'ipe_'+TEST2+'_'+TEST1
-print,'rundir',rundir
+print,'rundir=',rundir
      ctr_lat_ht_quick    $ 
   , JMIN_IN,JMAX_IS,Z_km,mlat_deg  $ 
   , plot_z,plot_VEXB,n_read   $
@@ -779,7 +782,7 @@ plot_x = fltarr(plot_type_max, k_species,FLDIM_max,n_file_plot)
      plot_x[*,*,*,*] =-999999999.999999
  FLDIM_plot=LONARR(n_file_plot)
 for   mp_plot0=mp_plot,mp_plot,1  do begin
-  lp_plot0=12-1; 58-1L
+  lp_plot0=46-1; 58-1L
 
 for i_file = 0,n_file_plot-1 do begin
 
@@ -869,7 +872,9 @@ ALOG10 ( XIONN_m3[1-1,in:is,MP_plot] * 1.0E-6 ) ;[o+]m-3 --> cm-3
      plot_x[i_window,1,0:FLDIM_plot[i_file]-1,i_file] =$
 ALOG10 ( XIONN_m3[2-1,in:is,MP_plot] * 1.0E-6 ) ;[h+]
      plot_x[i_window,2,0:FLDIM_plot[i_file]-1,i_file] =$
-ALOG10 ( XIONN_m3[3-1,in:is,MP_plot] * 1.0E-6 ) ;[he+]
+ALOG10 ( XIONN_m3[3-1,in:is,MP_plot] * 1.0E-6 ) ;[he+];v0
+;ALOG10 ( ( XIONN_m3[4,in:is,MP_plot]  ) * 1.0E-6 ) ;[No+] ;v2
+;ALOG10 ( ( XIONN_m3[5,in:is,MP_plot]  ) * 1.0E-6 ) ;[No+] ;v3
 
 ;dbg20141016
 ;inmax=in+40L
@@ -877,17 +882,35 @@ ALOG10 ( XIONN_m3[3-1,in:is,MP_plot] * 1.0E-6 ) ;[he+]
 ;for kk=in,in+40 do  print,kk, z_km[kk],XIONN_m3[3-1,kk,MP_plot]
 
      plot_x[i_window,3,0:FLDIM_plot[i_file]-1,i_file] =$
-ALOG10 ( TOTAL( XIONN_m3[*,in:is,MP_plot],1) * 1.0E-6 ) ;[Ne]
+;ALOG10 ( TOTAL( XIONN_m3[*,in:is,MP_plot],1) * 1.0E-6 ) ;[Ne] ;v0
+ALOG10 ( ( XIONN_m3[3,in:is,MP_plot] + XIONN_m3[4,in:is,MP_plot] + XIONN_m3[5,in:is,MP_plot] +XIONN_m3[6,in:is,MP_plot] +XIONN_m3[7,in:is,MP_plot] ) * 1.0E-6 ) ;[MIN+] ;v1
+;ALOG10 ( ( XIONN_m3[3,in:is,MP_plot]  ) * 1.0E-6 ) ;[N+] ;v2
+;ALOG10 ( ( XIONN_m3[6,in:is,MP_plot]  ) * 1.0E-6 ) ;[N+] ;v3
      i_window=1L
      plot_x[i_window,0,0:FLDIM_plot[i_file]-1,i_file] =   TE_TI_k[1-1,in:is,MP_plot] ;STORM Ti
-     plot_x[i_window,1,0:FLDIM_plot[i_file]-1,i_file] =   TE_TI_k[1-1,in:is,MP_plot] ;QUIET Ti
+     plot_x[i_window,1,0:FLDIM_plot[i_file]-1,i_file] = $
+0.;  TE_TI_k[1-1,in:is,MP_plot] ;QUIET Ti ;v0
+;TE_TI_k_save[1-1,in:is,MP_plot] ;v4 old Ti
+;( TE_TI_k[3-1,in:is,MP_plot] - TE_TI_k_save[3-1,in:is,MP_plot] )*10. ;/ TE_TI_k_save[3-1,in:is,MP_plot] * 1.E6  ;v4 te % change
      plot_x[i_window,2,0:FLDIM_plot[i_file]-1,i_file] =   TE_TI_k[3-1,in:is,MP_plot] ;STORM Te
-     plot_x[i_window,3,0:FLDIM_plot[i_file]-1,i_file] =   TE_TI_k[3-1,in:is,MP_plot] ;QUIET Te
+
+     plot_x[i_window,3,0:FLDIM_plot[i_file]-1,i_file] = $
+0.;  TE_TI_k[3-1,in:is,MP_plot] ;QUIET Te ;v0
+;TE_TI_k_save[3-1,in:is,MP_plot] ;v4
   endif 
 
   plot_y[    0:FLDIM_plot[i_file]-1,i_file] =                  Z_km[  in:is]
 ;endif
+
+;dbg20141208
+;for kk=0,FLDIM_plot[i_file]-1  DO   print,'check diff Te',kk,  plot_x[1,3,kk,i_file]
+
+
 endfor                     ;i_file = 0,n_file_plot-1 do begin
+
+
+
+
 
 
 
@@ -900,7 +923,14 @@ sw_fort=168L
 ;,plot_type_prof
 ,plot_DIR,FLDIM_plot,mp_plot0,sw_debug,sw_fort $
 ,sw_dif,sw_output2file,n_file_plot,fac_window,TEST,rundir
+
+
+
 endfor   ;mp_plot0=1-1,nmp-1,10  do begin     
+
+;dbg20141208
+print, 'saving old Te and Ti'
+te_ti_k_save = te_ti_k
 
 
 
