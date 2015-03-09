@@ -1,54 +1,65 @@
-;20121120: ed190 dimension modified to (2*nlp,nmp)
+;20140221: sw_180=1 gives strange plots for the first 4 plots. why
+;only the first 4? why not all of them?
+;20121120: version 3: ed190 dimension modified to (2*nlp,nmp)
 ;20120530: fort.2010 added for ed2
 ;pro plot_efield ;shorter name
 pro plt_efv2
+sw_debug=1L
+sw_output2file=0L ;1'PNG' ;0NONE';
+sw_plt_cntr=0L
+sw_plt_exb=1L ;1
 version=3  ;2: 20120530; 3:20121120
-sw_180=0 ;1:-180<+180; 0:0~360
-title_res='low';dyn';'low' ; 'high'
-sw_plot_exb=0L ;1
-iplot_max=6-1L
-;utime_min=605100;150300;150300;82706;141206L
-utime_max=615600;162900;utime_min+86400 ;83606 ;230306L ;314006L ;to plot ExB time variation on the 6th panel 
-freq_plot_sec=300.;(utime_max-utime_min);900 ;3600L*6
-sw_debug=0L
+sw_180=0L ;1:-180<+180; 0:0~360
+title_res=$
+;'low20120709'
+'2xdyn';'
+;low';dyn';'low' ; 'high'
+utime_min=432000.;471600.;###CHANGE
+utime_max=utime_min+3600.*24. ; ;to plot ExB time variation on the 6th panel 
+;t if sw_plt_exb eq 0 then begin 
+  iplot_max=6-1L 
+;t  freq_plot_sec=900
+;t endif else if sw_plt_exb eq 1 then begin 
+;t  iplot_max=6-2L
+  freq_plot_sec=utime_max-utime_min
+;t endif
 ;HOMEDIR='/lfs0/projects/idea/maruyama/sandbox/ipe/'
 HOMEDIR='/home/Naomi.Maruyama/'
 ;runDIR=HOMEDIR+'ptmp/'
-runDIR=HOMEDIR+'wamns/'
-figDIR=HOMEDIR+'iper/'
+runDIR='/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/'
+figDIR=runDIR
 TEST0='3d'
 TEST1='trans'
-TEST2='v73.0';v63.3';gsd';
-runDATE='20121121'
-plot_DIR=$
-;runDIR+'ipe4gsd/fig/' ;gsd
-figDIR+'fig/'+TEST2+'/'
-;runDIR+'fig/efield/'+TEST2+'/'
+;TEST2='r293.0/trunk/run/ipe_S_20121';
+;TEST2='r293.1/trunk/run/ipe_S_31785';after correction
+;TEST2='r292.3/trunk/run/ipe_S_15734';without SSW
+;TEST2='r292.3/trunk/run/ipe_S_24042';with SSW
+;TEST2='r336/trunk/run/ipe_S_29795';20140221 validate zonal drift ###CHANGE
+;TEST2='r319.2/trunk/run/ipe_S_3800';20140221 validate zonal drift ###CHANGE
+;TEST2='r336.2/trunk/run/ipe_S_9445';640_5524';
+;TEST2='r319/trunk/run/ipe_80_27926'
+TEST2='r336.2.1/trunk/run/ipe_S_10670';14601';10595';S_24059';640_19352';
+runDATE='20140702'
+
 input_DIR=$
 ;runDIR+'ipe4gsd/run_naomi/'
 runDIR+TEST2+'/';bkup93/'
 ;runDIR+runDATE+'.'+TEST0+'.'+TEST1+'.'+TEST2+'/But'+STRTRIM( string(utime_max, FORMAT='(i7)'),1 )+'error/'
 ;input_DIR=runDIR+runDATE+'.'+TEST0+'.'+TEST1+'.'+TEST2+'/backup20111108/'
 
+plot_DIR=$
+'/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/fig/ef/'
+;input_DIR
+;runDIR+'ipe4gsd/fig/' ;gsd
+;figDIR+'fig/'+TEST2+'/'
+;runDIR+'fig/efield/'+TEST2+'/'
 
-SW_range=1L
-plot_NH=1L
-  var_title=['pot130[kV]','ed1130[mV/m]','ed2130[mV/m]','pot130-mlat90[kV]','ed190[mV/m]','ed290'] 
-if( SW_range eq 1 ) then  begin
-;  value_min_fix=[  -30.,     -20.,    -25. ,-30.,-20.]
-;  value_max_fix=[  +30.,     +20.,    +25. ,+30.,+20.]
-  if (plot_NH eq 1) then begin
-    value_min_fix=[  -8.,     -2.,    -5. ,-8.,-2.,-5.]
-    value_max_fix=[  +8.,     +2.,    +5. ,+8.,+2.,+5.]
-;     val0=1.3
-;     value_min_fix=[  -8.,     -val0,    -val0 ,-8., -val0, -val0]
-;     value_max_fix=[  +8.,     +val0,    +val0 ,+8., +val0, +val0]
-  endif
-endif
+print,' plot_DIR', plot_DIR
+
 
 utime=0L
 freq_output=5 ;min
-n_read_max=(60/freq_output)*24 +1
+n_read_max=97L; ###CHANGE
 utsec_save=fltarr(n_read_max)
 utsec_save[*]=-9999L
 
@@ -62,9 +73,12 @@ ylatm=fltarr(nmlat+1)
 mlat130=fltarr(nmlat+1)
 mlon130=fltarr(nmlon+1)
 mlat90_0=fltarr(nmlat+1)
-nmp=80L
-if ( title_res eq 'low' ) then $
+;nmp=80L
+nmp=1L  ;dbg20141111
+if ( title_res eq 'low' ) OR ( title_res eq 'low20120709' ) then $
    nlp=170L $
+else if ( title_res eq '2xdyn' ) then $
+   nlp=93L $
 else if ( title_res eq 'dyn' ) then $
    nlp=45L                      ;dyn
 
@@ -82,47 +96,55 @@ formatF='(20f10.4)'
 formatF1='(i4,f10.4)'
 formatI='(i12)'
 
-openr, LUN10, input_DIR+'fort.2010', /GET_LUN
+openr, LUN10, input_DIR+'fort.2010', /GET_LUN ;utime
 ;openr, LUN10, input_DIR+'fort.2009', /GET_LUN ;20120125utime
-openr, LUN0, input_DIR+'fort.2000', /GET_LUN
-openr, LUN1, input_DIR+'fort.2001', /GET_LUN
-openr, LUN2, input_DIR+'fort.2002', /GET_LUN
-openr, LUN3, input_DIR+'fort.2003', /GET_LUN
+openr, LUN0, input_DIR+'fort.2000', /GET_LUN ;potent
+openr, LUN1, input_DIR+'fort.2001', /GET_LUN ;ed1
+openr, LUN2, input_DIR+'fort.2002', /GET_LUN ;ed2
+openr, LUN3, input_DIR+'fort.2003', /GET_LUN ;ylatm
 readf, LUN3, ylatm,  FORMAT=formatF
 mlat130=ylatm-90.
-openr, LUN4, input_DIR+'fort.2004', /GET_LUN
+openr, LUN4, input_DIR+'fort.2004', /GET_LUN ;ylonm
 readf, LUN4, mlon130,  FORMAT=formatF
 
-if ( sw_180 eq 1 ) then begin
+if ( sw_180 eq 1L ) then begin
 for j=0,nmlon+1-1 do begin
-  if ( mlon130[j] gt 180. ) then  mlon130[j]=mlon130[j]-360.
+  if ( mlon130[j] ge 180. ) then  mlon130[j]=mlon130[j]-360.
 endfor
 endif
 
-openr, LUN7, input_DIR+'fort.2007', /GET_LUN
+openr, LUN7, input_DIR+'fort.2007', /GET_LUN ;theta90
 readf, LUN7, mlat90_0,  FORMAT=formatF
-openr, LUN8, input_DIR+'fort.2008', /GET_LUN
-openr, LUN9, input_DIR+'fort.2009', /GET_LUN
-openr, LUN6, input_DIR+'fort.2006', /GET_LUN
-string='GL'
-readf, LUN6 , string
-print, string
-for i=1,nlp do begin
-readf, LUN6, ii,lat,  FORMAT=formatF1
-mlat90_1(ii-1)=lat ;NH
-readf, LUN6, ii,lat,  FORMAT=formatF1
-mlat90_1(ii-1)=lat ;SH
-endfor
-print,'mlat90_1',mlat90_1
+openr, LUN8, input_DIR+'fort.2008', /GET_LUN ;ed1_90
+openr, LUN9, input_DIR+'fort.2009', /GET_LUN ;ed2_90
+;20130408: fort.2006 does not exist any more!!!
+get_gl, mlat90_1,title_res,sw_debug
+;openr, LUN6, input_DIR+'fort.2006', /GET_LUN
+;string='GL'
+;readf, LUN6 , string
+;print, string
+;for i=1,nlp do begin
+;readf, LUN6, ii,lat,  FORMAT=formatF1
+;mlat90_1(ii-1)=lat ;NH
+;readf, LUN6, ii,lat,  FORMAT=formatF1
+;mlat90_1(ii-1)=lat ;SH
+;endfor
+
+if sw_debug eq 1L then begin
+  print,'after mlat90_1'
+ for lp=0,nlp do  print,(lp+1),mlat90_1(lp)
+;stop
+endif
 dlonm90km=4.50 ;deg
 mlon90=findgen(nmp)*dlonm90km
-print,'mlon90',mlon90
+if sw_debug eq 1 then $
+  print,'mlon90',mlon90
 for i=0,nlp*2-1 do begin
    for mp=0,nmp-1 do begin
       mlon90_2d[mp,i]=mlon90[mp]
 
-if ( sw_180 eq 1 ) then begin
-      if ( mlon90_2d[mp,i] gt 180. ) then mlon90_2d[mp,i]=mlon90_2d[mp,i]-360. 
+if ( sw_180 eq 1L ) then begin
+      if ( mlon90_2d[mp,i] ge 180. ) then mlon90_2d[mp,i]=mlon90_2d[mp,i]-360. 
 endif
 
    endfor;mp
@@ -130,11 +152,15 @@ endfor   ;i
 for j=0,nmp-1 do begin
 mlat90_2d[j,0:nlp*2-1]=mlat90_1[0:nlp*2-1]
 endfor
+;dbg20140225
+;print,'mlat90_1=',mlat90_1[0:nlp]
+;STOP
 
 n_read=-1L
 while(eof(LUN10) eq 0 ) do begin
 n_read=n_read+1
 readf, LUN10, utime,  FORMAT=formatI
+print, n_read, utime
 utsec_save[n_read]=utime
 print,'rd#',n_read,' uts',utime ;,' uts_save',utsec_save[n_read]
 
@@ -146,17 +172,30 @@ if ( version eq 2 ) then begin  ;nm201205
   readf, LUN9, ed290,  FORMAT=formatE
 endif else $
 if ( version eq 3 ) then begin  ;nm20121120
-  edum=fltarr(nlp*2,nmp)
+  edum=fltarr(2,nlp,nmp)
   readf, LUN8, edum,  FORMAT=formatE  ;ed190
   for mp=0,nmp-1 do begin
-    for lp=0,nlp*2-1 do begin
-      ed190[mp,lp] = edum[lp,mp]
+    ii=-1
+    for lp=0,nlp-1 do begin
+      ii=ii+1
+      ed190[mp,ii] = edum[1,lp,mp] ;SH
+    endfor ;lp
+    for lp=nlp-1,0,-1 do begin
+      ii=ii+1
+      ed190[mp,ii] = edum[0,lp,mp];NH
     endfor ;lp
   endfor ;mp
+
   readf, LUN9, edum,  FORMAT=formatE   ;ed290
   for mp=0,nmp-1 do begin
-    for lp=0,nlp*2-1 do begin
-      ed290[mp,lp] = edum[lp,mp]
+    ii=-1
+    for lp=0,nlp-1 do begin
+      ii=ii+1
+      ed290[mp,ii] = edum[1,lp,mp];SH
+    endfor ;lp
+    for lp=nlp-1,0,-1 do begin
+      ii=ii+1
+      ed290[mp,ii] = edum[0,lp,mp];NH
     endfor ;lp
   endfor ;mp
 endif ;( version eq 3 ) then begin  ;nm20121120
@@ -165,8 +204,10 @@ mp=0L
 ;mp=4-1L
 ;mp=8-1L
 ;mp=60-1L
-if ( title_res eq 'low' ) then $
+if ( title_res eq 'low' ) OR ( title_res eq 'low20120709' )  then $
   lp=130-1L $  ;-9.05[deg] mp=0;jicamarca: ht=254.107km
+else if ( title_res eq '2xdyn' ) then $
+  lp=66-1L  $ ;-9.506[deg] mp=0;jicamarca: ht=???km
 else if ( title_res eq 'dyn' ) then $
   lp=34-1L  ;dyn-9.05[deg] mp=0;jicamarca: ht=254.107km
 
@@ -177,258 +218,32 @@ else if ( title_res eq 'dyn' ) then $
 
 ed190_save[n_read]=ed190[mp,lp]
 ed290_save[n_read]=ed290[mp,lp]
-if ( n_read eq 0 ) then  print,'mp=',mp,' lp=',lp,' mlat90=',mlat90_2d[mp,lp]
+if ( n_read eq 0 ) then  print,'plt_ef: mp=',mp,' lp=',lp,' mlat90=',mlat90_2d[mp,lp]
 title_exb='lat='+STRTRIM( string(mlat90_2d[mp,lp], FORMAT='(F6.2)'),1 )+' mp='+STRTRIM( string((mp+1), FORMAT='(i2)'),1 ) ;IDL convention
 
-
-if $
-;( utime gt utsec_save[0]) and $
-;( utime ge 605700 ) and $  ;tmp20121120
-( ( (utime-utsec_save[0]) MOD freq_plot_sec ) LT 0.00001 ) then begin
-iwindow=0L
-DEVICE, RETAIN=2, DECOMPOSED=0
-WINDOW,iwindow,XSIZE=900,YSIZE=650
-!p.multi=[0,3,2,0]
-n_ldct=39  ;rainbow+black
-loadct,n_ldct
-text_color=160  ;within rainbow+black color table
-char_size =2.0
-char_thick=1.5
-;choose color
- col_max = 255.9999999999999999
- col_min =   0.0000000000000
-n_levels=100L
-
-if ( sw_180 eq 1 ) then begin
-   X_min=-180.                  ;MIN(mlon130)
-   X_max=+180.                  ;MAX(mlon130)
-endif else if ( sw_180 eq 0 ) then begin
-   X_min=0.                     ;MIN(mlon130)
-   X_max=+360.                  ;MAX(mlon130)
-endif 
-
-Y_max=MAX(mlat130)
-Y_min=-Y_max;MIN(mlat130)
-if ( plot_NH eq 1 ) then begin
-  Y_max=+60.
-;  Y_max=+90.
-  Y_min=+0.
-endif
+if ( utime gt utime_max ) then BREAK ;exit from while read loop
+;if $
+; ( utime gt utsec_save[0]) AND $
+;;( utime ge 605700 ) and $  ;tmp20121120
+; ( ( (utime-utsec_save[0]) MOD freq_plot_sec ) LT 0.00001 ) then begin
 
 
-charsize_colorbar=3.4
-format_colorbar='(f6.2)'
-for iplot=0,iplot_max do begin
-if ( iplot eq 0 ) then begin
- zz=poten*1.0E-3   ;V-->kV
-endif else if ( iplot eq 1 ) then begin
- zz=ed1130
-endif else if ( iplot eq 2 ) then begin
- zz=ed2130
-endif else if ( iplot eq 3 ) then begin
- zz=poten*1.0E-3   ;V-->kV
-endif else if ( iplot eq 4 ) then begin
- zz=ed190 ;mV/m
-endif else if ( iplot eq 5 ) then begin
- zz=ed290 ;20120604:*(-1.) ;mV/m  ed2 corrected in the source file!
-endif
 
-zmax=MAX(zz)
-zmin=MIN(zz)
-if ( sw_debug eq 1 ) then  $
-  print,' maxZ=',zmax,' minZ=',zmin
-
-if( SW_range eq 1 ) then  begin
-  zmax=value_max_fix[iplot]
-  zmin=value_min_fix[iplot]
-endif
-max_z_data = MAX(zz)
-min_z_data = MIN(zz)
-
-get_position $
-, iplot, iwindow  $
-, X0 , Y0 , X1 , Y1
-
-
-if ( iplot ge 4 ) then $
-contour,zz,mlon90_2d,mlat90_2d $
-,/irregular $
-,/fill $
-, levels=findgen(n_levels)*(zmax-zmin)/float(n_levels-1) +zmin $
-, xrange=[X_min,X_max], /xstyle  $
-, yrange=[Y_min,Y_max], /ystyle  $
-,XTITLE = 'mlon90', YTITLE = 'mlat90' $ 
-,TITLE = ' ' $
-, POSITION=[X0 , Y0 , X1 , Y1 ] $
-, COLOR=text_color $
-, charsize = char_size, charthick = char_thick  $
-
-else if ( iplot eq 3 ) then $
-contour,zz,mlon130,mlat90_0 $
-,/fill $
-, levels=findgen(n_levels)*(zmax-zmin)/float(n_levels-1) +zmin $
-, xrange=[X_min,X_max], /xstyle  $
-, yrange=[Y_min,Y_max], /ystyle  $
-,XTITLE = 'mlon130', YTITLE = 'mlat90' $ 
-,TITLE = ' ' $
-, POSITION=[X0 , Y0 , X1 , Y1 ] $
-, COLOR=text_color $
-, charsize = char_size, charthick = char_thick  $
-
-else $
-contour,zz,mlon130,mlat130 $
-,/fill $
-, levels=findgen(n_levels)*(zmax-zmin)/float(n_levels-1) +zmin $
-, xrange=[X_min,X_max], /xstyle  $
-, yrange=[Y_min,Y_max], /ystyle  $
-,XTITLE = 'mlon130', YTITLE = 'mlat130' $ 
-,TITLE = ' ' $
-, POSITION=[X0 , Y0 , X1 , Y1 ] $
-, COLOR=text_color $
-, charsize = char_size, charthick = char_thick 
-
-
-add_colorbar $
-, X0, X1, Y1 $
-,zmax, zmin   $
-, iwindow $
-,charsize_colorbar,format_colorbar
-
-
-xyouts, x0, (y1+0.01) $
-, var_title[iplot]+'  MAX/MIN:'+STRTRIM( string(max_z_data, FORMAT='(E9.2)'), 1)+'/'+STRTRIM( string(min_z_data, FORMAT='(E9.2)'), 1)  $
-, charsize =1.0, charthick=char_thick $
-, /norm, /noclip
-
-endfor ;iplot=0,2 do begin
-
-
-loadct,0
-xyouts, 0.03, 0.96  $
-,'UT [sec]='+STRTRIM( string(utime, FORMAT='(i7)'),1 )+' '+runDATE+TEST2 $
-, charsize =1.5, charthick=char_thick $
-, /norm, /noclip
-
-filename=plot_DIR+'ts_efield.'+'UTsec'+STRTRIM( string(utime, FORMAT='(i6)'),1 )+runDATE+'.png'
-if ( plot_NH eq 1 ) then $
-; filename='ts_efield.'+runDATE+'NH.png'
-filename=plot_DIR+'ts_efield.'+'UTsec'+STRTRIM( string(utime, FORMAT='(i6)'),1 )+runDATE+TEST2+'NH'+STRTRIM( string(mlat90_2d[mp,lp], FORMAT='(F6.2)'),1 )+'mp'+STRTRIM( string(mp, FORMAT='(i2)'),1 )+'ed2.v2.png'
-
-
+;20140225 separated out from plt_efv2.pro
+if ( sw_plt_cntr eq 1 ) then $
+   plt_cntr_fill $
+ , iplot_max,mlon90_2d,mlat90_2d, sw_180,mlat130,poten,ed1130,ed2130,ed190,ed290,sw_debug,mlon130,mlat90_0,utime,runDATE,TEST2,plot_DIR,mp,lp, sw_output2file
 
 
 ;plot ExB time variation
-if ( sw_plot_exb eq 1 ) and ( utime eq utime_max ) then begin
+ if ( sw_plt_exb eq 1 ) and ( utime eq utime_max ) then begin
+;20140225 separated out
+   plt_drft $
+ ,mp,lp,NMP,NLP, input_DIR,sw_debug,n_read , utsec_save,ed190_save, title_exb,plot_DIR,utime,runDATE,mlat90_2d,sw_output2file,utime_min
+ endif                           ;if ( sw_plt_exb eq 1 ) and ( utime eq utime_max ) then begin???
 
-;VEXB(mp,lp)
-  n_max =138-124+1L;4*24+1L;12*24+1L
-  plot_VEXB_ut = fltarr(n_max)
-  plot_VEXB    = fltarr(n_max,3)
-n_max1=0L
-;  read_EXB $  ;20120306
-  rd_EXB $
-, plot_VEXB_ut, plot_VEXB,mp,lp,NMP,NLP, input_DIR,sw_debug,n_max1
-;20120601
-  rd_EXB3D $
-, plot_VEXB_ut, plot_VEXB,mp,lp,NMP,NLP, input_DIR,sw_debug,n_max1
 
-if ( sw_debug eq 1 ) then begin 
-  for i=0,n_read do print,i,(utsec_save[i]/3600.),ed190_save[i]
-endif
-;I must double chekc the Bmag90 value!!!
-if ( lp eq 130-1 ) then begin ;jicamarca
-;if ( lp eq 34-1 ) then begin ;jicamarca
-  if ( mp eq 0L ) then begin
-    Bmag90=2.5574958e-05 ;[tesla] at h_ref=90km for lp=129 mlat=-9.05
-    glon=288.2
-  endif else if ( mp eq 4-1L ) then begin
-    Bmag90=2.739e-05 ;
-    glon=299.8955
-  endif else if ( mp eq 8-1L ) then begin
-    Bmag90=2.923e-05 ;
-    glon=316.5370
-  endif else if ( mp eq 19-1L ) then begin
-    Bmag90=3.242e-05 ;[tesla] at h_ref=90km for lp=129 mlat=-9.05
-    glon=7.1758
-  endif else if ( mp eq 19L ) then begin
-    Bmag90=3.281e-05 ;[tesla] at h_ref=90km for lp=129 mlat=-9.05
-    glon=11.27843 
-  endif else if ( mp eq 59L ) then begin
-    Bmag90=3.158e-05 ;[tesla] at h_ref=90km for lp=129 mlat=-9.05
-    glon=194.2077 
-  endif
-
-endif else if ( lp eq 45 ) then begin ;arecibo
-  Bmag90=3.4480501e-05 ;[tesla] at h_ref=90km for lp=46 mlat=-30
-  glon=286.1
-endif else if ( lp eq 39 ) then begin ;st santin
-;  Bmag90=3.9341376e-05   ;mp=0
-;  glon=284.3881
-  Bmag90=4.056e-05   ;mp=17
-  glon=365.74725
-endif else if ( lp eq 28 ) then begin ;MSH
-  Bmag90=4.8025999e-05 
-  glon=279.174
-endif
-print,'bmag90',bmag90,'glon',glon
-
-nmax=n_read*2+2
-exb =fltarr(nmax)
-exb[0       :n_read    ] = ed190_save[0:n_read] * 1.0E-03 / Bmag90
-exb[n_read+1:n_read*2+1] = ed190_save[0:n_read] * 1.0E-03 / Bmag90
-slt =fltarr(nmax)
-slt[0       :n_read    ] = utsec_save[0:n_read]/3600. +glon/15. ;-48.
-slt[n_read+1:n_read*2+1] = utsec_save[0:n_read]/3600. +glon/15. ;-24.
-;debug
-if ( sw_debug eq 1 ) then  print,'check SLT',MIN(slt),MAX(slt)
-
-plot,slt[0:n_read*2+1],exb[0:n_read*2+1] $
-;, yrange=[-50. , +50. ],  ystyle=1  $
-, yrange=[-0. , +20. ],  ystyle=1  $
-, xrange=[ MIN(slt), MAX(slt) ],  xstyle=1  $
-,XTITLE = 'LT[hr] '+title_exb, YTITLE = 'Ed1_90XB[m/S]' $
-, charsize =2.5, charthick=2.5 $
-;, TITLE=title_exb $
-, thick=2.0
-
-loadct,n_ldct
-oplot,slt[0:n_read*2+1],exb[0:n_read*2+1] $
- , linestyle=0, thick=2.0, color=50. ;blue
-
-nmax=n_max1*2+2
-exb =fltarr(nmax)
-jth=0
-exb[0     :n_max1    ] = plot_VEXB[0:n_max1,jth]
-exb[n_max1+1:n_max1*2+1] = plot_VEXB[0:n_max1,jth]
-slt =fltarr(nmax)
-slt[0       :n_max1    ] = plot_VEXB_ut[0:n_max1]/3600. +glon/15. ;-48.
-slt[n_max1+1:n_max1*2+1] = plot_VEXB_ut[0:n_max1]/3600. +glon/15. ;-24.
-;debug
-if ( sw_debug eq 1 ) then  print,'2check SLT',MIN(slt),MAX(slt)
-
-oplot,slt[0:n_max1*2+1],exb[0:n_max1*2+1] $
-  , linestyle=5, thick=2.0, color=250. ;red
-
-jth=1
-exb[0     :n_max1      ] = plot_VEXB[0:n_max1,jth]
-exb[n_max1+1:n_max1*2+1] = plot_VEXB[0:n_max1,jth]
-;oplot,slt[0:n_max1*2+1],exb[0:n_max1*2+1] $
-;  , linestyle=1, thick=2.0, color=200. ;red
-jth=2 ;the new EXB drift
-exb[0     :n_max1      ] = plot_VEXB[0:n_max1,jth]
-exb[n_max1+1:n_max1*2+1] = plot_VEXB[0:n_max1,jth]
-oplot,slt[0:n_max1*2+1],exb[0:n_max1*2+1] $
-  , linestyle=4, thick=2.0, color=165. ;
-
-;reference
-loadct,0
-oplot,slt[0:n_max1*2+1],exb[0:n_max1*2+1] *0.0 $
-  , linestyle=1, thick=1.0
-endif
-
-output_png, filename
-;BREAK ;exit from the while loop
-endif ;( ( (utime-utime_save) MOD freq_plot_sec ) LT 0.00001 ) then begin
+;endif ;( ( (utime-utime_save) MOD freq_plot_sec ) LT 0.00001 ) then begin
 
 endwhile ;(eof(LUN10) eqq 0 ) do begin
 
@@ -439,10 +254,11 @@ free_lun,lun1
 free_lun,lun2
 free_lun,lun3
 free_lun,lun4
-free_lun,lun6
+;free_lun,lun6
 free_lun,lun7
 free_lun,lun8
 free_lun,lun9
+
 ;print,'mlat90='
 ;for i=0,nlp*2-1 do print,i,mlat90_2d[0,i]
 
