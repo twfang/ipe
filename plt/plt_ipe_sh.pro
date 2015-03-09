@@ -20,7 +20,9 @@ print,'nday=',nday
 
 
 
-
+   luntmp=100L
+   luntmp1=101L
+   alt=302. ;default ht_plot
 ;   if ( f107 eq 130. ) then begin
    if ( f107 eq 165. ) then begin
 ;      TEST1='21132'
@@ -37,7 +39,6 @@ if ( sw_output2file_ascii eq 1 ) then begin
    chr_title1=STRTRIM( string(alt, FORMAT='(F5.0)'), 1)+'km'
    chr_title2='NDAY='+STRTRIM( string(nday, FORMAT='(i3)'), 1)
    flnmtmp='/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/champ/champ_te'+chr_title1+'.'+chr_title2+'.'+chr_title+'.dat'
-   luntmp=100
    openw,luntmp,flnmtmp, /GET_LUN
    print, 'champ file created:',flnmtmp
 
@@ -45,11 +46,13 @@ endif ;( sw_output2file_ascii eq 1 ) then begin
 
 n_plt_max=25L ;for quick plot
 n_read_max=97;121;21-5+1L;127-108+1
-plot_UT    = 432000.;86400. * 4;432000.;
-plot_UT_end= plot_UT + 3600. * 24.;[sec]
+plot_UT    = getenv('plt_ut') 
+plot_UT_end= getenv('plt_ut_end')
+print,'plot_ut=', plot_ut,' plot_ut_end=', plot_ut_end 
+
 sw_quickplot=1
 ;20140117; plot every X hour
-sw_hourly_plot=1L
+sw_hourly_plot = getenv('sw_hourly_plot')
 plotXhr=1.0 
 print, 'plot every',plotXhr,' hour'
 
@@ -68,9 +71,9 @@ else if ( getenv('sw_grid') eq 3 ) then $
 print,  'VarType=', getenv('VarType')
   VarType_min = FIX( getenv('VarType') )
   VarType_max = FIX( getenv('VarType') )
-  VarType_step = 1
+  VarType_step = 1L
 print, "check TYPE (1)",TYPENAME(vartype_min),' (2)',TYPENAME(vartype_max),' (3)',TYPENAME(vartype_step)
-print, "check vartype val",vartype_min,' (2)',vartype_max,' (3)',vartype_step
+print, "check vartype val",vartype_min,' (2)',vartype_max,' (3)varType_step=',vartype_step
 
 
 
@@ -101,14 +104,16 @@ input_DIR0 = rpath+'/'+rundir+'/'
 
 print,'input_DIR0= ',input_DIR0
 
-plot_type=0L ;0:contour; 1:ht profile; 2:LT-LAT contour; 3:LON-LAT contour; 4:refilling: 5:psphere, 6:tec
-;if plot_type eq 0 then begin
-  mp_plot=FIX( getenv('mp_plot') ); longitude sector to plot
-;  mp_plot=33-1L ; longitude sector to plot
-print, 'mp_plot=', mp_plot
-mpstart=mp_plot
-mpstop=mpstart
-mpstep=1
+plot_type=FIX( getenv('plot_type') ) ;0L ;0:contour; 1:ht profile; 2:LT-LAT contour; 3:LON-LAT contour; 4:refilling: 5:psphere, 6:tec
+print, 'plot_type=', plot_type
+if plot_type eq 0 then begin
+   mp_plot=FIX( getenv('mp_plot') ) ; longitude sector to plot
+   print, 'mp_plot=', mp_plot
+   mpstart=mp_plot
+   mpstop=mpstart
+   mpstep=1
+endif ;plot_type
+
 
 
 ;endif ;plot_type eq 0 then begin
@@ -141,8 +146,9 @@ print,'opening ',flnmtmp3
 endif ;( sw_read_wind eq 1 ) then begin
 
 sw_debug=0L
-;0:mag; 1:geo
-sw_frame=1L
+;0:mag; 1:geo; 2:LT-maglat
+sw_frame=FIX( getenv('sw_frame') )
+print, 'sw_frame=',sw_frame
 sw_dif=0L
 sw_hr=0L
 sw_3DJ=0L
@@ -237,7 +243,9 @@ print,' plot_DIR=', plot_DIR
 if ( sw_frame eq 0 ) then $
 title_frame='mag' $
 else if ( sw_frame eq 1 ) then $
-title_frame='geo'
+title_frame='geo'  $
+else if ( sw_frame eq 2 ) then $
+title_frame='lt'
 filename_sav=plot_DIR+rundate+'_'+version+'.'+title_res+title_frame+'.sav'
 
 if title_res eq 'low' then begin
@@ -554,6 +562,11 @@ IF ( UT_hr lt plot_UT/3600. ) THEN CONTINUE
 ;20140117; plot every X hour
 if  (sw_hourly_plot eq 1) AND ( (UT_hr MOD plotXhr) ne 0. ) then continue
 ;     ht_plot = 110.00 ;[km]
+
+
+print, "check vartype",VarType_max, VarType_min, VarType_step
+
+print, 'ht_plot(alt)=', alt
 n_plt = n_plt + 1
 if ( sw_quickplot eq 0 ) then $
        ctr_lon_lat $
@@ -572,7 +585,6 @@ if ( sw_quickplot eq 0 ) then $
 else if ( sw_quickplot eq 1 ) then $
        ctr_lon_lat_quick $
   , JMIN_IN,JMAX_IS,Z_km,mlat_deg  $ 
-;  , je_3d   $
   , XIONN_m3, TE_TI_k $
   , XIONV_ms1 $
   , UT_hr, plot_DIR $
@@ -581,7 +593,7 @@ else if ( sw_quickplot eq 1 ) then $
   ,glon_deg,glat_deg,sw_frame,fac_window, TEST $
   , sw_debug $
 ;20131209: output to ascii file
-, sw_output2file_ascii,luntmp,ncount $
+, sw_output2file_ascii,luntmp,luntmp1,ncount $
 , Vn_ms1 $
 , n_plt_max,input_DIR0 $
 , alt,rundir $
