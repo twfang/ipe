@@ -24,7 +24,9 @@ if(sw_lun[3] eq 1 ) then  input_flnm[3]='plasma09' ;Te
 if(sw_lun[7] eq 1 ) then  input_flnm[7]='plasma10' ;Ti
 
 if(sw_lun[4] eq 1 ) then  input_flnm[4]='plasma12' ;Vo+
-if(sw_lun[5] eq 1 ) then  input_flnm[5]='plasma16' ;VExB
+if(sw_lun[5] eq 1 ) then  input_flnm[5]='plasma16' ;VExBup
+if(sw_lun[15] eq 1 ) then  input_flnm[15]='plasma17' ;VExBe
+if(sw_lun[16] eq 1 ) then  input_flnm[16]='plasma18' ;VExBth
 
 ;if ( sw_hr  eq 1 ) then begin
 ;for jth=1,7 do begin

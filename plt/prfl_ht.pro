@@ -5,20 +5,21 @@
 PRO  prfl_ht $
 ,plot_x,plot_y, title_hemi,mlat_title,ut_hr,lt_hr $
 ,plot_DIR,FLDIM_plot,mp_plot,sw_debug,sw_fort $
-,sw_dif,sw_output2file,n_file,fac_window,TEST
+,sw_dif,sw_output2file,n_file,fac_window,TEST,rundir
 
 print,'prfl_ht',sw_output2file ;debug
 
-y_min = 90.
-y_max =500.;54107.;1000.;680.;220.;680.;  2.0E+04 ;18783.500 ;MAX(zn)
+y_min =90.;1.0E+2; 90.
+y_max =1300.;2.E+4;800.
 if ( sw_debug eq 1 ) then  print, "y_max=", y_max
 
 if ( sw_fort eq 168L ) then begin
 ;x_min=[-15.,   +100.,     0. ,     0.]
 ;x_min=[-1.,    +400.,     0. ,     -25.]
-x_min=[-1.,    +200.,     0. ,     -25.]
-;x_max=[ 6.5,  +2200.,  +1000. ,    +25.]
-x_max=[ 7.,  +2200.,  +1000. ,    +25.]
+x_min=[-1.,    +150.,     0. ,     -30.]
+x_max=[ 7.,  +2400.,  +1000. ,    +25.]
+;x_max=[+6.1,  +17000.,  +1600. ,    +30.] ;dbg20141208
+;x_max=[+6.1,  +3500.,  +1600. ,    +30.]
 ;x_max=[ 4.0,  +1300.,  +700. , +7000.]
 endif else if ( sw_fort eq 167L ) then begin
 x_min=[ 5.2,  + 0.,   -1. ,   0.]
@@ -34,7 +35,7 @@ k_species    =size_result[2]
 FLDIM        =size_result[3]
 ;n_file       =size_result[4] !this does not work when n_file=1
 ;if ( sw_debug eq 1 ) then  $
-  print,plot_type_max,k_species," FLDIM=",FLDIM," n_file=",n_file
+  print,'plot_type_max',plot_type_max,'k_species',k_species," FLDIM=",FLDIM," n_file=",n_file
 
 
 ; set up plot parameters
@@ -102,7 +103,8 @@ if ( sw_debug eq 1 ) then  print,'plot_type=',plot_type," x_min=", x_min[plot_ty
 
 
 i=0
-title_plot=TEST+'_'+title_hemi+': mlat[deg]='+mlat_title+'  UT[hrs]='+STRTRIM( string(ut_hr[i_plot[i]], FORMAT='(f7.2)'), 1)+'  LT[hrs]='+STRTRIM( string(lt_hr[i_plot[i]], FORMAT='(f7.2)'), 1)
+format_ut='(f8.3)'
+title_plot=TEST+'_'+title_hemi+': mlat[deg]='+mlat_title+'  UT[hrs]='+STRTRIM( string(ut_hr[i_plot[i]], FORMAT=format_ut), 1)+'  LT[hrs]='+STRTRIM( string(lt_hr[i_plot[i]], FORMAT=format_ut), 1)
 
 ;plotting NH only
 ;if ( title_hemi eq 'NH' ) then begin
@@ -119,7 +121,8 @@ title_plot=TEST+'_'+title_hemi+': mlat[deg]='+mlat_title+'  UT[hrs]='+STRTRIM( s
 if ( plot_type eq 0 ) then begin  ;densities
   plot, plot_x[plot_type,0,j0:j1,i_plot[i]], plot_y[j0:j1,i_plot[i]] $;, /xlog $ 
   ,xrange=[x_min[plot_type],x_max[plot_type]], xstyle=1  $
-  ,yrange=[y_min,y_max], ystyle=1  $
+  ,yrange=[y_min,y_max], ystyle=1 $
+,/YLOG $  ;nm20141028
   ,title=title_var[plot_type] $;+': '+title_plot  $
   ,linestyle = 0 $
   ,color=axis_color $
@@ -128,9 +131,11 @@ if ( plot_type eq 0 ) then begin  ;densities
 
 endif else if ( plot_type ge 1 ) then begin  ;temperatures
 
+
   plot, plot_x[plot_type,0,j0:j1,i_plot[i]], plot_y[j0:j1,i_plot[i]] $
   ,xrange=[x_min[plot_type],x_max[plot_type]], xstyle=1  $
   ,yrange=[y_min,y_max], ystyle=1  $
+,/YLOG $  ;nm20141028
   ,title=title_var[plot_type] $
   ,linestyle = 0 $
   ,color=axis_color $
@@ -156,6 +161,12 @@ for k=0,k_species-1 do begin
 
 if ( sw_debug eq 1 ) then  print, i, i_plot[i], line_color[i_plot[i]]
 ;if ( sw_debug eq 1 ) then  print, plot_x[plot_type,k,j0:j1,i_plot[i]]
+
+;dbg20141028
+if ( plot_type eq 1 ) then print, k,'check Te',MAX(plot_x[plot_type,k,j0:j1,i_plot[i]]),MIN(plot_x[plot_type,k,j0:j1,i_plot[i]])
+
+
+
     oplot, plot_x[plot_type,k,j0:j1,i_plot[i]], plot_y[j0:j1,i_plot[i]] $ 
     ,linestyle = line_style[k] $
     ,color=line_color[i_plot[i]] $
@@ -165,7 +176,7 @@ endfor ;k
 
 endfor ;plot_type=0,2 do begin
 
-xyouts, 0.20, 0.5, title_plot  $
+xyouts, 0.10, 0.5, title_plot  $
 , charsize=1.0, charthick=1.0, color=axis_color, /norm, /noclip
 
 if ( sw_dif eq 0 ) then $
@@ -174,7 +185,7 @@ else if ( sw_dif eq 1 ) then $
    title_dif='dif.png'
 
 if ( sw_output2file eq 1 ) then begin
-   filename=plot_DIR+'prfl'+STRTRIM( string(sw_fort, FORMAT='(i3)'), 1)+TEST+'.mlat'+mlat_title+'_UT'+STRTRIM( string(ut_hr[0], FORMAT='(f7.2)'), 1)+'_'+title_hemi+'_mp'+STRTRIM( string((mp_plot+1), FORMAT='(i2)'), 1)+title_dif
+   filename=plot_DIR+'prfl'+STRTRIM( string(sw_fort, FORMAT='(i3)'), 1)+TEST+'.'+rundir+'.mlat'+mlat_title+'_UT'+STRTRIM( string(ut_hr[0], FORMAT=format_ut), 1)+'_'+title_hemi+'_mp'+STRTRIM( string((mp_plot+1), FORMAT='(i2)'), 1)+'.v4'+title_dif
 
 print,filename ;dbg
    output_png, filename

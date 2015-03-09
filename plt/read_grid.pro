@@ -22,7 +22,7 @@ if ( sw_save_grid eq 2 ) then  begin
   RETURN
 endif
 
-     mp=0L
+     mp=41-1L
 
 if sw_debug eq 1 then  print,'size jmin',SIZE(jmin_in)
 if sw_debug eq 1 then  print,'size jmax',SIZE(jmax_is)
@@ -67,7 +67,8 @@ if ( title_res eq 'td20120709' ) then  recalculate_jmin_max, JMIN_IN, JMAX_IS, N
 
 ;lpj=129L ;low
 ;lpj=34L ;dyn
-ipts=JMIN_IN(lpj)-1
+;ipts=JMIN_IN(75)-1
+ipts=JMAX_IS(75)-1
 
     dum = fltarr( NMP_all+1 ) ;!rad
     readu, LUN[1], dum ;( 1: NMP_all+1 ) !rad
@@ -85,21 +86,60 @@ if sw_debug eq 1 then print,lpj,ipts,' z_km',z_km[ipts]
      mlat_deg = ( !PI*0.50 - dum ) * 180.0 / !PI
 if sw_debug eq 1 then print,'mlat_deg',mlat_deg[ipts]
 
+
     dum=fltarr(NPTS2D_dum, NMP_all)
     readu, LUN[1], dum
     glat_deg = ( !PI*0.50 - dum ) * 180.0 / !PI
 if sw_debug eq 1 then print,mp,'GCOLAT-deg',90.-dum[ipts, mp]*180./!PI
+
 
     dum=fltarr(NPTS2D_dum, NMP_all)
     readu, LUN[1], dum
     glon_deg = ( dum ) * 180.0 / !PI
 if sw_debug eq 1 then print,'GLON_rad-deg',dum[ipts, mp]*180./!PI  
 
+
+;d print,'GLON_rad-deg: mp=',mp,dum[ipts, mp]*180./!PI  
+;d stop
+
+;latres=fltarr(nlp_all)
+;for lp=18,18 do begin
+;j0=jmin_in[lp-1]-1
+;j =jmin_in[lp]-1
+;j =jmax_is[lp]-1
+;print, (lp+1),(j+1), mlat_deg[j] , glat_deg[j,0], glon_deg[j,0]
+;for i=200,0,-1  do print, (i+1),z_km[i-j]
+;latres[lp]=(mlat_deg[j0] - mlat_deg[j])
+;print, lp,mlat_deg[j], latres[lp], TOTAL( latres[1:lp] )/(FIX(lp-1+1))
+;endfor
+;stop
+
+
+
+
+;for mp=0,nmp_all do begin
+;lpj=129;jicamarca
+;midpoint = JMIN_IN(lpj) + ( JMAX_IS(lpj) - JMIN_IN(lpj) )/2 -1
+;print,'mp=',(mp+1),' GLON-deg',dum[midpoint, mp]*180./!PI  
+;endfor
+;stop
+
+;for lpj=34,40L do begin
+;ipts=JMAX_IS(lpj)-1 - 50
+;print, lpj, ipts,z_km[ipts]
+;for j=49,51,1 do print, j,glat_deg[ipts,j],glon_deg[ipts,j]
+;endfor 
+;STOP
+
 ;     readu, LUN[1], JMIN_IN,JMAX_IS,Z_meter,GL_rad
 
 
-lp=1-1L
-if sw_debug eq 1 then  print,lp,'plasma0: IN=',JMIN_IN[lp],' IS=',JMAX_IS[lp],' #grid points=',(JMAX_IS[lp]-JMIN_IN[lp]+1),' z_km=',Z_km[lp],' mlat=',mlat_deg[lp]
+if sw_debug eq 1 then begin
+for lp=0, nlp_all-1 do begin
+i=jmin_in[lp]
+print,(lp+1),mlat_deg[i]
+endfor
+endif
 ;20140106debug
 ;lp=NLP_all-1L
 ;if sw_debug eq 1 then  print,lp,'plasma0: IN=',JMIN_IN[lp],' IS=',JMAX_IS[lp],' #grid points=',(JMAX_IS[lp]-JMIN_IN[lp]+1),' z_km=',Z_km[lp],' mlat=',mlat_deg[lp]
@@ -112,5 +152,7 @@ if ( sw_save_grid eq 1 ) then  begin
   print,'saving grid finished'
 endif
 
+;20140815
+;STOP
 
 END ;PRO read_grid

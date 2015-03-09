@@ -8,12 +8,12 @@
 ;20111205: sw_save=2 to save plotting time!!!
 ;include parallel plasma velocity to help the debug!!!
 pro plt_ipe_tec
-sw_output2file=1;1'PNG' ;0NONE';
-TEST='r336.2.1';.2.4';345.1';336.2';r319';r345';
-TEST2='S';640';S';80';S;640'
+sw_output2file=0;1'PNG' ;0NONE';
+TEST='r319';r345';
+TEST2='80';S;640'
 sw_output2file_ascii=0
 f107=130;165;100;72
-TEST1='30242';10670';14601' ;32753dbg'
+TEST1='22905' ;32753dbg'
 alt=350.
 
    if ( f107 eq 165 ) then begin
@@ -41,9 +41,14 @@ if ( sw_output2file_ascii eq 1 ) then begin
 endif ;( sw_output2file_ascii eq 1 ) then begin
 
 ;n_plt_max=97L ;for quick plot
-n_read_max=97-45+1-4L;1L;21-5+1L;127-108+1
-plot_UT    =471600.;493200.;54000.;432000. ;+ 3600.*16.;
-plot_UT_end=518400.-3600.;plot_UT+3600.*24.;.; [sec]
+n_read_max=$
+1;
+;97-45+1-4L;1L;21-5+1L;127-108+1
+plot_UT    =$
+432000.;
+;471600.;493200.;54000.;432000. ;+ 3600.*16.;
+plot_UT_end=$
+518400.;-3600.;plot_UT+3600.*24.;.; [sec]
 sw_quickplot=0
 ;20140117; plot every X hour
 sw_hourly_plot=1
@@ -51,12 +56,12 @@ plotXhr=1.0
 print, 'plot every',plotXhr,' hour'
 
 title_res= $
-;'low20120709';
+'low20120709';
 ;'td20120709';
-'2xdyn';
+;'2xdyn';
 ;'low'; 'high'
 
-sw_read_wind=0
+sw_read_wind=1
 ;difutmin=60./60.;15./60. - 0.00001;=0.24999 ;output_freq=15min
 ;difutmin=16./60. - 0.00001 ;output_freq=16min
 ;print,'difutmin=',difutmin
@@ -94,8 +99,8 @@ plot_type=0L ;0:contour; 1:ht profile; 2:LT-LAT contour; 3:LON-LAT contour; 4:re
 ;if plot_type eq 0 then begin
 mppl=LONARR(n_read_max)
 mppl[ 0]=56L
-mppl[ 4]=52L ;1ut
-mppl[ 8]=49L ;2ut
+;mppl[ 4]=52L ;1ut
+;mppl[ 8]=49L ;2ut
 ;mppl[12]=46L ;3ut
 ;mppl[16]=43L
 ;mppl[20]=39L
@@ -244,7 +249,7 @@ endif else if title_res eq 'dyn' then  begin
   NPTS2D=15857L ;high res
 endif
 
-NMP=1;80L ;=mpstop in IPE.inp
+NMP=80L ;=mpstop in IPE.inp
 ISPEC=9L
 ISPEV=4L
 MaxFluxTube=1115L ;=FLDIM
@@ -255,7 +260,7 @@ FLDIM=927L  ;???used when plot_type=1
   UT_hr = 0.00D0
   UT_hr_save = fltarr(n_read_max)
 ;  LT_hr = fltarr(  NMP,NLP)
-NPAR   = 1L;12L;
+NPAR   = 5L;12L;
 ;i should be aware of the memory limit!!!
 if ( plot_type eq 0 ) or ( plot_type eq 2 ) or ( plot_type eq 4 ) then begin
 ;  plot_z = fltarr(n_read_max,NPAR, NMP,NPTS2D)

@@ -5,7 +5,9 @@
  PRO  contour_plot_2d $
 , in2d,is2d,z_km,mlat_deg  $             ;input 
 , plot_z,plot_VEXB,n_read   $ ;input
-, uthr, plot_DIR, title_res,rundate,title_test,sw_debug, title_hemi,sw_anim,mpstart,mpstop,mpstep, lt_hr,fac_window $
+, uthr, plot_DIR, title_res $
+;,rundate,title_test $
+,sw_debug, title_hemi,sw_anim,mpstart,mpstop,mpstep, lt_hr,fac_window $
 , sw_output2file, TEST $
 , VarType_min $;=8L
 , VarType_max $;=8L ;PAR-1
@@ -16,6 +18,7 @@
 ;VarType_max=3L ;PAR-1
 ;VarType_step=4L
 
+print,' mpstart', mpstart,'mpstop',mpstop
 
 sw_arw_vpara=0
 fac_arw_para=0.7
@@ -43,10 +46,10 @@ if ( title_hemi eq 'NH' ) then begin
   gLATmax=+90.;+90.;-10.;
   gLATmin=+60.;+50.;-gLATmax;-27.; 
 endif else if ( title_hemi eq 'SH' ) then begin
-  gLATmax=-48.;+90.;-10.;
-  gLATmin=-78.;+50.;-gLATmax;-27.; 
+  gLATmax=-20.;+90.;-10.;
+  gLATmin=-35.;+50.;-gLATmax;-27.; 
 endif else if ( title_hemi eq 'glb' ) then begin
-  gLATmax=+90.;-10.;
+  gLATmax=+50.;90.;-10.;
   gLATmin=-gLATmax;-27.; 
 endif else if ( title_hemi eq 'eq' ) then begin
   gLATmax=-15.;+90.;-10.;
@@ -74,7 +77,8 @@ NPAR = size_result[2]
 
 
 
-N_LDCT=39;33
+N_LDCT=39;70;39;33
+
 ;lp_strt=1;28-1;  0+1 ;58;0;63 ;1-1L
 lp_strt=0+1 ;58;0;63 ;1-1L
 ;lp_stop=NLP-1-1 ;138L;
@@ -102,10 +106,9 @@ FileID=time_string+'_'+STRTRIM(STRING( lt_hr[mp], FORMAT='(F6.2)'),1)+'LT'+'_mp'
 VarTitle=[ $
 'Ne',$
 'Te',$ 
-'Ti',$ 
-;'O+','H+','He+','N+','NO+','O2+','N2+','O+2D','O+2P' $
-;tmp20121128 temporary o+ is assigned to plot_z(6)(n+) instead of 3 for faster debug molecular ions
-'O+','H+','He+','O+','NO+','O2+','N2+','O+2D','O+2P' $
+;'Ti',$ 
+'Vo+',$ 
+'O+','H+','He+','N+','NO+','O2+','N2+','O+2D','O+2P' $
 ,'Vo+' $
 ;'o+flux'$
 ;'hr4',$
@@ -114,7 +117,8 @@ VarTitle=[ $
 VarUnit=[ $
 '[log!D10!N cm-3]',$
 '[K]', $ ;Te
-'[K]', $ ;Ti
+;'[K]', $ ;Ti
+'[m/s]', $ ;vo+ ;20141015
 '[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]' $
 ;'[m/s]',$
 ;,'[cm2 s-1]' $
@@ -139,17 +143,19 @@ Y=dblarr(4)
 if ( sw_dif eq 0 ) then begin
 
    ARY_min0=[ $
-;0.,$                
-3.2,$ ;3.,$
-;178.8,$
-154.,$
- 178.8, $
-;0.,0.,0.,$
-0.,0.,0.,$
- -1.24 ,0.,0.,0.,0.,0., $ ;<190km
-; 1.5 ,0.,0.,0.,0.,0., $ ;<700km
-;        ,  178.8        ,  178.8  $      ;To+;Te
-;        ,  -1.0E+13  $;flux [cm2 s-1]
+3.2,$
+170.,$
+;170., $
+-400., $
+0., $ ;o+
+0., $ ;h+
+0., $ ;he+
+0., $ ;n+
+0., $ ;no+
+0., $ ;o2+
+0., $ ;n2+
+0., $ ;o+2D
+0., $ ;o+2P
           -10.  $   
          ] 
 
@@ -157,15 +163,18 @@ ARY_max0=[ $
 6.1,$ ;7.,$
 ;4.,$
 ;800. ,$
-6083. ,$
-800. ,$
-;6.1, 3.5,3.5,$
-1.28, 3.5,3.5,$
-3.5, 2.0, 3.5,3.5,5.3,5.3, $  ;<190km
-;6.0, 5.3, 5.3,5.3,5.3,5.3, $ ;<700km
-; 7., 7., 7.  $ ;densities
-;        ,  3600. ,   3600.  $    ;To+,Te
-;        ,  +1.0E+13  $
+1400. ,$
+;1400. ,$
++400. ,$
+1.28, $ ;o+
+1.9E-3, $ ;h+
+5.7E-4, $ ;he+
+8.7E-3, $ ;n+
+2.5E-2, $ ;no+
+5.0E-3, $ ;o2+
+1.5E-3, $ ;n2+
+1.9E-3, $ ;o+2D
+6.8E-5, $ ;o+2P
           +10.     $  ;vel [m s-1]
         ]
 endif else if ( sw_dif eq 1 ) then begin
@@ -232,7 +241,7 @@ endfor  ;lp=lp_strt,lp_stop do begin
 for VarType=VarType_min , VarType_max,  VarType_step   do begin
 if ( sw_debug eq 1 ) then  print,'plotting ',VarTitle(VarType)
 MainTitle=VarTitle(VarType)+' '+VarUnit(VarType)
-FILE_DISP=plot_DIR+device_type+'/'+title_hemi+'/'+FileID+'_'+VarTitle(VarType)+'_'+title_res+'.'+STRTRIM( string(rundate, FORMAT='(i8)'), 1)+title_test+'.'+title_hemi+'.'+device_type
+FILE_DISP=plot_DIR+device_type+'/'+title_hemi+'/'+FileID+'_'+VarTitle(VarType)+'_'+title_res+'.'+title_hemi+'.'+device_type
 if ( sw_debug eq 1 ) then  print, file_disp
 if ( device_type eq 'ps' ) then begin
 
@@ -264,7 +273,7 @@ if ( sw_debug eq 1 ) then  print, 'after',!P.BACKGROUND
 
 endif
 
-LOADCT, N_LDCT
+LOADCT, 0;N_LDCT
 
 ;if ( sw_plot_grid eq 1 ) then begin ;20120328
 ;LOADCT, 0
@@ -279,6 +288,8 @@ Plot, xx(0:istop), yy(0:istop)     $
 ;, THICK    = 1.0 $
 , Pos = [X0/X_SIZE, Y0/Y_SIZE, (X0+dX)/X_SIZE, (Y0+dY)/Y_SIZE]  $
 ,/NODATA
+
+LOADCT, N_LDCT
 
 ;if ( sw_output2file eq 1 ) then begin
 ;  print,'output to file=',plot_DIR+'ipe_grid.'+device_type
@@ -347,9 +358,9 @@ dYY=(z_km[ipts+1]-z_km[ipts] )*0.9 ;nm20121130
 if ( z_km(ipts  ) gt HTmin ) and ( z_km(ipts) lt (HTmax-dYY) ) then begin
 if ( mlat_deg(ipts ) gt gLATmin ) and ( mlat_deg(ipts) lt gLATmax ) then begin
 
-;if ( mlat_deg[ipts] gt -37. ) AND (z_km[ipts] lt 300. ) then $
-;if (z_km[ipts] gt 340. ) AND (z_km[ipts] lt 360. ) then $
-;print, lp,mlat_deg[ipts],z_km[ipts]
+;dbg20140828
+;if ( mlat_deg[ipts] gt -24. ) AND  ( mlat_deg[ipts] lt -22. )  AND (z_km[ipts] gt 340. ) AND (z_km[ipts] lt 344. ) then $
+;print,'lp', lp,' mlat',mlat_deg[ipts],' z_km',z_km[ipts],plot_z[n_read,VarType, 0,ipts]*1.0E-12
 
 Xa=mlat_deg(ipts) ;-dXX*.5
 Xb=mlat_deg(ipts) ;-dXX*.5   ;glatd(ipts  ,ifl)+dLAT  ;

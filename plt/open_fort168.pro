@@ -1,8 +1,8 @@
 ;opening files
-pro open_fort168, n_file,LUN,sw_debug,title_hemi,lp_title,sw_fort,TEST
+pro open_fort168, n_file,LUN,sw_debug,title_hemi,lp_title,sw_fort,rundir,TEST0
 
 HOME_DIR=$
-'/home/Naomi.Maruyama/wamns/r336tmp/trunk/run/'
+'/home/Naomi.Maruyama/wamns/'+TEST0+'/trunk/run/'
 ;'/home/Naomi.Maruyama/iper/'
 ;'/lfs0/projects/idea/maruyama/sandbox/ipe/run/'
 
@@ -14,7 +14,7 @@ versionD='1d'
 test1='low'
 ;blue lp10
 input_DIR[0]=$
-TEST+'/'
+rundir+'/'
 ;rundate+'.'+versionD+'.lp'+STRTRIM( string(   lp_title,     FORMAT='(i2)'),1)+'.'+test1+'/'
 ;red  lp11
 input_DIR[1]=rundate+'.'+versionD+'.lp'+STRTRIM( string(  (lp_title+1),  FORMAT='(i2)'),1)+'.'+test1+'/'
@@ -41,7 +41,7 @@ input_flnm[0:3]  ='fort.'+lun_no
 
     openr, LUNi, HOME_DIR+input_DIR[i]+input_flnm[i], /GET_LUN
     LUN[i]=LUNi
-    print,'opening file:',HOME_DIR+input_DIR[i]+input_flnm[i], LUN[i]
+    print,title_hemi,' opening file:',HOME_DIR+input_DIR[i]+input_flnm[i], LUN[i]
 
   endfor ;i = 0, n_file-1  do begin
 end ;pro open_fort168

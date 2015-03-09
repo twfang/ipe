@@ -13,9 +13,9 @@
 
 
 PRO Draw_Colorbar, ARY_min1, ARY_max1, N_LVLs $
-   , col_min, col_max, X0, Y0, dX, dY, X_SIZE, Y_SIZE, VarType
+   , col_min, col_max, X0, Y0, dX, dY, X_SIZE, Y_SIZE, VarType, text_color
 
-char_size=0.8 ;1.0
+char_size=1.2
 ; prepare display parameters
 main_TITLE=' '
 
@@ -31,7 +31,7 @@ else if ( VarType eq 7 ) then $
   X_TICKFORMAT='(F5.0)'
 
 ;tmp20111202 temporary for Te
-if ( VarType eq 0 ) then X_TICKFORMAT='(F5.0)'
+;if ( VarType eq 0 ) then X_TICKFORMAT='(F5.0)'
 
     ; prepare colorbar
 N_colorbar_LVLs=5
@@ -64,6 +64,7 @@ contour, col_data, x,y $
 , /FILL   $
 , /NOERASE   $
 , c_colors=INDGEN(N_LVLs+1)*col_max/N_LVLs $
-, pos=[X0/X_SIZE, Y0/Y_SIZE, (X0+dX)/X_SIZE, (Y0+dY)/Y_SIZE]
+, pos=[X0/X_SIZE, Y0/Y_SIZE, (X0+dX)/X_SIZE, (Y0+dY)/Y_SIZE] $
+, COLOR=text_color
 
 end

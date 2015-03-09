@@ -3,6 +3,7 @@ pro read_plasma_bin,LUN,UT_hr, XIONN_m3,XIONV_ms1,TE_TI_k,VEXB,sw_debug $
 ,NMP_in
 
 
+
 UT_sec=0L
 record_number=0L
 ; read plasma1
@@ -21,10 +22,24 @@ if ( sw_debug eq 1 ) then  $
 if ( NMP_in eq 1 ) then NMP=NMP_in
 dum=fltarr(NPTS2D,NMP)
 
+;
+size_result=size(VEXB)
+NLP=size_result[2]
+if ( sw_debug eq 1 ) then  $
+  print, 'NLP=',NLP
+
 if ( sw_lun[2] eq 1 ) then begin
    jth=0                        ;o+
    readu, LUN[2], dum
-;dbg print ,'check o+',MAX(dum),MIN(dum)
+
+;dbg20140825
+;for i=0,1 do begin
+;print ,i,'check o+ MAX',MAX(dum3[*,*,i], Max_Subscript),Max_Subscript
+;print ,i,'check o+ MIN',MIN(dum3[*,*,i], Min_Subscript),Min_Subscript
+;for j=0,5 do  print, j,dum3[j,0,i]
+;for j=1109,1114 do  print, j,dum3[j,0,i]
+;endfor
+
 XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
 if sw_debug eq 1 then  print, 'o+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
 endif ;( sw_lun
@@ -42,7 +57,17 @@ if ( sw_dif eq 0 ) then begin
       readu, LUN[8], dum
       XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
       if sw_debug eq 1 then  print, 'He+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
-   endif
+
+
+;dbg20141016
+;if ( record_number ge 63) then begin
+;in=29177;JMIN_IN[57]-1
+;inmax=in+40L
+;print, '(2) check He+'
+;for kk=in,in+40 do  print,kk,XIONN_m3[3-1,kk,52];, z_km[kk]
+;endif ;( UT_sec ge 54000) then begin
+
+   endif ;   if ( sw_lun[8] eq 1 ) then begin
 
    if ( sw_lun[9] eq 1 ) then begin
      jth=3                        ;n+
@@ -115,11 +140,45 @@ if ( sw_dif eq 0 ) then begin
 endif
 
 if ( sw_dif eq 0 ) then begin
+   dum=fltarr(NLP,NMP)
    if ( sw_lun[5] eq 1 ) then begin
-;VEXB(mp,lp)
-      readu, LUN[5], VEXB
+      readu, LUN[5], dum
+      jth=2
+      for mp=0,nmp-1 do begin
+;VEXBup(mp,lp)
+         print,'VEXBup  mp=', mp
+         VEXB[mp,0:nlp-1,jth]=dum[0:nlp-1,mp] ;+upward
+      endfor                               ;mp
+;      if sw_debug eq 1 then   $
+         print, 'VEXBup_ms1=',$
+;VEXB[0,130,jth],VEXB[0,120,jth] ;low
+VEXB[*,72,jth]
+   endif                        ;( sw_lun[9] eq 1 ) then begin
+;
+   if ( sw_lun[15] eq 1 ) then begin
+;VEXBe(mp,lp)
+      readu, LUN[15], dum
+jth=0
+for mp=0,nmp-1 do begin
+VEXB[mp,0:nlp-1,jth]=dum[0:nlp-1,mp] ;+eastward
+endfor
       if sw_debug eq 1 then   $
-         print, 'VEXB_ms1=',VEXB[0,130],VEXB[0,120]
+;         print, 'VEXBe_ms1=',VEXB[0,130,jth],VEXB[0,120,jth]
+;         ;original new grid 201207
+         print, 'VEXBe_ms1=',VEXB[0,65,jth],VEXB[0,55,jth] ;2xdyn grid
+   endif                        ;( sw_lun[9] eq 1 ) then begin
+;
+   if ( sw_lun[16] eq 1 ) then begin
+;VEXBth(mp,lp)
+      readu, LUN[16], dum
+jth=1
+      for mp=0,nmp-1 do begin
+         VEXB[mp,0:nlp-1,jth]=dum[0:nlp-1,mp] ;+southward
+      endfor 
+      if sw_debug eq 1 then   $
+         print, 'VEXBth_ms1=' $
+;,VEXB[0,130,jth],VEXB[0,120,jth] ;original new grid 201207
+,VEXB[0,65,jth],VEXB[0,55,jth] ;2xdyn grid
    endif                        ;( sw_lun[9] eq 1 ) then begin
 endif
 
@@ -152,5 +211,6 @@ endif
 ;     readf, LUN[4], dum
 ;XIONN_m3[jth,0:NPTS2D-1,mp]=dum[0:NPTS2D-1]
 ;if sw_debug eq 1 then  print, 'XIONN_m3=',jth,XIONN_m3[jth,60,mp]
+
 
 END ;PRO read_bin

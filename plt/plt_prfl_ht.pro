@@ -4,44 +4,52 @@ pro plt_prfl_ht
 fac_window=1.
 sw_dif=0
 sw_output2file=1L
-
-HOME_DIR='/home/Naomi.Maruyama/wamns/r319/trunk/run'
+TEST0='r336.2'
+HOME_DIR='/home/Naomi.Maruyama/wamns/'+TEST0+'/trunk/run'
 ;CHANGE!!!
-TEST=$
+TEST2='S'
+TEST1='28822'
+;TEST-->rundir
+rundir=$
 ;'ipe_80_17352dbg' ;lp=44
-'ipe_80_7459dbg' ;lp=48
+;'ipe_80_7459dbg' ;lp=48
+'ipe_'+TEST2+'_'+TEST1
 plot_UT =2.0
 ;frequency of plotting in hr
-freq_plot_hr=3600./3600.
+freq_plot_hr=120./3600.;3600./3600.
 ;READ, freq_plot_hr,PROMPT='Enter frequency of plotting in hour:' 
 
-title_hemi='SH'
+title_hemi='NH'
 ;READ, title_hemi,PROMPT="Enter which hemisphere?: NH or SH" 
 
 sw_fort=168L;167L;168L
 ;READ, sw_fort,PROMPT="Enter which fort?: 167 or 168"
 
 
-mp_plot=33-1L ;<--read from the 167 file!
+mp_plot=10-1L ;<--read from the 167 file!
 
 n_file=1L
 FLDIM0=LONARR(n_file)
 
 ;CHANGE!!!
-if ( TEST eq 'ipe_80_17352dbg' ) then begin
+if ( rundir eq 'ipe_80_17352dbg' ) then begin
   lp_title    =44-1L ;<--read from the 167 file!
    mlat_title ='34.37' ;<--read from 167 file! =GL/!PI*180. lp=44
    FLDIM0     =[ 395L ] ;<--read from the 167 file! lp=44
-endif else if ( TEST eq 'ipe_80_7459dbg' ) then begin
+endif else if ( rundir eq 'ipe_80_7459dbg' ) then begin
   lp_title    =48-1L
   mlat_title  ='29.67' ;<--read from 167 file! =GL/!PI*180. lp=48
   FLDIM0     =[ 313L ] ;<--read from the 167 file! lp=48
 endif
+;mp=10-1, lp=14-1
+  lp_title    =14-1L
+  mlat_title  ='75.38' ;<--read from 167 file! =GL/!PI*180. lp=48
+  FLDIM0     =[ 577L ] ;<--read from the 167 file! lp=48
 
 sw_debug=0L
 plot_DIR=$
-"/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/fig/prfl/"
-;HOME_DIR+'/fig/'+TEST+'/'
+"~/wamns/fig/prfl/"
+;HOME_DIR+'/fig/'+TEST0+'/'
 ;'../figures/discon/1dnewflipgrid/fort'+STRTRIM( string(sw_fort, FORMAT='(i3)'), 1)+'/'
 
 
@@ -63,16 +71,20 @@ FLDIM_plot=LONARR(n_file)
 
 ;FLDIMphil=401
 ;opening files
-   open_fort168, n_file,LUN,sw_debug,title_hemi,lp_title,sw_fort,TEST
+   open_fort168, n_file,LUN,sw_debug,title_hemi,lp_title,sw_fort,rundir,TEST0
 
+n_read=-1L
    while ( EOF(LUN[0]) eq 0 ) do begin
+n_read=n_read+1
+
+if n_read eq 1 then STOP
 
      plot_x[*,*,*,*] =-999999999.999999
      for i = 0, n_file-1  do begin
 print,'i',i,'n_file',n_file
 FLDIM=FLDIM0[i]
-print,'FLDIM0=',FLDIM0
-print,'FLDIM=',FLDIM
+;dbg print,'FLDIM0=',FLDIM0
+if ( n_read eq 0 ) then  print,'FLDIM=',FLDIM
 FLDIM_plot[i]=FLDIM
 
      Z0 = fltarr(FLDIM)
@@ -117,7 +129,7 @@ if ( i eq 0 ) then sw_version = 1  else $
 if ( i eq 1 ) then sw_version = 3  else $
 if ( i eq 2 ) then sw_version = 3  else $
 if ( i eq 3 ) then sw_version = 3
-print,' sw_version=', sw_version
+;dbg print,' sw_version=', sw_version
 
 ;       if ( i ge 0 and i le 1) then $
 ;if ( sw_fort eq 168L ) then $
@@ -134,7 +146,7 @@ if ( sw_fort eq 167L ) then $
 ;       else if ( i ge 2 and i le 3) then begin 
 else if ( sw_fort eq 168L ) then begin
            mp_read=1-1L
-           read_fort168_3d, LUN[i],UT_hr0,LT_hr0,Z0,TNX0,UN0,NNO0,EHT0,TI0,N0,PHION0,VOP0,SUMION0,sw_version,mp_plot,mp_read,sw_debug   
+           read_fort168_3d, LUN[i],UT_hr0,LT_hr0,Z0,TNX0,UN0,NNO0,EHT0,TI0,N0,PHION0,VOP0,SUMION0,sw_version,mp_plot,mp_read,sw_debug,n_read   
 if ( sw_dif eq 1 ) then  read_fort168_3d, LUN[i],UT_hr0,LT_hr0,Z0,TNX0,UN1,NNO0,EHT0,TI1,N1,PHION1,VOP0,SUMION1,sw_version,mp_plot,mp_read,sw_debug    
 endif
 ;         endif ;else if ( i eq 2 ) then begin 
@@ -202,7 +214,7 @@ if ( sw_dif eq 1 ) then $
 if ( sw_dif eq 1 ) then $
        plot_x[3,  0,0:FLDIM-1,i] =   UN1[  0:FLDIM-1]*1.0E-2 - UN0[  0:FLDIM-1]*1.0E-2 ;cm-1-->m-s
 
-print ,'check Un',MAX(UN0),MIN(UN0)
+;dbg print ,'check Un',MAX(UN0),MIN(UN0)
 if ( sw_version ge 1 ) then begin
        plot_x[2,  1,0:FLDIM-1,i] =   SUMION0[0,0:FLDIM-1]  ;SUMION(1,7,J)
 ;       plot_x[3,  2,0:FLDIM-1,i] =   SUMION0[1,0:FLDIM-1] 
@@ -242,9 +254,13 @@ endif else if ( sw_fort eq 167 ) then begin
 
 
 
+print,'before plotting: ', ( (UT_hr[0]-UT_hr0_save) MOD freq_plot_hr ), (UT_hr[0]-UT_hr0_save), ' freq=',freq_plot_hr, ' UT=',UT_hr[0], ' UT0=', UT_hr0_save
+
+
 IF (  ((UT_hr[0]-UT_hr0_save) MOD freq_plot_hr) GE 0.08 ) then continue
 
 print,'UT_hr[0]',UT_hr[0],'plot_UT',plot_UT
+
      if ( UT_hr[0] ge plot_UT ) $
 ;AND  ( ((UT_hr[0]-UT_hr0_save) MOD freq_plot_hr) LT 0.0001 )$
  then begin
@@ -252,13 +268,14 @@ print,'UT_hr[0]',UT_hr[0],'plot_UT',plot_UT
 
 print,'plotting UT', ( (UT_hr[0]-UT_hr0_save) MOD freq_plot_hr ), (UT_hr[0]-UT_hr0_save), freq_plot_hr, UT_hr[0], UT_hr0_save
 
-print,'plt_prfl',sw_output2file ;debug
+;dbg print,'plt_prfl',sw_output2file ;debug
 
 ;title_hemi='NH' ;requirement for j0/j1
+;dbg print, rundir
 ;       profile_ht_3d $
        prfl_ht $
 ,plot_x,plot_y, title_hemi,mlat_title,ut_hr,lt_hr,plot_DIR,FLDIM_plot,mp_plot,sw_debug,sw_fort $
-,sw_dif,sw_output2file,n_file,fac_window, TEST
+,sw_dif,sw_output2file,n_file,fac_window, TEST0,rundir
 
 ;dbg20140828 BREAK ;exit from the while loop
 

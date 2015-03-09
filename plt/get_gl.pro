@@ -8,7 +8,7 @@ restore, filename=filename_grid_sav
 print,'restoring the grid file=',filename_grid_sav
 
 ;if sw_debug eq 1 then 
-print,'mlat_deg',mlat_deg[0],mlat_deg[1115]
+print,'mlat_deg',mlat_deg[0],mlat_deg[1114:1115]
 
 
 ;openr, LUN6, input_DIR+'fort.2006', /GET_LUN
