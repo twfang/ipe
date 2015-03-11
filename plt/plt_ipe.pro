@@ -16,7 +16,8 @@ TEST1=$
 ;'16606'
 ;'27321'
 ;'20022'
-'16756'
+;'16756'
+'7196'
 alt=350.
 
    if ( f107 eq 165 ) then begin
@@ -88,7 +89,7 @@ if ( sw_read_wind eq 1 ) then begin
    print,'opening ',flnmtmp3
 endif                           ;( sw_read_wind eq 1 ) then begin
 
-fac_window=1.0
+fac_window=10.0
 ;!!!CAUTION!!! plot_UT needs to be float (INT has limited digit!!!)
 input_DIR0=$
 '/home/Naomi.Maruyama/wamns/'+TEST+'/trunk/run/ipe_'+TEST2+'_'+TEST1+'/'
@@ -146,7 +147,8 @@ HOME_DIR=$
 '/home/Naomi.Maruyama/wamns/' ;zeus
 ;'/home/Naomi.Maruyama/ptmp/' ;zeus
 fig_DIR=$
-'/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/' ;zeus
+'/home/Naomi.Maruyama/wamns/' ;zeus
+;'/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/' ;zeus
 ;'/home/Naomi.Maruyama/iper/' ;zeus
 n_file=17L;6L;13L;
 input_flnm=['','','','','','' $

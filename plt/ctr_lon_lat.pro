@@ -20,7 +20,7 @@ print, 'ht_plot', ht_plot
 which_hem='NH';SH';
 
 sw_polar_contour=1
-sw_polar_contour_output=1
+sw_polar_contour_output=0
 
 ; X-axis range
 ;1:0<lon<360
@@ -59,7 +59,7 @@ unit=['[*10^-11 m-3]',' [K]',' [K]','[m-3]',$
 '[log10 NmF2 cm-3]',$
 '[km]'] ;[nA/m2]'];[nA/m2]' ;20140108
 
- sw_plot_grid=0 ;1:retangular, 2:polar
+ sw_plot_grid=2 ;1:retangular, 2:polar
 ; get n_read_max, ny_max
 size_result = SIZE(JMIN_IN)
 if ( sw_debug eq 1 ) and ( n_read eq 0 ) then  print,'NLP',size_result
@@ -607,7 +607,11 @@ for j=0,krmax-1 do begin
     v[i,j]= plot_v[i,j]
   endfor ;i
 endfor ;j
-draw_arrow_test, u, v, mlt, comlat ;$
+;plot VEXB
+;draw_arrow_test, u, v, mlt, comlat ;$
+;plot phi and theta for validation
+draw_arrow_test1, u, v, mlt, comlat $
+,sunlons1,nmp,nlp
 ;,X0,dX,X_SIZE,Y0,Y_SIZE
 
 ;velovect, /POLAR, u, v , mlt, comlat $
