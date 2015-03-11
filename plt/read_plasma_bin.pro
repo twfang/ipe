@@ -146,10 +146,10 @@ if ( sw_dif eq 0 ) then begin
       jth=2
       for mp=0,nmp-1 do begin
 ;VEXBup(mp,lp)
-         print,'VEXBup  mp=', mp
+         if  sw_debug eq 1 then  print,'VEXBup  mp=', mp
          VEXB[mp,0:nlp-1,jth]=dum[0:nlp-1,mp] ;+upward
       endfor                               ;mp
-;      if sw_debug eq 1 then   $
+      if sw_debug eq 1 then   $
          print, 'VEXBup_ms1=',$
 ;VEXB[0,130,jth],VEXB[0,120,jth] ;low
 VEXB[*,72,jth]
