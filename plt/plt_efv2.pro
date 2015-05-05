@@ -6,16 +6,16 @@
 pro plt_efv2
 sw_debug=1L
 sw_output2file=0L ;1'PNG' ;0NONE';
-sw_plt_cntr=0L
-sw_plt_exb=1L ;1
+sw_plt_cntr=1L
+sw_plt_exb=0L ;1
 version=3  ;2: 20120530; 3:20121120
 sw_180=0L ;1:-180<+180; 0:0~360
 title_res=$
 ;'low20120709'
 '2xdyn';'
 ;low';dyn';'low' ; 'high'
-utime_min=432000.;471600.;###CHANGE
-utime_max=utime_min+3600.*24. ; ;to plot ExB time variation on the 6th panel 
+utime_min=489600.;432000.;471600.;###CHANGE
+utime_max=utime_min;+720.;3600.*24. ; ;to plot ExB time variation on the 6th panel 
 ;t if sw_plt_exb eq 0 then begin 
   iplot_max=6-1L 
 ;t  freq_plot_sec=900
@@ -36,10 +36,10 @@ TEST1='trans'
 ;TEST2='r292.3/trunk/run/ipe_S_24042';with SSW
 ;TEST2='r336/trunk/run/ipe_S_29795';20140221 validate zonal drift ###CHANGE
 ;TEST2='r319.2/trunk/run/ipe_S_3800';20140221 validate zonal drift ###CHANGE
-;TEST2='r336.2/trunk/run/ipe_S_9445';640_5524';
 ;TEST2='r319/trunk/run/ipe_80_27926'
-TEST2='r336.2.1/trunk/run/ipe_S_10670';14601';10595';S_24059';640_19352';
-runDATE='20140702'
+;TEST2='r336.2.1/trunk/run/ipe_S_10670';14601';10595';S_24059';640_19352';
+TEST2='r336.2/trunk/run/ipe_S_26369'
+runDATE='20150316'
 
 input_DIR=$
 ;runDIR+'ipe4gsd/run_naomi/'
@@ -48,7 +48,7 @@ runDIR+TEST2+'/';bkup93/'
 ;input_DIR=runDIR+runDATE+'.'+TEST0+'.'+TEST1+'.'+TEST2+'/backup20111108/'
 
 plot_DIR=$
-'/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/fig/ef/'
+'~/wamns/fig/ef/'
 ;input_DIR
 ;runDIR+'ipe4gsd/fig/' ;gsd
 ;figDIR+'fig/'+TEST2+'/'
@@ -73,8 +73,8 @@ ylatm=fltarr(nmlat+1)
 mlat130=fltarr(nmlat+1)
 mlon130=fltarr(nmlon+1)
 mlat90_0=fltarr(nmlat+1)
-;nmp=80L
-nmp=1L  ;dbg20141111
+nmp=80L
+;nmp=1L  ;dbg20141111
 if ( title_res eq 'low' ) OR ( title_res eq 'low20120709' ) then $
    nlp=170L $
 else if ( title_res eq '2xdyn' ) then $
@@ -137,7 +137,7 @@ if sw_debug eq 1L then begin
 endif
 dlonm90km=4.50 ;deg
 mlon90=findgen(nmp)*dlonm90km
-if sw_debug eq 1 then $
+;if sw_debug eq 1 then $
   print,'mlon90',mlon90
 for i=0,nlp*2-1 do begin
    for mp=0,nmp-1 do begin
@@ -147,8 +147,10 @@ if ( sw_180 eq 1L ) then begin
       if ( mlon90_2d[mp,i] ge 180. ) then mlon90_2d[mp,i]=mlon90_2d[mp,i]-360. 
 endif
 
+
    endfor;mp
 endfor   ;i
+
 for j=0,nmp-1 do begin
 mlat90_2d[j,0:nlp*2-1]=mlat90_1[0:nlp*2-1]
 endfor
@@ -229,9 +231,11 @@ if ( utime gt utime_max ) then BREAK ;exit from while read loop
 
 
 
+
 ;20140225 separated out from plt_efv2.pro
 if ( sw_plt_cntr eq 1 ) then $
-   plt_cntr_fill $
+;tmp   plt_cntr_fill $
+   plt_cntr_fill_plr $
  , iplot_max,mlon90_2d,mlat90_2d, sw_180,mlat130,poten,ed1130,ed2130,ed190,ed290,sw_debug,mlon130,mlat90_0,utime,runDATE,TEST2,plot_DIR,mp,lp, sw_output2file
 
 

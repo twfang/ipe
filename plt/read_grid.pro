@@ -30,7 +30,10 @@ if sw_debug eq 1 then  print,'size jmax',SIZE(jmax_is)
 
 
 
-if sw_debug eq 1 then  print,'size z_km',SIZE(Z_km)
+;if sw_debug eq 1 then  $
+print,'size z_km',SIZE(Z_km)
+
+
 if sw_debug eq 1 then  print,'size mlat_deg ',SIZE(mlat_deg)
 
 NMP0=0L
@@ -85,6 +88,11 @@ if sw_debug eq 1 then print,lpj,ipts,' z_km',z_km[ipts]
     readu, LUN[1], dum ;(    1:NPTS2D_dum) !rad
      mlat_deg = ( !PI*0.50 - dum ) * 180.0 / !PI
 if sw_debug eq 1 then print,'mlat_deg',mlat_deg[ipts]
+;for lp=0,40,2 do begin 
+;print, lp, mlat_deg[jmin_in[lp]-1]
+;for i=jmin_in[lp]+75 , jmin_in[lp]+85,1  do print, i, (i-jmin_in[lp]-1),z_km(i)
+;endfor ;lp
+;stop
 
 
     dum=fltarr(NPTS2D_dum, NMP_all)

@@ -13,12 +13,26 @@ pro ctr_lon_lat $
 ;20131209: output to ascii file
 ,sw_output2file_ascii,luntmp,ncount $
 , Vn_ms1,VEXB,sunlons1 $
-,ht_plot,rundir
+,ht_plot,rundir,LUN9001 $
+,VarTypeMin,VarTypeMax, VarTypeStep,LUN2013
 
-print, 'ht_plot', ht_plot
+
+
+
+;read flux
+if ( VarTypeMax eq 8 ) then begin
+nlp1=40L
+lmfl=fltarr(80,nlp1)
+rd_fl, 80,nlp1,lmfl,sw_debug
+endif 
+
+print, 'ht_plot=', ht_plot
 
 which_hem='NH';SH';
 
+;1:exb; 2:phi the
+sw_arrow=1
+sw_read_sunlon=1
 sw_polar_contour=1
 sw_polar_contour_output=0
 
@@ -42,7 +56,7 @@ X1=0.90
 Y0=0.10
 Y1=0.79
 
-for VarType=7,7, 1 do begin
+for VarType=VarTypeMin,VarTypeMax, VarTypeStep do begin
 
 print,'VarType=',VarType
 ;ht_plot =350.;[km]
@@ -52,12 +66,16 @@ print,'VarType=',VarType
 sw_range=1L
 nano=1.0E-9
 unit=['[*10^-11 m-3]',' [K]',' [K]','[m-3]',$
-;'[m-3]',$
-'[m/s]',$  ;viup
-'[m/s]','[m/s]',$
+'[m-3]',$
+;'[m/s]',$  ;viup
+;'[m/s]',$
+'[X10^8 cm^2 s^-1 ]',$ ;o+ flux
+'[X10^8 cm^2 s^-1 ]',$ ;h+ flux
+;'[m/s]',$
 ;'[*10^-11 m-3]',$
-'[log10 NmF2 cm-3]',$
-'[km]'] ;[nA/m2]'];[nA/m2]' ;20140108
+'[log10 cm-3]',$ ;nmf2
+;'[km]'] ;[nA/m2]'];[nA/m2]' ;20140108
+'[X10^8 cm^2 s^-1 ]']
 
  sw_plot_grid=2 ;1:retangular, 2:polar
 ; get n_read_max, ny_max
@@ -89,7 +107,7 @@ plot_zz=fltarr(nx_max,ny_max)
 plot_yy=fltarr(nx_max,ny_max)
 plot_xx=fltarr(nx_max,ny_max)
 ;nm20140701
-if ( sw_polar_contour eq 1 ) then begin
+if ( sw_arrow ge 1 ) then begin
    plot_u=fltarr(nx_max,ny_max)
    plot_v=fltarr(nx_max,ny_max)
 endif
@@ -99,10 +117,14 @@ VarTitle=['Ne','Te','Ti','o+',$
 ;'NO+',$
 'Vi!DUP!N',$
 ;'UN',$
-'Vi!DE!N',$
+;'Vi!DE!N',$
 ;'VN',$
-'Vi!DEQ!N',$
-'NmF2','HmF2'] ;20140108
+'o+ flux',$
+'h+ flux',$
+;'Vi!DEQ!N',$
+'NmF2',$
+'flux'] ;20140108
+;'HmF2'] ;20140108
 ;VarTitle=['Ne','Te','Ti','N(NO+)','Vpar_o+']
 ;VarTitle=['Ne','Te','Ti','N(O2+)','Vpar_o+']
 ;VarTitle=['Ne','Te','Ti','N(N2+)','Vpar_o+']
@@ -138,14 +160,15 @@ VEXB[mp,lp,2] $;[m/s] ;UPward  ;20141104
 ; XIONN_m3[4,i,mp]*factor  $ ;no+
       else if ( VarType eq 5 ) then $
         plot_zz[mp,lp] =$
-VEXB[mp,lp,0] $;[m/s] ;eastward  ;20141104
+;VEXB[mp,lp,0] $;[m/s] ;eastward  ;20141104
 ;Vn_ms1[1-1,i,mp]*fac_wind $;[m/s] ;eastward  ;20140108
 ; XIONN_m3[5,i,mp]*factor  $ ;o2+
+XIONN_m3[0,i,mp]*1.E-6 * XIONV_ms1[0,i,mp]*1.E+2 *1.E-8 $;o+ flux: o+ * V//o+[m/s]--> X10^8 cm^2 s^-1
       else if ( VarType eq 6 ) then $
         plot_zz[mp,lp] =$
-VEXB[mp,lp,1] ;[m/s] ;southward,equatorward  ;20141104
+;VEXB[mp,lp,1] ;[m/s] ;southward,equatorward  ;20141104
 ;Vn_ms1[2-1,i,mp]*fac_wind ;[m/s] ;northward ;20140108
-; XIONV_ms1[1-1,i,mp] ;V//o+[m/s]
+XIONN_m3[1,i,mp]*1.E-6 * XIONV_ms1[1,i,mp]*1.E+2 *1.E-8 ;h+ flux: o+ * V//o+[m/s]--> X10^8 cm^2 s^-1
  
       if ( sw_frame eq 0 ) then begin ;magnetic
          plot_yy[mp,lp] = mlat_deg[i]
@@ -189,7 +212,10 @@ VEXB[mp,lp,1] ;[m/s] ;southward,equatorward  ;20141104
 ; nel[Max_Subscript] * factor $ ;NmF2
  ALOG10(nel[Max_Subscript] * 1.0E-6 ) $ ;NmF2 m-3-->cm-3
        else if ( VarType eq 8 ) then $
-         plot_zz[mp,lp] = Z_km[Max_Subscript]    ;hmF2
+
+if ( lp lt nlp1 ) then         plot_zz[mp,lp] = $
+lmfl[mp,lp] ;limiting flux
+;Z_km[Max_Subscript]    ;hmF2
 
        if ( sw_frame eq 0 ) then begin ;magnetic
           plot_yy[mp,lp] = mlat_deg[Max_Subscript]
@@ -205,12 +231,12 @@ VEXB[mp,lp,1] ;[m/s] ;southward,equatorward  ;20141104
   endelse ;( VarType lt 7 ) then begin
 
 ;nm20140701 NH
-;if ( sw_polar_contour eq 1 ) then begin
+if ( sw_arrow ge 1 ) then begin
    plot_u[mp,lp]=VEXB[mp,lp,0] ;+east
    plot_v[mp,lp]=VEXB[mp,lp,1] ;+southward, equatorward
 
 if ( sw_debug eq 1 ) then  print,mp,lp,' NH U=',  plot_u[mp,lp],'V=',  plot_v[mp,lp]
-;endif
+endif
 
 
 
@@ -241,14 +267,15 @@ VEXB[mp,lp,2] $;[m/s] ;UPward  ;20141104
 ; XIONN_m3[4,i,mp]*factor $
       else if ( VarType eq 5 ) then $
         plot_zz[mp,lps] =$
-VEXB[mp,lp,0] $;[m/s] ;eastward  ;20141104
+;VEXB[mp,lp,0] $;[m/s] ;eastward  ;20141104
 ;Vn_ms1[1-1,i,mp]*fac_wind $;[m/s] ;eastward  ;20140108
 ; XIONN_m3[5,i,mp]*factor $
+XIONN_m3[0,i,mp]*1.E-6 * XIONV_ms1[0,i,mp]*1.E+2 *1.E-8 $ ;o+ flux: o+ * V//o+[m/s]--> X10^8 cm^2 s^-1
       else if ( VarType eq 6 ) then $
         plot_zz[mp,lps] = $
-VEXB[mp,lp,1]*(-1.) ;[m/s] ;converted to northward,equatorward  ;20141104
+;VEXB[mp,lp,1]*(-1.) ;[m/s] ;converted to northward,equatorward  ;20141104
 ;Vn_ms1[2-1,i,mp]*fac_wind ;[m/s] ;northward ;20140108
-;XIONV_ms1[1-1,i,mp] ;V//o+[m/s]
+XIONN_m3[1,i,mp]*1.E-6 * XIONV_ms1[1,i,mp]*1.E+2 *1.E-8 ;h+ flux: h+ * V//h+[m/s]--> X10^8 cm^2 s^-1
 
        if ( sw_frame eq 0 ) then begin ;magnetic
           plot_yy[mp,lps] = mlat_deg[i]
@@ -286,7 +313,10 @@ VEXB[mp,lp,1]*(-1.) ;[m/s] ;converted to northward,equatorward  ;20141104
        ;nel[Max_Subscript] * factor  $ ;NmF2
  ALOG10(nel[Max_Subscript] * 1.0E-6 ) $ ;NmF2 m-3-->cm-3
        else if ( VarType eq 8 ) then $
-         plot_zz[mp,lps] = Z_km[Max_Subscript]    ;hmF2
+;dbg20150323: flux data not available for now..for SH
+;t          plot_zz[mp,lps] = $
+;t lmfl[mp,lps] ;limiting flux
+;Z_km[Max_Subscript]    ;hmF2
 
        if ( sw_frame eq 0 ) then begin ;magnetic
           plot_yy[mp,lps] = mlat_deg[Max_Subscript]
@@ -304,7 +334,7 @@ VEXB[mp,lp,1]*(-1.) ;[m/s] ;converted to northward,equatorward  ;20141104
 
 ;nm20140701
 ; is lp  or lps???: VEXB does not have dimension as big as lps 
-if ( sw_polar_contour eq 1 ) then begin
+if ( sw_arrow ge 1 ) then begin
    plot_u[mp,lps]=VEXB[mp,lp,0] ;+east
    plot_v[mp,lps]=VEXB[mp,lp,1]*(-1.) ;converted to +NORTHward, equatorward
 ;print,'SH U=',  plot_u[mp,lps],'V=',  plot_v[mp,lps]
@@ -347,17 +377,24 @@ if ( sw_range eq 1 ) then begin
         zmin=-100.;0.0
         zmax=+100.;1.28 ;F-region
       endif else if ( VarType eq 5 ) then begin 
-        zmin=-300.;zonal
-        zmax=+300.
+;        zmin=-300.;zonal
+;        zmax=+300.
+        zmin=-1.;o+ flux
+        zmax=+1.
       endif else if ( VarType eq 6 ) then begin 
-        zmin=-300.;southward
-        zmax=+300.
+;        zmin=-300.;southward
+;        zmax=+300.
+        zmin=-1.;h+ flux
+        zmax=+1.
       endif else if ( VarType eq 7 ) then begin 
-        zmin=5.;0.23;1.0e+10
-        zmax=6.2;17.30;18.40;1.983e+12
+        zmin=5.5;5.5;5.;0.23;1.0e+10
+        zmax=6.1;5.95;5.98;6.2;17.30;18.40;1.983e+12
       endif else if ( VarType eq 8 ) then begin 
-        zmin=100.
-        zmax=500.
+;hmf2
+;        zmin=100.
+;        zmax=500.
+zmin=0.001
+zmax=0.5393
       endif
 
 	where_result=where ( plot_zz gt zmax, count ) 
@@ -381,11 +418,11 @@ if ( xmax360 eq 1 ) then begin
   X_max=+360.
   X_min=+  0.
 endif else if ( xmax360 eq 0 ) then begin
-  X_max=+180.
-  X_min=-X_max
+  X_max=-60.;+180.
+  X_min=-130.;-X_max
 endif
-Y_max=+90.0
-Y_min=-Y_max
+Y_max=60.;+90.0
+Y_min=20.;-Y_max
 if ( sw_frame eq 0 ) then $
   MAG_GEO='magnetic' $
 else if ( sw_frame eq 1 ) then $
@@ -467,7 +504,12 @@ endif ;( sw_polar_contour_output eq 1 ) then begin
 ;mlat
 mp=16;10-1
 lp=21;14-1
-krmax = 39L ;NLP ; 37.0126deg mlat
+krmax =$
+;16L ;73.11
+;19L ;63.11
+;24L ;63.11
+; 29L; 55.88
+39L ;NLP ; 40.27deg mlat
 ;38 40.8670
 
 if ( which_hem eq 'NH' ) then $
@@ -511,6 +553,12 @@ endif
    endfor
 
 
+;nm20150310 read sunlons
+if sw_read_sunlon eq 1 then begin
+ print, 'before sunlons1=', sunlons1
+ read_sunlons,sunlons1,TEST,rundir,LUN2013,n_read
+ print, 'after sunlons1=', sunlons1
+endif
 
 ;mlt
 mlt = fltarr(nx_max)
@@ -596,6 +644,7 @@ POLAR_CONTOUR_qhull  $
 ,sw_debug
 
 ;20141112 test velovect
+if  sw_arrow ge 1 then begin 
 loadct, 0
 ;ArrowCol=255
 u=fltarr(nx_max,krmax)
@@ -607,55 +656,52 @@ for j=0,krmax-1 do begin
     v[i,j]= plot_v[i,j]
   endfor ;i
 endfor ;j
-;plot VEXB
-;draw_arrow_test, u, v, mlt, comlat ;$
-;plot phi and theta for validation
-draw_arrow_test1, u, v, mlt, comlat $
-,sunlons1,nmp,nlp
-;,X0,dX,X_SIZE,Y0,Y_SIZE
 
-;velovect, /POLAR, u, v , mlt, comlat $
-;, min_value=-WINDMX, max_value=WINDMX $
-;;, xmargin=9, ymargin=5  $
-;;, pos=[X0/X_SIZE, Y0/Y_SIZE, (X0+dX)/X_SIZE, (Y0+dY)/Y_SIZE] $
-;, xstyle=5, ystyle=5 $
-;, MISSING=WINDMX $
-;, length=ArrowLength $
-;, /overplot $
-;, color=ArrowCol          ;$
-;,        CLIP=clip $
-;, MAXMAG=ArrowMax, ArrowMax_saved ;110904: added by naomi
+if  sw_arrow eq 1 then $ 
+;plot VEXB
+  draw_arrow_test, u, v, mlt, comlat, rim_lat, sw_debug $
+else if  sw_arrow eq 2 then $ 
+;plot phi and theta for validation
+  draw_arrow_test1, u, v, mlt, comlat $
+,rim_lat,sunlons1,nmp,nlp,sw_debug $
+,TEST,rundir,LUN9001,n_read
+
+
+
 ;redblue
 loadct,n_ldct
-
+endif ; sw_arrow eq 1 then begin 
 
 ;debug20140703: find the MIN Nmf2, MAX Te?
 print, 'MAX ZZ=', MAX (plot_zz_plr, I)
 print, 'subscript of the MAX=',I
 IX = I MOD nx_max
 IY = I/nx_max
-print, 'the maximum value of ZZ is at location ('+STRTRIM(IX, 1) $
+if sw_debug eq 1 then print, 'the maximum value of ZZ is at location ('+STRTRIM(IX, 1) $
 + ', ' + STRTRIM(IY, 1) + ')'
 
-print, 'MIN ZZ=', MIN (plot_zz_plr, I)
-print, 'subscript of the MIN=',I
+if sw_debug eq 1 then print, 'MIN ZZ=', MIN (plot_zz_plr, I)
+if  sw_debug eq 1 then print, 'subscript of the MIN=',I
 IX = I MOD nx_max
 IY = I/nx_max
-print, 'the minimum value of ZZ is at location ('+STRTRIM(IX, 1) $
+if sw_debug eq 1 then print, 'the minimum value of ZZ is at location ('+STRTRIM(IX, 1) $
 + ', ' + STRTRIM(IY, 1) + ')'
 
 
-mp=10-1;imin
-lp=14-1;jmin
+mp=14;10-1;imin
+lp=18-1;jmin
 ;debug20140703: identify where is (mp,lp) flux tube is located?
 oplot, /POLAR,  comlat[lp-1:lp], mlt[mp-1:mp] $
-, THICK=6.0, LINESTYLE = 0  $
-, COLOR = 254. ;MIN
+, THICK=8.0, LINESTYLE = 0  $
+, COLOR = 150. ;MIN
 ;, COLOR = 40. ;MAX
 
 print, 'MIN mlat',plot_yy[mp,lp]
 
 
+print,'TEST=',TEST, ' rundir=', rundir
+xyouts, 0.70, 0.05, TEST+' '+rundir $
+, charsize=.9, charthick=.9, /norm, /noclip
 
 endif else begin ;( sw_polar_contour eq 0 ) then begin
 
@@ -668,17 +714,38 @@ contour,plot_zz,plot_xx,plot_yy $
 ,xrange=[X_min,X_max], /xstyle $
 ,yrange=[Y_min,Y_max], /ystyle $
 ,XTITLE=X_TITLE,YTITLE=Y_TITLE $
-,TITLE=VarTitle[VarType]+unit[VarType]+'  ht='+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+'km  UT[hr]='+STRTRIM( string(ut_hr, FORMAT='(F6.2)'),1 )+'_'+TEST $
+,TITLE=VarTitle[VarType]+unit[VarType]+' ht'+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+'km  UT[hr]='+STRTRIM( string(ut_hr, FORMAT='(F6.2)'),1 )+'_'+TEST+'_'+rundir $
 ,POSITION=[X0,Y0,X1,Y1] $
 ,COLOR=text_color $
 ,charsize=char_size,charthick=char_thick $
 ,MAX_VALUE= MAX_xymin 
 
+
+if ( sw_arrow eq 1 ) then begin
+loadct, 0
+ArrowMax=300.
+velovect, plot_u, plot_v, plot_xx, plot_yy $
+,/irregular $
+;, min_value=-WINDMX, max_value=WINDMX $
+;, xmargin=9, ymargin=5  $
+;, pos=[X0/X_SIZE, Y0/Y_SIZE, (X0+dX)/X_SIZE, (Y0+dY)/Y_SIZE] $
+, xstyle=5, ystyle=5 $
+;, MISSING=WINDMX $
+, length=15. $ ;factor ArrowLength $
+, /overplot $
+, color=0 $ ;ArrowCol $
+,        CLIP=clip $
+, MAXMAG=ArrowMax, ArrowMax_saved ;110904: added by naomi
+endif
+
+
 if ( sw_debug eq 1 ) then  print,'MAX=',MAX(plot_zz),' MIN=',MIN(plot_zz)
 ; add MIN & MAX values
 xyouts, 0.5, 0.84 $
-, 'MIN='+STRTRIM(STRING( MIN(plot_zz), FORMAT='(E11.3)'),1)+' MAX='+STRTRIM(STRING( MAX(plot_zz), FORMAT='(E11.3)'),1)  $
-, charsize=1.0, charthick=1.0, /norm, /noclip
+, 'MIN='+STRTRIM(STRING( MIN(plot_zz), FORMAT='(E10.3)'),1)+' MAX='+STRTRIM(STRING( MAX(plot_zz), FORMAT='(E10.3)'),1)  $
+, charsize=1.2, charthick=1.2, /norm, /noclip
+
+
 
 endelse ;if ( sw_polar_contour eq 0 ) then begin
 
@@ -703,7 +770,7 @@ if ( sw_output2file eq 1 ) then begin
    else if ( sw_polar_contour eq 1 ) then $ ;polar
       title_plr='plr'+which_hem
 
-Filename_png=plot_DIR+VarTitle[VarType]+'_ht'+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+'_ut'+STRTRIM( string(ut_hr, FORMAT='(F6.2)'),1 )+title_frame+'.'+title_plr+rundir+'.png'
+Filename_png=plot_DIR+VarTitle[VarType]+'_ht'+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+'_ut'+STRTRIM( string(ut_hr, FORMAT='(F6.2)'),1 )+title_frame+'.'+title_plr+rundir+'v2.png'
 output_png, Filename_png
 endif ;( sw_output2file eq 1 ) then begin
 
@@ -715,14 +782,14 @@ if ( sw_plot_grid ge 1 ) then begin
 loadct,0
 
 if ( sw_plot_grid eq 1 ) then begin
-   plot,plot_xx,plot_yy $
-,xrange=[X_min,X_max], xstyle=1 $
-,yrange=[Y_min,Y_max], ystyle=1  $
-,XTITLE=X_TITLE,YTITLE=Y_TITLE $
-,TITLE=VarTitle[VarType]+unit[VarType]+'  ht='+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+'km  UT[hr]='+STRTRIM( string(ut_hr, FORMAT='(F6.2)'),1 )+'.'+TEST $
-,POSITION=[X0,Y0,X1,Y1] $
-,COLOR=text_color $
-,charsize=char_size,charthick=char_thick $
+   oplot,plot_xx,plot_yy $
+;,xrange=[X_min,X_max], xstyle=1 $
+;,yrange=[Y_min,Y_max], ystyle=1  $
+;,XTITLE=X_TITLE,YTITLE=Y_TITLE $
+;,TITLE=VarTitle[VarType]+unit[VarType]+'  ht='+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+'km  UT[hr]='+STRTRIM( string(ut_hr, FORMAT='(F6.2)'),1 )+'.'+TEST $
+;,POSITION=[X0,Y0,X1,Y1] $
+,COLOR=0.$;text_color $
+;,charsize=char_size,charthick=char_thick $
 ,PSYM=3, SYMSIZE=5.5 ;$
 title_plr='ret'
 
@@ -750,7 +817,7 @@ oplot,/POLAR, r, theta $
 ;,XTITLE=X_TITLE,YTITLE=Y_TITLE $
 ;,TITLE='POLAR PLOT in MAGNETIC COORDINATE' $ ;VarTitle[VarType]+unit+'  ht='+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+'km  UT[hr]='+STRTRIM( string(ut_hr, FORMAT='(F6.2)'),1 ) $
 ;,POSITION=[X0,Y0,X1,Y1] $
-,COLOR=text_color $
+,COLOR=0.$;text_color $ ;black
 ;,charsize=char_size,charthick=char_thick $
 ,PSYM=3, SYMSIZE=5.5 ;$
 

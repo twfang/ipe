@@ -7,18 +7,14 @@
 ;20111205: sw_save=2 to save plotting time!!!
 ;include parallel plasma velocity to help the debug!!!
 pro plt_ipe
-sw_output2file=1;'PNG' ;0NONE';
+sw_output2file=0;'PNG' ;0NONE';
 TEST='r336.2';r319';r345';
 TEST2='S';80';640';80';S;640'
 sw_output2file_ascii=0
 f107=130;165;100;72
 TEST1=$
-;'16606'
-;'27321'
-;'20022'
-;'16756'
-'7196'
-alt=350.
+'25827'
+alt=800.;350.
 
    if ( f107 eq 165 ) then begin
       TEST1='7563';9445';27725' ;24695';830tril';
@@ -35,6 +31,9 @@ alt=350.
 
 luntmp =100L
 luntmp1=101L
+LUN9001=102L ;ph0,th0
+LUN2013=103L ;sunlon
+
 openw,luntmp,'tmp.dat', /GET_LUN
 if ( sw_output2file_ascii eq 1 ) then begin
    chr_title='F107='+STRTRIM( string(f107, FORMAT='(i3)'), 1)
@@ -48,8 +47,8 @@ endif ;( sw_output2file_ascii eq 1 ) then begin
 
 ;n_plt_max=97L ;for quick plot
 n_read_max=$
-1L;97L
-plot_UT    =432000.
+16L;97L
+plot_UT    =478800.;478800.;489600.;432000.
 plot_UT_end=plot_UT +86400.
 sw_quickplot=0
 ;20140117; plot every X hour
@@ -167,7 +166,7 @@ LUN  = INTARR(n_file)
 sw_LUN  = INTARR(n_file)
 sw_lun[0:1]=1
 sw_lun[2]=1 ;o+
-sw_lun[4]=0 ;vo+
+sw_lun[4]=1 ;vo+
 sw_lun[6]=0 ;h+
 sw_lun[8]=0 ;he+
 sw_lun[9]=0 ;n+
@@ -262,7 +261,7 @@ if ( sw_hr eq 1 ) then $
    Vn_ms1=fltarr(3,NPTS2D,NMP)
 ; Un_ms1=fltarr(MaxFluxTube,NLP,NMP)
 XIONN_m3 =fltarr(ISPEC,NPTS2D,NMP)
-XIONV_ms1=fltarr(1,NPTS2D,NMP) ;fltarr(ISPEV,NPTS2D,NMP)
+XIONV_ms1=fltarr(2,NPTS2D,NMP) ;fltarr(ISPEV,NPTS2D,NMP)
 TE_TI_k  =fltarr(3,NPTS2D,NMP)
 
 ;dbg20141208
@@ -579,7 +578,8 @@ if ( sw_quickplot eq 0 ) then $
 ;20131209: output to ascii file
 , sw_output2file_ascii,luntmp,ncount $
 , Vn_ms1,VEXB, sunlons1 $
-, alt,rundir $
+, alt,rundir, LUN9001 $
+, VarType_Min,VarType_Max, VarType_Step, LUN2013 $
 else if ( sw_quickplot eq 1 ) then $
        ctr_lon_lat_quick $
   , JMIN_IN,JMAX_IS,Z_km,mlat_deg  $ 
@@ -969,6 +969,7 @@ endif
   FREE_LUN, luntmp ;openw,luntmp,flnmtmp, /GET_LUN
 ;t  print, 'ncount', ncount
 ;t endif
+   FREE_LUN, LUN9001
 
 print,'plt_ipe: finished successfully!'
 end ;pro plt_ipe

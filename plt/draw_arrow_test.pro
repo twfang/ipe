@@ -1,32 +1,59 @@
-pro draw_arrow_test,u,v,thetaR,radi ;$
+pro draw_arrow_test,u,v,thetaR,radi, rim_lat, sw_debug;$
 ;,X00,dX,X_SIZE,Y0,Y_SIZE
 
+sw_v_or_e=0 ;0:V; 1:E
 size_resultu=SIZE(u)
-print,' size_u',size_resultu
+if sw_debug eq 1 then print,' size_u',size_resultu
 size_resultv=SIZE(v)
-print,' size_v',size_resultv
+if sw_debug eq 1 then print,' size_v',size_resultv
 size_radi=SIZE(radi)
-print,' size_radi', size_radi
+if sw_debug eq 1 then  print,' size_radi', size_radi
 size_thetaR=SIZE(thetaR)
-print,' size_thetaR', size_thetaR
+if sw_debug eq 1 then  print,' size_thetaR', size_thetaR
 
-ArrowRef=300. ;2000. ;m/s
+;for velocity
+if ( sw_v_or_e eq 0 ) then begin
+  ArrowRef=300. ;2000. ;m/s
+;for velocity
+  ArrowCol=0.;255. ;defalt black ;256 ;
+;for velocity
+  factor=0.025 ;0.05
+;for velocity
+  ArrowColR=255. ;white
+
+endif else if ( sw_v_or_e eq 1 ) then begin
+;for Efield
+  ArrowRef=30. ;2000. ;mV/m
+;for Efield
+  ArrowCol=20.;255. ;defalt black ;256 ;
+;for Efield
+  factor=0.2 ;0.05
+;for Efield
+  ArrowColR=0. ;green
+
+endif
 ;loadct, 0
-ArrowCol=0.;255. ;defalt black ;256 ;
-factor=0.025 ;0.05
+
+
+
+
+
 value_thick=0.8
 
 istep=3
-jstep=6
+jstep=2;1
 
 for i=0L,size_thetaR[1]-1,   istep  do begin ;thetaR
-  for j=1L,  size_radi[1]-1, jstep  do begin ;radi
+  for j=0L,  size_radi[1]-1, jstep  do begin ;radi
 
   ;print, 'check thetaR',i, (thetaR[i]/!DTOR),thetaR[i]
 
 
 
-;if ( radi[j] gt 40. ) then begin
+;if ( radi[j] gt 10. ) then  BREAK
+;if ( j ne 0 ) then  CONTINUE ;for V
+;if ( j ne 2 ) then  CONTINUE ; for E
+
 ;ArrowCol=255.;0. ;black 
 value_thick=2.
 ;endif else begin
@@ -81,8 +108,8 @@ endfor ;i=0L,size_thetaR[1]-1  ;thetaR
 
 
 ;draw arrow reference
-X0_arrow=+28.
-Y0_arrow=-47.
+X0_arrow=(90.-rim_lat) * 0.563 ;+28.
+Y0_arrow=(90.-rim_lat) * 0.9451 * (-1.) ;-47.
 
 U0=ArrowRef
 V0=0.;ArrowRef
@@ -107,13 +134,12 @@ dY_arrow = arwmag * sintheta
 
 X1_arrow = X0_arrow + dX_arrow
 Y1_arrow = Y0_arrow + dY_arrow
-;ArrowCol=255. ;white
+
 ARROW, X0_arrow, Y0_arrow, X1_arrow, Y1_arrow  $
 , /DATA       $ 
 ;, /NORMALIZED $
 , HSIZE= (!D.X_SIZE / 64.)*0.5 $
-;, COLOR=ArrowCol  $ ;index] $
-, COLOR=255.  $ ;index] $
+, COLOR=ArrowColR  $ ;index] $
 ;, HTHICK=value] $
 ;, /SOLID] $
 , THICK=value_thick

@@ -69,7 +69,7 @@ for iplot=0,iplot_max do begin
    zmax=MAX(zz)
    zmin=MIN(zz)
    if ( sw_debug eq 1 ) then  $
-      print,' maxZ=',zmax,' minZ=',zmin
+      print,iplot,' maxZ=',zmax,' minZ=',zmin
    
    if( SW_range eq 1 ) then  begin
   zmax=value_max_fix[iplot]
@@ -82,6 +82,14 @@ get_position $
 , iplot, iwindow  $
 , X0 , Y0 , X1 , Y1
 
+
+
+;if ( iplot eq 4 ) then begin
+;
+;print, 'mlon90_2d', mlon90_2d
+;print, 'mlat90_2d', mlat90_2d
+;stop
+;endif
 
 if ( iplot ge 4 ) then $
 contour,zz,mlon90_2d,mlat90_2d $
