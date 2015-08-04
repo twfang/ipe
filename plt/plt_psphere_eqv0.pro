@@ -27,7 +27,8 @@ print, mlon_deg
 TEST='r336.2'
 rundir=$
 ;'ipe_S_32328' ;original
-'ipe_S_25827' ;depeleted
+;'ipe_S_25827' ;depeleted
+'ipe_S_26060'; ;transport only
 flnm=$
 '~/wamns/'+TEST+'/trunk/run/'+rundir+'/plasma01' ;h+
 ;'/Users/naomimaruyama/sandbox/ipe/'+rundir+'/plasma01' ;h+

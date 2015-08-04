@@ -29,7 +29,7 @@ print, mlon_deg
 
 ;read_plasma, xion
 TEST='r336.2'
-rundir='ipe_S_32328'
+rundir='ipe_S_26060'
 flnm=['','','']
 varTitle=['','','']
   flnm[0]='plasma00';o+

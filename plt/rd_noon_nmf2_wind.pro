@@ -1,17 +1,17 @@
 pro rd_noon_nmf2_wind
 
-sw_wind_or_nmf2=0 ;0:nmf2; 1:wind
+sw_wind_or_nmf2=1 ;0:nmf2; 1:wind
 title_run= $
-;'original';
+'original';
 ;'EXB X 1.5'
 ;'EXB X 0.5'
-'WIND X 1.5'
+;'WIND X 1.5'
 rundir= $
 ;'ipe_80_27926' ;original no wind
-;'ipe_80_22905' ;original
+'ipe_80_22905' ;original
 ;'ipe_80_16467' ;EXBX1.5
 ;'ipe_80_2024'  ;EXB X 0.5
-'ipe_80_378'  ;wind X 1.5
+;'ipe_80_378'  ;wind X 1.5
    luntmpN=100
 ;path='/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/r319/trunk/run/'+rundir
 path='./'

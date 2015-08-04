@@ -13,8 +13,8 @@ TEST2='S';80';640';80';S;640'
 sw_output2file_ascii=0
 f107=130;165;100;72
 TEST1=$
-'25827'
-alt=800.;350.
+'5662';12686';25827'
+alt=350.
 
    if ( f107 eq 165 ) then begin
       TEST1='7563';9445';27725' ;24695';830tril';
@@ -47,9 +47,9 @@ endif ;( sw_output2file_ascii eq 1 ) then begin
 
 ;n_plt_max=97L ;for quick plot
 n_read_max=$
-16L;97L
-plot_UT    =478800.;478800.;489600.;432000.
-plot_UT_end=plot_UT +86400.
+1L;97L
+plot_UT    =15030;478800.;478800.;489600.;432000.
+plot_UT_end=plot_UT; +86400.
 sw_quickplot=0
 ;20140117; plot every X hour
 sw_hourly_plot=0
@@ -59,8 +59,8 @@ print, 'plot every',plotXhr,' hour'
 title_res= $
 ;'low20120709';
 ;'td20120709';
-'2xdyn';
-;'low'; 'high'
+;'2xdyn';
+'low'; 'high'
 
 sw_read_wind=0
 ;difutmin=60./60.;15./60. - 0.00001;=0.24999 ;output_freq=15min
@@ -91,7 +91,8 @@ endif                           ;( sw_read_wind eq 1 ) then begin
 fac_window=10.0
 ;!!!CAUTION!!! plot_UT needs to be float (INT has limited digit!!!)
 input_DIR0=$
-'/home/Naomi.Maruyama/wamns/'+TEST+'/trunk/run/ipe_'+TEST2+'_'+TEST1+'/'
+'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/trillian/r400/1438073093_ipe_trillian_cray_parallel_1/'
+;'/home/Naomi.Maruyama/wamns/'+TEST+'/trunk/run/ipe_'+TEST2+'_'+TEST1+'/'
 ;'/home/Naomi.Maruyama/wamns/'+TEST+'/trunk/tst/runs/zeus_intel_serial.1408558529/run/ipe_'+TEST2+'_'+TEST1+'/';test suite
 
 
@@ -103,8 +104,8 @@ mpstart=mp_plot
 mpstop=mpstart
 mpstep=1
 
-  VarType_min=7
-  VarType_max=7;11
+  VarType_min=0
+  VarType_max=0;11
   VarType_step=1
 ;endif ;plot_type eq 0 then begin
 
@@ -166,7 +167,7 @@ LUN  = INTARR(n_file)
 sw_LUN  = INTARR(n_file)
 sw_lun[0:1]=1
 sw_lun[2]=1 ;o+
-sw_lun[4]=1 ;vo+
+sw_lun[4]=0 ;vo+
 sw_lun[6]=0 ;h+
 sw_lun[8]=0 ;he+
 sw_lun[9]=0 ;n+
@@ -177,9 +178,9 @@ sw_lun[13]=0 ;o+(2D)
 sw_lun[14]=0 ;o+(2P)
 sw_lun[3]=0 ;Te
 sw_lun[7]=0 ;Ti
-sw_lun[5]=1 ;vexbup
-sw_lun[15]=1 ;vexbe
-sw_lun[16]=1 ;vexbth
+sw_lun[5]=0 ;vexbup
+sw_lun[15]=0 ;vexbe
+sw_lun[16]=0 ;vexbth
 if ( sw_dif eq 1 ) then begin
 LUNq  = INTARR(n_file)
    input_flnmq =input_flnm

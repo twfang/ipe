@@ -30,8 +30,7 @@ if sw_debug eq 1 then  print,'size jmax',SIZE(jmax_is)
 
 
 
-;if sw_debug eq 1 then  $
-print,'size z_km',SIZE(Z_km)
+if sw_debug eq 1 then  print,'size z_km',SIZE(Z_km)
 
 
 if sw_debug eq 1 then  print,'size mlat_deg ',SIZE(mlat_deg)

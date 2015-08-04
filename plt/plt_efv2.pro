@@ -4,7 +4,7 @@
 ;20120530: fort.2010 added for ed2
 ;pro plot_efield ;shorter name
 pro plt_efv2
-sw_debug=1L
+sw_debug=0L
 sw_output2file=0L ;1'PNG' ;0NONE';
 sw_plt_cntr=1L
 sw_plt_exb=0L ;1
@@ -14,7 +14,7 @@ title_res=$
 ;'low20120709'
 '2xdyn';'
 ;low';dyn';'low' ; 'high'
-utime_min=489600.;432000.;471600.;###CHANGE
+utime_min=489600.;###CHANGE
 utime_max=utime_min;+720.;3600.*24. ; ;to plot ExB time variation on the 6th panel 
 ;t if sw_plt_exb eq 0 then begin 
   iplot_max=6-1L 
@@ -39,7 +39,8 @@ TEST1='trans'
 ;TEST2='r319/trunk/run/ipe_80_27926'
 ;TEST2='r336.2.1/trunk/run/ipe_S_10670';14601';10595';S_24059';640_19352';
 TEST2='r336.2/trunk/run/ipe_S_26369'
-runDATE='20150316'
+;TEST2='reu/tmp20130703reu/trunk/run/ipe_640_18702'
+runDATE='20150615'
 
 input_DIR=$
 ;runDIR+'ipe4gsd/run_naomi/'
@@ -83,8 +84,8 @@ else if ( title_res eq 'dyn' ) then $
    nlp=45L                      ;dyn
 
 mlat90_1=fltarr(nlp*2)
-ed190=fltarr(nmp,nlp*2)
-ed190_save=fltarr(n_read_max)
+ed190=fltarr(nmp,nlp*2) ;mV/m
+ed190_save=fltarr(n_read_max) 
 
 ed290=fltarr(nmp,nlp*2)
 ed290_save=fltarr(n_read_max)
@@ -234,7 +235,10 @@ if ( utime gt utime_max ) then BREAK ;exit from while read loop
 
 ;20140225 separated out from plt_efv2.pro
 if ( sw_plt_cntr eq 1 ) then $
-;tmp   plt_cntr_fill $
+   plt_cntr_fill $
+ , iplot_max,mlon90_2d,mlat90_2d, sw_180,mlat130,poten,ed1130,ed2130,ed190,ed290,sw_debug,mlon130,mlat90_0,utime,runDATE,TEST2,plot_DIR,mp,lp, sw_output2file $
+
+else if ( sw_plt_cntr eq 2 ) then $
    plt_cntr_fill_plr $
  , iplot_max,mlon90_2d,mlat90_2d, sw_180,mlat130,poten,ed1130,ed2130,ed190,ed290,sw_debug,mlon130,mlat90_0,utime,runDATE,TEST2,plot_DIR,mp,lp, sw_output2file
 
