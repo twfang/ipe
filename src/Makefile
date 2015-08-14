@@ -57,7 +57,10 @@ endif
     MODCMD    = $(shell ./modcmd trillian gnu)
     FCP       = ftn
     FCS       = ftn
-    OPT_FLAGS = -g3 -ffree-line-length-none
+#used for debugging
+    OPT_FLAGS = -g3 -O0 -ffree-line-length-none
+#used for normal runs
+#    OPT_FLAGS = -g3 -O3 -ffast-math -ffree-line-length-none
     SMS       = /home/space/jobejen/src/sms/trillian-gnu
     ifeq ($(DEBUG),yes)
       DEBUG_FLAGS = -g

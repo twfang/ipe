@@ -252,11 +252,14 @@
         INTEGER (KIND=int_prec) :: istat        
 
 !SMS$IGNORE BEGIN
+        print*,"!!!!!made it to read_inpute_parameters!!!!!!"
         OPEN(LUN_nmlt,FILE=INPTNMLT,ERR=222,IOSTAT=IOST_OP,STATUS='OLD')
+        print*,"!!!!!made it past the first bit in read_inpute_parameters!!!!!!"
         REWIND LUN_nmlt
         READ(LUN_nmlt,NML=IPEDIMS  ,ERR=222,IOSTAT=IOST_RD)
         REWIND LUN_nmlt
         READ(LUN_nmlt,NML=NMIPE    ,ERR=222,IOSTAT=IOST_RD)
+
 !SMS$IGNORE END
 
 !SMS$INSERT lpHaloSize=5
@@ -345,8 +348,6 @@ print *,' '
 
 !dbg20120509        IF ( sw_rw_sw_perp_trans )  CALL setup_sw_perp_transport ()
 !note:20120207: v36: used only activating the perp.transport gradually...
-
-
 !dbg20160711
 !SMS$IGNORE begin
 print*,mype,'sub-read_input: swNeuPar',swNeuPar
