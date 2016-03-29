@@ -92,8 +92,9 @@ endif
     END IF
   END DO mpx_loop !: DO mpx=0,NMP
 
-!if(sw_debug) 
-if (mp==1.OR.mp==nmp) print *,'dbg20140205! sub-find_neighbor_grid_R:mp=',mp, mp_t0(ihem,1:2),phi_t0(ihem)*rtd, mlon_rad(mp_t0(ihem,1:2))*rtd
+if(sw_debug) then
+  if (mp==1.OR.mp==nmp) print *,'dbg20140205! sub-find_neighbor_grid_R:mp=',mp, mp_t0(ihem,1:2),phi_t0(ihem)*rtd, mlon_rad(mp_t0(ihem,1:2))*rtd
+endif
 !dbg20140205: correction if mp>nmp
 if (mp==nmp.and.mp_t0(ihem,2)>nmp ) then
    print *,'!dbg20140205! mp_t0',mp_t0(ihem,2),mp

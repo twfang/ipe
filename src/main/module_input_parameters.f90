@@ -13,7 +13,7 @@
 !--------------------------------------------  
       MODULE module_input_parameters
       USE module_precision
-      USE module_IPE_dimension,ONLY: NLP,NMP
+      USE module_IPE_dimension,ONLY: NLP,NMP,NPTS2D
       IMPLICIT NONE
 
 !--- IPE wide run parameters
@@ -97,7 +97,15 @@
       LOGICAL, PUBLIC :: sw_output_fort167
       INTEGER(KIND=int_prec), DIMENSION(2), PUBLIC :: iout
       INTEGER(KIND=int_prec), PUBLIC :: mpstop
-      INTEGER(KIND=int_prec), PUBLIC :: sw_neutral    !0:GT; 1:MSIS
+      INTEGER(KIND=int_prec), PUBLIC :: sw_neutral=3    
+!0: WAM debug: use which ever ESMF fields are coming across for debugging purpose
+!1: WAM default science mode: specify ESMF fields you wish to use
+!2: GT
+!3: MSIS(default)
+!4: read in files
+      LOGICAL, dimension(7), PUBLIC :: swNeuPar=.false. !f:OFF (from MSIS); t:ON (from WAM)
+!determines which neutral parameters to derive from WAM only when sw_neutral=0/1? 
+!1:tn; 2:un1(east); 3:un2(north); 4:un3(up); 5:[O]; 6:[O2]; 7:[N2]
       INTEGER(KIND=int_prec), PUBLIC :: sw_eldyn
 !0:self-consistent eldyn solver; 1:WACCM efield ;2:  ;3: read in external efield
       INTEGER(KIND=int_prec), PUBLIC :: sw_pcp        !0:heelis; 1:weimer
@@ -138,8 +146,11 @@
 !1: div * V// included in the Te/i solver
 !dbg20120313 
       REAL(KIND=real_prec), PUBLIC :: fac_BM
-
-      NAMELIST/IPEDIMS/NLP,NMP 
+!
+! MPI communicator to be passed to SMS
+      integer, PUBLIC :: my_comm
+!---
+      NAMELIST/IPEDIMS/NLP,NMP,NPTS2D 
       NAMELIST/NMIPE/start_time &
      &,stop_time &
      &,time_step &
@@ -178,6 +189,7 @@
      &,kp_eld
       NAMELIST/NMSWITCH/&
            &  sw_neutral     &
+           &, swNeuPar       &
            &,  sw_eldyn     &
            &, sw_pcp         &
            &, sw_grid        &
@@ -217,6 +229,9 @@
         USE module_IPE_dimension,ONLY: NLP,NMP,NPTS2D
         IMPLICIT NONE
 !---------
+!MPI requirement 
+      include "mpif.h"
+!---
         INTEGER(KIND=int_prec),PARAMETER :: LUN_nmlt=1
         CHARACTER(LEN=*),PARAMETER :: INPTNMLT='IPE.inp'
         INTEGER(KIND=int_prec) :: IOST_OP=0
@@ -235,6 +250,14 @@
 
 !SMS$INSERT lpHaloSize=5
 !SMS$INSERT mpHaloSize=1
+!
+!set up MPI communicator for SMS
+!(1) when NEMS is not used, pass MPI_COMM_WORLD into SET_COMMUNICATOR()
+!t        my_comm=MPI_COMM_WORLD
+!(2) when NEMS is used, my_comm=mpiCommunicator has been assigned already in sub-myIPE_Init
+!        print *, 'sub-read_input_para:my_comm=', my_comm
+!SMS$SET_COMMUNICATOR( my_comm )
+!
 !SMS$CREATE_DECOMP(dh,<NLP,NMP>,<lpHaloSize,mpHaloSize>: <PERIODIC, PERIODIC>)
 
 !SMS$SERIAL BEGIN

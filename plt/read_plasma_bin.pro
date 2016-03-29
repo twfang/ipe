@@ -9,7 +9,7 @@ record_number=0L
 ; read plasma1
      readf, LUN[0], record_number, UT_sec
  UT_hr = UT_sec /3600.
-print,' rec#',record_number,' UThr=',UT_hr,' UTs=', UT_sec
+print,' rec#',record_number,' UThr',UT_hr, UT_sec
 
 size_result=size(XIONN_m3)
 if ( sw_debug eq 1 ) then  $

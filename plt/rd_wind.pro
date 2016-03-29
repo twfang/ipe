@@ -187,7 +187,7 @@ if ( sw_dot eq 0 ) then tmp_string='line.png' else $
 if ( sw_dot eq 1 ) then tmp_string='dot.png'
  flnm_png=rundir+'wind'+STRTRIM( string(n_ldct, FORMAT='(i2)'),1 )+tmp_string
 print, flnm_png
-;output_png, flnm_png
+output_png, flnm_png
 
 
 end

@@ -209,13 +209,13 @@ Vn_ms1[2-1,i,mp]*fac_wind ;[m/s] ;positive northward ;20140108
   ltime = ut_hr + glon_deg[Max_Subscript,mp]/15.
   if ( ltime ge 24. ) then ltime = ( ltime MOD 24. )
 ;extract near noon data
-;if ( lp eq 129 ) then  begin
-;   if ltime ge ltimemin and ltime le ltimemax then begin
-;      print, 'NH: mp',mp,'lp',lp,'LT',ltime, ut_hr, mlat_deg[Max_Subscript],glon_deg[Max_Subscript,mp]
-;      mp_output_noonprfl = mp
-;      glon_output = glon_deg[Max_Subscript,mp]
-;   endif
-;endif
+if ( lp eq 129 ) then  begin
+   if ltime ge ltimemin and ltime le ltimemax then begin
+      print, 'NH: mp',mp,'lp',lp,'LT',ltime, ut_hr, mlat_deg[Max_Subscript],glon_deg[Max_Subscript,mp]
+      mp_output_noonprfl = mp
+      glon_output = glon_deg[Max_Subscript,mp]
+   endif
+endif
 
          plot_yy[mp,lp] = mlat_deg[Max_Subscript]
          plot_xx[mp,lp] = ltime
@@ -411,23 +411,23 @@ endfor ;lp=0,NLP-1 do begin
 endfor ;mp=0,NMP-1 do begin
 
 ;nm20140926 output noon profile
-;if ( sw_frame eq 2 AND sw_output_nmf2noon eq 1 ) then begin
-;   if ( n_read eq 0 ) then begin
-;;   luntmpN=100
-;      flnmtmpN='/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/r319/;trunk/run/'+rundir+'/noon_nmf2.dat'
-;      openw,luntmpN,flnmtmpN, /GET_LUN
-;      print, 'noon nmf2/wind file created:',flnmtmpN
-;   endif                        ;if n_read eq 0
-;   printf, luntmpN, mp_output_noonprfl 
-;print, 'check mp_output=', mp_output_noonprfl 
-;   printf, luntmpN, ut_hr, glon_output 
-;print, 'ut=', ut_hr,' glon=', glon_output 
-;   printf, luntmpN, plot_xx[mp_output_noonprfl,*] ;lt
-;print, 'ltime=', plot_xx[mp_output_noonprfl,129] ;lt
-;   printf, luntmpN, plot_yy[mp_output_noonprfl,*] ;mlat
-;   printf, luntmpN, plot_zz[mp_output_noonprfl,*] ;nmf2
-;   printf, luntmpN, plot_zz1[mp_output_noonprfl,*] ;wind positive NORTHward
-;endif                                              ;if sw_frame eq 2
+if ( sw_frame eq 2 AND sw_output_nmf2noon eq 1 ) then begin
+   if ( n_read eq 0 ) then begin
+;   luntmpN=100
+      flnmtmpN='/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/r319/trunk/run/'+rundir+'/noon_nmf2.dat'
+      openw,luntmpN,flnmtmpN, /GET_LUN
+      print, 'noon nmf2/wind file created:',flnmtmpN
+   endif                        ;if n_read eq 0
+   printf, luntmpN, mp_output_noonprfl 
+print, 'check mp_output=', mp_output_noonprfl 
+   printf, luntmpN, ut_hr, glon_output 
+print, 'ut=', ut_hr,' glon=', glon_output 
+   printf, luntmpN, plot_xx[mp_output_noonprfl,*] ;lt
+print, 'ltime=', plot_xx[mp_output_noonprfl,129] ;lt
+   printf, luntmpN, plot_yy[mp_output_noonprfl,*] ;mlat
+   printf, luntmpN, plot_zz[mp_output_noonprfl,*] ;nmf2
+   printf, luntmpN, plot_zz1[mp_output_noonprfl,*] ;wind positive NORTHward
+endif                                              ;if sw_frame eq 2
 
 ;(2) when time = time_max 
 ; plotting
@@ -473,7 +473,7 @@ if ( sw_range eq 1 ) then begin
 
 
 ;nm20150205 output for paper
-;if ( sw_frame eq 2 AND sw_output_nmf2noon eq 1 ) then begin
+if ( sw_frame eq 2 AND sw_output_nmf2noon eq 1 ) then begin
    printf, luntmpN,ut_hr
    ncnt=0L
    for k=0,ny_max-1  do begin
@@ -484,7 +484,7 @@ if ( sw_range eq 1 ) then begin
       endif
    endfor
    print, 'ncnt ', ncnt 
-;endif                           ;if ( sw_output2file_ascii eq 1 ) then begin
+endif                           ;if ( sw_output2file_ascii eq 1 ) then begin
 
 
 
@@ -518,7 +518,7 @@ x_max=24.
 x_min=0.
 endif
 
-Y_max= 80.0
+Y_max= +80.;50.0
 Y_min= -Y_max
 if ( sw_frame eq 0 ) or ( sw_frame eq 2 ) then $
   MAG_GEO='magnetic' $

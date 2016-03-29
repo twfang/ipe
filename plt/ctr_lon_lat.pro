@@ -31,15 +31,15 @@ print, 'ht_plot=', ht_plot
 which_hem='NH';SH';
 
 ;1:exb; 2:phi the
-sw_arrow=0
-sw_read_sunlon=0
-sw_polar_contour=0
+sw_arrow=1
+sw_read_sunlon=1
+sw_polar_contour=1
 sw_polar_contour_output=0
 
 ; X-axis range
 ;1:0<lon<360
 ;0:-180<lon<+180
-xmax360=1
+xmax360=0
 ;note20131209: sw OFF only when sw_output2file_ascii=1 to run faster!!
 sw_plot_contour=1
 ltimemin=11.
@@ -65,7 +65,7 @@ print,'VarType=',VarType
 
 sw_range=1L
 nano=1.0E-9
-unit=['[*10^-5 cm-3]',' [K]',' [K]','[m-3]',$
+unit=['[*10^-11 m-3]',' [K]',' [K]','[m-3]',$
 '[m-3]',$
 ;'[m/s]',$  ;viup
 ;'[m/s]',$
@@ -77,7 +77,7 @@ unit=['[*10^-5 cm-3]',' [K]',' [K]','[m-3]',$
 ;'[km]'] ;[nA/m2]'];[nA/m2]' ;20140108
 '[X10^8 cm^2 s^-1 ]']
 
- sw_plot_grid=0 ;0:no grid;1:retangular, 2:polar
+ sw_plot_grid=2 ;1:retangular, 2:polar
 ; get n_read_max, ny_max
 size_result = SIZE(JMIN_IN)
 if ( sw_debug eq 1 ) and ( n_read eq 0 ) then  print,'NLP',size_result
@@ -210,8 +210,7 @@ XIONN_m3[1,i,mp]*1.E-6 * XIONV_ms1[1,i,mp]*1.E+2 *1.E-8 ;h+ flux: o+ * V//o+[m/s
        if ( VarType eq 7 ) then $
          plot_zz[mp,lp] = $
 ; nel[Max_Subscript] * factor $ ;NmF2
-; ALOG10(nel[Max_Subscript] * 1.0E-6 ) $ ;NmF2 m-3-->cm-3
-  nel[Max_Subscript] * 1.0E-11  $ ;NmF2 m-3-->cm-3-->X10^5
+ ALOG10(nel[Max_Subscript] * 1.0E-6 ) $ ;NmF2 m-3-->cm-3
        else if ( VarType eq 8 ) then $
 
 if ( lp lt nlp1 ) then         plot_zz[mp,lp] = $
@@ -312,8 +311,7 @@ XIONN_m3[1,i,mp]*1.E-6 * XIONV_ms1[1,i,mp]*1.E+2 *1.E-8 ;h+ flux: h+ * V//h+[m/s
        if ( VarType eq 7 ) then $
          plot_zz[mp,lps] = $
        ;nel[Max_Subscript] * factor  $ ;NmF2
-; ALOG10(nel[Max_Subscript] * 1.0E-6 ) $ ;NmF2 m-3-->cm-3
- nel[Max_Subscript] * 1.0E-11  $ ;NmF2 m-3-->cm-3-->X10^5
+ ALOG10(nel[Max_Subscript] * 1.0E-6 ) $ ;NmF2 m-3-->cm-3
        else if ( VarType eq 8 ) then $
 ;dbg20150323: flux data not available for now..for SH
 ;t          plot_zz[mp,lps] = $
@@ -359,7 +357,7 @@ if ( sw_range eq 1 ) then begin
         zmin=0.;1.e+10
 ;        zmax=7.5e+11
 ;        zmax=2.5e+1 ;E-region
-        zmax=17.;2.e+12 ;F-region
+        zmax=18.;2.e+12 ;F-region
 ;        zmax=9.0E+11 ;dbg200km
 ;        zmax=5.58e+12
 ;92km
@@ -389,8 +387,8 @@ if ( sw_range eq 1 ) then begin
         zmin=-1.;h+ flux
         zmax=+1.
       endif else if ( VarType eq 7 ) then begin 
-        zmin=0.  ;X10^5  el cm-3
-        zmax=17.
+        zmin=5.5;5.5;5.;0.23;1.0e+10
+        zmax=6.1;5.95;5.98;6.2;17.30;18.40;1.983e+12
       endif else if ( VarType eq 8 ) then begin 
 ;hmf2
 ;        zmin=100.
@@ -420,11 +418,11 @@ if ( xmax360 eq 1 ) then begin
   X_max=+360.
   X_min=+  0.
 endif else if ( xmax360 eq 0 ) then begin
-  X_max=+180.
-  X_min=-X_max
+  X_max=-60.;+180.
+  X_min=-130.;-X_max
 endif
-Y_max=+80.0
-Y_min=-Y_max
+Y_max=60.;+90.0
+Y_min=20.;-Y_max
 if ( sw_frame eq 0 ) then $
   MAG_GEO='magnetic' $
 else if ( sw_frame eq 1 ) then $
@@ -690,17 +688,15 @@ if sw_debug eq 1 then print, 'the minimum value of ZZ is at location ('+STRTRIM(
 + ', ' + STRTRIM(IY, 1) + ')'
 
 
-mp=14+10;10-1;imin
-lp=18-1+3;jmin
-;debug20150513: identify where is (mp,lp) flux tube is located?
+mp=14;10-1;imin
+lp=18-1;jmin
+;debug20140703: identify where is (mp,lp) flux tube is located?
 oplot, /POLAR,  comlat[lp-1:lp], mlt[mp-1:mp] $
 , THICK=8.0, LINESTYLE = 0  $
-, COLOR = 245. ;SED flux tube
-;, COLOR = 150. ;MIN
+, COLOR = 150. ;MIN
 ;, COLOR = 40. ;MAX
 
-
-print, '20150513SEDB: mp=',mp,' lp=',lp,'  mlat=',plot_yy[mp,lp],' MLT=',mlt[mp]
+print, 'MIN mlat',plot_yy[mp,lp]
 
 
 print,'TEST=',TEST, ' rundir=', rundir

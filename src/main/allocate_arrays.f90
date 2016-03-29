@@ -19,9 +19,9 @@
      &,apexD,apexE,VEXBup,VEXBe,MaxFluxTube,HE_m3,N4S_m3,TN_k,TINF_K,Un_ms1 &
      &,Be3, Pvalue, JMIN_IN, JMAX_IS,hrate_mks3d,midpnt &
      &,mlon_rad, plasma_grid_Z, plasma_grid_GL, plasma_3d_old &
-     &,apexDscalar, l_mag
+     &,apexDscalar, l_mag, WamField
   
-      USE module_input_parameters,ONLY: sw_neutral_heating_flip
+      USE module_input_parameters,ONLY: sw_neutral,sw_neutral_heating_flip
       IMPLICIT NONE
       INTEGER (KIND=int_prec),INTENT(IN) :: switch
       INTEGER (KIND=int_prec) :: stat_alloc
@@ -51,6 +51,10 @@
      &,           TN_k  (MaxFluxTube,NLP,NMP)     &
      &,           TINF_K(MaxFluxTube,NLP,NMP)     &
      &,           Un_ms1(MaxFluxTube,NLP,NMP,3:3) )
+
+
+      if ( sw_neutral == 0 .or. sw_neutral == 1 ) allocate( WamField(MaxFluxTube,NLP,NMP,7) )
+
 
         IF ( sw_neutral_heating_flip==1 ) THEN
           ALLOCATE(hrate_mks3d(MaxFluxTube,NLP,NMP,7),STAT=stat_alloc)
@@ -115,6 +119,9 @@ print *,'DE-ALLOCATing ARRAYS'
         STOP
       END IF
 
+
+      if ( sw_neutral == 0 .or. sw_neutral == 1 ) &
+     &   DEallocate( WamField )
 
 !---neutral heating
       IF ( sw_neutral_heating_flip==1 ) THEN

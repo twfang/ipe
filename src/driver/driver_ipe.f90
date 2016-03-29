@@ -36,6 +36,14 @@
       INTEGER(KIND=int_prec),parameter :: luntmp=300
       INTEGER(KIND=int_prec)           :: istat,mp,ret
 
+
+!nm20151028 (1) obtain mpi communicator
+!      INTEGER :: FTN_COMM
+!print *,'!nm20151028 obtain mpi communicator'
+!      call GET_SMS_MPI_COMMUNICATOR(FTN_COMM)
+!print *,' FTN_COMM=', FTN_COMM
+!
+
       call gptlprocess_namelist ('GPTLnamelist', 77, ret) 
       ret = gptlinitialize ()
       ret = gptlstart ('Total')

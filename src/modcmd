@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 unknown() {
   echo "Unknown compiler '$2' for machine '$1'."
@@ -40,6 +40,18 @@ case $1 in
         ;;
       "lahey")
         echo "$goto lahey mpt"
+        ;;
+      *) unknown $1 $2
+        ;;
+    esac
+    ;;
+  "theia")
+###    init="source /apps/lmod/lmod/init/sh"
+    init="source /apps/lmod/lmod/init/sh"
+    goto="$init && module purge && module load"
+    case $2 in
+      "intel")
+        echo "$goto intel impi "
         ;;
       *) unknown $1 $2
         ;;

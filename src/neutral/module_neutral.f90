@@ -35,9 +35,10 @@
 !---------------------------
       subroutine neutral (utime) 
       USE module_IPE_dimension,ONLY: IPDIM
-      use module_FIELD_LINE_GRID_MKS, only : plasma_grid_3d,plasma_grid_Z, apexD, JMIN_IN,JMAX_IS,east,north,up,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,JMIN_ING,JMAX_ISG
+      use module_FIELD_LINE_GRID_MKS, only : plasma_grid_3d,plasma_grid_Z, apexD, JMIN_IN,JMAX_IS,east,north,up,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,JMIN_ING,JMAX_ISG,WamField
       USE module_physical_constants,ONLY: pi,zero
-      USE module_input_parameters,ONLY: F107D,F107AV,AP,NYEAR,NDAY,sw_debug,mpstop,sw_grid,start_time,stop_time,sw_neutral
+      USE module_input_parameters,ONLY: F107D,F107AV,AP,NYEAR,NDAY,sw_debug,mpstop,sw_grid,start_time,stop_time &
+     &,sw_neutral, swNeuPar
       USE module_unit_conversion,ONLY: M_TO_KM
       USE module_IO, ONLY:filename,FORM_dum,STATUS_dum,luntmp3
       USE module_open_file, ONLY:open_file
@@ -63,7 +64,14 @@
       REAL (KIND=real_prec) :: BCOMPU
       REAL (KIND=real_prec) :: dum0(NPTS2D)
 !dbg20120313
-      INTEGER(KIND=int_prec) :: utime_dum 
+      INTEGER(KIND=int_prec) :: utime_dum
+!include WAM fields options
+      real(KIND=real_prec), parameter :: hTop_m=8.E+05 !m
+      real(KIND=real_prec), parameter :: R=8.3141e+03
+      real(KIND=real_prec), dimension(3), parameter :: mass=(/16.,32.,28./)
+!1:O,2:O2;3:N2
+      INTEGER(KIND=int_prec) :: ihTopN,ihTopS,jth,jjth
+      real(KIND=real_prec) :: scaleHt, expPart
 !------
 
       iyear = NYEAR
@@ -137,7 +145,155 @@ IF( sw_debug )  print *,'sub-neut: mp=',lp,mp,IN,IS,npts
      &                 , tinf_k(IN:IS,lp,mp) &
      &              ,Vn_ms1(1:3,1:NPTS   )   )
 
-          midpoint = IN + (IS-IN)/2
+
+!nm20151130 include WAM fields options: 
+!sw_neutral
+!0: WAM debug: use which ever ESMF fields are coming across for debugging purpose
+!1: WAM default science mode: specify ESMF fields you wish to use
+!2: GT
+!3: MSIS(default)
+!4: read in files
+!
+!swNeuPar OFF (from MSIS); ON (from WAM)
+!determines which neutral parameters to derive from WAM when sw_neutral=0/1? 
+!1:tn; 2:un1(east); 3:un2(north); 4:un3(up); 5:[O]; 6:[O2]; 7:[N2]
+!
+! note: H, He are always obtained from msis.
+! what is the plan for n4s???
+! ihTopN: the index of the highest height with the value in NH
+! ihTopS: the index of the highest height with the value in SH
+!
+
+      if ( sw_neutral == 3 ) then
+         print *, sw_neutral,':MSIS'
+         swNeuPar(:)=.false.
+      end if
+
+      midpoint = IN + (IS-IN)/2
+      if ( sw_neutral == 0 .or. sw_neutral == 1 ) then
+         !Tn
+         ! nm20151130: temporarily obtain ihTopN
+         NHLoop: do ipts=in,midpoint
+            if ( plasma_grid_Z(ipts,lp)<=hTop_m .and. hTop_m<plasma_grid_Z(ipts+1,lp) ) then
+               print *, 'NH',ipts,plasma_grid_Z(ipts,lp)
+               ihTopN=ipts
+               exit NHLoop
+            endif
+            ! if midpoint < 800km
+            if ( ipts==midpoint) ihTopN = midpoint
+         end do NHLoop !: do ipts=in,midpoint
+         
+         SHLoop: do ipts=is,midpoint, -1
+            if ( plasma_grid_Z(ipts,lp)<=hTop_m .and. hTop_m<plasma_grid_Z(ipts-1,lp) ) then
+               print *,'SH',ipts,plasma_grid_Z(ipts,lp)
+               ihTopS=ipts
+               exit SHLoop
+            endif
+            ! if midpoint < 800km
+            if ( ipts==midpoint) ihTopS = midpoint
+         end do SHLoop !: do ipts=is       
+
+
+!tmp20151130 temporarily assign msis Tn upto 800km
+         WamField = zero
+         NHLoop1: do ipts=in,ihTopN
+            WamField(ipts,lp,mp,1) = tn_k(ipts,lp,mp)
+         end do NHLoop1 !: do ipts=in,ihTopN
+         SHLoop1: do ipts=ihTopS,is
+            WamField(ipts,lp,mp,1) = tn_k(ipts,lp,mp)
+         end do SHLoop1 !: do ipts=in,ihTopN
+!tmp20151130:
+         jth=1   
+         if ( swNeuPar(jth) ) then
+         print *, 'calculating wam Tn' 
+            !below 800km: NH
+            tn_k(IN:ihTopN,lp,mp)   = WamField(IN:ihTopN,lp,mp, jth) !Tn NH
+            !below 800km: SH
+            tn_k(ihTopS:IS,lp,mp)   = WamField(ihTopS:IS,lp,mp, jth) !Tn SH
+            !above 800km NH
+            tn_k(ihTopN+1:midpoint  ,lp,mp)   = WamField(ihTopN,lp,mp, jth) !Tn >800km NH
+            tn_k(midpoint+1:ihTopS-1,lp,mp)   = WamField(ihTopS,lp,mp, jth) !Tn >800km SH
+            !Tn Max NH
+            tinf_k(IN:midpoint  ,lp,mp) = WamField(ihTopN,lp,mp, jth) !Tn Inf NH
+            !Tn Max SH
+            tinf_k(midpoint+1:IS,lp,mp) = WamField(ihTopS,lp,mp, jth) !Tn Inf SH
+         end if
+
+         print *, 'calculating wam Un'
+         jth_loop1: do jth=1,3 !2:4 for WamField,swNeuPar
+            jjth=jth+1 !2:4 for WamField,swNeuPar
+            if ( swNeuPar(jjth) ) then
+               !below 800km: NH
+               Vn_ms1(jth,IN-IN+1:ihTopN-IN+1) = WamField(IN:ihTopN,lp,mp, jjth) !Un NH
+               !below 800km: SH
+               Vn_ms1(jth,ihTopS-IN+1:IS-IN+1) = WamField(ihTopS:IS,lp,mp, jjth) !Un SH
+               !above 800km NH
+               Vn_ms1(jth,ihTopN+1:midpoint  ) = WamField(ihTopN,lp,mp, jjth) !Un>800km NH
+               Vn_ms1(jth,midpoint+1:ihTopS-1) = WamField(ihTopS,lp,mp, jjth) !Un>800km SH
+            end if
+         end do jth_loop1 !jth=1,3 !2:4 for WamField,swNeuPar            
+         
+!note20160112 i could have used the loop here
+         print *, 'calculating wam composition' 
+         jth=5        
+         if ( swNeuPar(jth) ) then
+            !O below 800km: NH
+            on_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jth) !O
+            !O below 800km: SH
+            on_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jth) !O
+         end if
+         
+         jth=6
+         if ( swNeuPar(jth) ) then
+            !O2 below 800km: NH
+            o2n_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jth) !O2
+            !O2 below 800km: SH
+            o2n_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jth) !O2
+         end if
+
+         jth=7         
+         if ( swNeuPar(jth) ) then
+            !N2 below 800km: NH
+            n2n_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jth) !n2
+            !N2 below 800km: SH
+            n2n_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jth) !n2
+         end if
+!note20160112:
+         
+         !above 800km: NH
+         above800kmLoopNH: DO ipts=ihTopN+1, midpoint  
+            jth_loop2: do jth=1,3 !5:O,6:O2,7:N2 for WamField
+               jjth=jth+4
+               scaleHt = R * tn_k(ihTopN,lp,mp) / ( mass(jth) * plasma_grid_3d(ihTopN,lp,mp,IGR) ) !m-3
+               expPart = EXP ( ( plasma_grid_Z(ihTopN,lp) - plasma_grid_Z(ipts,lp) ) / scaleHt ) !meter
+               if ( jth==1 .and. swNeuPar(jjth) ) then !O
+                  on_m3( ipts,lp,mp) = WamField(ihTopN,lp,mp,jjth) * expPart
+               else if (jth==2 .and. swNeuPar(jjth) ) then !O2
+                  o2n_m3(ipts,lp,mp) = WamField(ihTopN,lp,mp,jjth) * expPart
+               else if (jth==3 .and. swNeuPar(jjth) ) then !N2
+                  n2n_m3(ipts,lp,mp) = WamField(ihTopN,lp,mp,jjth) * expPart
+               end if
+            end do jth_loop2 !: do jth=1,3 !5:O,6:O2,7:N2 for WamField
+         end do above800kmLoopNH !: DO ipts=ihTopN+1, midpoint  !above 800km: NH
+               
+         !above 800km: SH
+         above800kmLoopSH: DO ipts=midpoint+1,ihTopS-1  
+            jth_loop3: do jth=1,3 !5:O,6:O2,7:N2 for WamField
+               jjth=jth+4
+               scaleHt = R * tn_k(ihTopS,lp,mp) / ( mass(jth) * plasma_grid_3d(ihTopS,lp,mp,IGR) ) !m-3
+               expPart = EXP ( ( plasma_grid_Z(ihTopS,lp) - plasma_grid_Z(ipts,lp) ) / scaleHt ) !meter
+               if (jth==1 .and. swNeuPar(jjth) ) then !O
+                  on_m3( ipts,lp,mp) = WamField(ihTopS,lp,mp,jjth) * expPart
+               else if (jth==2 .and. swNeuPar(jjth) ) then !O2
+                  o2n_m3(ipts,lp,mp) = WamField(ihTopS,lp,mp,jjth) * expPart
+               else if (jth==3 .and. swNeuPar(jjth) ) then !N2
+                  n2n_m3(ipts,lp,mp) = WamField(ihTopS,lp,mp,jjth) * expPart
+                     end if
+                  end do jth_loop3 !: do jth=1,3 !5:O,6:O2,7:N2 for WamField
+               end do above800kmLoopSH !: DO ipts=midpoint+1
+            end if !      if ( sw_neutral == 0 .or. sw_neutral == 1 ) then
+         !nm20151130
+      
           flux_tube: DO i=IN,IS
             ipts = i-IN+1 !1:NPTS
 
@@ -209,7 +365,7 @@ END IF !( sw_grid==0 ) THEN !APEX
           END DO flux_tube !: DO i=IN,IS
 
 IF ( sw_debug ) THEN
-      print "('mp=',i6,'  lp=',i6,'  IN=',i6,'  IS=',i6,'  NPTS=',i8)", lp,mp,IN, IS, npts
+      print "('lp=',i6,'  mp=',i6,'  IN=',i6,'  IS=',i6,'  NPTS=',i8)", lp,mp,IN, IS, npts
       print "(' glon_deg = ',2F10.4)", glon_deg(1), glon_deg(npts)
       print "(' glat_deg = ',2F10.4)", glat_deg(1), glat_deg(npts)
       print "(' alt_km   = ',2F12.2)", alt_km(1), alt_km(npts)

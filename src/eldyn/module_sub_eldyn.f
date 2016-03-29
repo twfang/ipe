@@ -59,7 +59,7 @@
 !nm20121127: calculate month/day from iyear and iday
       call cal_monthday ( iyear,iday, imo,iday_m )
 !nm20130402: temporarily hard-code the iday to get b4bconfirmed.
-      iday_m=15                 !day of month 
+!      iday_m=15                 !day of month 
 
 !!! F107D is global both in module efield & ipe input
       f107d = F107D_ipe         !f107
