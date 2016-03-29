@@ -1,6 +1,7 @@
 &ipedims
   nlp=170
   nmp=80
+  npts2d=44514
 /
 &nmflip
   colfac_flip=1.7
@@ -32,8 +33,8 @@
 &nmipe
   f107av=187.0
   f107d=184.0
-  ip_freq_msis=100
-  ip_freq_output=100
+  ip_freq_msis=900
+  ip_freq_output=900
   nday=74
   nyear=2000
   start_time=518400
@@ -50,7 +51,7 @@
   kp_eld=3.
 /
 &nmswitch
-  duration=100
+  duration=300
   fac_bm=1.00
   iout(1)=1
   iout(2)=60
@@ -66,7 +67,14 @@
   sw_exb_up=1
   sw_grid=0
   sw_ksi=2
-  sw_neutral=1
+  sw_neutral=3
+  swNeuPar(1)=t
+  swNeuPar(2)=f
+  swNeuPar(3)=f
+  swNeuPar(4)=f
+  swNeuPar(5)=f
+  swNeuPar(6)=f
+  swNeuPar(7)=f
   sw_output_fort167=f
   sw_output_plasma_grid=f
   sw_para_transport=1
