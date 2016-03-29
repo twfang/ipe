@@ -32,7 +32,7 @@
       USE module_input_parameters,ONLY:mpstop,ip_freq_output,start_time,stop_time,&
 &     sw_neutral_heating_flip,sw_perp_transport,lpmin_perp_trans,lpmax_perp_trans,sw_para_transport,sw_debug,        &
 &     sw_dbg_perp_trans,sw_exb_up,parallelBuild,mype, &
-& HPEQ_flip
+& HPEQ_flip, ut_start_perp_trans
       USE module_physical_constants,ONLY:rtd,zero
       USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,plasma_grid_3d,plasma_grid_GL,plasma_grid_Z,JMAX_IS,hrate_mks3d
       USE module_PLASMA,ONLY:utime_save,plasma_1d
@@ -154,7 +154,7 @@ end if
 !dbg20120509          IF ( sw_perp_transport(mp)>=1 ) THEN
 !nm20130401: transport is not called when HPEQ_flip=0.5 as initial profiles do
 !not exist!
-        IF ( HPEQ_flip==0.5 .AND. utime==0 ) THEN
+        IF ( HPEQ_flip==0.5 .AND. utime==ut_start_perp_trans ) THEN
 
           print *,lp,mp,'utime=',utime,' plasma perp transport is not called when HPEQ_flip=0.5 & start_time=0 because initial profiles do not exist!'
 
