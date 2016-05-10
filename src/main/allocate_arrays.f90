@@ -21,7 +21,7 @@
      &,mlon_rad, plasma_grid_Z, plasma_grid_GL, plasma_3d_old &
      &,apexDscalar, l_mag, WamField
   
-      USE module_input_parameters,ONLY: sw_neutral,sw_neutral_heating_flip
+      USE module_input_parameters,ONLY: sw_neutral_heating_flip
       IMPLICIT NONE
       INTEGER (KIND=int_prec),INTENT(IN) :: switch
       INTEGER (KIND=int_prec) :: stat_alloc
@@ -53,7 +53,7 @@
      &,           Un_ms1(MaxFluxTube,NLP,NMP,3:3) )
 
 
-      if ( sw_neutral == 0 .or. sw_neutral == 1 ) allocate( WamField(MaxFluxTube,NLP,NMP,7) )
+      allocate( WamField(MaxFluxTube,NLP,NMP,7) )
 
 
         IF ( sw_neutral_heating_flip==1 ) THEN
@@ -120,8 +120,7 @@ print *,'DE-ALLOCATing ARRAYS'
       END IF
 
 
-      if ( sw_neutral == 0 .or. sw_neutral == 1 ) &
-     &   DEallocate( WamField )
+      DEallocate( WamField )
 
 !---neutral heating
       IF ( sw_neutral_heating_flip==1 ) THEN
