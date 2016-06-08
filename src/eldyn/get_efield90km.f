@@ -157,6 +157,8 @@
           END IF                   ! ( plasma_grid_3d(IN,mp)%GL>theta90_rad(nmlat/2) ) THEN
 
         END DO mlat_loop90km0!: DO lp=1,NLP
+!dbg20160408 sms debug
+!SMS$PARALLEL END
 
       END IF !( j0(1,1)>0 ) THEN
 
@@ -179,6 +181,8 @@
         IF( mlon130_rad(i)>=pi*2.0) mlon130_rad(i)=mlon130_rad(i)-pi*2.0
       END DO mlon130_loop0 !: DO i=0,nmlon
 
+!dbg20160408 sms debug:
+!SMS$PARALLEL(dh, lp, mp) BEGIN
       mlon_loop90km0: DO mp=1,NMP
 !       mlon_rad: from 0 to 355.5 with dlon_ipe=4.5 deg resolution
 !       mlon90_deg = mlon_rad(mp)*rtd
@@ -302,8 +306,12 @@
           ed2_90(2,lp,mp)=+1.0/r/sinI_m(ihem)*(pot_j1-pot_j0) /d_lam_m
 !         dbg20111108     &*(-1.)*sinI_m(ihem)  !E_m_lambda (5.10)
 
-          IF(sw_exb_up<=1.and.sw_perp_transport>=1.and.                 &
-     &      lp>=lpmin_perp_trans.AND.lp<=lpmax_perp_trans) THEN 
+          IF(sw_exb_up<=1.and.sw_perp_transport>=1) then
+             if(lp>=lpmin_perp_trans.AND.lp<=lpmax_perp_trans) THEN 
+
+!initialization
+                VEXBup(lp,mp)=zero
+                VEXBe(lp,mp)=zero
 
 !           (0) self consistent electrodynamics comming soon...
 !           (1) WACCM E empirical model
@@ -349,12 +357,13 @@
      &                  +vexbgeo(north)*l_mag(midpoint,lp,mp,north,1)   &
      &                  +vexbgeo(up  ) *l_mag(midpoint,lp,mp,up   ,1)
 !nm20130201: temporary solution to test the code
-            VEXBe(lp,mp)=0.0D0
+            VEXBe(lp,mp)=zero
 
 
-          ENDIF !( sw_exb_up<=1.and. ... ) 
+         end if                 !(lp>=lpmin_perp_trans.AND.lp<=lpmax_perp_trans) THEN 
+      END IF                    !( sw_exb_up<=1.and. ... ) 
 
-        END DO mlat_loop90km1 !: DO lp=1,NLP
+      END DO mlat_loop90km1     !: DO lp=1,NLP
       END DO mlon_loop90km0     !: DO mp=1,nmp
 !SMS$PARALLEL END
 

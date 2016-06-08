@@ -261,7 +261,9 @@
 !        print *, 'sub-read_input_para:my_comm=', my_comm
 !SMS$SET_COMMUNICATOR( my_comm )
 !
-!SMS$CREATE_DECOMP(dh,<NLP,NMP>,<lpHaloSize,mpHaloSize>: <PERIODIC, PERIODIC>)
+!nm20160608 sms debug
+!SMS$CREATE_DECOMP(dh,<NLP,NMP>,<lpHaloSize,mpHaloSize>: <NONPERIODIC, PERIODIC>)
+!!!SMS$CREATE_DECOMP(dh,<NLP,NMP>,<lpHaloSize,mpHaloSize>: <PERIODIC, PERIODIC>)
 
 !SMS$SERIAL BEGIN
         REWIND LUN_nmlt
