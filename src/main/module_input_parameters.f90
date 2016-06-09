@@ -17,6 +17,7 @@
       IMPLICIT NONE
 
 !--- IPE wide run parameters
+      INTEGER (KIND=int_prec), PUBLIC   :: utime           !UT[sec] IPE internal time management
       INTEGER (KIND=int_prec), PUBLIC   :: start_time      !=0  !UT[sec]
       INTEGER (KIND=int_prec), PUBLIC   :: stop_time       !=60 !UT[sec]
       INTEGER (KIND=int_prec), PUBLIC   :: time_step       !=60 ![sec]

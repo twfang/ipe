@@ -10,7 +10,7 @@
   fnfac_flip=1.0
   fpas_flip=0.0
   heprat_flip=0.09
-  hpeq_flip=0.5
+  hpeq_flip=0.0
   ht_lce=200.0
   init_te_max=3000.0
   start_time_depleted=0
@@ -51,7 +51,7 @@
   kp_eld=3.
 /
 &nmswitch
-  duration=3600
+  duration=86400
   fac_bm=1.00
   iout(1)=1
   iout(2)=60
