@@ -14,11 +14,14 @@
 !--------------------------------------------        
 SUBROUTINE io_plasma_bin ( switch, utime )
 USE module_precision
-USE module_IO,ONLY: LUN_PLASMA1,LUN_PLASMA2,lun_min1,lun_min2,lun_ut,lun_ut2,record_number_plasma,lun_max1
-USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_3d,JMIN_ING,JMAX_ISG,VEXBup
+USE module_IO,ONLY: LUN_PLASMA1,LUN_PLASMA2,lun_min1,lun_min2,lun_ut,lun_ut2,record_number_plasma,lun_max1 &
+&, lun_wind0, lun_wind1
+USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_3d,JMIN_ING,JMAX_ISG,VEXBup &
+!&, Un_ms1 &
+&, tn_k
 USE module_IPE_dimension,ONLY: NMP,NLP,NPTS2D,ISPEC,ISPEV,IPDIM,ISPET,ISTOT
 USE module_input_parameters,ONLY:sw_debug,record_number_plasma_start,mype &
-&,sw_record_number,stop_time,start_time,duration,mpstop
+&,sw_record_number,stop_time,start_time,duration,mpstop, sw_output_wind
 USE module_physical_constants,ONLY:zero
 IMPLICIT NONE
 
@@ -70,6 +73,19 @@ IF ( switch==1 ) THEN !1:Output the 16 plasma* files
   WRITE (UNIT=LUN) (VEXBup(:,mp),mp=1,mpstop)
   WRITE (UNIT=lun_ut,FMT=*) record_number_plasma, utime
 !SMS$SERIAL END
+
+!nm20141001: moved from neutral
+      IF ( sw_output_wind ) THEN
+!nm20160711 debug wam field: un_ms1-->tn_k
+!!!SMS$SERIAL(<Un_ms1,IN>:default=ignore) BEGIN
+!!           write (UNIT=lun_wind2) Un_ms1
+!SMS$SERIAL(<tn_k,IN>:default=ignore) BEGIN
+           write (UNIT=lun_wind1) tn_k
+           write (UNIT=lun_wind0,FMT=*) utime
+!SMS$SERIAL END
+      END IF !( sw_output_wind ) THEN
+
+
   if(sw_debug) then
     print *,'LUN=',lun_ut,'!dbg! output UT  finished: utime=',utime,record_number_plasma
   endif

@@ -23,7 +23,9 @@
       CONTAINS
 !---------------------------
         SUBROUTINE close_files ( )
-        USE module_IO,ONLY: PRUNIT,LUN_UT,lun_min1,lun_max1,LUN_PLASMA1
+        USE module_IO,ONLY: PRUNIT,LUN_UT,lun_min1,lun_max1,LUN_PLASMA1 &
+     &,lun_wind0,lun_wind1
+!nm20141001        USE module_input_parameters,ONLY:sw_output_wind
         IMPLICIT NONE
         INTEGER (KIND=int_prec) :: i
 !
@@ -33,6 +35,12 @@
 DO i=lun_min1,lun_max1
         CLOSE( UNIT=LUN_PLASMA1(i) )
 END DO
+
+!nm20141001
+!        IF ( sw_output_wind ) THEN
+          CLOSE(UNIT=LUN_wind0)
+          CLOSE(UNIT=LUN_wind1)
+!        END IF !( sw_output_wind ) THEN
 
         END SUBROUTINE close_files
 !---------------------------

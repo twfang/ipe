@@ -18,6 +18,7 @@
 
 !--- IPE wide run parameters
       INTEGER (KIND=int_prec), PUBLIC   :: utime           !UT[sec] IPE internal time management
+      INTEGER (KIND=int_prec), PUBLIC   :: nTimeStep=1     !internal number of time steps
       INTEGER (KIND=int_prec), PUBLIC   :: start_time      !=0  !UT[sec]
       INTEGER (KIND=int_prec), PUBLIC   :: stop_time       !=60 !UT[sec]
       INTEGER (KIND=int_prec), PUBLIC   :: time_step       !=60 ![sec]
@@ -95,7 +96,10 @@
 !--- all the SWITCHes either integer or logical or character
       LOGICAL, PUBLIC :: sw_debug
       LOGICAL, PUBLIC :: sw_debug_mpi
-      LOGICAL, PUBLIC :: sw_output_fort167
+      LOGICAL, PUBLIC :: sw_output_fort167 =.false.
+      LOGICAL, PUBLIC :: sw_output_wind    =.false. !unit=6000,6001
+      INTEGER(KIND=int_prec), PUBLIC :: mpfort167 = 52
+      INTEGER(KIND=int_prec), PUBLIC :: lpfort167 = 37
       INTEGER(KIND=int_prec), DIMENSION(2), PUBLIC :: iout
       INTEGER(KIND=int_prec), PUBLIC :: mpstop
       INTEGER(KIND=int_prec), PUBLIC :: sw_neutral=3    
@@ -104,7 +108,7 @@
 !2: GT
 !3: MSIS(default)
 !4: read in files
-      LOGICAL, dimension(7), PUBLIC :: swNeuPar=.false. !f:OFF (from MSIS); t:ON (from WAM)
+      LOGICAL, dimension(7), PUBLIC :: swNeuPar!     =.false. !f:OFF (from MSIS); t:ON (from WAM)
 !determines which neutral parameters to derive from WAM only when sw_neutral=0/1? 
 !1:tn; 2:un1(east); 3:un2(north); 4:un3(up); 5:[O]; 6:[O2]; 7:[N2]
       INTEGER(KIND=int_prec), PUBLIC :: sw_eldyn
@@ -211,6 +215,9 @@
            &, sw_debug       &
            &, sw_debug_mpi   &
            &, sw_output_fort167   &
+           &, sw_output_wind   &
+           &, mpfort167   &
+           &, lpfort167   &
            &, record_number_plasma_start   &
            &, sw_record_number   &
            &, ut_start_perp_trans   &
@@ -339,6 +346,11 @@ print *,' '
 !dbg20120509        IF ( sw_rw_sw_perp_trans )  CALL setup_sw_perp_transport ()
 !note:20120207: v36: used only activating the perp.transport gradually...
 
+
+!dbg20160711
+!SMS$IGNORE begin
+print*,mype,'sub-read_input: swNeuPar',swNeuPar
+!SMS$IGNORE end
  
         END SUBROUTINE read_input_parameters
 

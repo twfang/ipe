@@ -23,14 +23,15 @@
       CONTAINS
 !---------------------------
         SUBROUTINE open_output_files ( )
-        USE module_input_parameters,ONLY: NYEAR,NDAY,HPEQ_flip,sw_debug,sw_output_plasma_grid,record_number_plasma_start,sw_output_fort167
+        USE module_input_parameters,ONLY: NYEAR,NDAY,HPEQ_flip,sw_debug,sw_output_plasma_grid,record_number_plasma_start,sw_output_fort167,sw_output_wind
         USE module_IO,ONLY: &
 &  filename,FORM_dum,STATUS_dum &
 &, LUN_pgrid,PRUNIT,LUN_LOG &
 &, LUN_FLIP1,LUN_FLIP2,LUN_FLIP3,LUN_FLIP4 &
 &, LUN_PLASMA0, LUN_PLASMA1,LUN_PLASMA2, LUN_UT, LUN_UT2 &
 &, lun_min1,lun_max1,lun_min2,lun_max2 &
-&, record_number_plasma,luntmp1,luntmp2,luntmp3
+&, record_number_plasma,luntmp1,luntmp2,luntmp3 &
+&, lun_wind0,lun_wind1
         USE module_open_file,ONLY: open_file
 
         IMPLICIT NONE
@@ -155,6 +156,26 @@ END IF !( sw_output_plasma_grid ) THEN
              CALL open_file ( filename, LUN_PLASMA2(i), FORM_dum, STATUS_dum )
           END DO
         END IF  ! ( HPEQ_flip==0.0 ) THEN
+
+
+!nm20141001 wind output
+        IF ( sw_output_wind ) THEN
+!--- unit=6000 ut for wind
+           LUN_wind0=6000
+           filename='ut_out4wind'
+           print *,'fort.6000? ', filename, LUN_wind0
+           FORM_dum ='formatted  ' 
+           STATUS_dum ='unknown'
+           CALL open_file ( filename, LUN_wind0, FORM_dum, STATUS_dum )
+
+!--- unit=6001 wind
+           LUN_wind1=6001
+           filename='wind_out'
+           print *,'fort.6001? ', filename, LUN_wind1
+           FORM_dum ='unformatted' 
+           STATUS_dum ='unknown'
+           CALL open_file ( filename, LUN_wind1, FORM_dum, STATUS_dum ) 
+        END IF !( sw_output_fort167 ) THEN
 
         END SUBROUTINE open_output_files
 !---------------------------
