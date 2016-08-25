@@ -67,11 +67,10 @@
       INTEGER(KIND=int_prec) :: utime_dum
 !include WAM fields options
       real(KIND=real_prec), parameter :: hTop_m=7.82E+05 !m
-      real(KIND=real_prec), parameter :: R=8.3141e+03
-      real(KIND=real_prec), dimension(3), parameter :: mass=(/16.,32.,28./)
 !1:O,2:O2;3:N2
-      INTEGER(KIND=int_prec) :: ihTopN,ihTopS,jth,jjth
-      real(KIND=real_prec) :: scaleHt, expPart
+      INTEGER(KIND=int_prec) :: ihTopN,ihTopS,ihTop,jth,jjth
+      INTEGER(KIND=int_prec) :: ihem,iStep,midPoints
+      real(KIND=real_prec) :: r
 !dbg20160715
       INTEGER(KIND=int_prec) :: idb
 !------
@@ -230,7 +229,7 @@ END IF
 !
 !dbg20160715
 !SMS$IGNORE begin
-print '(i3,i4,"MIN",f7.1,"MAX",f7.1)',mp,lp,minval(tn_k(IN:IS,lp,mp)),maxval(tn_k(IN:IS,lp,mp))
+print '(2i3,i4," tn MIN",f7.0," MAX",f7.0)',mype,mp,lp,minval(tn_k(IN:IS,lp,mp)),maxval(tn_k(IN:IS,lp,mp))
 !SMS$IGNORE end
 
 if ( minval(tn_k(IN:IS,lp,mp))<0.0 ) then
@@ -283,83 +282,82 @@ endif !(minval
 !
          end if
 
-         jth_loop1: do jth=1,3 !2:east;3:notrh;4:up for WamField,swNeuPar
-            jjth=jth+1 !2:4 for WamField,swNeuPar
+         jth_loop: do jth=1,6 !2:east;3:notrh;4:up for WamField,swNeuPar
+            jjth=jth+1 !2:4 for WamField,swNeuPar; !5:O,6:O2,7:N2
             if ( swNeuPar(jjth) ) then
-         if(lp==1) print*,mp,'calculating wam Un',jjth
 
-               !below 800km: NH
-               Vn_ms1(jth,IN-IN+1:ihTopN-IN+1) = WamField(IN:ihTopN,lp,mp, jjth) !Un NH
-               !below 800km: SH
-               Vn_ms1(jth,ihTopS-IN+1:IS-IN+1) = WamField(ihTopS:IS,lp,mp, jjth) !Un SH
-               !above 800km NH
-               Vn_ms1(jth,ihTopN+1:midpoint  ) = WamField(ihTopN,lp,mp, jjth) !Un>800km NH
-               Vn_ms1(jth,midpoint+1:ihTopS-1) = WamField(ihTopS,lp,mp, jjth) !Un>800km SH
-            end if
-         end do jth_loop1 !jth=1,3 !2:4 for WamField,swNeuPar            
-         
-!note20160112 i could have used the loop here
-         jth=5        
-         if ( swNeuPar(jth) ) then
-         if(lp==1) print*,mp,'calculating wam comp',jth 
-            !O below 800km: NH
-            on_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jth) !O
-            !O below 800km: SH
-            on_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jth) !O
-         end if
-         
-         jth=6
-         if ( swNeuPar(jth) ) then
-         if(lp==1) print*,mp,'calculating wam comp',jth 
-            !O2 below 800km: NH
-            o2n_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jth) !O2
-            !O2 below 800km: SH
-            o2n_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jth) !O2
-         end if
+               if ( jjth<5 ) then
+                  if(lp==1) print*,mp,'calculating wam Un',jjth
+                  !below 800km: NH
+                  Vn_ms1(jth,IN-IN+1:ihTopN-IN+1) = WamField(IN:ihTopN,lp,mp, jjth) !Un NH
+                  !below 800km: SH
+                  Vn_ms1(jth,ihTopS-IN+1:IS-IN+1) = WamField(ihTopS:IS,lp,mp, jjth) !Un SH
 
-         jth=7         
-         if ( swNeuPar(jth) ) then
-         if(lp==1) print*,mp,'calculating wam comp',jth 
-            !N2 below 800km: NH
-            n2n_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jth) !n2
-            !N2 below 800km: SH
-            n2n_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jth) !n2
-         end if
-!note20160112:
-         
-         !above 800km: NH
-         above800kmLoopNH: DO ipts=ihTopN+1, midpoint  
-            jth_loop2: do jth=1,3 !5:O,6:O2,7:N2 for WamField
-               jjth=jth+4
-               scaleHt = R * tn_k(ihTopN,lp,mp) / ( mass(jth) * plasma_grid_3d(ihTopN,lp,mp,IGR) ) !m-3
-               expPart = EXP ( ( plasma_grid_Z(ihTopN,lp) - plasma_grid_Z(ipts,lp) ) / scaleHt ) !meter
-               if ( jth==1 .and. swNeuPar(jjth) ) then !O
-         if(lp==1) print*,mp,'calculating wam comp>800km NH',jjth 
-                  on_m3( ipts,lp,mp) = WamField(ihTopN,lp,mp,jjth) * expPart
-               else if (jth==2 .and. swNeuPar(jjth) ) then !O2
-                  o2n_m3(ipts,lp,mp) = WamField(ihTopN,lp,mp,jjth) * expPart
-               else if (jth==3 .and. swNeuPar(jjth) ) then !N2
-                  n2n_m3(ipts,lp,mp) = WamField(ihTopN,lp,mp,jjth) * expPart
-               end if
-            end do jth_loop2 !: do jth=1,3 !5:O,6:O2,7:N2 for WamField
-         end do above800kmLoopNH !: DO ipts=ihTopN+1, midpoint  !above 800km: NH
-               
-         !above 800km: SH
-         above800kmLoopSH: DO ipts=midpoint+1,ihTopS-1  
-            jth_loop3: do jth=1,3 !5:O,6:O2,7:N2 for WamField
-               jjth=jth+4
-               scaleHt = R * tn_k(ihTopS,lp,mp) / ( mass(jth) * plasma_grid_3d(ihTopS,lp,mp,IGR) ) !m-3
-               expPart = EXP ( ( plasma_grid_Z(ihTopS,lp) - plasma_grid_Z(ipts,lp) ) / scaleHt ) !meter
-               if (jth==1 .and. swNeuPar(jjth) ) then !O
-         if(lp==1) print*,mp,'calculating wam comp>800km SH',jjth 
-                  on_m3( ipts,lp,mp) = WamField(ihTopS,lp,mp,jjth) * expPart
-               else if (jth==2 .and. swNeuPar(jjth) ) then !O2
-                  o2n_m3(ipts,lp,mp) = WamField(ihTopS,lp,mp,jjth) * expPart
-               else if (jth==3 .and. swNeuPar(jjth) ) then !N2
-                  n2n_m3(ipts,lp,mp) = WamField(ihTopS,lp,mp,jjth) * expPart
-                     end if
-                  end do jth_loop3 !: do jth=1,3 !5:O,6:O2,7:N2 for WamField
-               end do above800kmLoopSH !: DO ipts=midpoint+1
+               else if ( jjth==5 ) then
+                  if(lp==1) print*,mp,'calculating wam compO',jjth 
+                  !O below 800km: NH
+                  on_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jjth) !O
+                  !O below 800km: SH
+                  on_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jjth) !O
+               else if ( jjth==6 ) then
+                  !O2 below 800km: NH
+                  o2n_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jth) !O2
+                  !O2 below 800km: SH
+                  o2n_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jth) !O2
+               else if ( jjth==7 ) then
+                  !N2 below 800km: NH
+                  n2n_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jth) !n2
+                  !N2 below 800km: SH
+                  n2n_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jth) !n2
+               end if !jjth
+
+            
+               !dbg20160823:
+               ihemLoop: DO ihem=1,2
+                  if ( ihem==1 ) then 
+                     !above 800km: NH
+                     istep=+1
+                     ihTop=ihTopN
+                     midPoints=midPoint
+                     
+                  else if ( ihem==2 ) then 
+                     !above 800km: SH
+                     istep=-1
+                     ihTop=ihTopS
+                     midPoints=midPoint+1               
+                  end if
+ 
+                  above800kmLoop: DO ipts=ihTop+istep, midPoints, iStep 
+                     r = (plasma_grid_Z(ipts,lp)-plasma_grid_Z(ihTop-istep,lp)) / (plasma_grid_Z(ihTop,lp)-plasma_grid_Z(ihTop-istep,lp))   
+                     
+                     if ( jjth<5) then
+                        Vn_ms1(jth,ipts) = r*WamField(ihTop,lp,mp,jjth) + (1.-r)*WamField(ihTop-istep,lp,mp,jjth)
+                        
+                        
+                     else if ( jjth==5 ) then !O
+                        
+                        if(lp==1) print*,mp,'calculating wam comp>800km NH',jjth 
+                        on_m3( ipts,lp,mp) = EXP ( r*log(WamField(ihTop,lp,mp,jjth)) + (1.-r)*log(WamField(ihTop-istep,lp,mp,jjth)))
+                        
+                     else if (jjth==6 ) then !O2
+                        o2n_m3(ipts,lp,mp) = EXP ( r*log(WamField(ihTop,lp,mp,jjth)) + (1.-r)*log(WamField(ihTop-istep,lp,mp,jjth)))
+                     else if (jjth==7 ) then !N2
+                        n2n_m3(ipts,lp,mp) = EXP ( r*log(WamField(ihTop,lp,mp,jjth)) + (1.-r)*log(WamField(ihTop-istep,lp,mp,jjth)))
+                     end if !jjth<5
+                     
+                  end do above800kmLoop!: DO ipts=ihTop+istep, midPoints, iStep 
+               end do          ihemLoop!: DO ihem=1,2         
+            end if !( swNeuPar(jjth) ) then
+
+         end do jth_loop !jth=1,3 !2:4 for WamField,swNeuPar            
+
+
+!SMS$IGNORE begin
+print '(2i3,i4," vn MIN",f7.1,"MAX",f7.1)',mype,mp,lp,minval(vn_ms1(2,IN:IS)),maxval(vn_ms1(2,IN:IS))
+print '(2i3,i4," on MIN",e12.1,"MAX",e12.1)',mype,mp,lp,minval(on_m3(IN:IS,lp,mp)),maxval(on_m3(IN:IS,lp,mp))
+!SMS$IGNORE end
+
+
             end if !      if ( sw_neutral == 3
         end if !( utime==432000 ) then
 
