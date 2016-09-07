@@ -293,6 +293,7 @@ endif !(minval
                   !below 800km: SH
                   Vn_ms1(jth,ihTopS-IN+1:IS-IN+1) = WamField(ihTopS:IS,lp,mp, jjth) !Un SH
 
+                  !nm20160906: test
                else if ( jjth==5 ) then
                   if(lp==1) print*,mp,'calculating wam compO',jjth 
                   !O below 800km: NH
