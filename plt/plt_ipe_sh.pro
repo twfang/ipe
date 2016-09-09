@@ -9,10 +9,10 @@
 ;20140813: execute from shell script
 pro plt_ipe_sh
 sw_output2file=1 ;1'PNG' ;0NONE';
-TEST='r319
+TEST=getenv('TEST')
 TEST2='80';S';
 ;20131209: output to ascii file
-sw_output2file_ascii=0L
+sw_output2file_ascii=0;2L
 f107=getenv('f107')
 print,'f107=',f107
 nday=getenv('nday')
@@ -22,39 +22,47 @@ print,'nday=',nday
 
    luntmp=100L
    luntmp1=101L
-   alt=302. ;default ht_plot
+alt=getenv('alt')
 ;   if ( f107 eq 130. ) then begin
-   if ( f107 eq 165. ) then begin
+;   if ( f107 eq 165. ) then begin
 ;      TEST1='21132'
-      alt=410.
-   endif else if ( f107 eq 100. ) then begin
+;      alt=410.
+;   endif else if ( f107 eq 100. ) then begin
 ;      TEST1='21184'
-      alt=378.
-   endif else if ( f107 eq 72. ) then begin
+;      alt=378.
+;   endif else if ( f107 eq 72. ) then begin
 ;      TEST1='21229'
-      alt=340.
-   endif
-if ( sw_output2file_ascii eq 1 ) then begin
-   chr_title='F107='+STRTRIM( string(f107, FORMAT='(i3)'), 1)
-   chr_title1=STRTRIM( string(alt, FORMAT='(F5.0)'), 1)+'km'
-   chr_title2='NDAY='+STRTRIM( string(nday, FORMAT='(i3)'), 1)
-   flnmtmp='/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/champ/champ_te'+chr_title1+'.'+chr_title2+'.'+chr_title+'.dat'
+;      alt=340.
+;   endif else begin
+;       TEST1=getenv('TEST1')
+;   endelse
+;print,' TEST1=', TEST1
+print,' alt=', alt
+if ( sw_output2file_ascii ge 1 ) then begin
+  ; chr_title='F107='+STRTRIM( string(f107, FORMAT='(i3)'), 1)
+  ; chr_title1=STRTRIM( string(alt, FORMAT='(F5.0)'), 1)+'km'
+  ; chr_title2='NDAY='+STRTRIM( string(nday, FORMAT='(i3)'), 1)
+;   flnmtmp='/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/sed_nmf2'+chr_title1+'.'+chr_title2+'.'+chr_title+'.dat'
+   flnmtmp='/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/sed_nmf2_20130317mp20lp35.dat'
    openw,luntmp,flnmtmp, /GET_LUN
-   print, 'champ file created:',flnmtmp
+   print, 'SED file created:',flnmtmp
 
 endif ;( sw_output2file_ascii eq 1 ) then begin
 
-n_plt_max=25L ;for quick plot
-n_read_max=97;121;21-5+1L;127-108+1
+n_plt_max = getenv('n_read_max');289L;25L ;for quick plot
+n_read_max = getenv('n_read_max');289L;1079L;97;121;21-5+1L;127-108+1
 plot_UT    = getenv('plt_ut') 
 plot_UT_end= getenv('plt_ut_end')
-print,'plot_ut=', plot_ut,' plot_ut_end=', plot_ut_end 
+print,'n_read_max=',n_read_max,'plot_ut=', plot_ut,' plot_ut_end=', plot_ut_end 
 
-sw_quickplot=1
+sw_quickplot = getenv('sw_quickplot')
+print, 'sw_quickplot ', sw_quickplot 
 ;20140117; plot every X hour
 sw_hourly_plot = getenv('sw_hourly_plot')
-plotXhr=1.0 
-print, 'plot every',plotXhr,' hour'
+print,' sw_hourly_plot', sw_hourly_plot
+plotXhr = getenv('plotXhr');0.2500
+n_read_freq=15L
+if ( sw_hourly_plot eq 1 ) then  print, 'plot every',plotXhr,' hour'
 
 print,  'sw_grid=', getenv('sw_grid')
 if ( getenv('sw_grid') eq 0 ) then $
@@ -77,36 +85,22 @@ print, "check vartype val",vartype_min,' (2)',vartype_max,' (3)varType_step=',va
 
 
 
-;difutmin=60./60.;15./60. - 0.00001;=0.24999 ;output_freq=15min
-;difutmin=16./60. - 0.00001 ;output_freq=16min
-;print,'difutmin=',difutmin
-;endif ;( sw_output2file_ascii eq 1 ) then begin
 
 
-fac_window=1.0
+
+fac_window=getenv('fac_window')
 ;!!!CAUTION!!! plot_UT needs to be float (INT has limited digit!!!)
 
 rpath = getenv('RPATH')
 print,'rpath= ', rpath
 rundir = getenv('rundir')
+print,'rundir=',rundir
 input_DIR0 = rpath+'/'+rundir+'/'
-;'/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/reu/tmp20130703reu/trunk/run/ipe_'+TEST2+'_'+TEST1+'/';ipe_640_8787'
-;'/home/Naomi.Maruyama/wamns/'+TEST+'/trunk/run/ipe_'+TEST2+'_'+TEST1+'/'
-;'/home/Naomi.Maruyama/wamns/'+TEST+'/ipe/trunk/run/ipe_'+TEST2+'_'+TEST1+'/'
-;'/scratch1/portfolios/NCEPDEV/swpc/noscrub/Yangyi.Sun/ipe_para/20130909_1dy_grid31287/trunk/run/ipe_640_'+TEST1+'/' ;YYS
-;'/scratch1/portfolios/NCEPDEV/swpc/noscrub/Yangyi.Sun/ipe_para/km_20130909_1dy/trunk/run/ipe_640_UE_120_080/'
-;'/scratch1/portfolios/NCEPDEV/swpc/noscrub/Yangyi.Sun/ipe_para/km_20130909_1dy_grid44514/trunk/run/ipe_640_UE_120_080/'
-;'/scratch1/portfolios/NCEPDEV/swpc/noscrub/Yangyi.Sun/ipe_para/km_20130909_1dy/trunk/run/ipe_640_U_120_356/'
-;'/scratch1/portfolios/NCEPDEV/swpc/noscrub/Yangyi.Sun/ipe_para/km_20130909_1dy/trunk/run/ipe_'+TEST2+'_'+TEST1+'/'
-;'/scratch1/portfolios/NCEPDEV/swpc/noscrub/Yangyi.Sun/ipe_para/km_20130827/trunk/run/ipe_'+TEST2+'_'+TEST1+'/'
-;'/scratch2/portfolios/BMC/idea/Sarah.Millholland/IPE_runs/r292.3/trunk/run/ipe_640_'+TEST1+'/'
-;'/home/Naomi.Maruyama/wamns/reu/tmp20130703reu/trunk/run/ipe_'+TEST2+'_'+TEST1+'/'
-
 print,'input_DIR0= ',input_DIR0
 
 plot_type=FIX( getenv('plot_type') ) ;0L ;0:contour; 1:ht profile; 2:LT-LAT contour; 3:LON-LAT contour; 4:refilling: 5:psphere, 6:tec
 print, 'plot_type=', plot_type
-if plot_type eq 0 then begin
+if plot_type eq 0 or plot_type eq 4 then begin
    mp_plot=FIX( getenv('mp_plot') ) ; longitude sector to plot
    print, 'mp_plot=', mp_plot
    mpstart=mp_plot
@@ -145,7 +139,7 @@ print,'opening ',flnmtmp7
 print,'opening ',flnmtmp3
 endif ;( sw_read_wind eq 1 ) then begin
 
-sw_debug=0L
+sw_debug=getenv('sw_debug')
 ;0:mag; 1:geo; 2:LT-maglat
 sw_frame=FIX( getenv('sw_frame') )
 print, 'sw_frame=',sw_frame
@@ -183,7 +177,8 @@ HOME_DIR=$
 '/home/Naomi.Maruyama/wamns/' ;zeus
 ;'/home/Naomi.Maruyama/ptmp/' ;zeus
 fig_DIR=$
-'/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/' ;zeus
+'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/' ;theia
+;'/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/' ;zeus
 ;'/home/Naomi.Maruyama/iper/' ;zeus
 n_file=17L;6L;13L;
 input_flnm=['','','','','','' $
@@ -197,25 +192,25 @@ input_DIR0
 ;TEST+'/bkup19/'
 input_DIR[1]=$
 ;'../plt/' ;mac
-'/home/Naomi.Maruyama/ipe/trunk/plt/' ;zeus
+'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/grid/plt/' ;theia
 LUN  = INTARR(n_file)
 sw_LUN  = INTARR(n_file)
 sw_lun[0:1]=1
 sw_lun[2]=1 ;o+
-sw_lun[6]=0 ;h+
-sw_lun[8]=0 ;he+
-sw_lun[9]=0 ;n+
-sw_lun[10]=0 ;no+
-sw_lun[11]=0 ;o2+
-sw_lun[12]=0 ;n2+
-sw_lun[13]=0 ;o+(2D)
-sw_lun[14]=0 ;o+(2P)
-sw_lun[3]=0 ;Te
-sw_lun[7]=0 ;Ti
-sw_lun[4]=1 ;vo+
-sw_lun[5]=0 ;vexbup
-sw_lun[15]=0 ;vexbe
-sw_lun[16]=0 ;vexbth
+sw_lun[6]=getenv('sw_lun6') ;h+
+sw_lun[8]=getenv('sw_lun8') ;he+
+sw_lun[9]=getenv('sw_lun9') ;n+
+sw_lun[10]=getenv('sw_lun10') ;no+
+sw_lun[11]=getenv('sw_lun11') ;o2+
+sw_lun[12]=getenv('sw_lun12') ;n2+
+sw_lun[13]=getenv('sw_lun13') ;o+(2D)
+sw_lun[14]=getenv('sw_lun14') ;o+(2P)
+sw_lun[3]=getenv('sw_lun3') ;Te
+sw_lun[7]=getenv('sw_lun7') ;Ti
+sw_lun[4]=getenv('sw_lun4')   ;vo+
+sw_lun[5]=getenv('sw_lun5')   ;vexbup
+sw_lun[15]=getenv('sw_lun15') ;vexbe
+sw_lun[16]=getenv('sw_lun16') ;vexbth
 if ( sw_dif eq 1 ) then begin
 LUNq  = INTARR(n_file)
    input_flnmq =input_flnm
@@ -232,13 +227,7 @@ endif
 
 
 
-plot_DIR= $
-;fig_DIR+'fig/sarah/'+TEST1+'/'
-fig_DIR+'fig/'+TEST+'/' ;+TEST1+'/'
-;fig_DIR+'fig/'
-; fig_DIR+'fig/'+TEST+'/'+TEST1+'/'
-;if ( sw_dif eq 1 ) then $
-;  plot_DIR=plot_DIR+'dif/'
+plot_DIR=getenv('PPATH')+'/' 
 print,' plot_DIR=', plot_DIR
 if ( sw_frame eq 0 ) then $
 title_frame='mag' $
@@ -294,6 +283,8 @@ if ( sw_hr eq 1 ) then $
 
 if ( sw_read_wind eq 1 ) then $
  Vn_ms1=fltarr(3,NPTS2D,NMP)
+ on_m3 =fltarr(  NPTS2D,NMP)
+ tn_k  =fltarr(  NPTS2D,NMP)
 ; Un_ms1=fltarr(MaxFluxTube,NLP,NMP)
 XIONN_m3 =fltarr(ISPEC,NPTS2D,NMP)
 XIONV_ms1=fltarr(1,NPTS2D,NMP) ;fltarr(ISPEV,NPTS2D,NMP)
@@ -406,6 +397,7 @@ n_plt=-1L
 ,NMP
   UT_hr_save[n_read]=UT_hr
 
+
 ;d print,'call read_wind: JMIN_IN',JMIN_IN
   if ( sw_read_wind eq 1 ) then $
      read_wind, UT_hr $
@@ -482,7 +474,7 @@ if ( plot_type eq 0 ) or ( plot_type eq 2 ) or ( plot_type eq 4 )  then begin
 ;for k=3,3+8 do begin
 if ( sw_lun[2] eq 1 ) then begin
 ;for k=3,7 do begin
-for k=3,3 do begin  ;dbg20140815
+for k=3,5 do begin  ;dbg20140815
   jth=k-3
       for ipts=0L,NPTS2D-1L do $ 
        plot_z[n_read,k,0,ipts] = XIONN_m3[jth,ipts,mp] 
@@ -552,21 +544,10 @@ endif
 ; lon-lat plot
     endif else if ( plot_type eq 3 ) then begin 
 
-
-;20130523 houly plot
 IF ( UT_hr lt plot_UT/3600. ) THEN CONTINUE
-;    fut_hr=FIX(UT_hr)*1.0000
-;    difut=UT_hr-fut_hr
-;print,'fut_hr',fut_hr,' difut',difut,' difutmin',difutmin
-;    if ( sw_hourly_plot eq 1 ) AND ( difut gt difutmin ) THEN CONTINUE
-;20140117; plot every X hour
-if  (sw_hourly_plot eq 1) AND ( (UT_hr MOD plotXhr) ne 0. ) then continue
-;     ht_plot = 110.00 ;[km]
+if ( sw_debug eq 1 ) then  print,'checkMOD=',(UT_hr MOD plotXhr),0.25,UT_hr,plotXhr
+if  (sw_hourly_plot eq 1) AND ( (UT_hr MOD plotXhr) ge 0.050 ) then continue
 
-
-print, "check vartype",VarType_max, VarType_min, VarType_step
-
-print, 'ht_plot(alt)=', alt
 n_plt = n_plt + 1
 if ( sw_quickplot eq 0 ) then $
        ctr_lon_lat $
@@ -575,13 +556,15 @@ if ( sw_quickplot eq 0 ) then $
   , XIONN_m3, TE_TI_k $
   , XIONV_ms1 $
   , UT_hr, plot_DIR $
-  , n_plt $
+  , n_read $
   , sw_output2file $
   ,glon_deg,glat_deg,sw_frame,fac_window, TEST $
   , sw_debug $
 ;20131209: output to ascii file
 , sw_output2file_ascii,luntmp,ncount $
 , Vn_ms1,VEXB, sunlons1 $
+, alt,rundir, LUN9001 $
+, VarType_Min,VarType_Max, VarType_Step, LUN2013,n_read_freq $
 else if ( sw_quickplot eq 1 ) then $
        ctr_lon_lat_quick $
   , JMIN_IN,JMAX_IS,Z_km,mlat_deg  $ 
@@ -594,7 +577,7 @@ else if ( sw_quickplot eq 1 ) then $
   , sw_debug $
 ;20131209: output to ascii file
 , sw_output2file_ascii,luntmp,luntmp1,ncount $
-, Vn_ms1 $
+, Vn_ms1,tn_k,on_m3 $
 , n_plt_max,input_DIR0 $
 , alt,rundir $
 , VarType_max, VarType_min, VarType_step
@@ -704,23 +687,11 @@ endfor
 
 
 
-;dbg
+
 if( sw_debug eq 1 ) then  print,'plot_type',plot_type
 
-;20130523 houly plot
-;tmp20140217 IF ( UT_hr lt plot_UT/3600. ) THEN CONTINUE
-;IF ( UT_hr gt plot_UT_end/3600. ) THEN BREAK
-;fut_hr=FIX(UT_hr)*1.0000
-;difut=UT_hr-fut_hr
-;print,'plot_type',plot_type,fut_hr,difut
-;if( difut gt 0.24999 ) THEN CONTINUE
-if  (sw_hourly_plot eq 1) AND ( (UT_hr MOD plotXhr) ne 0. ) then continue
+if  (sw_hourly_plot eq 1) AND ( (UT_hr MOD plotXhr) ge 0.050 ) then continue
 
-;20140130 every 2 hours starting at 1UT
-;tmp20140217 ut_hr1=ut_hr MOD 24.
-;tmp20140217 if ( (ut_hr1 MOD 2.) ne 1. ) then continue
-
-;dbg20140121
 n_plt = n_plt + 1
 if ( sw_quickplot eq 0 ) then $
      contour_plot_2d    $ 

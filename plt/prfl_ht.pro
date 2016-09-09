@@ -10,14 +10,15 @@ PRO  prfl_ht $
 print,'prfl_ht',sw_output2file ;debug
 
 y_min =90.;1.0E+2; 90.
-y_max =1300.;2.E+4;800.
+y_max =1600.;1300.;2.E+4;800.
 if ( sw_debug eq 1 ) then  print, "y_max=", y_max
 
 if ( sw_fort eq 168L ) then begin
 ;x_min=[-15.,   +100.,     0. ,     0.]
 ;x_min=[-1.,    +400.,     0. ,     -25.]
 x_min=[-1.,    +150.,     0. ,     -30.]
-x_max=[ 7.,  +2400.,  +1000. ,    +25.]
+;x_max=[ 7.,  +2400.,  +1000. ,    +25.]
+x_max=[ 6.,  +3500.,  +350. ,    +25.]
 ;x_max=[+6.1,  +17000.,  +1600. ,    +30.] ;dbg20141208
 ;x_max=[+6.1,  +3500.,  +1600. ,    +30.]
 ;x_max=[ 4.0,  +1300.,  +700. , +7000.]
@@ -122,7 +123,7 @@ if ( plot_type eq 0 ) then begin  ;densities
   plot, plot_x[plot_type,0,j0:j1,i_plot[i]], plot_y[j0:j1,i_plot[i]] $;, /xlog $ 
   ,xrange=[x_min[plot_type],x_max[plot_type]], xstyle=1  $
   ,yrange=[y_min,y_max], ystyle=1 $
-,/YLOG $  ;nm20141028
+;,/YLOG $  ;nm20141028
   ,title=title_var[plot_type] $;+': '+title_plot  $
   ,linestyle = 0 $
   ,color=axis_color $
@@ -135,7 +136,7 @@ endif else if ( plot_type ge 1 ) then begin  ;temperatures
   plot, plot_x[plot_type,0,j0:j1,i_plot[i]], plot_y[j0:j1,i_plot[i]] $
   ,xrange=[x_min[plot_type],x_max[plot_type]], xstyle=1  $
   ,yrange=[y_min,y_max], ystyle=1  $
-,/YLOG $  ;nm20141028
+;,/YLOG $  ;nm20141028
   ,title=title_var[plot_type] $
   ,linestyle = 0 $
   ,color=axis_color $

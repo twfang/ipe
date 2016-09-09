@@ -9,7 +9,7 @@ record_number=0L
 ; read plasma1
      readf, LUN[0], record_number, UT_sec
  UT_hr = UT_sec /3600.
-print,' rec#',record_number,' UThr',UT_hr, UT_sec
+print,' rec#',record_number,' UThr=',UT_hr,' UTs=', UT_sec
 
 size_result=size(XIONN_m3)
 if ( sw_debug eq 1 ) then  $
@@ -32,85 +32,197 @@ if ( sw_lun[2] eq 1 ) then begin
    jth=0                        ;o+
    readu, LUN[2], dum
 
-;dbg20140825
-;for i=0,1 do begin
-;print ,i,'check o+ MAX',MAX(dum3[*,*,i], Max_Subscript),Max_Subscript
-;print ,i,'check o+ MIN',MIN(dum3[*,*,i], Min_Subscript),Min_Subscript
-;for j=0,5 do  print, j,dum3[j,0,i]
-;for j=1109,1114 do  print, j,dum3[j,0,i]
-;endfor
+
 
 XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
-if sw_debug eq 1 then  print, 'o+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
+if sw_debug eq 1 then  begin
+  print, 'o+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
+
+;dbg20151116 detect nan
+  indicesN = where( dum eq !values.f_nan, countN )
+  indicesZ = where( dum eq 0.0, countZ )
+  if countN ne 0 then begin
+     print, 'o+ Nan',countN,indicesN
+     STOP
+  endif
+  if countZ ne 0 then begin
+     print, 'o+ Zero',countZ,indicesZ
+     STOP
+  endif
+endif ;sw_debug eq 1 then  begin
 endif ;( sw_lun
 
 if ( sw_lun[6] eq 1 ) then begin
    jth=1                        ;h+
    readu, LUN[6], dum
    XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
-   if sw_debug eq 1 then  print, 'H+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
-endif ;( sw_lun
+   if sw_debug eq 1 then begin
+      print, 'H+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
+
+;dbg20151116 detect nan
+      indicesN = where( dum eq !values.f_nan, countN )
+      indicesZ = where( dum eq 0.0, countZ )
+      if countN ne 0 then begin
+         print, 'h+ Nan',countN,indicesN
+         STOP
+      endif
+      if countZ ne 0 then begin
+         print, 'h+ Zero',countZ,indicesZ
+         STOP
+      endif
+   endif                        ;sw_debug eq 1 then  begin
+endif                           ;( sw_lun
 
 if ( sw_dif eq 0 ) then begin
    if ( sw_lun[8] eq 1 ) then begin
       jth=2                     ;he+
       readu, LUN[8], dum
       XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
-      if sw_debug eq 1 then  print, 'He+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
+      if sw_debug eq 1 then  begin
+         print, 'He+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
+
+;dbg20151116 detect nan
+         indicesN = where( dum eq !values.f_nan, countN )
+         indicesZ = where( dum eq 0.0, countZ )
+         if countN ne 0 then begin
+            print, 'he+ Nan',countN,indicesN
+            STOP
+         endif
+         if countZ ne 0 then begin
+            print, 'he+ Zero',countZ,indicesZ
+            STOP
+         endif
+      endif                     ;sw_debug eq 1 then  begin
+endif                           ;   if ( sw_lun[8] eq 1 ) then begin
 
 
-;dbg20141016
-;if ( record_number ge 63) then begin
-;in=29177;JMIN_IN[57]-1
-;inmax=in+40L
-;print, '(2) check He+'
-;for kk=in,in+40 do  print,kk,XIONN_m3[3-1,kk,52];, z_km[kk]
-;endif ;( UT_sec ge 54000) then begin
-
-   endif ;   if ( sw_lun[8] eq 1 ) then begin
 
    if ( sw_lun[9] eq 1 ) then begin
      jth=3                        ;n+
      readu, LUN[9], dum
      XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
-     if sw_debug eq 1 then  print, 'N+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
-   endif ;( sw_lun
+     if sw_debug eq 1 then  begin
+        print, 'n+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
+
+;dbg20151116 detect nan
+        indicesN = where( dum eq !values.f_nan, countN )
+        indicesZ = where( dum eq 0.0, countZ )
+        if countN ne 0 then begin
+           print, 'n+ Nan',countN,indicesN
+           STOP
+        endif
+        if countZ ne 0 then begin
+           print, 'n+ Zero',countZ,indicesZ
+           STOP
+        endif
+     endif                      ;sw_debug eq 1 then  begin
+  endif                         ;( sw_lun
 
    if ( sw_lun[10] eq 1 ) then begin
      jth=4                        ;no+
      readu, LUN[10], dum
 ;dbg print, 'debug dum =',dum[60,0]
      XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
-     if sw_debug eq 1 then  print, 'NO+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
+     if sw_debug eq 1 then  begin
+        print, 'no+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
+
+;dbg20151116 detect nan
+        indicesN = where( dum eq !values.f_nan, countN )
+        indicesZ = where( dum eq 0.0, countZ )
+        if countN ne 0 then begin
+           print, 'no+ Nan',countN,indicesN
+           STOP
+        endif
+        if countZ ne 0 then begin
+           print, 'no+ Zero',countZ,indicesZ
+           STOP
+        endif
+     endif                      ;sw_debug eq 1 then  begin
    endif ;( sw_lun
 
    if ( sw_lun[11] eq 1 ) then begin
      jth=5                        ;o2+
      readu, LUN[11], dum
      XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
-     if sw_debug eq 1 then  print, 'O2+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
-   endif ;( sw_lun
+     if sw_debug eq 1 then  begin
+        print, 'O2+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
+
+;dbg20151116 detect nan
+        indicesN = where( dum eq !values.f_nan, countN )
+        indicesZ = where( dum eq 0.0, countZ )
+        if countN ne 0 then begin
+           print, 'o2+ Nan',countN,indicesN
+           STOP
+        endif
+        if countZ ne 0 then begin
+           print, 'o2+ Zero',countZ,indicesZ
+           STOP
+        endif
+     endif                      ;sw_debug eq 1 then  begin
+  endif                         ;( sw_lun
 
    if ( sw_lun[12] eq 1 ) then begin
      jth=6                        ;n2+
      readu, LUN[12], dum
      XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
-     if sw_debug eq 1 then  print, 'n2+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
-   endif ;( sw_lun
+     if sw_debug eq 1 then  begin
+        print, 'n2+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
+
+;dbg20151116 detect nan
+        indicesN = where( dum eq !values.f_nan, countN )
+        indicesZ = where( dum eq 0.0, countZ )
+        if countN ne 0 then begin
+           print, 'n2+ Nan',countN,indicesN
+           STOP
+        endif
+        if countZ ne 0 then begin
+           print, 'n2+ Zero',countZ,indicesZ
+           STOP
+        endif
+     endif                      ;sw_debug eq 1 then  begin
+  endif                         ;( sw_lun
 
    if ( sw_lun[13] eq 1 ) then begin
      jth=7                        ;o+(2D)
      readu, LUN[13], dum
      XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
-     if sw_debug eq 1 then  print, 'o+(2D) XIONN_m3=',jth,XIONN_m3[jth,60,0]
-   endif ;( sw_lun
+     if sw_debug eq 1 then  begin
+        print, 'o+(2D) XIONN_m3=',jth,XIONN_m3[jth,60,0]
+
+;dbg20151116 detect nan
+        indicesN = where( dum eq !values.f_nan, countN )
+        indicesZ = where( dum eq 0.0, countZ )
+        if countN ne 0 then begin
+           print, 'o+(2D) Nan',countN,indicesN
+           STOP
+        endif
+        if countZ ne 0 then begin
+           print, 'o+(2D) Zero',countZ,indicesZ
+           STOP
+        endif
+     endif                      ;sw_debug eq 1 then  begin
+  endif                         ;( sw_lun
 
    if ( sw_lun[14] eq 1 ) then begin
      jth=8                        ;o+(2P)
      readu, LUN[14], dum
      XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
-     if sw_debug eq 1 then  print, 'o+(2P) XIONN_m3=',jth,XIONN_m3[jth,60,0]
-   endif ;( sw_lun
+     if sw_debug eq 1 then  begin
+        print, 'o+(2P) XIONN_m3=',jth,XIONN_m3[jth,60,0]
+
+;dbg20151116 detect nan
+        indicesN = where( dum eq !values.f_nan, countN )
+        indicesZ = where( dum eq 0.0, countZ )
+        if countN ne 0 then begin
+           print, 'o+(2P) Nan',countN,indicesN
+           STOP
+        endif
+        if countZ ne 0 then begin
+           print, 'o+(2P) Zero',countZ,indicesZ
+           STOP
+        endif
+     endif                      ;sw_debug eq 1 then  begin
+  endif                         ;( sw_lun
 endif ;( sw_dif eq 0 ) then begin
 
 ;Te:

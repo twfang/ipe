@@ -247,11 +247,13 @@ if ( iplot eq 0 ) then begin
   endfor ;i
 endfor ;j
 
-if ( iplot eq 0 ) then $
-  draw_arrow_test, u, v, mlt, comlat, rim_lat $
-; when comlat and rim_lat has 2 dims
-else if ( iplot eq 4 ) then $
-  draw_arrow_test2D, u, v, mlt, comlat, rim_lat 
+;dbg20150615 commented out
+; i do not understand the cause of the error...
+;if ( iplot eq 0 ) then $
+;  draw_arrow_test, u, v, mlt, comlat, rim_lat $
+;; when comlat and rim_lat has 2 dims
+;else if ( iplot eq 4 ) then $
+;  draw_arrow_test2D, u, v, mlt, comlat, rim_lat 
 
 endif ;if iplot eq 0
 endif ;if sw_arrow eq 1 then begin

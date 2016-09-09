@@ -11,14 +11,16 @@ pro ctr_lon_lat_quick $
 ,sw_debug $
 ;20131209: output to ascii file
 ,sw_output2file_ascii,luntmpN,luntmpS,ncount $
-, Vn_ms1 $
+, Vn_ms1,tn_k,on_m3 $
 , n_read_max,input_DIR0 $
 , ht_plot,rundir $
 , VarType_max, VarType_min, VarType_step
 
-print, 'ht_plot', ht_plot
-print, 'VarType_max', VarType_max, 'VarType_min', VarType_min
-print,  'VarType_step',  VarType_step
+n_read_min=0L
+;print,'n_read',n_read,' n_read_max',n_read_max,' n_read_min',n_read_min
+;print, 'ht_plot', ht_plot
+;print, 'VarType_max', VarType_max, 'VarType_min', VarType_min
+;print,  'VarType_step',  VarType_step
 
 
  sw_output_nmf2=0 ;NH:1; N&S:2 ; no nmf2 output:0
@@ -29,7 +31,7 @@ print,  'VarType_step',  VarType_step
 ; X-axis range
 ;1:0<lon<360
 ;0:-180<lon<+180
-xmax360=1
+xmax360=0
 ;note20131209: sw OFF only when sw_output2file_ascii=1 to run faster!!
 sw_plot_contour=1
 dlt=360./80./360.*24.
@@ -37,11 +39,28 @@ ltimemin=12. - dlt*.5
 ltimemax=12. + dlt*.5
 ;print,' ltimemin', ltimemin, 'ltimemax', ltimemax
 mlatmax=63.
-factor=1.0 ;E-12 ;for density 
+factor=1.0E-11 ;E-12 ;for density 
 ; remember to modify zmin/max
 
 ;debug20140108
 fac_wind=1.0;1.0E-2
+
+;VarTitle=['Ne','Te','Ti','o+','NO+','O2+','Vpar_o+','NmF2','HmF2']
+VarTitle=['Ne','Te','Ti','o+','TN','UN'$
+;,'VN'$
+,'[O]'$
+,'NmF2','HmF2'] ;20140108
+;VarTitle=['Ne','Te','Ti','N(NO+)','Vpar_o+']
+;VarTitle=['Ne','Te','Ti','N(O2+)','Vpar_o+']
+;VarTitle=['Ne','Te','Ti','N(N2+)','Vpar_o+']
+
+unit=['[m-3]','K','K','[m-3]',$
+;'[m-3]'$
+'[K]'$
+,'[m/s]'$
+;,'[m/s]'$
+,'[log10 m-3]'$
+,'[m-3]','[km]'] ;[nA/m2]'];[nA/m2]' ;20140108
 
 ;20140203: remember Vartype loop cannot be used for quick plot version!!!
 for VarType=VarType_min, VarType_max, VarType_step do begin
@@ -55,7 +74,7 @@ if ( n_read eq 0 ) then  print,'VarType=',VarType
 
 sw_range=1L
 nano=1.0E-9
-unit=['[m-3]','K','K','[m-3]','[m-3]','[m/s]','[m/s]','[m-3]','[km]'] ;[nA/m2]'];[nA/m2]' ;20140108
+
 
  sw_plot_grid=0 ;1:retangular, 2:polar
 ; get n_read_max, ny_max
@@ -89,15 +108,10 @@ plot_xx=fltarr(nx_max,ny_max)
 ;nm20140926 wind output
 plot_zz1=fltarr(nx_max,ny_max)
 
-;VarTitle=['Ne','Te','Ti','o+','NO+','O2+','Vpar_o+','NmF2','HmF2']
-VarTitle=['Ne','Te','Ti','o+','NO+','UN','VN','NmF2','HmF2'] ;20140108
-;VarTitle=['Ne','Te','Ti','N(NO+)','Vpar_o+']
-;VarTitle=['Ne','Te','Ti','N(O2+)','Vpar_o+']
-;VarTitle=['Ne','Te','Ti','N(N2+)','Vpar_o+']
 
 
 for mp=0,NMP-1 do begin
-for lp=0,NLP-1 do begin
+   for lp=0,NLP-1 do begin
 
 
   in = JMIN_IN[lp]-1L
@@ -119,15 +133,21 @@ for lp=0,NLP-1 do begin
       else if ( VarType eq 3 ) then $
         plot_zz[mp,lp] = XIONN_m3[1-1,i,mp]*factor  $ ;o+
       else if ( VarType eq 4 ) then $
-        plot_zz[mp,lp] = XIONN_m3[4,i,mp]*factor  $ ;no+
+        plot_zz[mp,lp] = $
+;XIONN_m3[4,i,mp]*factor  $ ;no+
+tn_k[i,mp] $;[k] ;tn
       else if ( VarType eq 5 ) then $
         plot_zz[mp,lp] =$
-Vn_ms1[1-1,i,mp]*fac_wind $;[m/s] ;eastward  ;20140108
+Vn_ms1[2-1,i,mp]*fac_wind $;[m/s] ;positive northward ;20140108
 ; XIONN_m3[5,i,mp]*factor  $ ;o2+
       else if ( VarType eq 6 ) then $
         plot_zz[mp,lp] =$
-Vn_ms1[2-1,i,mp]*fac_wind ;[m/s] ;positive northward ;20140108
+alog10(on_m3[i,mp]) ;[m-3] ; oxygen density
+;Vn_ms1[2-1,i,mp]*fac_wind ;[m/s] ;
 ; XIONV_ms1[1-1,i,mp] ;V//o+[m/s]
+
+
+
  
       if ( sw_frame eq 0 ) then begin ;magnetic
          plot_yy[mp,lp] = mlat_deg[i]
@@ -209,13 +229,13 @@ Vn_ms1[2-1,i,mp]*fac_wind ;[m/s] ;positive northward ;20140108
   ltime = ut_hr + glon_deg[Max_Subscript,mp]/15.
   if ( ltime ge 24. ) then ltime = ( ltime MOD 24. )
 ;extract near noon data
-if ( lp eq 129 ) then  begin
-   if ltime ge ltimemin and ltime le ltimemax then begin
-      print, 'NH: mp',mp,'lp',lp,'LT',ltime, ut_hr, mlat_deg[Max_Subscript],glon_deg[Max_Subscript,mp]
-      mp_output_noonprfl = mp
-      glon_output = glon_deg[Max_Subscript,mp]
-   endif
-endif
+;if ( lp eq 129 ) then  begin
+;   if ltime ge ltimemin and ltime le ltimemax then begin
+;      print, 'NH: mp',mp,'lp',lp,'LT',ltime, ut_hr, mlat_deg[Max_Subscript],glon_deg[Max_Subscript,mp]
+;      mp_output_noonprfl = mp
+;      glon_output = glon_deg[Max_Subscript,mp]
+;   endif
+;endif
 
          plot_yy[mp,lp] = mlat_deg[Max_Subscript]
          plot_xx[mp,lp] = ltime
@@ -269,15 +289,34 @@ endif ;( lp eq 47 AND mp eq 49 ) then begin
       else if ( VarType eq 3 ) then $
         plot_zz[mp,lps] = XIONN_m3[1-1,i,mp]*factor $
       else if ( VarType eq 4 ) then $
-        plot_zz[mp,lps] = XIONN_m3[4,i,mp]*factor $
+        plot_zz[mp,lps] = $
+;XIONN_m3[4,i,mp]*factor $
+tn_k[i,mp] $;[k] ;Tn
       else if ( VarType eq 5 ) then $
         plot_zz[mp,lps] =$
 Vn_ms1[1-1,i,mp]*fac_wind $;[m/s] ;eastward  ;20140108
 ; XIONN_m3[5,i,mp]*factor $
       else if ( VarType eq 6 ) then $
         plot_zz[mp,lps] = $
-Vn_ms1[2-1,i,mp]*fac_wind ;[m/s] ;northward ;20140108
+alog10(on_m3[i,mp]) ;[m-3] ;oxygen density
+;Vn_ms1[2-1,i,mp]*fac_wind $;[m/s] ;northward  ;20140108
 ;XIONV_ms1[1-1,i,mp] ;V//o+[m/s]
+
+;print, 'n_read', n_read
+if n_read eq 1 AND $
+   plot_zz[mp,lps] gt 16.  $
+   AND mp eq 3 AND lp eq 14 $
+then begin
+
+  print, i,' mp=',mp,' lp=',lp,lps,mlat_deg[i],mlon_deg[mp],' glat=',glat_deg[i,mp],' glon=',glon_deg[i,mp]
+
+  print, JMIN_IN[lp], JMAX_IS[lp]
+
+  for ii=is,is-90,-1  do print,FORMAT='(I6,i6,e12.4,2f8.1,2f8.2)',ii,(is-ii+1),on_m3[ii,mp],tn_k[ii,mp],z_km[ii],glat_deg[ii,mp],glon_deg[ii,mp]
+;  plot, on_m3[*,mp],z_km[*]
+
+endif
+
 
        if ( sw_frame eq 0 ) then begin ;magnetic
           plot_yy[mp,lps] = mlat_deg[i]
@@ -411,23 +450,23 @@ endfor ;lp=0,NLP-1 do begin
 endfor ;mp=0,NMP-1 do begin
 
 ;nm20140926 output noon profile
-if ( sw_frame eq 2 AND sw_output_nmf2noon eq 1 ) then begin
-   if ( n_read eq 0 ) then begin
-;   luntmpN=100
-      flnmtmpN='/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/r319/trunk/run/'+rundir+'/noon_nmf2.dat'
-      openw,luntmpN,flnmtmpN, /GET_LUN
-      print, 'noon nmf2/wind file created:',flnmtmpN
-   endif                        ;if n_read eq 0
-   printf, luntmpN, mp_output_noonprfl 
-print, 'check mp_output=', mp_output_noonprfl 
-   printf, luntmpN, ut_hr, glon_output 
-print, 'ut=', ut_hr,' glon=', glon_output 
-   printf, luntmpN, plot_xx[mp_output_noonprfl,*] ;lt
-print, 'ltime=', plot_xx[mp_output_noonprfl,129] ;lt
-   printf, luntmpN, plot_yy[mp_output_noonprfl,*] ;mlat
-   printf, luntmpN, plot_zz[mp_output_noonprfl,*] ;nmf2
-   printf, luntmpN, plot_zz1[mp_output_noonprfl,*] ;wind positive NORTHward
-endif                                              ;if sw_frame eq 2
+;if ( sw_frame eq 2 AND sw_output_nmf2noon eq 1 ) then begin
+;   if ( n_read eq 0 ) then begin
+;;   luntmpN=100
+;      flnmtmpN='/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/r319/;trunk/run/'+rundir+'/noon_nmf2.dat'
+;      openw,luntmpN,flnmtmpN, /GET_LUN
+;      print, 'noon nmf2/wind file created:',flnmtmpN
+;   endif                        ;if n_read eq 0
+;   printf, luntmpN, mp_output_noonprfl 
+;print, 'check mp_output=', mp_output_noonprfl 
+;   printf, luntmpN, ut_hr, glon_output 
+;print, 'ut=', ut_hr,' glon=', glon_output 
+;   printf, luntmpN, plot_xx[mp_output_noonprfl,*] ;lt
+;print, 'ltime=', plot_xx[mp_output_noonprfl,129] ;lt
+;   printf, luntmpN, plot_yy[mp_output_noonprfl,*] ;mlat
+;   printf, luntmpN, plot_zz[mp_output_noonprfl,*] ;nmf2
+;   printf, luntmpN, plot_zz1[mp_output_noonprfl,*] ;wind positive NORTHward
+;endif                                              ;if sw_frame eq 2
 
 ;(2) when time = time_max 
 ; plotting
@@ -450,22 +489,28 @@ if ( sw_range eq 1 ) then begin
       endif else if ( VarType ge 1 ) AND (VarType le 2 ) then begin 
         zmin=0.
         zmax=3000.
-      endif else if ( VarType ge 3 ) AND ( VarType lt 5 ) then begin 
+      endif else if ( VarType ge 3 ) AND ( VarType lt 4 ) then begin 
 ;        zmin=0.
 ;        zmax=8.
 ;        zmin=1.
 ;        zmax=2.5e+1
         zmin=0.0
         zmax=3.0;2.e+12 ;F-region
+      endif else if ( VarType eq 4 ) then begin 
+        zmin=200. ;tn
+        zmax=1000.
       endif else if ( VarType eq 5 ) then begin 
         zmin=-300.;zonal +eastward
         zmax=+300.
       endif else if ( VarType eq 6 ) then begin 
-        zmin=-50.;-100.;meridional + northward
-        zmax=+50.;+100.
+        zmin=+13.;-50.;-100.;meridional + northward
+        zmax=+14.;+50.;+100.
       endif else if ( VarType eq 7 ) then begin 
-        zmin=1.0e+10
-        zmax=1.983e+12
+        zmin=0.  ; 0.0084; 1.0e+10
+        zmax= $
+;40. ;for TW
+22.55
+;7.521 ;1.983e+12
       endif else if ( VarType eq 8 ) then begin 
         zmin=100.
         zmax=500.
@@ -473,20 +518,22 @@ if ( sw_range eq 1 ) then begin
 
 
 ;nm20150205 output for paper
-if ( sw_frame eq 2 AND sw_output_nmf2noon eq 1 ) then begin
-   printf, luntmpN,ut_hr
-   ncnt=0L
-   for k=0,ny_max-1  do begin
-      if ( plot_yy[80-1,k] ne 0.0 AND plot_zz[80-1,k] ne 0.0 ) then begin
-         ncnt = ncnt + 1
-         printf, luntmpN, plot_yy[80-1,k], plot_zz[80-1,k]
-;    print,  ncnt,         plot_yy[80-1,k], plot_zz[80-1,k]
-      endif
-   endfor
-   print, 'ncnt ', ncnt 
-endif                           ;if ( sw_output2file_ascii eq 1 ) then begin
+;if ( sw_frame eq 2 AND sw_output_nmf2noon eq 1 ) then begin
+;t   printf, luntmpN,ut_hr
+;t   ncnt=0L
+;t   for k=0,ny_max-1  do begin
+;t      if ( plot_yy[80-1,k] ne 0.0 AND plot_zz[80-1,k] ne 0.0 ) then begin
+;t         ncnt = ncnt + 1
+;t         printf, luntmpN, plot_yy[80-1,k], plot_zz[80-1,k]
+;t;    print,  ncnt,         plot_yy[80-1,k], plot_zz[80-1,k]
+;t      endif
+;t   endfor
+;t   print, 'ncnt ', ncnt 
+;endif                           ;if ( sw_output2file_ascii eq 1 ) then begin
 
 
+;if ( sw_debug eq 1 ) then $  
+   print,'maxZ=',MAX(plot_zz),' minZ=',MIN(plot_zz)
 
 
 	where_result=where ( plot_zz gt zmax, count ) 
@@ -500,8 +547,7 @@ endif else if ( sw_range eq 0 ) then begin
 zmax = max(plot_zz)
 zmin = min(plot_zz)
 endif
-if ( sw_debug eq 1 ) then $  
-   print,'max=',MAX(plot_zz),' min=',MIN(plot_zz)
+
 
 MAX_xymin=zmax ;1.0E+3
 n_levels=100L
@@ -518,7 +564,7 @@ x_max=24.
 x_min=0.
 endif
 
-Y_max= +80.;50.0
+Y_max= 80.0
 Y_min= -Y_max
 if ( sw_frame eq 0 ) or ( sw_frame eq 2 ) then $
   MAG_GEO='magnetic' $
@@ -541,14 +587,16 @@ if ( sw_plot_contour eq 1 ) then begin
 char_size=1.0
 char_thick=1.0
 n_ldct=39;5;39
-if ( vartype eq 6 ) then N_LDCT=70
+;if ( vartype eq 6 ) then N_LDCT=70
 
 	iwindow=1L
 if  ( n_read eq 0 ) then begin 
 	DEVICE, RETAIN=2, DECOMPOSED=0
 	WINDOW,iwindow,XSIZE=1100*fac_window,YSIZE=1000*fac_window
 ;                   columns,rows
-	!p.multi=[0,6,5,0]
+;	!p.multi=[0,6,5,0]
+	!p.multi=[0,2,2,0]
+
 	loadct,n_ldct
 endif  ;( n_read eq 0 ) then begin 
 endif ;( sw_plot_contour eq 1 ) then begin
@@ -679,13 +727,19 @@ if ( sw_debug eq 1 ) then  print,'MAX=',MAX(plot_zz),' MIN=',MIN(plot_zz)
 ;, 'MIN='+STRTRIM(STRING( MIN(plot_zz), FORMAT='(E11.3)'),1)+' MAX='+STRTRIM(STRING( MAX(plot_zz), FORMAT='(E11.3)'),1)  $
 ;, charsize=1.0, charthick=1.0, /norm, /noclip
 
-if ( n_read eq n_read_max-1 ) then begin
+if ( n_read eq n_read_min ) then begin
+;if ( n_read eq n_read_max-1 ) then begin ;ori
+;if ( n_read eq n_read_max-2 ) then begin ;nems 20160720
 xyouts, 0.35, 0.04 $
 ,VarTitle[VarType]+unit[VarType]+'  ht='+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+'km'+' '+input_DIR0 $
 , charsize=0.85, charthick=0.8, /norm, /noclip
 
 charsize_colorbar=4.0
-format_colorbar='(E9.1)'
+if VarType eq 6 then $
+  format_colorbar='(f7.2)' $
+else $
+  format_colorbar='(E9.1)'
+
 font=1 ;true-type 
 position=[0.30, 0.17, 0.70, 0.185] ;for horizontal bar
 COLORBAR, BOTTOM=bottom, CHARSIZE=charsize_colorbar, COLOR=color, DIVISIONS=divisions $
@@ -695,14 +749,18 @@ COLORBAR, BOTTOM=bottom, CHARSIZE=charsize_colorbar, COLOR=color, DIVISIONS=divi
         , _EXTRA=extra, INVERTCOLORS=invertcolors, TICKNAMES=ticknames
 endif ;( n_read eq n_read_max ) begin
 
-if ( n_read eq n_read_max-1 ) AND ( sw_output2file eq 1 ) then begin
+;if ( n_read eq n_read_max-2 $ ;tmp20160720 nems
+if ( n_read eq n_read_max-1 $
+) AND ( sw_output2file eq 1 ) then begin
    if ( sw_frame eq 0 ) then $  ;magnetic
       title_frame='mag' $
    else if ( sw_frame eq 1 ) then $ ;geographic
       title_frame='geo'  $
    else if ( sw_frame eq 2 ) then $ ;noon in the center
       title_frame='lt'
-Filename_png=plot_DIR+'quick/'+TEST+'_'+rundir+'_'+VarTitle[VarType]+'_ht'+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+title_frame+'.quick.png'
+Filename_png= $
+plot_DIR+rundir+'_'+VarTitle[VarType]+'_ht'+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+title_frame+'.quick.png'
+;plot_DIR+'quick/'+TEST+'_'+rundir+'_'+VarTitle[VarType]+'_ht'+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+title_frame+'.quick.png'
 output_png, Filename_png
 endif ;( sw_output2file eq 1 ) then begin
 

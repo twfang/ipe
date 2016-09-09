@@ -40,7 +40,7 @@ lpmax_perp_trans=149
 for i=mpstart, mpstop  do print,' mp', (i+1),' LT',lt_hr[i]
 
 HTmin=90.  ;min(yy)   ;75.   ;400. ;
-HTmax=600.;700.;190. ;1.000000E+03;700.; 
+HTmax=800.;700.;190. ;1.000000E+03;700.; 
 ; plot range
 if ( title_hemi eq 'NH' ) then begin
   gLATmax=+90.;+90.;-10.;
@@ -143,7 +143,7 @@ Y=dblarr(4)
 if ( sw_dif eq 0 ) then begin
 
    ARY_min0=[ $
-3.2,$
+0.,$;3.2,$
 170.,$
 ;170., $
 -400., $
@@ -160,7 +160,7 @@ if ( sw_dif eq 0 ) then begin
          ] 
 
 ARY_max0=[ $
-6.1,$ ;7.,$
+6.1,$ ;6.1,$ ;7.,$
 ;4.,$
 ;800. ,$
 1400. ,$
@@ -387,7 +387,7 @@ if ( VarType eq 0 ) OR ( VarType ge 3 ) then begin
   else $ 
      Value= ALOG10( 0.1 )
 ;20131204
-Value=plot_z[n_read,VarType, 0,ipts]*1.0E-12
+;Value=plot_z[n_read,VarType, 0,ipts]*1.0E-12
 
 endif else if ( VarType eq 1 ) or ( VarType eq 2 ) then $ ;Te/i
   Value = plot_z[n_read,VarType,0,ipts] ;
@@ -542,7 +542,7 @@ LOADCT, N_LDCT
 endif ;( sw_arrow_exb ) then begin
 
 
-
+print,'colorbarMIN',ARY_min0(VarType),' MAX',ARY_max0(VarType)
 Draw_Colorbar, ARY_min0(VarType), ARY_max0(VarType), N_LVLs $
 , col_min, col_max, X1, Y1, dX1, dY1, X_SIZE, Y_SIZE, VarType
 

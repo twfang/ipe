@@ -1,9 +1,9 @@
 ;20140108
 ;purpose: read wind on IPE grid for validation purpose
 pro read_wind, ut_hr $
-, Vn_ms1 $
+, Vn_ms1,tn_k,on_m3 $
 ;, Un_ms1 $
-, luntmp7, luntmp3 $
+, luntmp7, luntmp3, luntmp8, luntmp9 $
 , MaxFluxTube, nlp, nmp, JMIN_IN,JMAX_IS, sw_debug
 
 
@@ -13,6 +13,7 @@ pro read_wind, ut_hr $
 ;udum0=fltarr(MaxFluxTube,NLP   )
 NMPdum=80L
 udum=fltarr(MaxFluxTube,NLP,NMPdum) ;before 20140806
+udum2=fltarr(MaxFluxTube,NLP,NMPdum)
 ;udum1=fltarr(MaxFluxTube,NLP,NMP,3) ;runs after 20140806
 ;
 ;t for k=1-1,nmp-1 do begin
@@ -33,15 +34,17 @@ if ( ut_hr ne utime_dum/3600. ) then STOP
 ;t    endfor ;i
 ;t  endfor ;j
 ;t endfor ;k=1-1,nmp-1 do begin
-readu, luntmp3, udum ;(1:MaxFluxTube,1:NLP,1:nmp,3:3) 
-;readu, luntmp3, udum1 ;(1:MaxFluxTube,1:NLP,1:nmp,1:3) 
+;readu, luntmp3, udum ;(1:MaxFluxTube,1:NLP,1:nmp,3:3) ;un_ms1
+readu, luntmp3, udum ;tn_k
+readu, luntmp9, udum2 ;on_m3
 
 ;dbg
 ;lpdbg=46-1L
 ;print, udum[0:396,lpdbg,0]
 
 ;dbg20140806
-;print,'check udum', MAX(udum), MIN(udum)
+print,'check udum', MAX(udum), MIN(udum)
+print,'check udum2', MAX(udum2), MIN(udum2)
 ;print,'check udum1', MAX(udum1), MIN(udum1)
 
 ;udum-->vn_ms1
@@ -55,7 +58,9 @@ for k=1-1,nmp-1 do begin
 ;dbg if k eq 0 AND i ge 0 AND i le 5 then  print, i,ii,j,in,k
 
 ;nm20141015: positive northward
-         vn_ms1[2-1,ii,k] = udum[i,j,k]
+;t         vn_ms1[2-1,ii,k] = udum[i,j,k]
+         tn_k[ii,k] = udum[i,j,k]
+         on_m3[ii,k] = udum2[i,j,k]
 
 
 ; if j eq lpdbg then print, i,j,k,ii,vn_ms1[2-1,ii,k];, udum[i,j,k]

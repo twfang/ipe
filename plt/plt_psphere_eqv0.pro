@@ -1,6 +1,35 @@
 pro plt_psphere_eqv0
-  dt =720  ;sec
-  ut0=478800 - dt ;sec 133.                      ;[ut hr]
+
+titlePlot='quiet 2013-3-17'
+sw_contourPlot=2L ;1: contour plot; 2: density profiles as function of L
+sw_output2file=0L
+sw_dbg=0L
+  dt =60L  ;sec
+  pltXsec=900L
+  ut00=$
+518400L ;start_time 00--17ut
+;518400+17*3600;583080L  ;17--24ut
+  utStart=ut00;+3600*9
+  utStop=utStart+17*3600L
+  utHrPlt=518400./3600.
+rundir=$
+;'ipe_S_32328' ;original
+;'ipe_S_25827' ;depeleted
+;'ipe_S_26060'; ;transport only
+;'1461312397_ipe_theia_intel_parallel2_93';20130317 00--17 before dep
+;   '1461343191_ipe_theia_intel_parallel2_93' ;20130317 17--24 ;mac
+;'1461417243_ipe_theia_intel_parallel2_93.00_17UT20150317';mac
+;'1463696937_ipe_theia_intel_parallel2_93' ;2013 theia after dep
+'1462618349_ipe_theia_intel_parallel2_93' ;2013 00--17ut quiet
+;---
+  ut0=0L
+  ut0=ut00 - dt ;sec 133.                      ;[ut hr]
+
+;--
+zmax=1.0e+09 ;2.61e+10 ;MAX(z)
+zmin=4.79e-9;10 ;MIN(z)
+print,'MAX=', zMAX,zMIN
+;--
   nmp=80L
   nlp=93L
   NPTS2D=31287L
@@ -13,69 +42,150 @@ pro plt_psphere_eqv0
 
 ;read_grid, JMIN_IN,
 restore, filename=$
-'~/wamns/grid/plt/plasma_grid.2xdyn.sav'
-;'plasma_grid.2xdyn.sav'
+'~/ipeg/plt/plasma_grid.2xdyn.sav';theia
+;'/Users/naomimaruyama/sandbox/ipe/plt.bk20150326/plasma_grid.2xdyn.sav';mac
+
+if sw_dbg eq 1 then begin
 print, JMIN_IN[0:1]
 print, JMAX_IS[0:1]
 print, z_km[0]
+endif
 
 ;mlon_deg
 mlon_deg=findgen(nmp)*360./FIX(NMP)
-print, mlon_deg
+if sw_dbg eq 1 then print, mlon_deg
 
 ;read_plasma, xion
-TEST='r336.2'
-rundir=$
-;'ipe_S_32328' ;original
-'ipe_S_25827' ;depeleted
-flnm=$
-'~/wamns/'+TEST+'/trunk/run/'+rundir+'/plasma01' ;h+
-;'/Users/naomimaruyama/sandbox/ipe/'+rundir+'/plasma01' ;h+
-plt_DIR='~/wamns/fig/'+TEST+'/'
+TEST=$
+;'tmp20151117'
+'mpi20160330v2'
+;'depletedFlux20160512'
+rpath=$
+;'~/iper/'+TEST+'/trunk/run/'+rundir+'/'
+;   '~/stmp2/'+TEST+'/run/'+rundir+'/' ;theia
+   '~/stmp2/'+TEST+'/run2/'+rundir+'/' ;theia quiet
+;'/Users/naomimaruyama/sandbox/ipe/'+rundir+'/' ;mac
+plt_DIR=$
+;'~/ipef/'+TEST+'/'+rundir+'/'
+   '~/stmp2/'+TEST+'/fig/'+rundir+'/hplus/' ;theia
+;'/Users/naomimaruyama/sandbox/ipe/fig/'+rundir+'/' ;mac
 lun00=0L
-openr,lun00,flnm,/get_lun, /F77_UNFORMATTED
-
+lun2013=0L
+openr,lun00,rpath+'plasma01',/get_lun, /F77_UNFORMATTED
+openr,lun2013,rpath+'fort.2013',/get_lun ;, /F77_UNFORMATTED
+openr,lun0,rpath+'ut_rec',/get_lun ;, /F77_UNFORMATTED
 ;read loop
 dum=fltarr(NPTS2D,NMP)
-ut = ut0
- while ( eof(LUN00) eq 0 ) do begin
-readu,lun00,dum
-ut = ut + dt
+ut = 0L
+;ut = ut0
+min_record_number=1079L
+record_number=0L
+while ( eof(LUN00) eq 0 ) do begin
+   readu, lun00,dum
+   readf, lun0,record_number, ut
+   print,'rec#',record_number,' ut=', ut
+;   ut = ut + dt ;[sec]
+   if ut gt utStop then STOP 
 
 ;read sunlon
-sunlons1 = +0.1030E+01
+;   sunlons1 = +0.1030E+01
+   readf, LUN2013,sunlons1
 
-for mp=0,nmp-1 do begin
+   if ut lt utStart then CONTINUE 
+
+
+; plot only every pltXsec 
+   print,ut,'difut=', (ut-ut00), pltXsec, ( (ut-ut00)  MOD pltXsec) 
+   if (   ((ut-ut00) MOD pltXsec) ne 0 ) then CONTINUE
+   print,'start plotting ut=',ut
+
+
+   if ( sw_contourPlot eq 2 AND record_number eq min_record_number ) then begin
+      iwindow=2L
+      DEVICE, RETAIN=2, DECOMPOSED=0
+      WINDOW,0,XSIZE=700,YSIZE=500
+   endif
+
+   char_size=1.
+   char_thick=1.
+ col_max = 255.9999999999999999
+ col_min =   0.0000000000000
+
+   axis_color =255.
+   n_ldct=0                     ;black+white
+   loadct, n_ldct
+
+   for mp=0,nmp-1 do begin
 
 ;calculate MLT, theta
-   mlt    =  mlon_deg[mp]/15.0D0 - sunlons1 * 12.0D0 / !PI  +12.0 ;[hr]
-   if ( mlt lt  0. ) then  mlt = mlt MOD 24.
-   if ( mlt ge 24. ) then  mlt = mlt - 24.
-   mlt = mlt*!PI/12.0D0         ;MLT_hr --> THETA[rad]
-   ;shift MLT so that 12MLT on the right!
+      mlt    =  mlon_deg[mp]/15.0D0 - sunlons1 * 12.0D0 / !PI  +12.0 ;[hr]
+      if ( mlt lt  0. ) then  mlt = mlt MOD 24.
+      if ( mlt ge 24. ) then  mlt = mlt - 24.
+      mlt = mlt*!PI/12.0D0      ;MLT_hr --> THETA[rad]
+
+;note20160519: i am not sure if this is correct?
+;shift MLT so that 12MLT on the right!
    ;clockwise 180 deg rotation
-   shift_deg= $
+      shift_deg= $
 ; 180.
-- 45.
-   theta = mlt - shift_deg/180.*!PI      ;(radian)
+- 45. ;original20160519
+;      0.  ;tried 20160519
+      theta = mlt - shift_deg/180.*!PI ;(radian)
+      for lp=0,nlp-1 do begin
+         midpoint = JMIN_IN[lp] + ( JMAX_IS[lp] - JMIN_IN[lp] )/2 -1
+         r[mp,lp] = (Z_km[midpoint] * 1.0E+3  + Re_m) / Re_m ;L value
+         x[mp,lp] = r[mp,lp] * COS(theta)
+         y[mp,lp] = r[mp,lp] * SIN(theta)
+         z[mp,lp] = dum[midpoint,mp] ;h+ number density [m-3]     
+      endfor                    ; lp=0,nlp-1 do begin
 
-   for lp=0,nlp-1 do begin
-    midpoint = JMIN_IN[lp] + ( JMAX_IS[lp] - JMIN_IN[lp] )/2 -1
-    r        = (Z_km[midpoint] * 1.0E+3  + Re_m) / Re_m  ;L value
 
 
+
+   if (sw_contourPlot eq 2) then begin
+
+      m2cm=1.0e+02
+
+      xmax=5.
+      xmin=2.
+      if (record_number eq min_record_number AND mp eq 1 ) then $
+    plot,r[mp,*],(z[mp,*]*1.0E-6) $
+;         ,xrange=[2.    ,5.    ], xstyle=1 $
+              ,xrange=[xmin    ,xmax    ], xstyle=1 $
+     ,yrange=[1.e+00,1.e+06], ystyle=1 $
+     ,/YLOG $
+  ,title=titlePlot+' h+ number density'  $
+  ,linestyle = 0 $
+  ,color=axis_color $
+  ,charsize=char_size $
+  ,/NODATA
+
+
+;debug print
+
+      if ( sw_debug eq 1 ) then begin
+      for lp=0,nlp-1 do begin
+         print, mp,lp,r[mp,lp]
+         if ( r[mp,lp] ge 2. AND r[mp,lp] lt 5 ) then begin
+            print, 'check r&z', r[mp,lp],(z[mp,lp]*1.0E-6)
+         endif
+      endfor ;lp
+      endif
+      
+      n_ldct=39                  ;black+white
+      loadct, n_ldct
+   
+      oplot,r[mp,0:nlp-1],(z[mp,0:nlp-1]*1.0E-6) $
+            ,linestyle=0 $  
+            ,color = mlt * col_max / (2.*!PI)
+
+
+ endif                          ;(sw_contourPlot eq 2) then begin
     
-    x[mp,lp] = r * COS(theta)
-    y[mp,lp] = r * SIN(theta)
-    z[mp,lp] = dum[midpoint,mp]
-
- endfor                         ; lp=0,nlp-1 do begin
-endfor ;mp=0,nmp-1 do begin    
+endfor                          ;mp=0,nmp-1 do begin    
 
 
-zmax=0.1e+10 ;2.61e+10 ;MAX(z)
-zmin=4.79e-9;10 ;MIN(z)
-print, MAX(z),MIN(z)
+
 
 n_levels=100
 X_max=+7.0
@@ -84,21 +194,21 @@ Y_max=X_max
 Y_min=-Y_max
 
 
-char_size=1.
-char_thick=1.
+
 ;MAX_xymin =
 
 ;n_ldct=8 ;green
 n_ldct=1 ;blue
 loadct, n_ldct
 ;choose color
- col_max = 255.9999999999999999
- col_min =   0.0000000000000
  text_color=col_min 
 
+if ( sw_contourPlot eq 1 ) then begin 
 iwindow=1L
 DEVICE, RETAIN=2, DECOMPOSED=0
 WINDOW,0,XSIZE=500,YSIZE=500
+
+print,'MAX=', MAX(z),MIN(z)
 
 contour,z,x,y $
 ,/irregular $
@@ -222,24 +332,30 @@ COLORBAR, BOTTOM=bottom, CHARSIZE=charsize_colorbar, COLOR=color, DIVISIONS=divi
 
 
 loadct,0
-print, ut,  ut/3600.
+print,'ut before xyout', ut,  ut/3600.,  (ut/3600.-utHrPlt)
 xyouts, 0.015, 0.02  $
-,'UT [hrs]='+STRTRIM( string( (ut/3600.), FORMAT='(F7.3)'),1 ) $
+,'UT [hrs]='+STRTRIM( string( (ut/3600.-utHrPlt), FORMAT='(F7.3)'),1 ) $
 , charsize =1.5, charthick=1.5 $
 , /norm, /noclip
 
 
-xyouts, 0.85, 0.02  $
+xyouts, 0.80, 0.02  $
 ,rundir $
 , charsize =0.9, charthick=0.9 $
         , /norm, /noclip
 
-filename_png=plt_DIR+'hp_mgeq_ut'+STRTRIM( string(ut/3600., FORMAT='(F6.2)'),1 )+rundir+'v0.png'
-print, filename_png
-output_png, filename_png
+if ( sw_output2file eq 1 ) then begin
+   filename_png=plt_DIR+'hp_mgeq_ut'+STRTRIM( string((ut/3600.-utHrPlt), FORMAT='(F6.2)'),1 )+rundir+'v0.png'
+if sw_dbg eq 1 then print, filename_png
+   output_png, filename_png
+endif; ( sw_output2file eq 1 ) then begin
 
- endwhile                        ;( eof(LUN00) eq 0 ) do begin
+endif ;( sw_contourPlot eq 1 ) then begin
+
+endwhile                        ;( eof(LUN00) eq 0 ) do begin
 
 free_Lun,lun00
+free_Lun,lun0
+free_Lun,lun2013
 print, 'plt_psphere_eqv0 finished!'
 end                             ;pro plt_psphere_eqv0

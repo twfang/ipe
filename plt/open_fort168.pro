@@ -1,8 +1,10 @@
 ;opening files
-pro open_fort168, n_file,LUN,sw_debug,title_hemi,lp_title,sw_fort,rundir,TEST0
+pro open_fort168, n_file,LUN,sw_debug,title_hemi,lp_title,sw_fort,rundir,TEST0,HOME_DIR
 
-HOME_DIR=$
-'/home/Naomi.Maruyama/wamns/'+TEST0+'/trunk/run/'
+;HOME_DIR=$
+;'/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/30s/run/'
+;'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/'+TEST0+'/trunk/run/'
+;'/home/Naomi.Maruyama/wamns/'+TEST0+'/trunk/run/'
 ;'/home/Naomi.Maruyama/iper/'
 ;'/lfs0/projects/idea/maruyama/sandbox/ipe/run/'
 
@@ -38,6 +40,9 @@ input_flnm[0:3]  ='fort.'+lun_no
 ;input_flnm[2:3]='fort'+lun_no
 
   for i = 0, n_file-1  do begin
+
+
+print,i, HOME_DIR+input_DIR[i]+input_flnm[i]
 
     openr, LUNi, HOME_DIR+input_DIR[i]+input_flnm[i], /GET_LUN
     LUN[i]=LUNi

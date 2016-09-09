@@ -1,6 +1,7 @@
 pro draw_arrow_test,u,v,thetaR,radi, rim_lat, sw_debug;$
 ;,X00,dX,X_SIZE,Y0,Y_SIZE
 
+
 sw_v_or_e=0 ;0:V; 1:E
 size_resultu=SIZE(u)
 if sw_debug eq 1 then print,' size_u',size_resultu
@@ -15,11 +16,13 @@ if sw_debug eq 1 then  print,' size_thetaR', size_thetaR
 if ( sw_v_or_e eq 0 ) then begin
   ArrowRef=300. ;2000. ;m/s
 ;for velocity
-  ArrowCol=0.;255. ;defalt black ;256 ;
+;  ArrowCol=0.;255. ;defalt black ;256 ;
+  ArrowCol=getenv('ArrowCol') ;defalt black ;256 ;
 ;for velocity
   factor=0.025 ;0.05
 ;for velocity
   ArrowColR=255. ;white
+
 
 endif else if ( sw_v_or_e eq 1 ) then begin
 ;for Efield

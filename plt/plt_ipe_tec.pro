@@ -13,7 +13,9 @@ TEST='r319';r345';
 TEST2='80';S;640'
 sw_output2file_ascii=0
 f107=130;165;100;72
-TEST1='22905' ;32753dbg'
+TEST1=$
+;'378';windX1.5 jid79
+'22905';ori jid72
 alt=350.
 
    if ( f107 eq 165 ) then begin
@@ -42,13 +44,15 @@ endif ;( sw_output2file_ascii eq 1 ) then begin
 
 ;n_plt_max=97L ;for quick plot
 n_read_max=$
-1;
+69;1;
 ;97-45+1-4L;1L;21-5+1L;127-108+1
 plot_UT    =$
-432000.;
-;471600.;493200.;54000.;432000. ;+ 3600.*16.;
+;432000.;
+;471600.;
+493200.;54000.;432000. ;+ 3600.*16.;
 plot_UT_end=$
-518400.;-3600.;plot_UT+3600.*24.;.; [sec]
+;518400.;-3600.;
+plot_UT;+3600.*24.;.; [sec]
 sw_quickplot=0
 ;20140117; plot every X hour
 sw_hourly_plot=1
@@ -61,7 +65,7 @@ title_res= $
 ;'2xdyn';
 ;'low'; 'high'
 
-sw_read_wind=1
+sw_read_wind=0
 ;difutmin=60./60.;15./60. - 0.00001;=0.24999 ;output_freq=15min
 ;difutmin=16./60. - 0.00001 ;output_freq=16min
 ;print,'difutmin=',difutmin
@@ -90,7 +94,7 @@ endif                           ;( sw_read_wind eq 1 ) then begin
 fac_window=1.0
 ;!!!CAUTION!!! plot_UT needs to be float (INT has limited digit!!!)
 input_DIR0=$
-'/home/Naomi.Maruyama/wamns/'+TEST+'/trunk/run/ipe_'+TEST2+'_'+TEST1+'/'
+'/home/Naomi.Maruyama/iper/'+TEST+'/trunk/run/ipe_'+TEST2+'_'+TEST1+'/'
 ;'/home/Naomi.Maruyama/wamns/'+TEST+'/trunk/tst/runs/zeus_intel_serial.1408558529/run/ipe_'+TEST2+'_'+TEST1+'/';test suite
 
 
@@ -181,7 +185,8 @@ input_DIR0
 ;TEST+'/bkup19/'
 input_DIR[1]=$
 ;'../plt/' ;mac
-'/home/Naomi.Maruyama/ipe/trunk/plt/' ;zeus
+;'/home/Naomi.Maruyama/ipe/trunk/plt/' ;zeus
+'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/grid/plt/'
 LUN  = INTARR(n_file)
 sw_LUN  = INTARR(n_file)
 sw_lun[0:1]=1

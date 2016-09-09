@@ -12,6 +12,7 @@ thisImage= TVRD( $
 )
 
 ;check if the image was properly read
+;20150811: image does not appear!!!
 ;WINDOW,3,XSIZE=900,YSIZE=700
 ;tv, thisImage
 

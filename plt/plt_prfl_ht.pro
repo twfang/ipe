@@ -3,20 +3,35 @@
 pro plt_prfl_ht
 fac_window=1.
 sw_dif=0
-sw_output2file=1L
-TEST0='r336.2'
-HOME_DIR='/home/Naomi.Maruyama/wamns/'+TEST0+'/trunk/run'
+sw_output2file=0L;1L
+TEST0=$
+;'20150317_60sFailed'
+;'20150317_30s'
+;'20130317_disconGrid'
+'20160727fricHeat1'
+HOME_DIR=$
+;'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/r336.2.2/trunk/run'
+;'/home/Naomi.Maruyama/wamns/'+TEST0+'/trunk/run'
+;'/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/30s/run'
+;'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/tmp20151117/trunk/run'
+'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/r336.2.2/trunk/run/'
 ;CHANGE!!!
 TEST2='S'
-TEST1='28822'
+TEST1=$
+'68710';ON
+;14951';112509';28822'
 ;TEST-->rundir
 rundir=$
+'ipe_'+TEST2+'_'+TEST1
 ;'ipe_80_17352dbg' ;lp=44
 ;'ipe_80_7459dbg' ;lp=48
-'ipe_'+TEST2+'_'+TEST1
-plot_UT =2.0
+;'1455923474_ipe_theia_intel_serial2' ;60s
+;'1455925834_ipe_theia_intel_serial2' ;30s
+;'1449609375_ipe_theia_intel_serial2' ;disconGrid
+;'ipe_S_68710'
+plot_UT =432000./3600.;2.0
 ;frequency of plotting in hr
-freq_plot_hr=120./3600.;3600./3600.
+freq_plot_hr=900./3600.;3600./3600.
 ;READ, freq_plot_hr,PROMPT='Enter frequency of plotting in hour:' 
 
 title_hemi='NH'
@@ -26,29 +41,32 @@ sw_fort=168L;167L;168L
 ;READ, sw_fort,PROMPT="Enter which fort?: 167 or 168"
 
 
-mp_plot=10-1L ;<--read from the 167 file!
+mp_plot=1-1L ;<--read from the 167 file!
 
 n_file=1L
 FLDIM0=LONARR(n_file)
 
 ;CHANGE!!!
-if ( rundir eq 'ipe_80_17352dbg' ) then begin
-  lp_title    =44-1L ;<--read from the 167 file!
-   mlat_title ='34.37' ;<--read from 167 file! =GL/!PI*180. lp=44
-   FLDIM0     =[ 395L ] ;<--read from the 167 file! lp=44
-endif else if ( rundir eq 'ipe_80_7459dbg' ) then begin
-  lp_title    =48-1L
-  mlat_title  ='29.67' ;<--read from 167 file! =GL/!PI*180. lp=48
-  FLDIM0     =[ 313L ] ;<--read from the 167 file! lp=48
-endif
+;if ( rundir eq 'ipe_80_17352dbg' ) then begin
+;  lp_title    =44-1L ;<--read from the 167 file!
+;   mlat_title ='34.37' ;<--read from 167 file! =GL/!PI*180. lp=44
+;   FLDIM0     =[ 395L ] ;<--read from the 167 file! lp=44
+;endif else if ( rundir eq 'ipe_80_7459dbg' ) then begin
+;  lp_title    =48-1L
+;  mlat_title  ='29.67' ;<--read from 167 file! =GL/!PI*180. lp=48
+;  FLDIM0     =[ 313L ] ;<--read from the 167 file! lp=48
+;endif
 ;mp=10-1, lp=14-1
-  lp_title    =14-1L
-  mlat_title  ='75.38' ;<--read from 167 file! =GL/!PI*180. lp=48
-  FLDIM0     =[ 577L ] ;<--read from the 167 file! lp=48
+lp_title    =7-1L
+mlat_title  ='82.4001';76.2';66.13496' ;<--read from 167 file! =GL/!PI*180. lp=48
+FLDIM0     =[ 1115L ] ;<--read from the 167 file! lp=48
 
 sw_debug=0L
 plot_DIR=$
-"~/wamns/fig/prfl/"
+HOME_DIR+'../fig/'
+;'/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/30s/fig/'
+;'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/fig/'+TEST0+'/'
+;"~/wamns/fig/prfl/"
 ;HOME_DIR+'/fig/'+TEST0+'/'
 ;'../figures/discon/1dnewflipgrid/fort'+STRTRIM( string(sw_fort, FORMAT='(i3)'), 1)+'/'
 
@@ -71,7 +89,7 @@ FLDIM_plot=LONARR(n_file)
 
 ;FLDIMphil=401
 ;opening files
-   open_fort168, n_file,LUN,sw_debug,title_hemi,lp_title,sw_fort,rundir,TEST0
+   open_fort168, n_file,LUN,sw_debug,title_hemi,lp_title,sw_fort,rundir,TEST0,HOME_DIR
 
 n_read=-1L
    while ( EOF(LUN[0]) eq 0 ) do begin

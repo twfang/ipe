@@ -1,15 +1,21 @@
 ;20120322UNDERCONSTRUCTION!!!
 pro plt_refil   , mlat_deg, JMIN_IN,JMAX_IS, plot_z,mp_plot,n_read_max,ut_hr_save,fac_window, plot_UT,plot_UT_end,runID
 
-TEST='FPAS3'
 
-FMT_l='(F7.1)'
 
-for jth=4,5 do begin ;4:h+ ;5:he+
 
-   if jth eq 4 then VarTitle='H+' else $
-   if jth eq 5 then VarTitle='He+' ;else $
-print, jth,VarTitle
+  TEST='FPAS3'
+
+  FMT_l='(F7.1)'
+
+  for jth=4,5 do begin          ;4:h+ ;5:he+
+
+
+;note20160907: h+, he+ filenames should not contain "+"
+
+     if jth eq 4 then VarTitle='Hpl'  $
+     else if jth eq 5 then VarTitle='Hepl' ;else $
+     print,'jtj=', jth,VarTitle
 
 imin=0
 imax=2
@@ -54,7 +60,7 @@ endfor
 
 calculate_refilling_rate, den, ut_hr_save, n_read_max
 
-print,' ratio=', rat
+print,lval,' ratio=', rat
 
 x_min=345600./3600.  ;plot_UT/3600.
 x_max=950400./3600.;x_min+24.     ;plot_UT_end/3600. - plot_UT/3600.
@@ -94,6 +100,7 @@ endif
 endfor                          ;i=imin,imax
 
 FILE_DISP=TEST+VarTitle+'_L'+STRTRIM( string(lval, FORMAT=FMT_l), 1)+'.png'
+print,lval,'file_disp',file_disp
 ;  if ( sw_output2file eq 1 ) then  
 output_png, FILE_DISP
 

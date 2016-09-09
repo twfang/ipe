@@ -9,7 +9,7 @@ if ( sw_debug eq 1 ) then  print,'n_file=',n_file
 
 
 if(sw_lun[0] eq 1 ) then  input_flnm[0]='ut_rec';.log'
-if(sw_lun[1] eq 1 ) then  input_flnm[1]='../../../wamns/grid/plt/plasma_grid.'+title_res
+if(sw_lun[1] eq 1 ) then  input_flnm[1]='plasma_grid.'+title_res
 if(sw_lun[2] eq 1 ) then  input_flnm[2]='plasma00' ;o+
 if(sw_lun[6] eq 1 ) then  input_flnm[6]='plasma01' ;h+
 if(sw_lun[8] eq 1 ) then  input_flnm[8]='plasma02' ;he+
@@ -48,8 +48,9 @@ if(sw_lun[16] eq 1 ) then  input_flnm[16]='plasma18' ;VExBth
         openr, LUNi, input_DIR[i]+input_flnm[i], /GET_LUN $
         , /F77_UNFORMATTED
 
+print,i,'luni=',luni
       LUN[i]=LUNi
-if ( i le 1 ) then       print,'opening file:',input_DIR[i]+input_flnm[i], LUN[i]
+if ( i le 1 ) then       print,'opening file:', LUN[i],input_DIR[i]+input_flnm[i]
       
   endfor                        ;i = 0, n_file-1  do begin
 end ;pro open_file

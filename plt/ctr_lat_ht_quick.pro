@@ -15,17 +15,15 @@
 , VarType_step $;=4L
 ,n_read_max $;
 , input_DIR0, TEST, TEST1, TEST2, glon_deg2D, rundir  ;$
-;
-;VarType_min=3L
-;VarType_max=3L ;PAR-1
-;VarType_step=4L
+;---
 
+
+n_readInit=0L;default
 
 
 sw_arw_vpara=0
 fac_arw_para=0.7
 
-;n_read0=0L
 sw_plot_grid=0L  ;1: plot grid only
 sw_arrow_exb=0L
 reference_arrow=40L  ;m/s
@@ -42,7 +40,7 @@ lpmax_perp_trans=149
 for i=mpstart, mpstop  do print,' mp', (i+1),' LT',lt_hr[i]
 
 HTmin=90.  ;min(yy)   ;75.   ;400. ;
-HTmax=500.;10000.;800.;700.;190. ;1.000000E+03;700.; 
+HTmax=400.;700.;190. ;1.000000E+03;700.; 
 ; plot range
 if ( title_hemi eq 'NH' ) then begin
   gLATmax=+83.;+90.;-10.;
@@ -51,7 +49,7 @@ endif else if ( title_hemi eq 'SH' ) then begin
   gLATmax=-55.;+90.;-10.;
   gLATmin=-85.;+50.;-gLATmax;-27.; 
 endif else if ( title_hemi eq 'glb' ) then begin
-  gLATmax=+50.;-10.;
+  gLATmax=+60.;-10.;
   gLATmin=-gLATmax;-27.; 
 endif else if ( title_hemi eq 'eq' ) then begin
   gLATmax=-15.;+90.;-10.;
@@ -120,7 +118,8 @@ VarTitle=[ $
 ]
 
 VarUnit=[ $
-'[log!D10!N cm-3]',$
+;'[log!D10!N cm-3]',$
+ '[10^12 m-3]',$
 '[K]', $ ;Te
  '[m/s]', $ ;vo+; Ti;'[K]', $ ;Ti
  '[10^12 m-3]' $;,'[log!D10!N cm-3]' ;,'[log!D10!N cm-3]'$
@@ -132,7 +131,7 @@ VarUnit=[ $
 ,'[m/s]'$
 ]
 
-if ( n_read eq 0 ) then begin
+if ( n_read eq n_readInit ) then begin
 X_Title='MAGNETIC LATITUDE [deg.]'
 Y_Title='ALTITUDE [km]'
 endif else begin
@@ -154,7 +153,7 @@ Y=dblarr(4)
 if ( sw_dif eq 0 ) then begin
 
    ARY_min0=[ $
-1.3,$                
+0.,$;1.3,$                
 ;3.2,$ ;3.,$
 ;178.8,$
 154.,$
@@ -170,7 +169,7 @@ if ( sw_dif eq 0 ) then begin
          ] 
 
 ARY_max0=[ $
-4.5,$;6.1,$ ;7.,$
+2.38,$;4.5,$;6.1,$ ;7.,$
 ;4.,$
 ;800. ,$
 6083. ,$
@@ -246,9 +245,9 @@ endfor  ;lp=lp_strt,lp_stop do begin
 
 
 for VarType=VarType_min , VarType_max,  VarType_step   do begin
-if (n_read eq 0 ) then print,'vartype',vartype
+if (n_read eq n_readInit ) then print,'vartype',vartype
 
-if ( vartype eq 3 ) then $
+if ( vartype eq 0) OR (vartype eq 3 ) then $
   factor_value = 1.0E-12 $
 else $;if vartype eq 5 then $
   factor_value = 1.0
@@ -264,10 +263,10 @@ LOADCT, N_LDCT
 if ( sw_debug eq 1 ) then  print,'plotting ',VarTitle(VarType)
 MainTitle=VarTitle(VarType)+' '+VarUnit(VarType)
 FILE_DISP=plot_DIR+'quick/'+TEST+'_'+rundir+'_mp'+STRTRIM(STRING( (mp+1), FORMAT='(i3)'),1)+VarTitle(VarType)+'_'+title_res+'.'+'quick.'+device_type
-if (n_read eq 0 ) then  print, file_disp
+if (n_read eq n_readInit ) then  print, file_disp
 if ( sw_debug eq 1 ) then  print, file_disp
 
-if (n_read eq 0 ) then begin
+if (n_read eq n_readInit ) then begin
 if ( device_type eq 'ps' ) then begin
 
 
@@ -309,7 +308,7 @@ if ( sw_debug eq 1 ) then  print, 'after',!P.BACKGROUND
 ;t  char_size = 1.5
 
 endif                           ;if ( device_type eq 'ps' ) then begin
-endif                           ; (n_read eq 0 ) then begin
+endif                           ; (n_read eq n_readInit ) then begin
 
 LOADCT, 0;N_LDCT
 
@@ -390,6 +389,12 @@ for lp=lp_strt , lp_stop do begin
 ;  dXX=1.00
 
     for ipts=istrt,istop,istep   do begin
+
+
+if (lp eq 56) AND (z_km[ipts] ge 100.) AND (z_km[ipts] le 250.) then $
+print,ipts,(ipts-(in2d[lp]-1)+1),mlat_deg[ipts],z_km[ipts],plot_z[n_read,VarType, 0,ipts]
+
+
 ;dYY=(z_km[ipts+1]-z_km[ipts] )*1.0 ;
 ;dYY=5.;1.6;(z_km[ipts+1]-z_km[ipts] )*0.9 ;nm20121130
 dYY=(z_km[ipts+1]-z_km[ipts] )*0.9 ;nm20121130
@@ -397,9 +402,8 @@ dYY=(z_km[ipts+1]-z_km[ipts] )*0.9 ;nm20121130
 if ( z_km(ipts  ) gt HTmin ) and ( z_km(ipts) lt (HTmax-dYY) ) then begin
 if ( mlat_deg(ipts ) gt gLATmin ) and ( mlat_deg(ipts) lt gLATmax ) then begin
 
-;if ( mlat_deg[ipts] gt -37. ) AND (z_km[ipts] lt 300. ) then $
-if (z_km[ipts] gt 301. ) AND (z_km[ipts] lt 303. ) then $
-print, 'lp=',lp,ipts, mlat_deg[ipts],z_km[ipts]
+
+
 
 Xa=mlat_deg(ipts) ;-dXX*.5
 Xb=mlat_deg(ipts) ;-dXX*.5   ;glatd(ipts  ,ifl)+dLAT  ;
@@ -585,7 +589,7 @@ endif ;( sw_arrow_exb ) then begin
 
 
 ;20140121 
-;print,'n_read=', n_read , n_read_max
+print,'n_read=', n_read ,' n_read_max=', n_read_max
   if ( n_read eq n_read_max-1 ) then begin
 ;Draw_Colorbar, ARY_min0(VarType), ARY_max0(VarType), N_LVLs $
 ;, col_min, col_max, X1, Y1, dX1, dY1, X_SIZE, Y_SIZE, VarType
