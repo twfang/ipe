@@ -36,7 +36,7 @@
       subroutine neutral (utime) 
       USE module_IPE_dimension,ONLY: IPDIM
       use module_FIELD_LINE_GRID_MKS, only : plasma_grid_3d,plasma_grid_Z, apexD, JMIN_IN,JMAX_IS,east,north,up,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,JMIN_ING,JMAX_ISG,WamField
-      USE module_physical_constants,ONLY: pi,zero
+      USE module_physical_constants,ONLY: pi,zero,earth_radius,g0,gscon,massn_kg
       USE module_input_parameters,ONLY: F107D,F107AV,AP,NYEAR,NDAY,sw_debug,mpstop,sw_grid,start_time,stop_time &
      &,sw_neutral, swNeuPar,mype
       USE module_unit_conversion,ONLY: M_TO_KM
@@ -73,6 +73,7 @@
       real(KIND=real_prec) :: r
 !dbg20160715
       INTEGER(KIND=int_prec) :: idb
+      real:: H, dist
 !------
 
       iyear = NYEAR
@@ -226,7 +227,7 @@ END IF
             !Tn Max SH
             tinf_k(midpoint+1:IS,lp,mp) = WamField(ihTopS,lp,mp, jth) !Tn Inf SH
 
-!
+!perhaps i do not need this debug any more!
 !dbg20160715
 !SMS$IGNORE begin
 print '(2i3,i4," tn MIN",f7.0," MAX",f7.0)',mype,mp,lp,minval(tn_k(IN:IS,lp,mp)),maxval(tn_k(IN:IS,lp,mp))
@@ -293,7 +294,6 @@ endif !(minval
                   !below 800km: SH
                   Vn_ms1(jth,ihTopS-IN+1:IS-IN+1) = WamField(ihTopS:IS,lp,mp, jjth) !Un SH
 
-                  !nm20160906: test
                else if ( jjth==5 ) then
                   if(lp==1) print*,mp,'calculating wam compO',jjth 
                   !O below 800km: NH
@@ -312,6 +312,49 @@ endif !(minval
                   n2n_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jth) !n2
                end if !jjth
 
+
+!dbg20160913: it did not work! why?
+!dbg20160824
+!20160908 commeted out because this did not work why?
+!temporary quick fix for the 3 strange points near the magnetic South pole
+!(1)temporarily assigned from lp=14
+!if( mp==4.and.lp==15 ) then 
+!   if(jjth==5)then
+!      on_m3(ihTopS:IS,lp,mp) = on_m3( ihTopS:IS,lp-1,mp)
+!   else if(jjth==6)then
+!      o2n_m3(ihTopS:IS,lp,mp) = o2n_m3( ihTopS:IS,lp-1,mp)
+!   else if(jjth==7)then
+!      n2n_m3(ihTopS:IS,lp,mp) = n2n_m3( ihTopS:IS,lp-1,mp)
+!   endif !jjth=5
+!endif !mp=3
+!
+!!(2)temporarily assigned from lp=13
+!if( mp==5.and.lp==14 ) then 
+!   if(jjth==5)then
+!      on_m3(ihTopS:IS,lp,mp) = on_m3( ihTopS:IS,lp-1,mp)
+!   else if(jjth==6)then
+!      o2n_m3(ihTopS:IS,lp,mp) = o2n_m3( ihTopS:IS,lp-1,mp)
+!   else if(jjth==7)then
+!      n2n_m3(ihTopS:IS,lp,mp) = n2n_m3( ihTopS:IS,lp-1,mp)
+!   endif !jjth=5
+!endif !mp=4
+!
+!!(3)temporarily assigned from lp=12
+!if( mp==5.and.lp==14 ) then 
+!   if(jjth==5)then
+!      on_m3(ihTopS:IS,lp,mp) = on_m3( ihTopS:IS,lp-2,mp)
+!   else if(jjth==6)then
+!      o2n_m3(ihTopS:IS,lp,mp) = o2n_m3( ihTopS:IS,lp-2,mp)
+!   else if(jjth==7)then
+!      n2n_m3(ihTopS:IS,lp,mp) = n2n_m3( ihTopS:IS,lp-2,mp)
+!   endif !jjth=5
+!endif !mp=4
+!dbg20160824:end
+
+
+
+
+
             
                !dbg20160823:
                ihemLoop: DO ihem=1,2
@@ -329,25 +372,36 @@ endif !(minval
                   end if
  
                   above800kmLoop: DO ipts=ihTop+istep, midPoints, iStep 
-                     r = (plasma_grid_Z(ipts,lp)-plasma_grid_Z(ihTop-istep,lp)) / (plasma_grid_Z(ihTop,lp)-plasma_grid_Z(ihTop-istep,lp))   
+!t                     r = (plasma_grid_Z(ipts,lp)-plasma_grid_Z(ihTop-istep,lp)) / (plasma_grid_Z(ihTop,lp)-plasma_grid_Z(ihTop-istep,lp))   
                      
                      if ( jjth<5) then
-                        Vn_ms1(jth,ipts) = r*WamField(ihTop,lp,mp,jjth) + (1.-r)*WamField(ihTop-istep,lp,mp,jjth)
+!t                        Vn_ms1(jth,ipts) = r*WamField(ihTop,lp,mp,jjth) + (1.-r)*WamField(ihTop-istep,lp,mp,jjth)
+! extend the top value
+                        Vn_ms1(jth,ipts) = WamField(ihTop,lp,mp,jjth) 
                         
                         
-                     else if ( jjth==5 ) then !O
+                     else  !jjth>=5
+
+                        dist = earth_radius/(earth_radius+plasma_grid_Z(ipts,lp))
+                        H = GSCON * Tn_k(ihTop,lp,mp) / (massn_kg(jjth-4)*G0*dist*dist)
+
+                        if ( jjth==5 ) then !O
                         
-                        if(lp==1) print*,mp,'calculating wam comp>800km NH',jjth 
-                        on_m3( ipts,lp,mp) = EXP ( r*log(WamField(ihTop,lp,mp,jjth)) + (1.-r)*log(WamField(ihTop-istep,lp,mp,jjth)))
+                           if(lp==1) print*,mp,'calculating wam comp>800km NH',jjth 
+                           on_m3( ipts,lp,mp) = WamField(ihTop,lp,mp,jjth) * exp((-plasma_grid_Z(ipts,lp)+plasma_grid_Z(ihTop,lp))/H)
                         
-                     else if (jjth==6 ) then !O2
-                        o2n_m3(ipts,lp,mp) = EXP ( r*log(WamField(ihTop,lp,mp,jjth)) + (1.-r)*log(WamField(ihTop-istep,lp,mp,jjth)))
-                     else if (jjth==7 ) then !N2
-                        n2n_m3(ipts,lp,mp) = EXP ( r*log(WamField(ihTop,lp,mp,jjth)) + (1.-r)*log(WamField(ihTop-istep,lp,mp,jjth)))
+                        else if (jjth==6 ) then !O2
+                           o2n_m3(ipts,lp,mp) = WamField(ihTop,lp,mp,jjth) * exp((-plasma_grid_Z(ipts,lp)+plasma_grid_Z(ihTop,lp))/H)
+                        else if (jjth==7 ) then !N2
+                           n2n_m3(ipts,lp,mp) = WamField(ihTop,lp,mp,jjth) * exp((-plasma_grid_Z(ipts,lp)+plasma_grid_Z(ihTop,lp))/H)
+                        end if !jjth==5
+
                      end if !jjth<5
                      
                   end do above800kmLoop!: DO ipts=ihTop+istep, midPoints, iStep 
                end do          ihemLoop!: DO ihem=1,2         
+
+
             end if !( swNeuPar(jjth) ) then
 
          end do jth_loop !jth=1,3 !2:4 for WamField,swNeuPar            
