@@ -34,6 +34,10 @@ module Library
     link_data("/scratch1/portfolios/NCEPDEV/swpc/noscrub/Paul.A.Madden/IPE/test-suite-data")
   end
 
+  def lib_data_theia(env)
+    link_data("/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/test-suite-data")
+  end
+
   def lib_outfiles(env,path)
     restrs=['(.*/)(plasma\d\d)','(.*/)(fort\.20\d\d)']
     res=restrs.map { |e| Regexp.new(e) }
@@ -194,6 +198,51 @@ module Library
   end
 
   def wait_for_job_zeus(env,jobid,outputdir)
+    ok=%w[E H Q R S T W]
+    # 'tolerance' is the number of seconds the batch system retains information
+    # about completed jobs. If this interval passes without a non-error response
+    # to queries, we may never receive confirmation that the job completed.
+    # Consider this a batch-system failure and abort.
+    tolerance=600
+    batch_failure=false
+    last_response=Time.now
+    begin
+      sleep 30
+      tolog=[]
+      cmd="qstat -f #{jobid}"
+      output,status=Thread.exclusive { ext(cmd,{:die=>false,:out=>false}) }
+      if status==0
+        live=false
+        last_response=Time.now
+        output.each do |e|
+          tolog.push(e)
+          live=true if ok.include?(e.chomp.sub(/^ *job_state = (.)$/,'\1'))
+        end
+      else
+        live=true
+        now=Time.now
+        logd "#{cmd} set error status #{status} at #{now}"
+        if now-last_response > tolerance
+          batch_failure=true
+          live=false
+        end
+      end
+    end while live
+    logd "* Final batch info for job ID #{jobid}:"
+    logd "--"
+    tolog.each { |e| logd e }
+    logd "--"
+    die "* Batch system unresponsive for #{tolerance} seconds" if batch_failure
+    re=Regexp.new('^ *exit_status = (\d+)')
+    tolog.each do |e|
+      m=re.match(e)
+      return m[1].to_i if m
+    end
+    'unknown'
+  end
+
+
+  def wait_for_job_theia(env,jobid,outputdir)
     ok=%w[E H Q R S T W]
     # 'tolerance' is the number of seconds the batch system retains information
     # about completed jobs. If this interval passes without a non-error response
