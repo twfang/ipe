@@ -321,7 +321,8 @@ C.... Written by P. Richards June-September 2010.
      >             EFLAG,  !.. OUT: 2D array, Error Flags
      &                mp, 
      &                lp,
-     &         hrate_cgs ) !.. OUTPUT: (eV/cm^3/s) !nm20121020
+     &                utime, !dbg20141209
+     &         hrate_cgs, mlt ) !.. OUTPUT: (eV/cm^3/s) !nm20121020
 
       USE THERMOSPHERE       !.. ON HN N2N O2N HE TN UN EHT COLFAC
       USE MINORNEUT          !.. N4S N2D NNO N2P N2A O1D O1S
@@ -330,18 +331,22 @@ C.... Written by P. Richards June-September 2010.
       !..EUVION PEXCIT PEPION OTHPR1 OTHPR2 SUMION SUMEXC PAUION PAUEXC NPLSPRD
       USE PRODUCTION         !.. EUV, photoelectron, and auroral production
 
-      USE module_input_parameters,ONLY: sw_TEI,sw_OHPLS
+      USE module_input_parameters,ONLY: sw_TEI,sw_OHPLS,sw_PE2S
      &, sw_DEBUG_flip,sw_debug,sw_output_fort167
+     &,mpfort167,lpfort167,mype,peFort167
      &,sw_optw_flip
+     &,start_time,ip_freq_output,sw_aurora,LPI,LevPI,GWatts
       USE module_IO,ONLY: LUN_FLIP1,LUN_FLIP2,LUN_FLIP3,LUN_FLIP4
-        USE module_physical_constants,ONLY: zero
+!tmp20151112      USE module_FIELD_LINE_GRID_MKS,ONLY: mlon_rad
+!tmp20151112      USE module_physical_constants,ONLY: zero !,pi
+!tmp20151112      USE module_magfield,ONLY:sunlons
       IMPLICIT NONE
       include "gptl.inc"
       INTEGER CTIPDIM         !.. CTIPe array dimension, must equal to FLDIM
 !nm20110923      INTEGER JTI             !.. Dummy variable to count the number of calls to this routine
       INTEGER I,J,JMINX,JMAXX !.. lcv + spatial grid indices
       INTEGER EFLAG(11,11)    !.. error flags, check =0 on return from FLIP
-      INTEGER, INTENT(IN):: mp,lp
+      INTEGER, INTENT(IN):: mp,lp,utime !dbg20141209
       INTEGER INNO            !.. switch to turn on FLIP NO calculation if <0
 !nm20110810      INTEGER DEBUG           !.. switch to turn on debug writes 0=off, 1=on
       !.. IHEPLS,INPLS turn on diffusive solutions if > 0. no solution if 0, 
@@ -385,6 +390,15 @@ C.... Written by P. Richards June-September 2010.
 !dbg20110120:      DATA DEBUG/1/  !.. turn on debug writes if DEBUG=1
       INTEGER :: midpoint !nm20110312
       integer :: ret
+!nm20150322
+      integer :: j802 
+!nm20151030 aurora
+      integer :: tirosdim
+      REAL :: gm_lat 
+      REAL,intent(IN) :: mlt
+      INTEGER :: tiros_activity_level
+      REAL :: gw
+      REAL*8,dimension(3,fldim) :: qiont !1:O;2:O2;3:N2 !units number/m3/s
 
       ret = gptlstart ('CTIPINT init_params')
       CALL initialize_module_parameters ( )
@@ -451,9 +465,46 @@ C.... Written by P. Richards June-September 2010.
         NHEAT(J)=0.0
         O2DISF(J)=0.0
 !nm20121020
-        hrate_cgs(1:22,J)=zero
+        hrate_cgs(1:22,J)=0.0
       ENDDO
       ret = gptlstop ('CTIPINT upload')
+
+!nm20151029 aurora
+!nm20151102      if ( mp==17.and.lp==22 ) then !UT= 120.000
+      ret = gptlstart ('ionize_ipe')
+      if(sw_debug)print *,'starting ionize_ipe'
+      gm_lat = GL(JMIN)
+! call tiros only >50deg mlat
+      if( abs(gm_lat*57.295779513)>=50.0 .AND. sw_aurora==1 ) then
+!tmp20151112      mlt = mlon_rad(mp)*180./PI/15.0D0-sunlons(1)*12.0D0/PI+12.0 !;[hr]
+!      mlt = 0.168238 ![hr]
+         midpoint = (JMAX/2)+1
+         tirosdim = midpoint-JMIN+1
+         if(sw_debug)print *,jmax,jmin,tirosdim, midpoint,' GL1=',gm_lat
+     &        ,mlt
+     &  , maxval(qiont(1,JMIN:midpoint)), minval(qiont(1,JMIN:midpoint))
+         tiros_activity_level = LevPI(LPI)
+         gw = GWatts(LPI)
+         if ( mp==1.and.lp==1 ) write(unit=1003,FMT='(I8,I3,f7.2)')
+     &utime,tiros_activity_level,gw
+         call IONIZE_IPE (
+     &     tirosdim,z(JMIN:midpoint),gr(JMIN:midpoint),on(JMIN:midpoint)
+     &        ,o2n(JMIN:midpoint)
+     &        ,n2n(JMIN:midpoint),hn(JMIN:midpoint),he(JMIN:midpoint)
+     &        ,tn(JMIN:midpoint)
+     &        ,gm_lat,mlt
+     &        ,tiros_activity_level,gw
+     &        ,qiont(1,JMIN:midpoint),qiont(2,JMIN:midpoint) !units number/m3/s
+     &        ,qiont(3,JMIN:midpoint) 
+     &        ,sw_debug)
+         if(sw_debug) print *,'stoping ionize_ipe'
+      else 
+         qiont=0.0
+      endif                     !sw_aurora
+      ret = gptlstop ('ionize_ipe')
+ 
+!
+
       !.. Set up initial temperature and density profiles.
       !.. 0.1 < HPEQ < 1.0.
       ret = gptlstart ('CTIPINT PROFIN')
@@ -490,13 +541,18 @@ C.... Written by P. Richards June-September 2010.
       !.. 2-stream photoelectron routine to get electron heating 
       !.. rate and secondary ion production
       ret = gptlstart ('CTIPINT PE2S')
-      CALL PE2S(F107,F107A,N,TI,FPAS,-1.0E22,EDEN,UVFAC,COLUM,
-     > IHEPLS,INPLS,INNO)
+      IF( sw_PE2S>0 )  !dbg20141210
+     &   CALL PE2S(F107,F107A,N,TI,FPAS,-1.0E22,EDEN,UVFAC,COLUM,
+     > IHEPLS,INPLS,INNO
+     &,mp,lp,utime) !dbg20141209
+!dbg      sw_PE2S=0  !dbg20141210.v4
       ret = gptlstop  ('CTIPINT PE2S')
 
       !-- Sum the EUV, photoelectron, and auroral production rate
       ret = gptlstart ('CTIPINT SUMPRD')
-      CALL SUMPRD(JMIN,JMAX)
+      CALL SUMPRD(JMIN,JMAX
+     &,qiont(1:3,JMIN:JMAX) !units number/m3/s
+     &)
       ret = gptlstop  ('CTIPINT SUMPRD')
 
       !.. Loop to calculate O+(4S) total ionization rate
@@ -538,7 +594,9 @@ C.... Written by P. Richards June-September 2010.
 
       !.. Debug write
       ret = gptlstart ('CTIPINT sw_output')
-      IF ( sw_output_fort167 ) THEN
+      IF (mype==peFort167.AND.sw_output_fort167.AND.mp==mpfort167.AND.  &
+     &lp==lpfort167 ) THEN
+      print*,'check unit#',LUN_FLIP1,LUN_FLIP3,LUN_FLIP2,LUN_FLIP4
 c      IF(JTI.EQ.1) THEN
         WRITE(UNIT=LUN_FLIP1,FMT=201)  
         WRITE(UNIT=LUN_FLIP3,FMT=201)
@@ -601,8 +659,10 @@ c      IF(JTI.EQ.1) THEN
 !!dbg20110404
 !     &   ,XIONV(1,J)
 !     &,SUMION(1,7,J),SUMION(2,4,J),SUMION(2,5,J)
-        ENDDO
-      END IF !( sw_debug ) THEN
+       ENDDO
+
+      END IF                    !( sw_output_fort167.AND... ) THEN
+
       ret = gptlstop ('CTIPINT sw_output')
 c      ENDIF
 
@@ -641,6 +701,17 @@ c      ENDIF
       ret = gptlstart ('CTIPINT XION')
       IF(EFLAG(2,1).EQ.0.AND.INPLS.GT.0) CALL XION(TI,DT,DTMIN,11,EFLAG)
       ret = gptlstop  ('CTIPINT XION')
+
+!nm20150322: output limiting flux: not so helpful for SED plume flux...
+!
+!      IF ( MOD( (utime-start_time),ip_freq_output)==0 ) THEN
+!      j802=87 !z_km=802km
+!      if ( lp <=40 )   !mlat=38.85
+!     & write(9009,"(2i3,9E9.2)") mp,lp, z(j802),on(j802),hn(j802)
+!     &,tnx(j802) ,ti(1,j802),ti(3,j802),n(1,j802),n(2,j802)
+!     &, (1.38E-16 * ( ti(1,j802)+ti(3,j802) )*0.5 / 
+!     &   (1.662E-24*16*(-1.)*GR(j802) ) )*1.E-5 !scale height[cm-->km]
+!      ENDIF
 
       ret = gptlstart ('CTIPINT transfer')
         !.. transfer densities from FLIP to CTIP variable
@@ -720,7 +791,8 @@ c      ENDIF
 !nm20110715: for diagnostics only
 !.. 2-stream photoelectron routine called to print fluxes
       ret = gptlstart ('CTIPINT PE2S')
-      IF(sw_DEBUG_flip.EQ.1)  !nm20110923
+      IF(sw_DEBUG_flip.EQ.1.AND.  !nm20110923
+     &   sw_PE2S>0 )  !dbg20141210
      &  CALL PE2S(F107,F107A,N,TI,FPAS,300.0,EDEN,UVFAC,COLUM
      &    ,IHEPLS,INPLS,INNO)
       ret = gptlstop  ('CTIPINT PE2S')
@@ -733,14 +805,19 @@ C... Written by P. Richards September 2010
       SUBROUTINE WRITE_EFLAG(PRUNIT,   !.. Unit number to print results
      >                        EFLAG,   !.. Error flag array
      >                           mp, 
-     >                           lp)
+     >                           lp,utime,ltime)
       USE module_input_parameters,ONLY:sw_output_fort167,sw_ERSTOP_flip
+      USE module_precision
       IMPLICIT NONE
       INTEGER PRUNIT,EFLAG(11,11)         !.. error flags
       INTEGER, INTENT(IN):: mp,lp
+      INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]
+      REAL (KIND=real_prec),INTENT(IN) :: ltime !local time [hour]
+!
       IF(EFLAG(1,1).NE.0) THEN
         WRITE(PRUNIT,11)mp,lp
-        IF ( sw_ERSTOP_flip==1 )  STOP
+!(11)
+!t        IF ( sw_ERSTOP_flip==1 )  STOP
       END IF
  11   FORMAT(/'  Convergence failure in Temperature solution (TLOOPS).'
      >  ,2X,'Time step less than minimum.mp=',i4,'lp=',i4)
@@ -748,52 +825,69 @@ C... Written by P. Richards September 2010
 !dbg110210:
         WRITE(PRUNIT,*)'EFLAG(1,2)',EFLAG(1,2)
         WRITE(PRUNIT,12)mp,lp
-        IF ( sw_ERSTOP_flip==1 )  STOP
+        IF ( sw_ERSTOP_flip==1 ) THEN
+          print *,"(12)ERSTOP FLIP",mp,lp            
+          STOP
+        END IF
       endif
  12   FORMAT(/'  Convergence failure in Temperature solution (TLOOPS).'
-     >  ,2X,'Incorrect input to the band solver BDSLV.mp=',i4,'lp=',i4)     
+     >  ,2X,'Incorrect input to the band solver BDSLV.mp=',i3,'lp=',i4)     
 
       IF(EFLAG(2,1).NE.0) THEN
-         WRITE(PRUNIT,21)mp,lp
-         IF ( sw_ERSTOP_flip==1 )  STOP
-!!!20120125UNDERCONSTRUCTION!!!
-!dbg20120125         sw_output_fort167=.TRUE.
+         WRITE(PRUNIT,21)lp,mp,ltime,UTIME
+!(3)
+!t         IF ( sw_ERSTOP_flip==1 )  STOP
+
       END IF
- 21   FORMAT(/'  Convergence failure in O+ - H+ solution (DLOOPS).'
-     >  ,2X,'Time step less than minimum.mp=',i3,'lp=',i4)
+ 21   FORMAT(/'  Convergence failure in O+ - H+ (DLOOPS).'
+     &,'TimeStep less than minimum:lp=',i3,'mp=',i3,f7.2,i7)
       IF(EFLAG(2,2).NE.0) THEN
          WRITE(PRUNIT,22)mp,lp
-         IF ( sw_ERSTOP_flip==1 )  STOP
-!!!20120125UNDERCONSTRUCTION!!!
-!dbg20120125         sw_output_fort167=.TRUE.
+         IF ( sw_ERSTOP_flip==1 ) THEN
+           print *,"(22)ERSTOP FLIP",mp,lp            
+           STOP
+        END IF
+
+
       END IF
  22   FORMAT(/'  Convergence failure in O+ - H+ solution (DLOOPS).'
      >  ,2X,'Incorrect input to the band solver BDSLV.mp',i3,'lp',i4)
 
       IF(EFLAG(3,1).NE.0) THEN
          WRITE(PRUNIT,31)mp,lp
-         IF ( sw_ERSTOP_flip==1 )  STOP
+!(5)
+!t         IF ( sw_ERSTOP_flip==1 )  STOP
       END IF
  31   FORMAT(/'  Convergence failure in He+ solution (XION).'
-     >  ,2X,'Time step less than minimum.',i3,'lp',i4)
+     >  ,2X,'Time step less than minimum.')
       IF(EFLAG(3,2).NE.0) THEN
          WRITE(PRUNIT,32)mp,lp
-         IF ( sw_ERSTOP_flip==1 )  STOP
-!dbg20120125         sw_output_fort167=.TRUE.
+         IF ( sw_ERSTOP_flip==1 ) THEN
+           print *, "(32)ERSTOP FLIP",mp,lp            
+           STOP
+         END IF
+
       END IF
  32   FORMAT(/'  Convergence failure in He+ solution (XION).'
      >  ,2X,'Incorrect input to the band solver BDSLV.mp',i3,'lp',i4)
 
       IF(EFLAG(4,1).NE.0) THEN
          WRITE(PRUNIT,41)mp,lp
-         IF ( sw_ERSTOP_flip==1 )  STOP
+!t         IF ( sw_ERSTOP_flip==1 ) THEN
+!t           print *,"(7)ERSTOP FLIP",mp,lp            
+!t           STOP
+!t        END IF
       END IF
  41   FORMAT(/'  Convergence failure in N+ solution (XION).'
      >  ,2X,'Time step less than minimum.mp',i3,'lp',i4)
       IF(EFLAG(4,2).NE.0) THEN
          WRITE(PRUNIT,42)mp,lp
-         IF ( sw_ERSTOP_flip==1 )  STOP
-!dbg20120125         sw_output_fort167=.TRUE.
+!(8)
+         IF ( sw_ERSTOP_flip==1 ) THEN
+           print *,"(42)ERSTOP FLIP",mp,lp            
+           STOP
+         END IF
+
       END IF
  42   FORMAT(/'  Convergence failure in N+ solution (XION).'
      >  ,2X,'Incorrect input to the band solver BDSLV.mp',i3,'lp',i4)

@@ -16,12 +16,12 @@
       USE module_IPE_dimension,ONLY: NMP,NLP,ISTOT
       USE module_FIELD_LINE_GRID_MKS,ONLY: &
      & plasma_grid_3d,plasma_3d,r_meter2D,ON_m3,HN_m3,N2N_m3,O2N_m3&
-     &,apexD,apexE,VEXBup,VEXBe,MaxFluxTube,HE_m3,N4S_m3,TN_k,TINF_K,Un_ms1 &
+     &,apexD,apexE,VEXBup,VEXBe,VEXBth,MaxFluxTube,HE_m3,N4S_m3,TN_k,TINF_K,Un_ms1 &
      &,Be3, Pvalue, JMIN_IN, JMAX_IS,hrate_mks3d,midpnt &
      &,mlon_rad, plasma_grid_Z, plasma_grid_GL, plasma_3d_old &
-     &,apexDscalar, l_mag, WamField
+     &,apexDscalar, l_mag, poleVal
   
-      USE module_input_parameters,ONLY: sw_neutral_heating_flip
+      USE module_input_parameters,ONLY: sw_neutral_heating_flip,mpHaloSize
       IMPLICIT NONE
       INTEGER (KIND=int_prec),INTENT(IN) :: switch
       INTEGER (KIND=int_prec) :: stat_alloc
@@ -35,6 +35,7 @@
      &,           r_meter2D     (MaxFluxTube,NLP          ) &
      &,           plasma_3d     (MaxFluxTube,NLP,NMP,ISTOT) &
      &,           plasma_3d_old (MaxFluxTube,NLP,NMP,ISTOT) &
+     &,           poleVal       (MaxFluxTube        ,ISTOT) &
      &,           apexD         (MaxFluxTube,NLP,NMP,3,1:3) &
      &,           apexE         (MaxFluxTube,NLP,NMP,3,2  ) &
      &,           apexDscalar   (MaxFluxTube,NLP,NMP      ) &
@@ -52,10 +53,6 @@
      &,           TINF_K(MaxFluxTube,NLP,NMP)     &
      &,           Un_ms1(MaxFluxTube,NLP,NMP,3:3) )
 
-
-      allocate( WamField(MaxFluxTube,NLP,NMP,7) )
-
-
         IF ( sw_neutral_heating_flip==1 ) THEN
           ALLOCATE(hrate_mks3d(MaxFluxTube,NLP,NMP,7),STAT=stat_alloc)
           IF ( stat_alloc==0 ) THEN
@@ -69,11 +66,14 @@
         ALLOCATE ( Be3     (  NLP,NMP  ) &
      &,            VEXBup  (  NLP,NMP  ) &
      &,            VEXBe   (  NLP,NMP  ) &
+     &,            VEXBth   (  NLP,NMP  ) &
      &,            Pvalue  (  NLP      ) &
      &,            JMIN_IN (  NLP      ) &
      &,            JMAX_IS (  NLP      ) &
      &,            midpnt  (  NLP      ) &
-     &,            mlon_rad(      NMP+1) &
+!nm20160419
+!     &,            mlon_rad(      NMP+1) &
+     &,            mlon_rad(1-mpHaloSize:NMP+mpHaloSize) &
      &,            STAT=stat_alloc       )
  
       IF ( stat_alloc==0 ) THEN
@@ -119,8 +119,6 @@ print *,'DE-ALLOCATing ARRAYS'
         STOP
       END IF
 
-
-      DEallocate( WamField )
 
 !---neutral heating
       IF ( sw_neutral_heating_flip==1 ) THEN

@@ -14,7 +14,7 @@
 !
       PROGRAM  test_plasma
       USE module_precision
-      USE module_input_parameters,ONLY: read_input_parameters,start_time,stop_time,time_step,HPEQ_flip,ip_freq_msis,sw_output_plasma_grid,sw_debug,sw_perp_transport,parallelBuild,mype
+      USE module_input_parameters,ONLY: read_input_parameters,start_time,stop_time,time_step,HPEQ_flip,ip_freq_msis,sw_output_plasma_grid,sw_debug,sw_perp_transport,parallelBuild,mype,ip_freq_eldyn
       USE module_FIELD_LINE_GRID_MKS,ONLY: plasma_3d
       USE module_init_plasma_grid,ONLY: init_plasma_grid
       USE module_NEUTRAL_MKS,ONLY: neutral 
@@ -35,14 +35,6 @@
       INTEGER(KIND=int_prec)           :: utime !universal time [sec]
       INTEGER(KIND=int_prec),parameter :: luntmp=300
       INTEGER(KIND=int_prec)           :: istat,mp,ret
-
-
-!nm20151028 (1) obtain mpi communicator
-!      INTEGER :: FTN_COMM
-!print *,'!nm20151028 obtain mpi communicator'
-!      call GET_SMS_MPI_COMMUNICATOR(FTN_COMM)
-!print *,' FTN_COMM=', FTN_COMM
-!
 
       call gptlprocess_namelist ('GPTLnamelist', 77, ret) 
       ret = gptlinitialize ()
@@ -99,7 +91,7 @@ END IF
 
       ret = gptlstart ('time_loop')
       time_loop: DO utime = start_time, stop_time, time_step
-      print*,'utime=',utime
+      print"('UTime=',2i7,f11.4)",utime,(MOD(utime,86400)),(MOD(utime,86400)/3600.)
 !sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-5")
 ! updates auroral precipitation
 
@@ -107,7 +99,7 @@ END IF
 
 !nm20110907:moved here because empirical Efield is needed for both neutral &plasma
       ret = gptlstart ('eldyn')
-      IF ( sw_perp_transport>=1 ) THEN
+      IF ( sw_perp_transport>=1.AND. MOD( (utime-start_time),ip_freq_eldyn)==0 ) THEN
         CALL eldyn ( utime )
       ENDIF
       ret = gptlstop  ('eldyn')

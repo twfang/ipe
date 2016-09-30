@@ -8,7 +8,7 @@ USE module_read_plasma_grid_global,only: read_plasma_grid_global
 USE module_precision
 USE module_IPE_dimension,ONLY: NMP,NLP,ISTOT
 USE module_physical_constants,ONLY: earth_radius, pi, G0,zero
-USE module_input_parameters,ONLY: sw_debug,sw_grid,parallelBuild
+USE module_input_parameters,ONLY: sw_debug,sw_grid,parallelBuild,mpHaloSize
 USE module_FIELD_LINE_GRID_MKS,ONLY: Pvalue &
 &, JMIN_IN,JMAX_IS, r_meter2D, plasma_grid_GL,plasma_grid_3d,apexD,apexE,Be3,plasma_grid_Z &
 &, ISL,IBM,IGR,IQ,IGCOLAT,IGLON,east,north,up,mlon_rad,dlonm90km &
@@ -99,7 +99,7 @@ IF ( sw_grid==0 ) THEN  !APEX
 
                if ( i==midpoint ) then
                   ii = i-1  !assign the northward neighboring value
-                  print *,'apexD is corrected!',i,lp,mp
+                  if ( sw_debug ) print *,'apexD is corrected!',i,lp,mp
                else
                   print *,'sub-init_plasma_grid: STOP! INVALID apexD!',i,lp,mp,apexD(i,lp,mp,:,1),apexD(i,lp,mp,:,2)
                   STOP 
@@ -227,8 +227,11 @@ endif !(mp==1) then
 !SMS$PARALLEL END
 
      mlon_rad(:) = zero
-     DO mp = 1,NMP+1
+!nm20160419
+!     DO mp = 1,NMP+1
+     DO mp = 1-mpHaloSize,NMP+mpHaloSize
        mlon_rad(mp) = REAL( (mp-1),real_prec ) * dlonm90km *pi/180.00
+print*,'mp=',mp,'mlon=',mlon_rad(mp)
      END DO
 
         END SUBROUTINE init_plasma_grid

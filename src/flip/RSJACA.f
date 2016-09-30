@@ -14,6 +14,7 @@ C
 C:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       SUBROUTINE BNDX(N,M,A,KS,B,X,S,SCALE,INDEX,MUL,NFLAG,IW,M1)
       USE module_IO,ONLY: PRUNIT
+      USE module_input_parameters,ONLY:sw_ERSTOP_flip
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
       DOUBLE PRECISION MUL(M1,N)
       DIMENSION A(N,IW),B(N),X(N),SCALE(N),INDEX(N),S(N,IW)
@@ -60,6 +61,8 @@ C
   112 WRITE(PRUNIT,919)I
 919   FORMAT('    IN BDSLV, ROW',I6,' IS ZERO IN INPUT MATRIX')
       NFLAG=2
+!dbg20140610: code must stop if this error happens!
+      sw_ERSTOP_flip=1
       RETURN
 114   SCALE(I)=1./BIG
 115   CONTINUE

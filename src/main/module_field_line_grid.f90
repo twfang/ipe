@@ -22,7 +22,7 @@
 ! --- PUBLIC ---
 !nm20121115      INTEGER (KIND=int_prec ),PUBLIC :: mp_save,lp_save,MaxFluxTube
       INTEGER (KIND=int_prec ),PUBLIC :: MaxFluxTube
-      REAL    (KIND=int_prec ),PUBLIC :: minAltitude,maxAltitude
+      REAL    (KIND=real_prec8 ),PUBLIC :: minAltitude,maxAltitude
       REAL    (KIND=real_prec),PUBLIC :: minTheta   ,maxTheta
       REAL(KIND=real_prec),PARAMETER,PUBLIC :: ht90  = 90.0E+03  !reference height in meter
 !... read in parameters
@@ -47,8 +47,6 @@
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: plasma_grid_3d(:,:,:,:)!MaxFluxTube,NLP,NMP,6
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: plasma_3d     (:,:,:,:)!MaxFluxTube,NLP,NMP,ISTOT
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: plasma_3d_old (:,:,:,:)!MaxFluxTube,NLP,NMP,ISTOT
-!WamField is advertized externally when sw_neutral=0or1
-      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: WamField      (:,:,:,:)!MaxFluxTube,NLP,NMP,NSTOT=7
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: Un_ms1        (:,:,:,:)!MaxFluxTube,NLP,NMP,3:3 Ue1 Eq5.6 in magnetic frame last dim = apexD1-3
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: apexD       (:,:,:,:,:)!MaxFluxTube,NLP,NMP,3,3.. Eq(3.8-10 ) Richmond 1995
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC        :: apexE       (:,:,:,:,:)!MaxFluxTube,NLP,NMP,3,2.. Eq(3.11-12) Richmond 1995
@@ -65,8 +63,9 @@
 !V_ExB m/s at the apex height
 !SMS$DISTRIBUTE(dh,1,2) BEGIN
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,DIMENSION(:,:) :: Be3    ! .. [T] Eq(4.13) Richmond 1995: "Ed1, Ed2, and Be3 are constant along magnetic field lines" !nm20130830
-      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,DIMENSION(:,:) :: VEXBup !DIMENSION(NMP,NLP)
-      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,DIMENSION(:,:) :: VEXBe  !DIMENSION(NMP,NLP)
+      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,DIMENSION(:,:) :: VEXBup !DIMENSION(NLP,NMP)
+      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,DIMENSION(:,:) :: VEXBe  !DIMENSION(NLP,NMP)
+      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,DIMENSION(:,:) :: VEXBth !DIMENSION(NLP,NMP)
 !SMS$DISTRIBUTE END
 
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: plasma_grid_Z (:,:)  !.. altitude [meter] (MaxFluxTube,NLP)
@@ -90,8 +89,8 @@
 
 
 !-------------
-!nm20110822:no longer used
-!      REAL(KIND=real_prec),               ALLOCATABLE, PUBLIC ::  SZA_rad(:) !solar zenith angle [radians]
+!nm20160420:pole values needed for special 3 point interpolation
+      REAL(KIND=real_prec),ALLOCATABLE, PUBLIC ::  poleVal(:,:)!MaxFluxTube,ISTOT
 !
 ! components (east, north, up) of base vectors
       TYPE :: geographic_coords

@@ -8,7 +8,11 @@ integer       :: comm
 character(80) :: string
 integer       :: ret
 
+
+
 if(parallelBuild) then
+
+
   print*
   MAXlpHalo = MaxLpHaloUsed
   MAXmpHalo = MaxMpHaloUsed
@@ -19,17 +23,24 @@ if(parallelBuild) then
   print*
   print*,'   PE   lps   lpe   mps   mpe   MAXlpHalo   MAXmpHalo'
 !SMS$IGNORE BEGIN
+
+
   write(string,100) mype,lps,lpe,mps,mpe,MaxLpHaloUsed,MaxMpHaloUsed
 100 format(5i6,i8,i12)
 !SMS$IGNORE END
+
+
 !SMS$INSERT call SMSPrintModeOrdered(string)
 endif
 
 ! Print timing results to file named timing.mype
 !ret = gptlpr (mype)
 
+
 if(parallelBuild) then
 !SMS$INSERT call GET_SMS_MPI_COMMUNICATOR(COMM)
+
+
   ret = gptlpr_summary(COMM)
 else
   ret = gptlpr_summary()

@@ -4,10 +4,10 @@
 #       MAKEJOBS variable, e.g.: MAKEJOBS=1 make zeus_intel_parallel
 
 # Static / Unconditional / Default variables
-
-###nm20151014 
-DIRS          = main neutral flip eldyn plasma dummygptl driver ###NOgptl
-###DIRS          = main neutral flip eldyn plasma driver  ###Yesgptl
+sw_grid = 2
+###nm20151113 DIRS          = main neutral eldyn flip plasma dummygptl driver
+###nm20151110 DIRS          = main neutral flip eldyn plasma dummygptl driver
+DIRS          = main neutral eldyn flip plasma dummygptl driver
 GPTL_INCFLAGS = -I../dummygptl
 GPTL_LDFLAGS  = -L../dummygptl -lgptl
 PPP_FLAGS     = --Fmodule=module_decomp --Free --comment --HaloSize=10
@@ -27,10 +27,8 @@ TARGETS = clean                   \
 
 # Dynamic / Conditional variables
 
-EXE           = $(CURDIR)/../bin/ipe_$(MACHINE)_$(COMPILER)_$(PARALLELISM).exe
+EXE           = $(CURDIR)/../bin/ipe_$(MACHINE)_$(COMPILER)_$(PARALLELISM)${sw_grid}.exe
 FFLAGS        = $(strip $(OPT_FLAGS) $(DEBUG_FLAGS) $(GPTL_INCFLAGS) $(GPTL_LDFLAGS))
-INCDIR        = $(CURDIR)/../include
-LIB           = $(CURDIR)/../lib/libipe.a
 PARALLEL_MAKE = $(MAKE) -j $(MAKEJOBS)
 PPP           = $(SMS)/bin/ppp
 SMS_INCFLAGS  = -I$(SMS)/include
@@ -128,15 +126,13 @@ endif
 ifeq ($(MACHINE),theia)
   GPTL_USE_GPTL = no
 ifndef MAKEJOBS
-#tmp20160315 4esmf  MAKEJOBS      = 16
-  MAKEJOBS      = 1
-endif
+  MAKEJOBS      = 16
+endif 
   ifeq ($(COMPILER),intel)
     MODCMD    = $(shell ./modcmd theia intel)
     FCP       = mpiifort
     FCS       = ifort
-#tmp20160315 4esmf    OPT_FLAGS = -O3 -fp-model precise
-    OPT_FLAGS = ###-O -fPIC -m64 -mcmodel=small -threads  -openmp  ###4esmf
+    OPT_FLAGS = -O3 -fp-model precise
     SMS       = /contrib/sms/legacy/SMSr825-intel
     ifeq ($(DEBUG),yes)
       DEBUG_FLAGS = -g -O0 -ftz -traceback -check bounds -fpe0
@@ -163,8 +159,6 @@ VARS =                                \
        FCP="$(FCP)"                   \
        FCS="$(FCS)"                   \
        FFLAGS="$(FFLAGS)"             \
-       INCDIR="$(INCDIR)"             \
-       LIB="$(LIB)"                   \
        MODCMD="$(MODCMD)"             \
        PARALLELISM="$(PARALLELISM)"   \
        PPP="$(PPP)"                   \
@@ -220,4 +214,3 @@ ipe:
 
 clean:
 	$(foreach x,$(DIRS),$(MAKE) -C $(x) clean &&) true
-	$(RM) $(LIB) $(INCDIR)/*
