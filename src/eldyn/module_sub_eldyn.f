@@ -72,7 +72,7 @@
       if ( utime==start_time ) then
         print *,'iday',iday, 'imo',imo,' iday_m',iday_m,' iyear',iyear
         print *,' kp',kp
-        print *,'By=',by,' Bz=',bz,' F107d=',f107d
+        print *,'IPE By=',by,' Bz=',bz,' F107d=',f107d
       end if
 
       call get_efield
