@@ -181,6 +181,9 @@
 !dbg20120313 
       REAL(KIND=real_prec), PUBLIC :: fac_BM
 
+! MPI communicator to be passed to SMS
+      integer, PUBLIC :: my_comm
+
       NAMELIST/IPEDIMS/NLP,NMP 
       NAMELIST/NMIPE/start_time &
      &,stop_time &
@@ -298,37 +301,81 @@
 
 
 !SMS$IGNORE BEGIN
-        OPEN(LUN_nmlt,FILE=INPTNMLT,ERR=222,IOSTAT=IOST_OP,STATUS='OLD')
-        OPEN(LUN_nmlt2,FILE=INPTNMLT2,ERR=222,IOSTAT=IOST_OP,STATUS='OLD')
+        OPEN(LUN_nmlt, FILE=INPTNMLT ,IOSTAT=IOST_OP,STATUS='OLD')
+        if(IOST_OP /= 0) then
+          print*,'Error opening file ',INPTNMLT,IOST_OP
+          stop
+        endif
+        OPEN(LUN_nmlt2,FILE=INPTNMLT2,IOSTAT=IOST_OP,STATUS='OLD')
+        if(IOST_OP /= 0) then
+          print*,'Error opening file ',INPTNMLT2,IOST_OP
+          stop
+        endif
         REWIND LUN_nmlt
-        READ(LUN_nmlt,NML=IPEDIMS  ,ERR=222,IOSTAT=IOST_RD)
+        READ(LUN_nmlt,NML=IPEDIMS,IOSTAT=IOST_RD)
+        if(IOST_RD /= 0) then
+          print*,'Error reading namelist IPEDIMS',IOST_RD
+          stop
+        endif
         REWIND LUN_nmlt
-        READ(LUN_nmlt,NML=NMIPE    ,ERR=222,IOSTAT=IOST_RD)
+        READ(LUN_nmlt,NML=NMIPE ,IOSTAT=IOST_RD)
+        if(IOST_RD /= 0) then
+          print*,'Error reading namelist NMIPE',IOST_RD
+          stop
+        endif
 !SMS$IGNORE END
 
 !SMS$INSERT lpHaloSize=1
 !SMS$INSERT mpHaloSize=2
 !dbg20160408 sms debug
 !SMS$INSERT MPI_COMM_IPE=MPI_COMM_WORLD
-!SMS$SET_COMMUNICATOR ( MPI_COMM_IPE )
+!SMS$INSERT MY_COMM=MPI_COMM_WORLD
+
+!!SMS$SET_COMMUNICATOR ( MPI_COMM_IPE )
+!SMS$ignore begin
+       print*,dh,NLP,NMP,lpHaloSize,mpHaloSize 
+!              0 170  80      1           2
+!SMS$ignore end
 !SMS$CREATE_DECOMP(dh,<NLP,NMP>,<lpHaloSize,mpHaloSize>: <NONPERIODIC, PERIODIC>)
 
-!SMS$SERIAL BEGIN
+!SMS$SERIAL(<IOST_RD,istat,OUT>) BEGIN
+        IOST_RD = 0
+        istat   = 0
         REWIND LUN_nmlt
-        READ(LUN_nmlt,NML=NMFLIP   ,ERR=222,IOSTAT=IOST_RD)
+        READ(LUN_nmlt,NML=NMFLIP  ,IOSTAT=IOST_RD)
+        if(IOST_RD /= 0) then
+          print*,'Error reading namelist NMFLIP',IOST_RD
+          go to 222
+        endif
         REWIND LUN_nmlt
-        READ(LUN_nmlt,NML=NMSWITCH ,ERR=222,IOSTAT=IOST_RD)
+        READ(LUN_nmlt,NML=NMSWITCH,IOSTAT=IOST_RD)
+        if(IOST_RD /= 0) then
+          print*,'Error reading namelist NMSWITCH',IOST_RD
+          go to 222
+        endif
         REWIND LUN_nmlt
-        READ(LUN_nmlt,NML=NMMSIS   ,ERR=222,IOSTAT=IOST_RD)
+        READ(LUN_nmlt,NML=NMMSIS  ,IOSTAT=IOST_RD)
+        if(IOST_RD /= 0) then
+          print*,'Error reading namelist NMMSIS',IOST_RD
+          go to 222
+        endif
         REWIND LUN_nmlt2
-        READ(LUN_nmlt2,NML=NMWEIM   ,ERR=222,IOSTAT=IOST_RD)
+        READ(LUN_nmlt2,NML=NMWEIM ,IOSTAT=IOST_RD)
+        if(IOST_RD /= 0) then
+          print*,'Error reading namelist NMWEIM',IOST_RD
+          go to 222
+        endif
         REWIND LUN_nmlt2
-        READ(LUN_nmlt2,NML=NMTIROS  ,ERR=222,IOSTAT=IOST_RD)
+        READ(LUN_nmlt2,NML=NMTIROS,IOSTAT=IOST_RD)
+        if(IOST_RD /= 0) then
+          print*,'Error reading namelist NMTIROS',IOST_RD
+          go to 222
+        endif
 
         OPEN(UNIT=LUN_LOG0,FILE=filename,STATUS='unknown',FORM='formatted',IOSTAT=istat)
         IF ( istat /= 0 ) THEN
           WRITE( UNIT=6, FMT=*)'ERROR OPENING FILE',filename
-          STOP
+          go to 222
         END IF
         WRITE(UNIT=LUN_LOG0, NML=NMIPE)
         WRITE(UNIT=LUN_LOG0, NML=NMFLIP)
@@ -336,22 +383,16 @@
         WRITE(UNIT=LUN_LOG0, NML=NMMSIS)
         WRITE(UNIT=LUN_LOG0, NML=NMWEIM)
         WRITE(UNIT=LUN_LOG0, NML=NMTIROS)
-
         WRITE(UNIT=LUN_LOG0,FMT=*)'NMP=',NMP,' NLP=',NLP,' NPTS2D=',NPTS2D
-
         WRITE(UNIT=LUN_LOG0,FMT=*)'real_prec=',real_prec,' int_prec=',int_prec
-
         CLOSE(LUN_LOG0)
+222     continue
 !SMS$SERIAL END
+        if(IOST_RD/=0 .or. istat/=0) then
+          stop
+        endif
         CLOSE(LUN_nmlt)
         CLOSE(LUN_nmlt2)
-222     IF ( IOST_OP /= 0 ) THEN
-          WRITE(UNIT=6, FMT=*) "OPEN NAMELIST FAILED!", IOST_OP
-          STOP
-        ELSEIF ( IOST_RD /= 0 ) THEN
-          WRITE(UNIT=6, FMT=*) "READ NAMELIST FAILED!", IOST_RD
-          STOP
-        ENDIF
 
 stop_time=start_time+duration
 

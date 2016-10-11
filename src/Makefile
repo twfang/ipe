@@ -1,7 +1,7 @@
 # IPE Makefile
 
 # NOTE: Build parallelism can be controlled from the command line by setting the
-#       MAKEJOBS variable, e.g.: MAKEJOBS=1 make zeus_intel_parallel
+#       MAKEJOBS variable, e.g.: MAKEJOBS=1 make theia_intel_parallel
 
 # Static / Unconditional / Default variables
 sw_grid = 2
@@ -19,15 +19,13 @@ TARGETS = clean                   \
           trillian_intel_serial   \
           trillian_pgi_parallel   \
           trillian_pgi_serial     \
-          zeus_intel_parallel     \
-          zeus_intel_serial       \
-          zeus_lahey_serial       \
           theia_intel_parallel    \
           theia_intel_serial
 
 # Dynamic / Conditional variables
 
-EXE           = $(CURDIR)/../bin/ipe_$(MACHINE)_$(COMPILER)_$(PARALLELISM)${sw_grid}.exe
+#EXE           = $(CURDIR)/../bin/ipe_$(MACHINE)_$(COMPILER)_$(PARALLELISM)${sw_grid}.exe
+EXE           = $(CURDIR)/../bin/ipe_$(MACHINE)_$(COMPILER)_$(PARALLELISM).exe
 FFLAGS        = $(strip $(OPT_FLAGS) $(DEBUG_FLAGS) $(GPTL_INCFLAGS) $(GPTL_LDFLAGS))
 PARALLEL_MAKE = $(MAKE) -j $(MAKEJOBS)
 PPP           = $(SMS)/bin/ppp
@@ -81,52 +79,12 @@ endif
   endif
 endif
 
-# zeus stanza
-
-ifeq ($(MACHINE),zeus)
-  GPTL_USE_GPTL = yes
-ifndef MAKEJOBS
-  MAKEJOBS      = 16
-endif
-  ifeq ($(COMPILER),intel)
-    MODCMD    = $(shell ./modcmd zeus intel)
-    FCP       = mpif90
-    FCS       = ifort
-    OPT_FLAGS = -O3 -fp-model precise
-    SMS       = /contrib/acs/SMS/legacy_r617/zeus-intel-mpt
-    ifeq ($(DEBUG),yes)
-      DEBUG_FLAGS = -g -O0 -ftz -traceback -check bounds -fpe0
-    endif
-    ifeq ($(PARALLELISM),parallel)
-      ifeq ($(GPTL_USE_GPTL),yes)
-        GPTL_INCFLAGS = -I/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/intel_mpi/include
-        GPTL_LDFLAGS  = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/intel_mpi/lib -lgptl
-      endif
-    endif
-    ifeq ($(PARALLELISM),serial)
-      ifeq ($(GPTL_USE_GPTL),yes)
-        GPTL_INCFLAGS = -I/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/intel_nompi/include
-        GPTL_LDFLAGS  = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/intel_nompi/lib -lgptl
-      endif
-    endif
-  endif
-  ifeq ($(COMPILER),lahey)
-    MODCMD = $(shell ./modcmd zeus lahey)
-    FCP    = mpif90
-    FCS    = lf95
-    SMS    = /contrib/acs/SMS/legacy_r617/zeus-lahey-mpt
-    ifeq ($(DEBUG),yes)
-      DEBUG_FLAGS = --chk -g --trap --trace --info
-    endif
-  endif
-endif
-
 # theia stanza
 
 ifeq ($(MACHINE),theia)
   GPTL_USE_GPTL = no
 ifndef MAKEJOBS
-  MAKEJOBS      = 16
+  MAKEJOBS      = 24
 endif 
   ifeq ($(COMPILER),intel)
     MODCMD    = $(shell ./modcmd theia intel)
@@ -192,15 +150,6 @@ trillian_pgi_parallel:
 
 trillian_pgi_serial:
 	$(MAKE) ipe MACHINE=trillian COMPILER=pgi PARALLELISM=serial
-
-zeus_intel_parallel:
-	$(MAKE) ipe MACHINE=zeus COMPILER=intel PARALLELISM=parallel
-
-zeus_intel_serial:
-	$(MAKE) ipe MACHINE=zeus COMPILER=intel PARALLELISM=serial
-
-zeus_lahey_serial:
-	$(MAKE) ipe MACHINE=zeus COMPILER=lahey PARALLELISM=serial
 
 theia_intel_parallel:
 	$(MAKE) ipe MACHINE=theia COMPILER=intel PARALLELISM=parallel

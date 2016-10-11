@@ -2,7 +2,7 @@
 
 # Control variables
 
-sw_grid=0
+sw_grid=2
 sw_neutral=1
 
 # Functions
@@ -71,28 +71,6 @@ runscript_trillian() {
   echo "echo 'ipe failed' && exit 23"
 }
 
-runscript_zeus() {
-
-  # Produce a script to run IPE on zeus.
-
-  echo "#!/bin/bash -x"
-  echo "#PBS -A $acct"
-  echo "#PBS -d $PWD"
-  echo "#PBS -j oe"
-  echo "#PBS -l procs=$taskreq"
-  echo "#PBS -l walltime=$IPETIME"
-  echo "#PBS -N $jobname"
-  echo "#PBS -o output.batch"
-  echo "#PBS -q $IPEQUEUE"
-  echo "#PBS -W umask=022"
-  echo "export $envvars"
-  echo "$($modcmd $machine $compiler)"
-  echo "module list"
-  test $parallelism == parallel && extra="mpiexec_mpt -np $tasks "
-  echo "time $extra./$(basename $exe) >output 2>&1 && echo 'ipe finished' && exit 0"
-  echo "echo 'ipe failed' && exit 23"
-}
-
 runscript_theia() {
 
   # Produce a script to run IPE on theia.
@@ -154,7 +132,7 @@ sms_sets=""
 # Set up some lists of valid options for error checking.
 
 compilers="cray intel lahey pgi"
-machines="trillian zeus yellowstone theia"
+machines="trillian yellowstone theia"
 parallelisms="parallel serial"
 
 # Set variables for command-line arguments.
@@ -184,7 +162,7 @@ test $tasks -lt 2 && taskreq=2 || taskreq=$tasks
 
 # Handle SMS compare_var option. For a compare_var run, execute e.g.
 #
-#  COMPARE_VAR=1,2 qsubipe zeus intel parallel 3
+#  COMPARE_VAR=1,2 qsubipe intel parallel 3
 #
 # for a 1-task-vs-2-task run. The final core request must be the sum of the two
 # numbers assigned to the COMPARE_VAR environment variable.
@@ -223,45 +201,18 @@ case $machine in
     esac
     ;;
 
-  # zeus stanza
-
-  "zeus")
-    compiler_check "intel lahey" $compiler $machine
-    setc IPEDATA  /scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/data
-    setc IPEQUEUE batch
-    setc IPETIME  00:30:00
-    setc IPEWIND  /scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/IPEdata/wind
-    acct=swpc
-    griddir=/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/grid
-    queue_cmd=qsub
-    case $sw_grid in
-      0) gridfile=$IPEDATA/ipe_grid                                               ;;
-      1) gridfile=$griddir/apex/GIP_apex_coords_global_lowres_new20120705         ;;
-      2) gridfile=$griddir/apex/GIP_apex_coords_global_lowres_new_2dynamo20120709 ;;
-      3) gridfile=$griddir/tldp/GIP_apex_coords_global_lowres_new_tilt20120709    ;;
-      *) fail "$0: Grid ID '$sw_grid' unknown."                                   ;;
-    esac
-    case $compiler in
-      intel)
-        envvars="MPI_BUFS_PER_HOST=2048 MPI_BUFS_PER_PROC=256"
-        ;;
-      lahey)
-        envvars="MPI_BUFS_PER_HOST=1024 MPI_BUFS_PER_PROC=128"
-        ipe_sets+=" -s nmswitch:mpstop=2"
-        ;;
-    esac
-    ;;
-
   # theia stanza
 
   "theia")
     compiler_check "intel pgi" $compiler $machine
-    setc IPEDATA  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/IPEdata/data
-#    setc IPEDATA  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/tmp20150730/trunk/run/1444997033_ipe_theia_intel_parallel_80
+#   setc IPEDATA  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/IPEdata/data
+    setc IPEDATA  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/tmp20150730/trunk/run/1459115822_ipe_theia_intel_parallel2_80
+#   setc IPEDATA  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/tmp20150730/trunk/run/1444997033_ipe_theia_intel_parallel_80
     setc IPEQUEUE debug
-    setc IPETIME  00:30:00
+    setc IPETIME  00:05:00
     setc IPEWIND  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/IPEdata/wind
     acct=swpc
+    acct=nim
     griddir=/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/grid
     queue_cmd=qsub
     case $sw_grid in
@@ -296,8 +247,9 @@ test "$parallelism" = "parallel" && rundir+="_$tasks"
 mkdir $rundir || fail
 echo Created run directory: $rundir
 inp=IPE.inp
+inpSw=IPEsw.inp
 smsnl=SMSnamelist
-for x in $exe coef* GPTLnamelist $inp load_balance_groups1 $smsnl wei96.cofcnts; do
+for x in $exe coef* GPTLnamelist $inp $inpSw load_balance_groups1 $smsnl wei96.cofcnts; do
   cp $x $rundir || fail
 done
 linksafe $gridfile $rundir/ipe_grid
