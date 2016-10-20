@@ -66,29 +66,18 @@
 
 !SMS$PARALLEL(dh, lp, mp) BEGIN
       plasma_3d_old = plasma_3d
-
-
-
-
-
-
 !nm20160420: store special pole values
-!NOTE! assume that only mype=0 has all the necessary values to calculate poleVal
-!this assumption does not work if the decomposition is changed.
-      if(mype==0) then
-         do i=JMIN_IN(1),JMAX_IS(1)
-            DO jth=1,ISTOT
-               poleVal(i,jth) = SUM( plasma_3d(i,1,1:NMP,jth) ) / REAL(NMP)
-            end do !jth
-         end do !i
-      end if!mype=
-!
+!SMS$SERIAL BEGIN
+      do i=JMIN_IN(1),JMAX_IS(1)
+        DO jth=1,ISTOT
+          poleVal(i,jth) = SUM( plasma_3d(i,1,1:NMP,jth) ) / REAL(NMP)
+        end do !jth
+      end do !i
+!SMS$SERIAL END
 
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-1")
       ret = gptlstart ('exchange_barrier')
 !sms$insert      call ppp_barrier(status)
-
-
 
       ret = gptlstop ('exchange_barrier')
       ret = gptlstart ('EXCHANGE')

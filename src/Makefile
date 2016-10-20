@@ -7,7 +7,7 @@
 sw_grid = 2
 ###nm20151113 DIRS          = main neutral eldyn flip plasma dummygptl driver
 ###nm20151110 DIRS          = main neutral flip eldyn plasma dummygptl driver
-DIRS          = main neutral eldyn flip plasma dummygptl driver
+DIRS          = main neutral eldyn flip plasma driver
 GPTL_INCFLAGS = -I../dummygptl
 GPTL_LDFLAGS  = -L../dummygptl -lgptl
 PPP_FLAGS     = --Fmodule=module_decomp --Free --comment --HaloSize=10
@@ -24,8 +24,8 @@ TARGETS = clean                   \
 
 # Dynamic / Conditional variables
 
-#EXE           = $(CURDIR)/../bin/ipe_$(MACHINE)_$(COMPILER)_$(PARALLELISM)${sw_grid}.exe
-EXE           = $(CURDIR)/../bin/ipe_$(MACHINE)_$(COMPILER)_$(PARALLELISM).exe
+EXE           = $(CURDIR)/../bin/ipe_$(MACHINE)_$(COMPILER)_$(PARALLELISM)${sw_grid}.exe
+#EXE           = $(CURDIR)/../bin/ipe_$(MACHINE)_$(COMPILER)_$(PARALLELISM).exe
 FFLAGS        = $(strip $(OPT_FLAGS) $(DEBUG_FLAGS) $(GPTL_INCFLAGS) $(GPTL_LDFLAGS))
 PARALLEL_MAKE = $(MAKE) -j $(MAKEJOBS)
 PPP           = $(SMS)/bin/ppp
@@ -82,7 +82,7 @@ endif
 # theia stanza
 
 ifeq ($(MACHINE),theia)
-  GPTL_USE_GPTL = no
+  GPTL_USE_GPTL = yes
 ifndef MAKEJOBS
   MAKEJOBS      = 24
 endif 

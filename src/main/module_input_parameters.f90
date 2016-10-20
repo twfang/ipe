@@ -332,10 +332,6 @@
 !SMS$INSERT MY_COMM=MPI_COMM_WORLD
 
 !!SMS$SET_COMMUNICATOR ( MPI_COMM_IPE )
-!SMS$ignore begin
-       print*,dh,NLP,NMP,lpHaloSize,mpHaloSize 
-!              0 170  80      1           2
-!SMS$ignore end
 !SMS$CREATE_DECOMP(dh,<NLP,NMP>,<lpHaloSize,mpHaloSize>: <NONPERIODIC, PERIODIC>)
 
 !SMS$SERIAL(<IOST_RD,istat,OUT>) BEGIN

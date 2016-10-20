@@ -454,26 +454,13 @@ ELSE IF ( lp_t0(ihem,1)==-999 ) THEN !missing_value in module_find_nei...
    if(sw_debug)print"('mype=',i3,'subInt:specialPole:mp=',i3,'lp=',i3,'mpt0=',2i3,'lpt0=',i4,i2)",mype,mp,lp,mp_t0(ihem,1:2),lp_t0(ihem,1:2)
    !SMS$IGNORE end
 
-!CAUTION! poleVal is available ONLY at mype=0 
-!this assumption does not work if the decomposition is changed.
-if(mype/=0)then
-!SMS$IGNORE begin
-print*,mype,utime,'!STOP! INVALID mype for specialPole!'
-!SMS$IGNORE end
-STOP
-end if
-
+!CAUTION! poleVal is calculated (in module_sub_plasma.f90) ONLY at mype=0 but is broadcast to all processors.
 !nm20140630 temporary solution for pole
    flux_tube_loop: DO i=JMIN_IN(lp),JMAX_IS(lp)
       i1d=i-JMIN_IN(lp)+1
 
       jth_loop6: DO jth=1,iT
          IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop6
-
-!dbg20160404: does not work with parallel as 1:NMP values are not accessible...
-!t         plasma_1d(jth,i1d) = SUM( plasma_3d_old(i,lp,1:NMP,jth) ) / REAL(NMP)
-!t         plasma_1d(jth,i1d) = plasma_3d_old(i,lp,mp,jth)
-
 !nm20160420 special 3 point pole interpolation
 x(1)=zero
 x(0)=theta_t0(ihem)
