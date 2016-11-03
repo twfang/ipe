@@ -240,3 +240,4 @@ ipe:
 clean:
 	$(foreach x,$(DIRS),$(MAKE) -C $(x) clean &&) true
 	$(RM) $(LIB) $(INCDIR)/*
+
