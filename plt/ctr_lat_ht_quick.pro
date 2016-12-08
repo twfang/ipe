@@ -13,12 +13,12 @@
 , VarType_min $;=8L
 , VarType_max $;=8L ;PAR-1
 , VarType_step $;=4L
-,n_read_max $;
-, input_DIR0, TEST, TEST1, TEST2, glon_deg2D, rundir  ;$
-;---
+,n_plt_max $;
+, input_DIR0, TEST, TEST1, TEST2, glon_deg2D, rundir  $
+,n_plt_min
 
 
-n_readInit=0L;default
+;n_readInit=0L;default
 
 
 sw_arw_vpara=0
@@ -40,7 +40,7 @@ lpmax_perp_trans=149
 for i=mpstart, mpstop  do print,' mp', (i+1),' LT',lt_hr[i]
 
 HTmin=90.  ;min(yy)   ;75.   ;400. ;
-HTmax=400.;700.;190. ;1.000000E+03;700.; 
+HTmax=600.;2000. 
 ; plot range
 if ( title_hemi eq 'NH' ) then begin
   gLATmax=+83.;+90.;-10.;
@@ -49,8 +49,8 @@ endif else if ( title_hemi eq 'SH' ) then begin
   gLATmax=-55.;+90.;-10.;
   gLATmin=-85.;+50.;-gLATmax;-27.; 
 endif else if ( title_hemi eq 'glb' ) then begin
-  gLATmax=+60.;-10.;
-  gLATmin=-gLATmax;-27.; 
+  gLATmax=+60.;+90.
+  gLATmin=-gLATmax;
 endif else if ( title_hemi eq 'eq' ) then begin
   gLATmax=-15.;+90.;-10.;
   gLATmin=-33.;-gLATmax;-27.;
@@ -110,16 +110,17 @@ VarTitle=[ $
 ;tmp20121128 temporary o+ is assigned to plot_z(6)(n+) instead of 3 for faster debug molecular ions
 'O+' $;,'H+' $
 ;,'He+'$
-,'Un'$
-,'O+','NO+','O2+','N2+','O+2D','O+2P' $
+,'H+'$
+;,'Un'$
+,'He+','NO+','O2+','N2+','O+2D','O+2P' $
 ,'Vo+' $
 ;'o+flux'$
 ;'hr4',$
 ]
 
 VarUnit=[ $
-;'[log!D10!N cm-3]',$
- '[10^12 m-3]',$
+'[log!D10!N cm-3]',$
+; '[10^12 m-3]',$
 '[K]', $ ;Te
  '[m/s]', $ ;vo+; Ti;'[K]', $ ;Ti
  '[10^12 m-3]' $;,'[log!D10!N cm-3]' ;,'[log!D10!N cm-3]'$
@@ -131,7 +132,7 @@ VarUnit=[ $
 ,'[m/s]'$
 ]
 
-if ( n_read eq n_readInit ) then begin
+if ( n_read eq n_plt_min ) then begin
 X_Title='MAGNETIC LATITUDE [deg.]'
 Y_Title='ALTITUDE [km]'
 endif else begin
@@ -153,15 +154,16 @@ Y=dblarr(4)
 if ( sw_dif eq 0 ) then begin
 
    ARY_min0=[ $
-0.,$;1.3,$                
+2.5,$;1.3,$                
 ;3.2,$ ;3.,$
 ;178.8,$
 154.,$
 154.,$;-50., $; 178.8, $  ;dbg20140815
 ;0.,0.,0.,$
   0., $ ;0.,
--50., $
- -1.24 ,0.,0.,0.,0.,0., $ ;<190km
+;-50., $
+0., $
+ 0. ,0.,0.,0.,0.,0., $ ;<190km
 ; 1.5 ,0.,0.,0.,0.,0., $ ;<700km
 ;        ,  178.8        ,  178.8  $      ;To+;Te
 ;        ,  -1.0E+13  $;flux [cm2 s-1]
@@ -169,15 +171,16 @@ if ( sw_dif eq 0 ) then begin
          ] 
 
 ARY_max0=[ $
-2.38,$;4.5,$;6.1,$ ;7.,$
+6.5,$;4.5,$;6.1,$ ;7.,$
 ;4.,$
 ;800. ,$
 6083. ,$
 6083.,$;+50. , $ ;800. ,$  ;dbg20140815
 ;6.1, 3.5,3.5,$
-2.377  , $ ;3.5,
-+50. , $
-3.5, 3.5, 3.5,3.5,5.3,5.3, $  ;<190km
+6.4  , $ ;3.5,
+;+50. , $
+4. , $
+4., 3.5, 3.5,3.5,5.3,5.3, $  ;<190km
 ;6.0, 5.3, 5.3,5.3,5.3,5.3, $ ;<700km
 ; 7., 7., 7.  $ ;densities
 ;        ,  3600. ,   3600.  $    ;To+,Te
@@ -245,7 +248,7 @@ endfor  ;lp=lp_strt,lp_stop do begin
 
 
 for VarType=VarType_min , VarType_max,  VarType_step   do begin
-if (n_read eq n_readInit ) then print,'vartype',vartype
+if (n_read eq n_plt_min ) then print,'vartype',vartype
 
 if ( vartype eq 0) OR (vartype eq 3 ) then $
   factor_value = 1.0E-12 $
@@ -253,7 +256,7 @@ else $;if vartype eq 5 then $
   factor_value = 1.0
 
 N_LDCT=39;70;5;39;33
-if ( vartype eq 2 OR vartype eq 4 ) then N_LDCT=70
+;if ( vartype eq 2 OR vartype eq 4 ) then N_LDCT=70
 
 ;if ( VarType eq 2 ) then N_LDCT=69
 ;print, 'n_ldct', n_ldct
@@ -262,11 +265,11 @@ LOADCT, N_LDCT
 
 if ( sw_debug eq 1 ) then  print,'plotting ',VarTitle(VarType)
 MainTitle=VarTitle(VarType)+' '+VarUnit(VarType)
-FILE_DISP=plot_DIR+'quick/'+TEST+'_'+rundir+'_mp'+STRTRIM(STRING( (mp+1), FORMAT='(i3)'),1)+VarTitle(VarType)+'_'+title_res+'.'+'quick.'+device_type
-if (n_read eq n_readInit ) then  print, file_disp
+FILE_DISP=plot_DIR+TEST+'_'+rundir+'_mp'+STRTRIM(STRING( (mp+1), FORMAT='(i3)'),1)+VarTitle(VarType)+'_'+title_res+'.'+'quick.'+device_type
+if (n_read eq n_plt_min ) then  print, file_disp
 if ( sw_debug eq 1 ) then  print, file_disp
 
-if (n_read eq n_readInit ) then begin
+if (n_read eq n_plt_min ) then begin
 if ( device_type eq 'ps' ) then begin
 
 
@@ -298,7 +301,8 @@ if ( sw_debug eq 1 ) then  print, 'after',!P.BACKGROUND
 ;!Y.MARGIN=[4,10] ;bottom,top
 
 ;  !P.MULTI=[0,4,4,0,1] ;plot goes vertically downward 
-  !P.MULTI=[0,6,6,0,0] ;plot goes vertically downward 
+  !P.MULTI=[0,4,5,0,0] ;plot goes vertically downward 
+;  !P.MULTI=[0,6,6,0,0] ;plot goes vertically downward 
 ;  !P.MULTI=[0,2,2,0] ;plot goes horizontally from left to right
 ;  ;1:# of plot columns
 ;  ;2:# of rows
@@ -308,7 +312,7 @@ if ( sw_debug eq 1 ) then  print, 'after',!P.BACKGROUND
 ;t  char_size = 1.5
 
 endif                           ;if ( device_type eq 'ps' ) then begin
-endif                           ; (n_read eq n_readInit ) then begin
+endif                           ; (n_read eq n_plt_min ) then begin
 
 LOADCT, 0;N_LDCT
 
@@ -391,8 +395,8 @@ for lp=lp_strt , lp_stop do begin
     for ipts=istrt,istop,istep   do begin
 
 
-if (lp eq 56) AND (z_km[ipts] ge 100.) AND (z_km[ipts] le 250.) then $
-print,ipts,(ipts-(in2d[lp]-1)+1),mlat_deg[ipts],z_km[ipts],plot_z[n_read,VarType, 0,ipts]
+;d if (lp eq 56) AND (z_km[ipts] ge 100.) AND (z_km[ipts] le 250.) then $
+;d print,ipts,(ipts-(in2d[lp]-1)+1),mlat_deg[ipts],z_km[ipts],plot_z[n_read,VarType, 0,ipts]
 
 
 ;dYY=(z_km[ipts+1]-z_km[ipts] )*1.0 ;
@@ -430,7 +434,7 @@ if ( VarType eq 0 ) OR ( VarType ge 3 ) then begin
      Value= ALOG10( 0.1 )
 
 ;20131204debug
-Value=plot_z[n_read,VarType, 0,ipts] * factor_value
+;Value=plot_z[n_read,VarType, 0,ipts] * factor_value
 
 
 endif else if ( VarType eq 1 ) or ( VarType eq 2 ) then $ ;Te/i
@@ -588,9 +592,7 @@ endif ;( sw_arrow_exb ) then begin
 
 
 
-;20140121 
-print,'n_read=', n_read ,' n_read_max=', n_read_max
-  if ( n_read eq n_read_max-1 ) then begin
+  if ( n_read eq n_plt_min ) then begin
 ;Draw_Colorbar, ARY_min0(VarType), ARY_max0(VarType), N_LVLs $
 ;, col_min, col_max, X1, Y1, dX1, dY1, X_SIZE, Y_SIZE, VarType
 charsize_colorbar=3.0
@@ -605,7 +607,7 @@ COLORBAR, BOTTOM=bottom, CHARSIZE=charsize_colorbar, COLOR=color, DIVISIONS=divi
         , NCOLORS=ncolors,TITLE=title,VERTICAL=vertical,TOP=top,RIGHT=right $
         , MINOR=minor, RANGE=range, FONT=font, TICKLEN=ticklen $
         , _EXTRA=extra, INVERTCOLORS=invertcolors, TICKNAMES=ticknames
-endif ;( n_read eq n_read_max-1 ) then begin
+endif ;( n_read eq n_plt_min ) then begin
 
 ;LT
 ;xyouts, (X0-2.)/X_SIZE, (Y0+dY+2.45)/Y_SIZE, STRTRIM(STRING( zthr, FORMAT='(F5.2)'),1)+'LT'  $
@@ -619,7 +621,7 @@ print,'MIN',ary_minz,' MAX',ary_maxz
 
 
 ;20140121 
-  if ( n_read eq n_read_max-1 ) then begin
+  if ( n_read eq n_plt_min ) then begin
 x_xyouts=0.8
 y_xyouts=0.1
 dy_xyo=0.03
@@ -631,7 +633,7 @@ xyouts, 0.5, 0.070 $
 ;, TEST+'_ipe_'+TEST2+'_'+TEST1 $
 , input_DIR0 $
 , charsize=0.85, charthick=0.8, /norm, /noclip
-endif ;( n_read eq n_read_max-1 ) then begin
+endif ;( n_read eq n_plt_min ) then begin
 
 
 ;STOP
@@ -647,7 +649,9 @@ else if ( device_type eq 'png' ) then begin
 
   if ( sw_anim eq 1 ) then FILE_DISP=plot_DIR+'anim/'+STRTRIM( string( (n_read+1), FORMAT='(i3)'), 1)+'.'+device_type
 
-  if ( n_read eq n_read_max-1 ) AND (sw_output2file eq 1 ) then  output_png, FILE_DISP
+
+print,'n_read=',n_read,' n_plt_max=',n_plt_max
+  if ( n_read eq n_plt_max ) AND (sw_output2file eq 1 ) then  output_png, FILE_DISP
 endif
 
 

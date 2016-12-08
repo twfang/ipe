@@ -40,7 +40,7 @@ lpmax_perp_trans=149
 for i=mpstart, mpstop  do print,' mp', (i+1),' LT',lt_hr[i]
 
 HTmin=90.  ;min(yy)   ;75.   ;400. ;
-HTmax=800.;700.;190. ;1.000000E+03;700.; 
+HTmax=2000. ;1.000000E+03;700.; 
 ; plot range
 if ( title_hemi eq 'NH' ) then begin
   gLATmax=+90.;+90.;-10.;
@@ -49,8 +49,8 @@ endif else if ( title_hemi eq 'SH' ) then begin
   gLATmax=-20.;+90.;-10.;
   gLATmin=-35.;+50.;-gLATmax;-27.; 
 endif else if ( title_hemi eq 'glb' ) then begin
-  gLATmax=+50.;90.;-10.;
-  gLATmin=-gLATmax;-27.; 
+  gLATmax=+90.
+  gLATmin=-gLATmax 
 endif else if ( title_hemi eq 'eq' ) then begin
   gLATmax=-15.;+90.;-10.;
   gLATmin=-33.;-gLATmax;-27.;
@@ -119,7 +119,10 @@ VarUnit=[ $
 '[K]', $ ;Te
 ;'[K]', $ ;Ti
 '[m/s]', $ ;vo+ ;20141015
-'[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]' $
+'[log!D10!N cm-3]' $ ;3
+,'[log!D10!N cm-3]' $ ;4
+,'[log!D10!N cm-3]' $ ;5 he+
+,'[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]','[log!D10!N cm-3]' $
 ;'[m/s]',$
 ;,'[cm2 s-1]' $
 ;'[J/kg/s]', $;hrate
@@ -147,9 +150,9 @@ if ( sw_dif eq 0 ) then begin
 170.,$
 ;170., $
 -400., $
-0., $ ;o+
-0., $ ;h+
-0., $ ;he+
+0., $ ;3o+
+0., $ ;4h+
+0., $ ;5he+
 0., $ ;n+
 0., $ ;no+
 0., $ ;o2+
@@ -166,9 +169,9 @@ ARY_max0=[ $
 1400. ,$
 ;1400. ,$
 +400. ,$
-1.28, $ ;o+
-1.9E-3, $ ;h+
-5.7E-4, $ ;he+
+1.28, $ ;3o+
+1.9E-3, $ ;4h+
+4., $ ;5he+; 5.7E-4, $ ;5he+
 8.7E-3, $ ;n+
 2.5E-2, $ ;no+
 5.0E-3, $ ;o2+
@@ -408,6 +411,10 @@ ColorData=(col_max-col_min)*(Value-ARY_min0(VarType))/(ARY_max0(VarType)-ARY_min
 ;061904: for fancy looking
 if ( ColorData lt col_min ) then  ColorData=col_min
 if ( ColorData gt col_max ) then  ColorData=col_max
+
+
+;dbg20160921
+;if lp ge 21 and lp le 24 then ColorData=0.
 
 ;091604: debug
 ;091604: if ( (ipts MOD 2)  eq 0 ) then $

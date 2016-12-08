@@ -3,18 +3,20 @@
 pro plt_prfl_ht
 fac_window=1.
 sw_dif=0
-sw_output2file=0L;1L
+sw_output2file=1L;1L
 TEST0=$
 ;'20150317_60sFailed'
 ;'20150317_30s'
 ;'20130317_disconGrid'
-'20160727fricHeat1'
+;'20160727fricHeat1'
+'20160916eldyn'
 HOME_DIR=$
 ;'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/r336.2.2/trunk/run'
 ;'/home/Naomi.Maruyama/wamns/'+TEST0+'/trunk/run'
 ;'/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/30s/run'
 ;'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/tmp20151117/trunk/run'
-'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/r336.2.2/trunk/run/'
+;'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/r336.2.2/trunk/run/'
+'/scratch3/NCEPDEV/swpc/save/Tzu-Wei.Fang/IPE/trunk_electrodynamics_44514_feedback/run/'
 ;CHANGE!!!
 TEST2='S'
 TEST1=$
@@ -22,7 +24,9 @@ TEST1=$
 ;14951';112509';28822'
 ;TEST-->rundir
 rundir=$
-'ipe_'+TEST2+'_'+TEST1
+;'ipe_S_sw1_0to4UT'
+'ipe_S_sw0_onlyEd1_0to4UT'
+;'ipe_'+TEST2+'_'+TEST1
 ;'ipe_80_17352dbg' ;lp=44
 ;'ipe_80_7459dbg' ;lp=48
 ;'1455923474_ipe_theia_intel_serial2' ;60s
@@ -57,13 +61,15 @@ FLDIM0=LONARR(n_file)
 ;  FLDIM0     =[ 313L ] ;<--read from the 167 file! lp=48
 ;endif
 ;mp=10-1, lp=14-1
-lp_title    =7-1L
-mlat_title  ='82.4001';76.2';66.13496' ;<--read from 167 file! =GL/!PI*180. lp=48
-FLDIM0     =[ 1115L ] ;<--read from the 167 file! lp=48
+lp_title    =149-1L
+mlat_title  ='5.84';82.4001';76.2';66.13496' ;<--read from 167 file! =GL/!PI*180. lp=48
+;FLDIM0     =[ 1115L ] ;<--read from the 167 file! lp=48
+FLDIM0     =[ 65L ] ;<--read from the 167 file! lp=48
 
 sw_debug=0L
 plot_DIR=$
-HOME_DIR+'../fig/'
+'/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/eldyn/fig/'+rundir+'/prfl/'
+;HOME_DIR+'../fig/'
 ;'/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/30s/fig/'
 ;'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/fig/'+TEST0+'/'
 ;"~/wamns/fig/prfl/"
@@ -95,7 +101,7 @@ n_read=-1L
    while ( EOF(LUN[0]) eq 0 ) do begin
 n_read=n_read+1
 
-if n_read eq 1 then STOP
+;if n_read eq 1 then STOP
 
      plot_x[*,*,*,*] =-999999999.999999
      for i = 0, n_file-1  do begin

@@ -10,13 +10,13 @@ PRO  prfl_ht $
 print,'prfl_ht',sw_output2file ;debug
 
 y_min =90.;1.0E+2; 90.
-y_max =1600.;1300.;2.E+4;800.
+y_max =160.;1600.;1300.;2.E+4;800.
 if ( sw_debug eq 1 ) then  print, "y_max=", y_max
 
 if ( sw_fort eq 168L ) then begin
 ;x_min=[-15.,   +100.,     0. ,     0.]
 ;x_min=[-1.,    +400.,     0. ,     -25.]
-x_min=[-1.,    +150.,     0. ,     -30.]
+x_min=[-10.,    +150.,     0. ,     -30.]
 ;x_max=[ 7.,  +2400.,  +1000. ,    +25.]
 x_max=[ 6.,  +3500.,  +350. ,    +25.]
 ;x_max=[+6.1,  +17000.,  +1600. ,    +30.] ;dbg20141208

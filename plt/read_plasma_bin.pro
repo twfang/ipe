@@ -1,6 +1,7 @@
 pro read_plasma_bin,LUN,UT_hr, XIONN_m3,XIONV_ms1,TE_TI_k,VEXB,sw_debug $
 ,sw_3DJ,je_3d,sw_hr,hrate, sw_dif, sw_lun $
-,NMP_in
+,NMP_in, sunlons1 $
+, sza_rad
 
 
 
@@ -13,12 +14,12 @@ print,' rec#',record_number,' UThr=',UT_hr,' UTs=', UT_sec
 
 size_result=size(XIONN_m3)
 if ( sw_debug eq 1 ) then  $
-   print,size_result
+   print,'read_plasma: size=',size_result
 
 NPTS2D=size_result[2]
 NMP=size_result[3]
 if ( sw_debug eq 1 ) then  $
-  print, 'NMP',NMP
+  print, 'read_plasma: NMP',NMP
 if ( NMP_in eq 1 ) then NMP=NMP_in
 dum=fltarr(NPTS2D,NMP)
 
@@ -26,7 +27,7 @@ dum=fltarr(NPTS2D,NMP)
 size_result=size(VEXB)
 NLP=size_result[2]
 if ( sw_debug eq 1 ) then  $
-  print, 'NLP=',NLP
+  print, 'read_plasma:NLP=',NLP
 
 if ( sw_lun[2] eq 1 ) then begin
    jth=0                        ;o+
@@ -36,7 +37,7 @@ if ( sw_lun[2] eq 1 ) then begin
 
 XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
 if sw_debug eq 1 then  begin
-  print, 'o+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
+  print, 'read_plasma:o+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
 
 ;dbg20151116 detect nan
   indicesN = where( dum eq !values.f_nan, countN )
@@ -130,11 +131,13 @@ endif                           ;   if ( sw_lun[8] eq 1 ) then begin
         indicesN = where( dum eq !values.f_nan, countN )
         indicesZ = where( dum eq 0.0, countZ )
         if countN ne 0 then begin
-           print, 'no+ Nan',countN,indicesN
+           print, '!STOP! INVALID NO+ Nan',countN,indicesN
+;dbg20161128 stop commented out
            STOP
         endif
         if countZ ne 0 then begin
-           print, 'no+ Zero',countZ,indicesZ
+           print, '!STOP! INVALID NO+ Zero',countZ,indicesZ
+;dbg20161128 stop commented out
            STOP
         endif
      endif                      ;sw_debug eq 1 then  begin
@@ -251,6 +254,19 @@ if ( sw_dif eq 0 ) then begin
    endif ;( sw_lun[9] eq 1 ) then begin
 endif
 
+;sza
+;if sw_debug eq 1 then  print,'sza sw_lun18', sw_lun[18]
+;print, 'size',size(dum)
+   if ( sw_lun[18] eq 1 ) then begin
+      readu, LUN[18], dum
+if sw_debug eq 1 then  print, 'dum sza_rad MAX=',MAX(dum)*180./!PI, MIN(dum)*180./!PI
+      sza_rad[0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
+      ;if sw_debug eq 1 then  $
+;print, 'sza_rad=',sza_rad[60,0]*180./!PI
+   endif ;( sw_lun[18] eq 1 ) then begin
+
+
+
 if ( sw_dif eq 0 ) then begin
    dum=fltarr(NLP,NMP)
    if ( sw_lun[5] eq 1 ) then begin
@@ -294,7 +310,12 @@ jth=1
    endif                        ;( sw_lun[9] eq 1 ) then begin
 endif
 
-
+;sunlons
+if ( sw_lun[17] eq 1 ) then begin
+  readf, LUN[17],sunlons1
+  print,'sunlons1=', sunlons1
+endif
+  
 
 if ( sw_3DJ eq 1 ) then begin
      readf, LUN[6], je_3d
@@ -323,6 +344,7 @@ endif
 ;     readf, LUN[4], dum
 ;XIONN_m3[jth,0:NPTS2D-1,mp]=dum[0:NPTS2D-1]
 ;if sw_debug eq 1 then  print, 'XIONN_m3=',jth,XIONN_m3[jth,60,mp]
+
 
 
 END ;PRO read_bin
