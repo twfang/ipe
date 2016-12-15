@@ -1,6 +1,7 @@
 &ipedims
-  nlp=93
+  nlp=170
   nmp=80
+  npts2d=44514
 /
 &nmflip
   colfac_flip=1.7

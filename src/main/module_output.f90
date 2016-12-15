@@ -25,10 +25,14 @@
         SUBROUTINE output ( utime )
         USE module_IO,ONLY: PRUNIT
         IMPLICIT NONE
+        include "gptl.inc"
+        integer ret
 !------------------------
         INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]
 
+        ret = gptlstart ('inside_output')
         WRITE(UNIT=PRUNIT,FMT="('uts=',i7)") utime
+        ret = gptlstop  ('inside_output')
 
         END SUBROUTINE output
 !---------------------------

@@ -1,4 +1,5 @@
-      MODULE module_init_plasma_grid
+MODULE module_init_plasma_grid
+IMPLICIT NONE
 
       CONTAINS
 !---------------------------
@@ -6,26 +7,25 @@
 SUBROUTINE init_plasma_grid ( )
 USE module_read_plasma_grid_global,only: read_plasma_grid_global
 USE module_precision
-USE module_IPE_dimension,ONLY: NMP,NLP,ISTOT
-USE module_physical_constants,ONLY: earth_radius, pi, G0,zero
-USE module_input_parameters,ONLY: sw_debug,sw_grid,parallelBuild,mpHaloSize
-USE module_FIELD_LINE_GRID_MKS,ONLY: Pvalue &
-&, JMIN_IN,JMAX_IS, r_meter2D, plasma_grid_GL,plasma_grid_3d,apexD,apexE,Be3,plasma_grid_Z &
-&, ISL,IBM,IGR,IQ,IGCOLAT,IGLON,east,north,up,mlon_rad,dlonm90km &
-&, apexDscalar,l_mag
+!sms$insert USE module_prepPoleVal,ONLY: prepPoleVal
+USE module_IPE_dimension      ,ONLY: NMP,NLP,ISTOT
+USE module_physical_constants ,ONLY: earth_radius, pi, G0,zero
+USE module_input_parameters   ,ONLY: sw_debug,sw_grid,parallelBuild,mpHaloSize,nprocs
+USE module_FIELD_LINE_GRID_MKS,ONLY: Pvalue,JMIN_IN,JMAX_IS, r_meter2D      &
+&, plasma_grid_GL,plasma_grid_3d,apexD,apexE,Be3,plasma_grid_Z,ISL,IBM,IGR  &
+& ,IQ,IGCOLAT,IGLON,east,north,up,mlon_rad,dlonm90km,apexDscalar,l_mag
 !USE module_cal_apex_param,ONLY:cal_apex_param
-IMPLICIT NONE
 
 INTEGER (KIND=int_prec)           :: i,mp,lp,in,is
 REAL    (KIND=real_prec)          :: sinI
 INTEGER (KIND=int_prec),parameter :: sw_sinI=0  !0:flip; 1:APEX
 INTEGER (KIND=int_prec)           :: midpoint
 !local
-      REAL (KIND=real_prec) :: ufac
-      REAL (KIND=real_prec),DIMENSION(3) :: bhat !eq(3.14)
-      REAL (KIND=real_prec),DIMENSION(3)  :: a,b,c      
+      REAL    (KIND=real_prec)              :: ufac
+      REAL    (KIND=real_prec),DIMENSION(3) :: bhat !eq(3.14)
+      REAL    (KIND=real_prec),DIMENSION(3) :: a,b,c      
 !dbg20130814
-      INTEGER (KIND=int_prec)           :: ii
+      INTEGER (KIND=int_prec)               :: ii
 
 
 
@@ -226,6 +226,9 @@ endif !(mp==1) then
 
 !SMS$PARALLEL END
 
+!sms$insert call prepPoleval
+
+
      mlon_rad(:) = zero
 !nm20160419
 !     DO mp = 1,NMP+1
@@ -234,5 +237,6 @@ endif !(mp==1) then
 print*,'mp=',mp,'mlon=',mlon_rad(mp)
      END DO
 
-        END SUBROUTINE init_plasma_grid
-      END MODULE module_init_plasma_grid
+END SUBROUTINE init_plasma_grid
+
+END MODULE module_init_plasma_grid

@@ -16,5 +16,5 @@ $(EXE): driver_ipe.o $(OBJS)
 ifeq ($(PARALLELISM),parallel)
 	$(MODCMD) && $(FCP) $(FFLAGS) $(INCS) -o $@ $^ $(SMS_INCFLAGS) $(SMS_LDFLAGS)
 else
-	$(MODCMD) && $(FCS) $(FFLAGS) $(INCS) -o $@ $^
+	$(MODCMD) && $(FCP) $(FFLAGS) $(INCS) -o $@ $^ $(GPTL_LDFLAGS)
 endif

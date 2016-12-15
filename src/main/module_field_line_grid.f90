@@ -43,6 +43,11 @@
          REAL(KIND=real_prec) :: GLON   !.. geographic longitude [rad]
       END TYPE plasma_grid
       INTEGER (KIND=int_prec) :: ISL=1,IBM=2,IGR=3,IQ=4,IGCOLAT=5,IGLON=6
+      INTEGER (KIND=int_prec) :: sendCount
+!SMS$DISTRIBUTE(dh,,2) BEGIN
+      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC :: plasma_mp (:,:,:  )!MaxFluxTube,MPendMax,ISTOT
+!SMS$DISTRIBUTE END
+      REAL(KIND=real_prec),ALLOCATABLE,PUBLIC :: plasma_mpG(:,:,:,:)!MaxFluxTube,MPendMax,ISTOT,Ntot G means Global
 !SMS$DISTRIBUTE(dh,2,3) BEGIN
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: plasma_grid_3d(:,:,:,:)!MaxFluxTube,NLP,NMP,6
       REAL(KIND=real_prec),ALLOCATABLE,PUBLIC,TARGET :: plasma_3d     (:,:,:,:)!MaxFluxTube,NLP,NMP,ISTOT
@@ -90,7 +95,8 @@
 
 !-------------
 !nm20160420:pole values needed for special 3 point interpolation
-      REAL(KIND=real_prec),ALLOCATABLE, PUBLIC ::  poleVal(:,:)!MaxFluxTube,ISTOT
+      REAL    (KIND=real_prec),ALLOCATABLE, PUBLIC :: poleVal(:,:) ! MaxFluxTube,ISTOT
+      INTEGER (KIND=int_prec) ,ALLOCATABLE, PUBLIC :: DISPLS(:),MPends(:),recvCounts(:) ! nprocs
 !
 ! components (east, north, up) of base vectors
       TYPE :: geographic_coords

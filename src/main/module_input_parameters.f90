@@ -13,13 +13,13 @@
 !--------------------------------------------  
       MODULE module_input_parameters
       USE module_precision
-      USE module_IPE_dimension,ONLY: NLP,NMP
+      USE module_IPE_dimension,ONLY: NLP,NMP,NPTS2D
       IMPLICIT NONE
 
 !--- IPE wide run parameters
       INTEGER (KIND=int_prec), PUBLIC   :: start_time      !=0  !UT[sec]
       INTEGER (KIND=int_prec), PUBLIC   :: stop_time       !=60 !UT[sec]
-      INTEGER (KIND=int_prec), PUBLIC   :: time_step=300       !=60 ![sec]
+      INTEGER (KIND=int_prec), PUBLIC   :: time_step=300   !=60 ![sec]
       INTEGER (KIND=int_prec), PUBLIC   :: nprocs=1        !Number of processors
       INTEGER (KIND=int_prec), PUBLIC   :: mype=0          !Processor number
       INTEGER (KIND=int_prec), PUBLIC   :: lps,lpe,mps,mpe !Per processor start and stop indexes for lp,mp
@@ -105,7 +105,8 @@
       REAL (KIND=real_prec), PUBLIC :: bnd_wei_eld = 44.   ! weimer boundary setting
       REAL (KIND=real_prec), PUBLIC :: lat_sft_eld = 54.   ! weimer boundary setting
 ! for now inputs available every minute for 24hrs
-      INTEGER (KIND=int_prec), PARAMETER, PUBLIC :: nLevPI = 1440   !=60min/hr*24hr/dy
+!     INTEGER (KIND=int_prec), PARAMETER, PUBLIC :: nLevPI = 1440   !=60min/hr*24hr/dy
+      INTEGER (KIND=int_prec), PARAMETER, PUBLIC :: nLevPI = 6000
       INTEGER (KIND=int_prec),            PUBLIC :: LPI    =  1     ! time(minute) index for magnetic indices
 ! weimer inputs:(0) default setting: bz/y
       REAL (KIND=real_prec), DIMENSION(nLevPI), PUBLIC :: bz_eld!      = -0.3163809  ! geomagnetic index
@@ -127,6 +128,7 @@
       LOGICAL, PUBLIC :: sw_debug_mpi=.false.
       LOGICAL, PUBLIC :: sw_output_fort167=.false.
       LOGICAL, PUBLIC :: sw_output_wind    =.false. !unit=6000,6001
+      LOGICAL, PUBLIC :: barriersOn=.false. !true means turn on barriers.
       INTEGER(KIND=int_prec), PUBLIC :: peFort167=0 !default mype=0
       INTEGER(KIND=int_prec), PUBLIC :: mpfort167=10
       INTEGER(KIND=int_prec), PUBLIC :: lpfort167=14
@@ -179,12 +181,10 @@
 !0: div * V//=0
 !1: div * V// included in the Te/i solver
 !dbg20120313 
-      REAL(KIND=real_prec), PUBLIC :: fac_BM
+      REAL   (KIND=real_prec), PUBLIC :: fac_BM
+      INTEGER(KIND=int_prec) , PUBLIC :: SMScomm,sendCount,NumPolevalProcs
 
-! MPI communicator to be passed to SMS
-      integer, PUBLIC :: my_comm
-
-      NAMELIST/IPEDIMS/NLP,NMP 
+      NAMELIST/IPEDIMS/NLP,NMP , NPTS2D
       NAMELIST/NMIPE/start_time &
      &,stop_time &
      &,time_step &
@@ -255,7 +255,8 @@
            &, sw_record_number   &
            &, duration   &
            &, fac_BM   &
-           &, iout
+           &, iout     &
+           &, barriersOn
 !nm20120304           &, PCO_flip       &
 !nm20120304           &, BLON_flip      &
       NAMELIST/NMMSIS/AP  
@@ -297,7 +298,7 @@
         CHARACTER (LEN=*), PARAMETER :: filename='logfile_input_params.log'
         INTEGER (KIND=int_prec) :: istat        
 !dbg20160408 sms debug
-        INTEGER (KIND=int_prec) :: MPI_COMM_IPE ,nElements,ierr
+        INTEGER (KIND=int_prec) :: nElements,ierr
 
 
 !SMS$IGNORE BEGIN
@@ -328,10 +329,7 @@
 !SMS$INSERT lpHaloSize=1
 !SMS$INSERT mpHaloSize=2
 !dbg20160408 sms debug
-!SMS$INSERT MPI_COMM_IPE=MPI_COMM_WORLD
-!SMS$INSERT MY_COMM=MPI_COMM_WORLD
 
-!!SMS$SET_COMMUNICATOR ( MPI_COMM_IPE )
 !SMS$CREATE_DECOMP(dh,<NLP,NMP>,<lpHaloSize,mpHaloSize>: <NONPERIODIC, PERIODIC>)
 
 !SMS$SERIAL(<IOST_RD,istat,OUT>) BEGIN
@@ -435,20 +433,20 @@ if(parallelBuild)then
 !dbg20160408 broadcast solar wind parameters to other proccessors
    nElements = size(swbt)
 !dbg20160408 sms PPP_BCAST  debug: comment out these lines
-!!SMS$INSERT   call MPI_BCAST(swbt   ,nElements,MPI_REAL,0, MPI_COMM_IPE, ierr)
-!!SMS$INSERT   call MPI_BARRIER(MPI_COMM_IPE,ierr)
+!!SMS$INSERT   call MPI_BCAST(swbt   ,nElements,MPI_REAL,0, SMScomm, ierr)
+!!SMS$INSERT   call MPI_BARRIER(SMScomm,ierr)
    !
-!!SMS$INSERT   call MPI_BCAST(swangle,nElements,MPI_REAL,0, MPI_COMM_IPE, ierr)
-!!SMS$INSERT   call MPI_BARRIER(MPI_COMM_IPE,ierr)
+!!SMS$INSERT   call MPI_BCAST(swangle,nElements,MPI_REAL,0, SMScomm, ierr)
+!!SMS$INSERT   call MPI_BARRIER(SMScomm,ierr)
    !
-!!SMS$INSERT   call MPI_BCAST(swvel  ,nElements,MPI_REAL,0, MPI_COMM_IPE, ierr)
-!!SMS$INSERT   call MPI_BARRIER(MPI_COMM_IPE,ierr)
+!!SMS$INSERT   call MPI_BCAST(swvel  ,nElements,MPI_REAL,0, SMScomm, ierr)
+!!SMS$INSERT   call MPI_BARRIER(SMScomm,ierr)
    !
-!!SMS$INSERT   call MPI_BCAST(gwatts ,nElements,MPI_REAL,0, MPI_COMM_IPE, ierr)
-!!SMS$INSERT   call MPI_BARRIER(MPI_COMM_IPE,ierr)
+!!SMS$INSERT   call MPI_BCAST(gwatts ,nElements,MPI_REAL,0, SMScomm, ierr)
+!!SMS$INSERT   call MPI_BARRIER(SMScomm,ierr)
    !
-!!SMS$INSERT   call MPI_BCAST(levpi  ,nElements,MPI_INTEGER,0, MPI_COMM_IPE, ierr)
-!!SMS$INSERT   call MPI_BARRIER(MPI_COMM_IPE,ierr)
+!!SMS$INSERT   call MPI_BCAST(levpi  ,nElements,MPI_INTEGER,0, SMScomm, ierr)
+!!SMS$INSERT   call MPI_BARRIER(SMScomm,ierr)
    !
 endif !parallelB
 !dbg

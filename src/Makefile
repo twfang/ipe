@@ -26,7 +26,7 @@ TARGETS = clean                   \
 
 EXE           = $(CURDIR)/../bin/ipe_$(MACHINE)_$(COMPILER)_$(PARALLELISM)${sw_grid}.exe
 #EXE           = $(CURDIR)/../bin/ipe_$(MACHINE)_$(COMPILER)_$(PARALLELISM).exe
-FFLAGS        = $(strip $(OPT_FLAGS) $(DEBUG_FLAGS) $(GPTL_INCFLAGS) $(GPTL_LDFLAGS))
+FFLAGS        = $(strip $(OPT_FLAGS) $(GPTL_INCFLAGS) $(GPTL_LDFLAGS))
 PARALLEL_MAKE = $(MAKE) -j $(MAKEJOBS)
 PPP           = $(SMS)/bin/ppp
 SMS_INCFLAGS  = -I$(SMS)/include
@@ -54,7 +54,7 @@ endif
     OPT_FLAGS = -O3 -em -ef -eZ -ra -h fp0
     SMS       = /mnt/lustre/lus0/space/madden/SMS/legacy_r689/trillian-cray
     ifeq ($(DEBUG),yes)
-      DEBUG_FLAGS = -g -O0 -em -ef -eZ -ra
+      OPT_FLAGS = -g -O0 -em -ef -eZ -ra
     endif
   endif
   ifeq ($(COMPILER),intel)
@@ -64,7 +64,7 @@ endif
     OPT_FLAGS = -O3 -fp-model precise
     SMS       = /mnt/lustre/lus0/space/madden/SMS/legacy_r689/trillian-intel
     ifeq ($(DEBUG),yes)
-      DEBUG_FLAGS = -g -O0 -ftz -traceback -check bounds -fpe0
+      OPT_FLAGS = -g -O0 -ftz -traceback -check bounds -fpe0
     endif
   endif
   ifeq ($(COMPILER),pgi)
@@ -74,7 +74,7 @@ endif
     OPT_FLAGS = -O2
     SMS       = /mnt/lustre/lus0/space/madden/SMS/legacy_r689/trillian-pgi
     ifeq ($(DEBUG),yes)
-      DEBUG_FLAGS = -g -O0 -Mbounds
+      OPT_FLAGS = -g -O0 -Mbounds
     endif
   endif
 endif
@@ -93,7 +93,7 @@ endif
     OPT_FLAGS = -O3 -fp-model precise
     SMS       = /contrib/sms/legacy/SMSr825-intel
     ifeq ($(DEBUG),yes)
-      DEBUG_FLAGS = -g -O0 -ftz -traceback -check bounds -fpe0
+      OPT_FLAGS = -g -O0 -ftz -traceback -check bounds -fpe0
     endif
     ifeq ($(PARALLELISM),parallel)
       ifeq ($(GPTL_USE_GPTL),yes)
@@ -103,9 +103,9 @@ endif
     endif
     ifeq ($(PARALLELISM),serial)
       ifeq ($(GPTL_USE_GPTL),yes)
-        $(error GPTL support currently unavailable on theia serial intel)
-#        GPTL_INCFLAGS = -I/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/intel_nompi/include
-#        GPTL_LDFLAGS  = -L/scratch1/portfolios/BMC/fim/GPTL/gptl-v5.0/intel_nompi/lib -lgptl
+#       $(error GPTL support currently unavailable on theia serial intel)
+        GPTL_INCFLAGS = -I/contrib/gptl/gptl-v5.4.4_impi_noomp/include
+        GPTL_LDFLAGS  = -L/contrib/gptl/gptl-v5.4.4_impi_noomp/lib -lgptl
       endif
     endif
   endif
@@ -122,7 +122,8 @@ VARS =                                \
        PPP="$(PPP)"                   \
        PPP_FLAGS="$(PPP_FLAGS)"       \
        SMS_INCFLAGS="$(SMS_INCFLAGS)" \
-       SMS_LDFLAGS="$(SMS_LDFLAGS)"
+       SMS_LDFLAGS="$(SMS_LDFLAGS)"   \
+       GPTL_LDFLAGS="$(GPTL_LDFLAGS)"
 
 # Targets
 

@@ -126,9 +126,12 @@ END IF
 !t        CALL eldyn ( utime )
 
 ! output to a file
-        ret = gptlstart ('output')
-        CALL output ( utime )
-        ret = gptlstop  ('output')
+!        ret = gptlstart ('output_barrier')
+!!sms$insert      call ppp_barrier(istat)
+!        ret = gptlstop  ('output_barrier')
+!        ret = gptlstart ('output')
+!        CALL output ( utime )
+!        ret = gptlstop  ('output')
 !sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-9")
 
       END DO  time_loop !: DO utime = start_time, stop_time, time_step

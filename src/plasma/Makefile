@@ -20,4 +20,8 @@ PSRCS = flux_tube_solver.f90               \
         module_sub_plasma.f90              \
         read_vexb.f90
 
+ifeq ($(PARALLELISM),parallel)
+  PSRCS += calcPoleVal.f90
+endif
+
 include $(TOP)/Makefile.common

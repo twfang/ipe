@@ -1,5 +1,5 @@
 subroutine stop
-USE module_input_parameters,ONLY: MaxLpHaloUsed,MaxMpHaloUsed,mype,nprocs,lps,lpe,mps,mpe,parallelBuild
+USE module_input_parameters,ONLY: MaxLpHaloUsed,MaxMpHaloUsed,mype,nprocs,lps,lpe,mps,mpe,parallelBuild,SMScomm
 implicit none
 include "gptl.inc"
 integer       :: MAXlpHalo! Max (over all PEs) lp halo size used
@@ -31,12 +31,7 @@ if (mype == 0 .or. mype == nprocs-1) then
   ret = gptlpr (mype)
 endif
 
-if(parallelBuild) then
-!SMS$INSERT call GET_SMS_MPI_COMMUNICATOR(COMM)
-  ret = gptlpr_summary(COMM)
-else
-  ret = gptlpr_summary()
-endif
+!SMS$INSERT ret = gptlpr_summary(SMScomm)
 
 !ret = gptlprint_memusage ('Memory usage:')
 ret = gptlget_wallclock ('Total', 0, TOTALTIME)  ! The "0" is thread number
