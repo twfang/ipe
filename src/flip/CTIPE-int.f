@@ -472,7 +472,11 @@ C.... Written by P. Richards June-September 2010.
 !nm20151029 aurora
 !nm20151102      if ( mp==17.and.lp==22 ) then !UT= 120.000
       ret = gptlstart ('ionize_ipe')
-      if(sw_debug)print *,'starting ionize_ipe'
+      if(sw_debug) then
+!sms$ignore begin
+        print *,'starting ionize_ipe',mype
+!sms$ignore end
+      endif
       gm_lat = GL(JMIN)
 ! call tiros only >50deg mlat
       if( abs(gm_lat*57.295779513)>=50.0 .AND. sw_aurora==1 ) then
@@ -480,9 +484,13 @@ C.... Written by P. Richards June-September 2010.
 !      mlt = 0.168238 ![hr]
          midpoint = (JMAX/2)+1
          tirosdim = midpoint-JMIN+1
-         if(sw_debug)print *,jmax,jmin,tirosdim, midpoint,' GL1=',gm_lat
+         if(sw_debug) then
+!sms$ignore begin
+           print *,jmax,jmin,tirosdim, midpoint,' GL1=',gm_lat
      &        ,mlt
      &  , maxval(qiont(1,JMIN:midpoint)), minval(qiont(1,JMIN:midpoint))
+!sms$ignore end
+         endif
          tiros_activity_level = LevPI(LPI)
          gw = GWatts(LPI)
          if ( mp==1.and.lp==1 ) write(unit=1003,FMT='(I8,I3,f7.2)')
@@ -497,7 +505,11 @@ C.... Written by P. Richards June-September 2010.
      &        ,qiont(1,JMIN:midpoint),qiont(2,JMIN:midpoint) !units number/m3/s
      &        ,qiont(3,JMIN:midpoint) 
      &        ,sw_debug)
-         if(sw_debug) print *,'stoping ionize_ipe'
+         if(sw_debug) then
+!sms$ignore begin
+           print *,'stoping ionize_ipe',mype
+!sms$ignore end
+         endif
       else 
          qiont=0.0
       endif                     !sw_aurora
@@ -596,7 +608,10 @@ C.... Written by P. Richards June-September 2010.
       ret = gptlstart ('CTIPINT sw_output')
       IF (mype==peFort167.AND.sw_output_fort167.AND.mp==mpfort167.AND.  &
      &lp==lpfort167 ) THEN
-      print*,'check unit#',LUN_FLIP1,LUN_FLIP3,LUN_FLIP2,LUN_FLIP4
+!sms$ignore begin
+        print*,'check unit#',LUN_FLIP1,LUN_FLIP3,LUN_FLIP2,LUN_FLIP4,   &
+     &                       mype
+!sms$ignore end
 c      IF(JTI.EQ.1) THEN
         WRITE(UNIT=LUN_FLIP1,FMT=201)  
         WRITE(UNIT=LUN_FLIP3,FMT=201)
@@ -696,8 +711,11 @@ c      ENDIF
 
       !.. N+ solution
 !dbg20120301:
-      IF ( sw_DEBUG_flip==1 )  print *,'!dbg! apex ht=',z(midpoint)
-     &, midpoint,lp,mp
+      IF ( sw_DEBUG_flip==1 ) then
+!sms$ignore begin
+         print *,'!dbg! apex ht=',z(midpoint),midpoint,lp,mp,mype
+!sms$ignore end
+      endif
       ret = gptlstart ('CTIPINT XION')
       IF(EFLAG(2,1).EQ.0.AND.INPLS.GT.0) CALL XION(TI,DT,DTMIN,11,EFLAG)
       ret = gptlstop  ('CTIPINT XION')
@@ -806,7 +824,8 @@ C... Written by P. Richards September 2010
      >                        EFLAG,   !.. Error flag array
      >                           mp, 
      >                           lp,utime,ltime)
-      USE module_input_parameters,ONLY:sw_output_fort167,sw_ERSTOP_flip
+      USE module_input_parameters,ONLY:sw_output_fort167,sw_ERSTOP_flip,  &
+     &                                 mype
       USE module_precision
       IMPLICIT NONE
       INTEGER PRUNIT,EFLAG(11,11)         !.. error flags
@@ -815,18 +834,20 @@ C... Written by P. Richards September 2010
       REAL (KIND=real_prec),INTENT(IN) :: ltime !local time [hour]
 !
       IF(EFLAG(1,1).NE.0) THEN
-        WRITE(PRUNIT,11)mp,lp
+        WRITE(PRUNIT,11)mp,lp,mype
 !(11)
 !t        IF ( sw_ERSTOP_flip==1 )  STOP
       END IF
  11   FORMAT(/'  Convergence failure in Temperature solution (TLOOPS).'
-     >  ,2X,'Time step less than minimum.mp=',i4,'lp=',i4)
+     >  ,2X,'Time step less than minimum.mp=',i4,'lp=',i4,i7)
       IF(EFLAG(1,2).NE.0) then
 !dbg110210:
-        WRITE(PRUNIT,*)'EFLAG(1,2)',EFLAG(1,2)
+        WRITE(PRUNIT,*)'EFLAG(1,2)',EFLAG(1,2),mype
         WRITE(PRUNIT,12)mp,lp
         IF ( sw_ERSTOP_flip==1 ) THEN
-          print *,"(12)ERSTOP FLIP",mp,lp            
+!sms$ignore begin
+          print *,"(12)ERSTOP FLIP",mp,lp,mype
+!sms$ignore end
           STOP
         END IF
       endif
@@ -834,69 +855,76 @@ C... Written by P. Richards September 2010
      >  ,2X,'Incorrect input to the band solver BDSLV.mp=',i3,'lp=',i4)     
 
       IF(EFLAG(2,1).NE.0) THEN
-         WRITE(PRUNIT,21)lp,mp,ltime,UTIME
+         WRITE(PRUNIT,21)lp,mp,ltime,UTIME,mype
+!         print*,'JFM',prunit,mype,lp,mp,ltime,UTIME,mype
 !(3)
 !t         IF ( sw_ERSTOP_flip==1 )  STOP
 
       END IF
  21   FORMAT(/'  Convergence failure in O+ - H+ (DLOOPS).'
-     &,'TimeStep less than minimum:lp=',i3,'mp=',i3,f7.2,i7)
+     &,'TimeStep less than minimum:lp=',i3,'mp=',i3,f7.2,2i7)
       IF(EFLAG(2,2).NE.0) THEN
-         WRITE(PRUNIT,22)mp,lp
+         WRITE(PRUNIT,22)mp,lp,mype
          IF ( sw_ERSTOP_flip==1 ) THEN
-           print *,"(22)ERSTOP FLIP",mp,lp            
+!sms$ignore begin
+           print *,"(22)ERSTOP FLIP",mp,lp,mype
+!sms$ignore end
            STOP
         END IF
 
 
       END IF
  22   FORMAT(/'  Convergence failure in O+ - H+ solution (DLOOPS).'
-     >  ,2X,'Incorrect input to the band solver BDSLV.mp',i3,'lp',i4)
+     >  ,2X,'Incorrect input to the band solver BDSLV.mp',i3,'lp',i4,i6)
 
       IF(EFLAG(3,1).NE.0) THEN
-         WRITE(PRUNIT,31)mp,lp
+         WRITE(PRUNIT,31)mp,lp,mype
 !(5)
 !t         IF ( sw_ERSTOP_flip==1 )  STOP
       END IF
  31   FORMAT(/'  Convergence failure in He+ solution (XION).'
-     >  ,2X,'Time step less than minimum.')
+     >  ,2X,'Time step less than minimum.',3i7)
       IF(EFLAG(3,2).NE.0) THEN
-         WRITE(PRUNIT,32)mp,lp
+         WRITE(PRUNIT,32)mp,lp,mype
          IF ( sw_ERSTOP_flip==1 ) THEN
-           print *, "(32)ERSTOP FLIP",mp,lp            
+!sms$ignore begin
+           print *, "(32)ERSTOP FLIP",mp,lp,mype
+!sms$ignore end
            STOP
          END IF
 
       END IF
  32   FORMAT(/'  Convergence failure in He+ solution (XION).'
-     >  ,2X,'Incorrect input to the band solver BDSLV.mp',i3,'lp',i4)
+     >  ,2X,'Incorrect input to the band solver BDSLV.mp',i3,'lp',i4,i7)
 
       IF(EFLAG(4,1).NE.0) THEN
-         WRITE(PRUNIT,41)mp,lp
+         WRITE(PRUNIT,41)mp,lp,mype
 !t         IF ( sw_ERSTOP_flip==1 ) THEN
 !t           print *,"(7)ERSTOP FLIP",mp,lp            
 !t           STOP
 !t        END IF
       END IF
  41   FORMAT(/'  Convergence failure in N+ solution (XION).'
-     >  ,2X,'Time step less than minimum.mp',i3,'lp',i4)
+     >  ,2X,'Time step less than minimum.mp',i3,'lp',i4,i7)
       IF(EFLAG(4,2).NE.0) THEN
-         WRITE(PRUNIT,42)mp,lp
+         WRITE(PRUNIT,42)mp,lp,mype
 !(8)
          IF ( sw_ERSTOP_flip==1 ) THEN
-           print *,"(42)ERSTOP FLIP",mp,lp            
+!SMS$ignore begin
+           print *,"(42)ERSTOP FLIP",mp,lp,mype
+!SMS$ignore end
            STOP
          END IF
 
       END IF
  42   FORMAT(/'  Convergence failure in N+ solution (XION).'
-     >  ,2X,'Incorrect input to the band solver BDSLV.mp',i3,'lp',i4)
+     >  ,2X,'Incorrect input to the band solver BDSLV.mp',i3,'lp',i4,i7)
 
-      IF(EFLAG(5,1).NE.0) WRITE(PRUNIT,51)
- 51   FORMAT(/'  Convergence failure in CMINOR.')
+      IF(EFLAG(5,1).NE.0) WRITE(PRUNIT,51) mype
+ 51   FORMAT(/'  Convergence failure in CMINOR.',i10)
 
-      IF(EFLAG(11,1).NE.0) WRITE(PRUNIT,111)
+      IF(EFLAG(11,1).NE.0) WRITE(PRUNIT,111) mype
  111  FORMAT(/3X,'** CTIP dimension not equal to FLIP dimensions'
-     >  /3X,'** Check dimensions in all FLIP modules')
+     >  /3X,'** Check dimensions in all FLIP modules',i7)
       RETURN
       END 

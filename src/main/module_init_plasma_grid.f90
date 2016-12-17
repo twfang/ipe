@@ -7,13 +7,13 @@ IMPLICIT NONE
 SUBROUTINE init_plasma_grid ( )
 USE module_read_plasma_grid_global,only: read_plasma_grid_global
 USE module_precision
-!sms$insert USE module_prepPoleVal,ONLY: prepPoleVal
 USE module_IPE_dimension      ,ONLY: NMP,NLP,ISTOT
 USE module_physical_constants ,ONLY: earth_radius, pi, G0,zero
 USE module_input_parameters   ,ONLY: sw_debug,sw_grid,parallelBuild,mpHaloSize,nprocs
 USE module_FIELD_LINE_GRID_MKS,ONLY: Pvalue,JMIN_IN,JMAX_IS, r_meter2D      &
 &, plasma_grid_GL,plasma_grid_3d,apexD,apexE,Be3,plasma_grid_Z,ISL,IBM,IGR  &
 & ,IQ,IGCOLAT,IGLON,east,north,up,mlon_rad,dlonm90km,apexDscalar,l_mag
+!sms$insert USE module_prepPoleVal,ONLY: prepPoleVal
 !USE module_cal_apex_param,ONLY:cal_apex_param
 
 INTEGER (KIND=int_prec)           :: i,mp,lp,in,is
@@ -226,7 +226,7 @@ endif !(mp==1) then
 
 !SMS$PARALLEL END
 
-!sms$insert call prepPoleval
+!sms$insert call prepPoleVal
 
 
      mlon_rad(:) = zero

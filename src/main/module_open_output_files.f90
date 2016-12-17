@@ -26,7 +26,7 @@
         USE module_input_parameters,ONLY: NYEAR,NDAY,HPEQ_flip,sw_debug,sw_output_plasma_grid,record_number_plasma_start,sw_output_fort167,sw_output_wind,mype,peFort167
         USE module_IO,ONLY: &
 &  filename,FORM_dum,STATUS_dum &
-&, LUN_pgrid,PRUNIT,LUN_LOG &
+&, LUN_pgrid,LUN_LOG &
 &, LUN_FLIP1,LUN_FLIP2,LUN_FLIP3,LUN_FLIP4 &
 &, LUN_PLASMA0, LUN_PLASMA1,LUN_PLASMA2, LUN_UT, LUN_UT2 &
 &, lun_min1,lun_max1,lun_min2,lun_max2 &
@@ -44,13 +44,6 @@
           WRITE ( string_tmp, FMT="(i4,A1,i3)" ) NYEAR,'_' ,NDAY
         END IF
         WRITE( UNIT=LUN_LOG, FMT=*) string_tmp
-
-!--- unit=8
-!nm20120303        filename ='FLIP_ERROR_FLAG_'//TRIM(string_tmp)//'.log'
-        filename ='FLIP_ERR'
-        FORM_dum ='formatted  ' 
-        STATUS_dum ='unknown'
-        CALL open_file ( filename, PRUNIT, FORM_dum, STATUS_dum )  
 
 !--- unit=9
 !nm20120303        filename ='logfile'//TRIM(string_tmp)//'.log'

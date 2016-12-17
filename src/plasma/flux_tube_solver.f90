@@ -231,8 +231,11 @@ if(sw_debug) print *,'sub-fl: UTs=',UTIME,' LThr=',ltime,' mp',mp,' lp',lp
 
 
 !dbg20110131:
-IF ( sw_debug )  WRITE(UNIT=PRUNIT,FMT="('mp=',i6,' lp=',i6,' UT=',F10.2)") mp,lp,REAL(UTIME)/3600.
-
+      IF ( sw_debug ) then
+!sms$ignore begin
+        WRITE(UNIT=PRUNIT,FMT="('mp=',i6,' lp=',i6,' UT=',F10.2,i7)") mp,lp,REAL(UTIME)/3600.,mype
+!sms$ignore end
+      endif
       ret = gptlstart ('flux_tube_solver_loop1')
       DO ipts=1,CTIPDIM
 !N&T from the previous time step are absolute necesary for the solver...

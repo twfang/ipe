@@ -39,13 +39,9 @@ $(SOBJ77) $(SOBJ90):
 # Rule for generating dependencies
 
 DEPENDENCIES: $(SRCS)
-	echo JFM1
 	echo $(PSRCS)
-	echo JFM2
 	echo $(SRCS)
-	echo JFM3
 	echo $(SSRCS)
-	echo JFM4
 	$(RM) Filepath Srcfiles
 	echo "." > Filepath
 	echo $(SRCS) | sed 's/  */\n/g' > Srcfiles

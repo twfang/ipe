@@ -190,7 +190,9 @@ tmp_fac2 = ( lambda_m(0) - lambda_m(2)) / (lambda_m(1) - lambda_m(2))
    IF ( lambda_m(1)/=lambda_m(2) ) THEN
       factor = tmp_fac2
    ELSE
-      print *,'!sub-interpolate_ft: STOP! INVALID factor:lambda', factor,lambda_m,mp,lp
+!SMS$ignore begin
+      print *,'!sub-interpolate_ft: STOP! INVALID factor:lambda', factor,lambda_m,mp,lp,mype
+!SMS$ignore end
       STOP
    END IF
  
@@ -199,7 +201,9 @@ tmp_fac2 = ( lambda_m(0) - lambda_m(2)) / (lambda_m(1) - lambda_m(2))
 
 !error trap
 IF ( factor>1.0.OR.factor<zero) THEN
-  print *,'!!!INVALID factor!!!',factor,mp,lp,rapex(0:2),lambda_m(0:2)
+!SMS$ignore begin
+  print *,'!!!INVALID factor!!!',factor,mp,lp,rapex(0:2),lambda_m(0:2),mype
+!SMS$ignore end
   IF ( factor>1.0 )factor=1.0
   IF ( factor<zero )factor=zero
 ENDIF
@@ -231,40 +235,54 @@ mp_t0_loop1: DO imp=1,imp_max
 !dbg20141210      x(0:2) = r(0:2)
          x(0:2) = lambda_m(0:2)
 
-
-
    ELSE IF( r(1)==r(2) ) THEN
 
       if(sw_debug) then
+!SMS$IGNORE BEGIN
          print "('!R1=R2! r0',E14.6,' r1=',E14.6,' r2=',E14.6,' Qr1',E13.5,' Qr2=',E13.5,' i=',i6,' mp=',i3,' lp=',i4,' imp=',i3)",r(0:2),Qint(iR,i1d,imp,1:2),i,mp,lp,imp
-
          print *, r(2),(earth_radius+ht90),(maxAltitude+earth_radius)
+!SMS$IGNORE END
       end if
 
       IF( r(2)==(earth_radius+ht90) ) then
 
 !dbg20111006: somehow IS does not fit here???
-         if(sw_debug) print *,'i=IN/S',i,i1d,' IN=',JMIN_IN(lp),' IS=',JMAX_IS(lp),lambda_m(0:2)*180./pi
+         if(sw_debug) then
+!SMS$ignore begin
+           print *,'i=IN/S',i,i1d,' IN=',JMIN_IN(lp),' IS=',JMAX_IS(lp),lambda_m(0:2)*180./pi,mype
+!SMS$ignore end
+         endif
          x(0:2) = lambda_m(0:2)
 
-         if(sw_debug) print *,'!dbg20120503: lambda',x(0:2)*180./pi
-
+         if(sw_debug) then
+!SMS$IGNORE BEGIN
+           print *,'!dbg20120503: lambda',x(0:2)*180./pi
+!SMS$IGNORE END
+         endif
       ELSE IF ( r(2)==(earth_radius+maxAltitude) ) then
 
-         if(sw_debug) print *,'midpoint lp<=6',i,i1d,' IN=',JMIN_IN(lp),' IS=',JMAX_IS(lp),lambda_m(0:2)*180./pi
-
+         if(sw_debug) then
+!SMS$IGNORE BEGIN
+           print *,'midpoint lp<=6',i,i1d,' IN=',JMIN_IN(lp),' IS=',JMAX_IS(lp),lambda_m(0:2)*180./pi
+!SMS$IGNORE END
+         endif
          x(0:2) = lambda_m(0:2)
 
       ELSE IF ( lp<7 ) then
 
-         if(sw_debug)  print *,'lp<7',i,i1d,' IN=',JMIN_IN(lp),' IS=',JMAX_IS(lp),lambda_m(0:2)*180./pi
-
+         if(sw_debug) then
+!SMS$IGNORE BEGIN
+           print *,'lp<7',i,i1d,' IN=',JMIN_IN(lp),' IS=',JMAX_IS(lp),lambda_m(0:2)*180./pi
+!SMS$IGNORE END
+         endif
          x(0:2) = lambda_m(0:2)
 
       ELSE
 !dbg20140630: why becomes r1=r2 for lp>7???
-         WRITE(6,*)'sub-Intrp:!STOP! INVALID R12!!!',i1d,' imp=',imp,' mp=',mp,' lp=',lp
+!SMS$IGNORE BEGIN
+         print"('sub-Intrp:!STOP! INVALID R12!!!,i1d,imp,mp,mype',4i7)",i1d,imp,mp,mype
          print *,'why lp>=7?',i,i1d,' IN=',JMIN_IN(lp),' IS=',JMAX_IS(lp),lambda_m(0:2)*180./pi
+!SMS$IGNORE END
          x(0:2) = lambda_m(0:2)
 !dbg20140630         STOP
       END IF
@@ -274,21 +292,27 @@ mp_t0_loop1: DO imp=1,imp_max
 
 
 ! 1. interpolate Bfield intensity Bt0 at the imaginary FT(phi0,theta0) using dipole assumption
-if(sw_debug) print "('QintB=',3E12.4)",Qint(iB,i1d,imp,1:2)
+    if(sw_debug) then
+!SMS$ignore begin
+      print "('QintB=',3E12.4)",Qint(iB,i1d,imp,1:2),mype
+!SMS$ignore end
+    endif
     B0(1:2)=Qint(iB,i1d,imp,1:2) * ( r(1:2)*r(1:2)*r(1:2) )/(r(0)*r(0)*r(0))
     B0(0)=( B0(1)+B0(2) )*0.50
-if(sw_debug) print "('B=',3E12.4)",B0(0),B0(1),B0(2)
-!dbg20111101:v14
-!dbg20140627: need if statement same as line 320!!!
-!       IF ( x(1)/=x(2) ) THEN
+    if(sw_debug) then
+!SMS$ignore begin
+      print "('B=',3E12.4)",B0(0),B0(1),B0(2),mype
+!SMS$ignore end
+    endif
+    !dbg20111101:v14
+    !dbg20140627: need if statement same as line 320!!!
+    !       IF ( x(1)/=x(2) ) THEN
     B0(0) = ( (x(1)-x(0))*Qint(iB,i1d,imp,2) + (x(0)-x(2))*Qint(iB,i1d,imp,1) ) / ( x(1)-x(2) )
-if(sw_debug) print "('v14:B=',3E12.4)",B0(0) !,B0(1),B0(2)
-
-
-
-
-
-
+    if(sw_debug) then
+!SMS$ignore begin
+      print "('v14:B=',3E12.4)",B0(0) !,B0(1),B0(2),mype
+!SMS$ignore end
+    endif
 
 !dbg20141210: polar cap boundary: mlat(17)=71.69 
 !dbg20141210    if ( sw_ksi==0 ) then
@@ -297,9 +321,10 @@ if(sw_debug) print "('v14:B=',3E12.4)",B0(0) !,B0(1),B0(2)
       ksi_fac =1.000
     else if ( sw_ksi==1 ) then
 !nm20140206      ksi_fac(1:2) = B0(0) / Qint(iB,i1d,imp,1:2)
-WRITE(6,*)'!STOP! INVALID option! sw_ksi=',sw_ksi
-STOP
-
+!SMS$ignore begin
+      WRITE(6,*)'!STOP! INVALID option! sw_ksi=',sw_ksi
+!SMS$ignore end
+      STOP
 !dbg20120330: new and CORRECT method to apply the ksi factor!
     else if ( sw_ksi==2 ) then
 !nm20140206      ksi_fac(1) = plasma_grid_3d(i,lp,mp,IBM) / B0(0) 
@@ -331,7 +356,7 @@ STOP
 !error check
           IF (plasma_2d(jth,i1d,imp)<=zero) THEN
 
-             !SMS$ignore begin
+!SMS$ignore begin
              print "(i3,i7,'subInt:!STOP! INVALID N/T: plasma_2d',E12.4,' Qint1',E12.4,' Qint2',E12.4,' jth',i2,' i1d=',i7,'i=',i7,' mp=',i3,' lp=',i3,' imp=',i2)" & 
                   &, mype,utime&
                   &, plasma_2d(jth,i1d,imp)&
@@ -341,12 +366,14 @@ STOP
              print*,'check difX', (x(1)-x(0)), (x(0)-x(2)), ( x(1)-x(2) ),ksi_fac
              print"('!check X!=',3E16.8)",x(1),x(0),x(2)
              print"('!check B!=',3E12.4)",B0(1),B0(0),B0(2)
-             !SMS$ignore end
+!SMS$ignore end
              STOP
           END IF !IF (plasma_2d(jth,i1d,imp)<=zero) THEN
 
        ELSE !IF ( x(1)/=x(2) ) THEN
+!SMS$ignore begin
           WRITE(6,*)'sub-Intrp:!STOP! INVALID x(1:2)',x(0:2),i1d,mp,lp
+!SMS$ignore end
           STOP
        END IF !IF ( x(1)/=x(2) ) THEN
 
@@ -399,10 +426,10 @@ END DO mp_t0_loop1 !: DO imp=1,imp_max
 
 
               if (jth==1.and.plasma_1d(jth,i1d)<=zero ) then 
-                 !SMS$IGNORE begin
+!SMS$IGNORE begin
                  print *,mype,utime,"!STOP! INVALID plasma_1d(1)",mlon1,phi_t0(ihem),plasma_2d(jth,i1d,2),mlon2,plasma_2d(jth,i1d,1),jth,i1d,ihem,lp,mp
                  print *,(mlon1        - phi_t0(ihem) ),(phi_t0(ihem) - mlon2        ),(mlon1 - mlon2)
-                 !SMS$IGNORE end
+!SMS$IGNORE end
                  STOP
               endif !jth==1
 
@@ -420,20 +447,24 @@ END DO mp_t0_loop1 !: DO imp=1,imp_max
 
 
               if(jth==1.and.plasma_1d(jth,i1d)<=zero)then
-                 !SMS$IGNORE begin
+!SMS$IGNORE begin
                  print *,mype,utime,'!STOP! INVALID plasma_1d(2)',mp,lp,plasma_1d(jth,i1d),factor_ksi,i1d,jth
-                 !SMS$IGNORE end
+!SMS$IGNORE end
                  STOP
               endif !jth
 
 
            ELSE !    mlon1 >= mlon2
 !
-              print *, 'sub-interp:!STOP! INVALID mlon order! ihem=',ihem,' mp=',mp,' lp=',lp,'mp(1)',mp_t0(ihem,1),'mp(2)',mp_t0(ihem,2),mlon1*rtd,mlon2*rtd
+!SMS$ignore begin
+              print *, 'sub-interp:!STOP! INVALID mlon order! ihem=',ihem,' mp=',mp,' lp=',lp,'mp(1)',mp_t0(ihem,1),'mp(2)',mp_t0(ihem,2),mlon1*rtd,mlon2*rtd,mype
+!SMS$ignore end
               STOP
            END IF
         ELSE    ! IF ( (mlon1-mlon2)==0.) THEN
-           print *, 'sub-interp:!STOP! INVALID same mlon1&2!',ihem,mp,lp,mp_t0(ihem,1),mp_t0(ihem,2),mlon1*rtd,mlon2*rtd
+!SMS$ignore begin
+           print *, 'sub-interp:!STOP! INVALID same mlon1&2!',ihem,mp,lp,mp_t0(ihem,1),mp_t0(ihem,2),mlon1*rtd,mlon2*rtd,mype
+!SMS$ignore end
            STOP
            !       plasma_1d(jth,i1d) = plasma_2d(jth,i1d,1)
         END IF
@@ -450,9 +481,9 @@ END DO flux_tube_loopT1_fac1
 
 ELSE IF ( lp_t0(ihem,1)==-999 ) THEN !missing_value in module_find_nei...
 
-   !SMS$IGNORE begin
+!SMS$IGNORE begin
    if(sw_debug)print"('mype=',i3,'subInt:specialPole:mp=',i3,'lp=',i3,'mpt0=',2i3,'lpt0=',i4,i2)",mype,mp,lp,mp_t0(ihem,1:2),lp_t0(ihem,1:2)
-   !SMS$IGNORE end
+!SMS$IGNORE end
 
 !CAUTION! poleVal is calculated (in module_sub_plasma.f90) ONLY at mype=0 but is broadcast to all processors.
 !nm20140630 temporary solution for pole
@@ -476,9 +507,9 @@ x(2)=mlon_rad( mp_t0(ihem,2) )
 plasma_1d(jth,i1d) = ( (x(1)-x(0))*y(2) + (x(0)-x(2))*y(1) ) / ( x(1)-x(2) )
 
          if(jth==1.and.plasma_1d(jth,i1d)<=zero)then
-            !SMS$IGNORE begin
+!SMS$IGNORE begin
             print*,mype,utime,'!STOP! INVALID plasma_1d',plasma_1d(jth,i1d),lp,mp,i,i1d
-            !SMS$IGNORE end
+!SMS$IGNORE end
          endif !utime
 
 
@@ -486,7 +517,9 @@ plasma_1d(jth,i1d) = ( (x(1)-x(0))*y(2) + (x(0)-x(2))*y(1) ) / ( x(1)-x(2) )
    END DO flux_tube_loop!: DO i=JMIN_IN(lp),JMAX_IS(lp)
 
 ELSE
-   print *,'sub-Intrp:!STOP! INVALID lp_t0:',lp_t0,' mp',mp,' lp',lp
+!SMS$ignore begin
+   print *,'sub-Intrp:!STOP! INVALID lp_t0:',lp_t0,' mp',mp,' lp',lp,mype
+!SMS$ignore end
    STOP
 END IF
 

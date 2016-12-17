@@ -29,6 +29,8 @@
       USE module_output,ONLY: output
       USE module_close_files,ONLY: close_files
       USE module_IPE_dimension,ONLY: NMP,NLP
+      USE module_IO,ONLY: PRUNIT
+      USE module_open_file,ONLY: open_file
       IMPLICIT NONE
       include "gptl.inc"
 
@@ -48,6 +50,9 @@
 
 ! open Input/Output files
       ret = gptlstart ('open_output_files')
+!--- unit=8
+!filename ='FLIP_ERROR_FLAG_'//TRIM(string_tmp)//'.log'
+      CALL open_file ( 'FLIP_ERR', PRUNIT,'formatted','unknown') !open by all processors
 !SMS$SERIAL BEGIN
       CALL open_output_files ( )
 !SMS$SERIAL END
@@ -125,13 +130,14 @@ END IF
 ! update self-consistent electrodynamics
 !t        CALL eldyn ( utime )
 
-! output to a file
+! output UTIME to a FLIP_ERR
 !        ret = gptlstart ('output_barrier')
 !!sms$insert      call ppp_barrier(istat)
 !        ret = gptlstop  ('output_barrier')
-!        ret = gptlstart ('output')
-!        CALL output ( utime )
-!        ret = gptlstop  ('output')
+        ret = gptlstart ('output')
+        CALL output(utime)
+        ret = gptlstop  ('output')
+
 !sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-9")
 
       END DO  time_loop !: DO utime = start_time, stop_time, time_step
