@@ -135,17 +135,14 @@ Qint_dum(:,:)=zero
 
 !dbg20160417 error stop
              if ( Qint_dum(jth, ip1d)<=zero ) then 
-
-                !SMS$IGNORE begin
+!SMS$IGNORE begin
                 print*,mype,utime_save,'subQint(0):INVALID Qint !STOP!',Qint_dum(jth, ip1d) &
                      &,plasma_3d_old(inorth,lp0,mp0,jth) &
                      &,plasma_3d_old(isouth,lp0,mp0,jth) &
                      &,lp,mp,lp0,mp0,ip1d,inorth,isouth,factor2,jth
                 if(jth<=TSP) print*,jth,'after LOG!',( factor2*(ALOG10(plasma_3d_old(iNorth,lp0,mp0,jth)) - ALOG10(plasma_3d_old(iSouth,lp0,mp0,jth))) + ALOG10(plasma_3d_old(iSouth,lp0,mp0,jth)) )
-                !SMS$IGNORE end
-
+!SMS$IGNORE end
                 STOP
-              
              end if !( jth==1.and.Qint_dum(jth, ip1d)<=0. ) then 
 
           END DO jth_loop0 !jth=1,iT !=TSP+3
@@ -188,19 +185,13 @@ endif
           jth_loop2: DO jth=1,iT
              IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop2
              Qint_dum(jth   ,ip1d) = plasma_3d_old(inorth,lp0,mp0,jth)
-
-
-!dbg20160417
-if ( jth==1.and.Qint_dum(jth, ip1d)<=zero ) then 
+             !dbg20160417
+             if ( jth==1.and.Qint_dum(jth, ip1d)<=zero ) then 
 !SMS$IGNORE begin
-print *,mype,'sub-Qint(2)',lp,mp,lp0,mp0,jth,inorth, plasma_3d_old(inorth,lp0,mp0,jth)
+               print *,mype,'sub-Qint(2)',lp,mp,lp0,mp0,jth,inorth, plasma_3d_old(inorth,lp0,mp0,jth)
 !SMS$IGNORE end
-STOP
-endif
-
-
-
-
+               STOP
+             endif
           END DO jth_loop2!jth
           !B
           Qint_dum(iB      ,ip1d) = plasma_grid_3d(inorth,lp0,mp0,IBM)

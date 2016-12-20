@@ -24,7 +24,7 @@
       USE module_precision
 !     plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,plasma_3d_old are all IN arrays
       USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,ht90,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,plasma_3d_old, mlon_rad,maxAltitude,minAltitude,minTheta,poleVal
-      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,sw_ksi,mype,parallelBuild,lps,lpe,mps,mpe
+      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,sw_ksi,mype,lps,lpe,mps,mpe,nprocs
       USE module_plasma,ONLY:plasma_1d 
       USE module_IPE_dimension,ONLY: ISPEC,ISPET,IPDIM, ISTOT, NMP
       USE module_physical_constants,ONLY: earth_radius,pi,zero,rtd
@@ -101,19 +101,17 @@
 ! however Q values are not identical in all mp!!! 
             mp_t0_loop: DO imp=1,imp_max
                mp0 = mp_t0(ihem,imp)
-
 !nm20160419: adjust mp0 for serial (for parallel, it is assumed mp0 is within the array bound)
-               if(.not.parallelBuild)then
+               if(nprocs == 1)then
                  if ( mp0<1   )  mp0 = mp0 + NMP
                  if ( mp0>NMP )  mp0 = mp0 - NMP
-               end if!(.not.parallelBuild)then
+               end if
 
 !(1) Q interpolation: from Q_T0(mp_t0,lp_t0) --> Q_T1(mp,lp) for all 4 flux tubes
                lp_t0_loop: DO ilp=1,2 !outer/inner flux tubes
 
                   ! (1.1) i0:  lp_t0(ihem,1)=l
                   lp0 = lp_t0(ihem,ilp)
-
                   CALL Qinterpolation (mp,lp &
                        &, lp0, mp0 &
                        &, iR, Qint_dum )
@@ -401,15 +399,12 @@ END DO mp_t0_loop1 !: DO imp=1,imp_max
          mp2 = mp_t0(ihem,2)
 
 !nm20160419: adjust mp0 for serial (for parallel, it is assumed mp0 is within the array bound)
-         if(.not.parallelBuild)then
+         if(nprocs==1)then
             if ( mp1<1   )  mp1 = mp1 + NMP
             if ( mp2<1   )  mp2 = mp2 + NMP
             if ( mp2>NMP )  mp2 = mp2 - NMP
             if ( mp1>NMP )  mp1 = mp1 - NMP
-         end if!(.not.parallelBuild)then
-
-
-
+         end if
 
          IF ( (mlon1-mlon2)/=zero) THEN
             

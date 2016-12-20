@@ -62,11 +62,11 @@
       which_hemisphere: DO ihem=1,1  !ihem_max
          mpx_loop: DO mpx=0,NMP
             if(mpx+1 > mpHaloSize) then
-               !SMS$ignore begin
+!SMS$ignore begin
                print*,mype,'mpx+1 > mpHaloSize in find_neighbor_grid_R: mpx=',mpx,' mpHaloSize=',mpHaloSize,' mp=',mp,' lp=',lp, ' phi_t0=',phi_t0(ihem)*rtd, (90.-theta_t0(ihem)*rtd)
                print*,'Increase the halo size or take smaller time steps.'
                print*,'Stopping in find_neighbor_grid_R'
-               !SMS$ignore end
+!SMS$ignore end
                STOP
             endif !(mpx+1 > mpHaloSize) then
             MaxMpHaloUsed = max(MaxMpHaloUsed,mpx+1)
@@ -75,9 +75,9 @@
 
 !nm20160419 error trap(1)
             if ( mpp<(1-mpHaloSize) .or. (NMP+mpHaloSize)<(mpp+1) )then
-               !SMS$IGNORE begin
+!SMS$IGNORE begin
                print*,mype,utime_save,'!STOP! INVALID mpp=',mpp,mpx,lp,mp,lbound(mlon_rad),ubound(mlon_rad),phi_t0(ihem),mpHaloSize
-               !SMS$IGNORE end
+!SMS$IGNORE end
                STOP
             endif
 
@@ -90,9 +90,9 @@
 
 !nm20160419 error trap(2)
             if ( (mpm-1)<(1-mpHaloSize) .or. (NMP+mpHaloSize)<mpm )then
-               !SMS$IGNORE begin
+!SMS$IGNORE begin
                print*,mype,utime_save,'!STOP! INVALID mpm(1)=',mpm,mpx,lp,mp,lbound(mlon_rad),ubound(mlon_rad),phi_t0(ihem),mpHaloSize
-               !SMS$IGNORE end
+!SMS$IGNORE end
                STOP
             endif
 
@@ -115,9 +115,9 @@ IF ( theta_t0(ihem) < minTheta ) THEN
    lp_t0(ihem,1)=missing_value !-999
    lp_t0(ihem,2)=1
 
-   !SMS$IGNORE begin
+!SMS$IGNORE begin
    if(sw_debug)print"('mype=',i3,'subFin:specialPole:mp=',i3,'lp=',i3)",mype,mp,lp
-   !SMS$IGNORE end
+!SMS$IGNORE end
    RETURN
 
 ELSE IF ( theta_t0(ihem) > maxTheta ) THEN

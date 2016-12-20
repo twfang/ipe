@@ -1,5 +1,5 @@
 subroutine stop
-USE module_input_parameters,ONLY: MaxLpHaloUsed,MaxMpHaloUsed,mype,nprocs,lps,lpe,mps,mpe,parallelBuild,SMScomm
+USE module_input_parameters,ONLY: MaxLpHaloUsed,MaxMpHaloUsed,mype,nprocs,lps,lpe,mps,mpe,SMScomm
 implicit none
 include "gptl.inc"
 integer       :: MAXlpHalo! Max (over all PEs) lp halo size used
@@ -9,7 +9,7 @@ character(80) :: string
 integer       :: ret
 real(8)       :: TOTALTIME ! returned from gptl
 
-if(parallelBuild) then
+if(nprocs > 1) then
   print*
   MAXlpHalo = MaxLpHaloUsed
   MAXmpHalo = MaxMpHaloUsed

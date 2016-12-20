@@ -159,18 +159,18 @@ REAL, private :: maxdif=-10.
            if ( SIN(theta_t1(ihem))>zero ) then
               phi_t0(ihem) = phi_t1 - ( VEXBe(lp,mp) * REAL(time_step) ) / ( rph * SIN(theta_t1(ihem)) )
            else 
-              !SMS$IGNORE begin             
+!SMS$IGNORE begin             
               print*,mype,'sub-step: !STOP! INVALID sin theta_t1',SIN(theta_t1(ihem)),theta_t1(ihem),mp,lp
-              !SMS$IGNORE end             
+!SMS$IGNORE end             
               STOP
            end if
 
 !nm20160419 make sure phi_t0 is within mlon_rad range
            if ( phi_t0(ihem)<MINVAL(mlon_rad) .or. MAXVAL(mlon_rad)<phi_t0(ihem) ) then
-              !SMS$IGNORE begin
+!SMS$IGNORE begin
               print*,mype,'sub-stepback_R: !STOP! time step',time_step,'must be reduced!',MINVAL(mlon_rad),' phi_t0=',phi_t0(ihem),MAXVAL(mlon_rad),phi_t1,VEXBe(lp,mp),mp,lp &
      &,( - ( VEXBe(lp,mp) * REAL(time_step) ) / ( rph * SIN(theta_t1(ihem)) ) )
-              !SMS$IGNORE end
+!SMS$IGNORE end
               STOP
            end if
         end if !( sw_perp_transport <= 1 ) then 
@@ -180,10 +180,10 @@ REAL, private :: maxdif=-10.
         IF ( theta_t0(ihem)<zero.OR.theta_t0(ihem)>=pi   ) THEN
 
 !nm20160420: current grid does not need to allow flux tubes to go over the poles, because del lat=1.8 (difference between the maximum mlat=88.2 and the pole) is much bigger than the mlat resolution, ~0.5deg. Thus error stop is set up here for the moment.
-           !SMS$IGNORE begin
+!SMS$IGNORE begin
            print*,utime,mype,'sub-step: flux tube crosses the pole: !STOP! INVALID theta_t0',theta_t0(ihem),phi_t0(ihem),lp,mp,ihem
+!SMS$IGNORE end
            STOP
-           !SMS$IGNORE end
 
 !t           IF ( theta_t0(ihem)<zero  ) THEN
 !t              theta_t0(ihem) = theta_t0(ihem) * (-1.0)

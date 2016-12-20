@@ -30,7 +30,7 @@
       SUBROUTINE plasma ( utime )
       USE module_input_parameters,ONLY:mpstop,ip_freq_output,start_time,stop_time,&
 &     sw_neutral_heating_flip,sw_perp_transport,lpmin_perp_trans,lpmax_perp_trans,&
-&     sw_para_transport,sw_debug,sw_dbg_perp_trans,sw_exb_up,parallelBuild,mype,  &
+&     sw_para_transport,sw_debug,sw_dbg_perp_trans,sw_exb_up,nprocs,mype,         &
 &     HPEQ_flip,ip_freq_paraTrans,barriersOn
       USE module_physical_constants,ONLY:rtd,zero
       USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,plasma_grid_3d,plasma_grid_GL,  &
@@ -61,9 +61,11 @@
 
 !SMS$PARALLEL(dh, lp, mp) BEGIN
 
+!!SMS$IGNORE begin
       plasma_3d_old = plasma_3d
+!!SMS$IGNORE end
 
-      if(.not.parallelBuild) then ! Store special pole values for the serial case
+      if(nprocs==1) then ! Store special pole values for the serial case
         ret = gptlstart ('poleVal')
         do i=JMIN_IN(1),JMAX_IS(1)
           do jth=1,ISTOT
@@ -71,9 +73,9 @@
           end do
         end do
         ret = gptlstop ('poleVal')
-      endif
-
+      else
 !sms$insert call calcPoleVal
+      endif
 
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-1")
       if(barriersOn) then
@@ -104,9 +106,9 @@
 
 
                 if(jth==1.and.plasma_3d(i,lp,mp,jth)<=zero)then
-                   !SMS$IGNORE begin
+!SMS$IGNORE begin
                    print*,utime,'!STOP! INVALID plasma3d:mype',mype,plasma_3d(i,lp,mp,jth),i,lp,mp,jth
-                   !SMS$IGNORE end
+!SMS$IGNORE end
                    STOP
                 endif !jth
 
@@ -151,9 +153,9 @@
                  plasma_3d(i,lp,mp,jth) = plasma_1d(jth,i1d)
 
                  if(jth==1.and.plasma_1d(jth,i1d)<=zero)then
-                    !SMS$IGNORE begin
+!SMS$IGNORE begin
                     print*,utime,'sub-plasma:!STOP! INVALID plasma_1d af-paraT:mype',mype,plasma_1d(jth,i1d),lp,mp,i1d,i,jth
-                    !SMS$IGNORE end
+!SMS$IGNORE end
                     STOP
                  endif !jth
 
