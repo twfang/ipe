@@ -73,7 +73,9 @@
       real(KIND=real_prec) :: r
 !dbg20160715
       INTEGER(KIND=int_prec) :: idb
-      real:: H, dist
+!extrapolation
+      REAL (KIND=real_prec) :: Hk,Hk1,Hav,dht, dist, dist1
+      INTEGER(KIND=int_prec) :: ipts1
 !------
 
       iyear = NYEAR
@@ -123,16 +125,7 @@ END IF
 
 !
 
-!nm20110822: no more allocatable arrays
-!          IF (.NOT. ALLOCATED(glon_deg) )  ALLOCATE ( glon_deg(IN:IS) )
-!          IF (.NOT. ALLOCATED(glat_deg) )  ALLOCATE ( glat_deg(IN:IS) )
-!          IF (.NOT. ALLOCATED(alt_km) )  ALLOCATE (   alt_km(IN:IS) )
-!          IF (.NOT. ALLOCATED(Vn_ms1) )  ALLOCATE ( Vn_ms1(3,IN:IS), STAT=stat_alloc )
-!if ( stat_alloc/=0 ) then
-!  print *, ALLOCATED(Vn_ms1)
-!  print *, '!STOP! Vn_ms1 DEALLOCATION FAILED! in neutral:',stat_alloc,lp,mp,in,is,npts
-!  STOP
-!end if
+
           glon_deg(1:NPTS) = plasma_grid_3d(IN:IS,lp,mp,IGLON)*180./pi
           glat_deg(1:NPTS) = 90. - plasma_grid_3d(IN:IS,lp,mp,IGCOLAT)*180./pi
           alt_km  (1:NPTS) = plasma_grid_Z(IN:IS,lp) * M_TO_KM  !/ 1000. 
@@ -173,7 +166,7 @@ END IF
 
 !dbg20160715: temporarily change the code to use MSIS/HWM for the 1st time step, because wamfield is not ready for the 1st time step for a reason...
       if ( utime==432000 ) then
-         print*,mype,mp,lp,'MSIS utime=',utime         
+         IF( sw_debug ) print*,mype,mp,lp,'MSIS utime=',utime         
       else if ( utime>432000 ) then
 
          if ( sw_neutral==3 ) then
@@ -183,7 +176,7 @@ END IF
          ! nm20151130: temporarily obtain ihTopN
          NHLoop: do ipts=in,midpoint
             if ( plasma_grid_Z(ipts,lp)<=hTop_m .and. hTop_m<plasma_grid_Z(ipts+1,lp) ) then
-               print*, mp,lp,'NH',ipts,plasma_grid_Z(ipts,lp)*1.e-3,hTop_m*1.e-3
+               IF ( sw_debug )  print*, mp,lp,'NH',ipts,plasma_grid_Z(ipts,lp)*1.e-3,hTop_m*1.e-3
                ihTopN=ipts
                exit NHLoop
             endif
@@ -193,7 +186,7 @@ END IF
          
          SHLoop: do ipts=is,midpoint, -1
             if ( plasma_grid_Z(ipts,lp)<=hTop_m .and. hTop_m<plasma_grid_Z(ipts-1,lp) ) then
-               print*,mp,lp,'SH',ipts,plasma_grid_Z(ipts,lp)*1.e-3,hTop_m*1.e-3
+               IF ( sw_debug ) print*,mp,lp,'SH',ipts,plasma_grid_Z(ipts,lp)*1.e-3,hTop_m*1.e-3
                ihTopS=ipts
                exit SHLoop
             endif
@@ -202,19 +195,10 @@ END IF
          end do SHLoop !: do ipts=is       
 
 
-!dbg20160711 commented out
-!tmp20151130 temporarily assign msis Tn upto 800km
-!         WamField = zero
-!         NHLoop1: do ipts=in,ihTopN
-!            WamField(ipts,lp,mp,1) = tn_k(ipts,lp,mp)
-!         end do NHLoop1 !: do ipts=in,ihTopN
-!         SHLoop1: do ipts=ihTopS,is
-!            WamField(ipts,lp,mp,1) = tn_k(ipts,lp,mp)
-!         end do SHLoop1 !: do ipts=in,ihTopN
-!tmp20151130:
+
          jth=1   
          if ( swNeuPar(jth) ) then
-         if(lp==1) print*,mp,'calculating wam Tn',jth 
+            IF (sw_debug.and.lp==1) print*,mp,'calculating wam Tn',jth 
             !below 800km: NH
             tn_k(IN:ihTopN,lp,mp)   = WamField(IN:ihTopN,lp,mp, jth) !Tn NH
             !below 800km: SH
@@ -227,37 +211,19 @@ END IF
             !Tn Max SH
             tinf_k(midpoint+1:IS,lp,mp) = WamField(ihTopS,lp,mp, jth) !Tn Inf SH
 
-!perhaps i do not need this debug any more!
-!dbg20160715
+
+!dbg20160715!perhaps i do not need this debug any more!
+IF ( sw_debug ) THEN
 !SMS$IGNORE begin
-print '(2i3,i4," tn MIN",f7.0," MAX",f7.0)',mype,mp,lp,minval(tn_k(IN:IS,lp,mp)),maxval(tn_k(IN:IS,lp,mp))
+   print '(2i3,i4," tn MIN",f7.0," MAX",f7.0)',mype,mp,lp,minval(tn_k(IN:IS,lp,mp)),maxval(tn_k(IN:IS,lp,mp))
 !SMS$IGNORE end
 
-if ( minval(tn_k(IN:IS,lp,mp))<0.0 ) then
+   if ( minval(tn_k(IN:IS,lp,mp))<0.0 ) then
 
 !SMS$IGNORE begin
-   print*,mype,utime,'!STOP! INVALID Tn MIN!',mp,lp,minloc(tn_k(IN:IS,lp,mp))
+      print*,mype,utime,'!STOP! INVALID Tn MIN!',mp,lp,minloc(tn_k(IN:IS,lp,mp))
 !SMS$IGNORE end
 
-   if (mp==41.and.lp==7) then
-
-      do idb=1,14
-!SMS$IGNORE begin
-         print*,mp,lp,idb,wamfield(idb,lp,mp,1),tn_k(idb,lp,mp),plasma_grid_z(idb,lp)*1.e-3,utime
-!SMS$IGNORE end
-      end do
-      STOP
-
-   else if (mp==6.and.lp==15) then
-
-      do idb=IN,IS
-!SMS$IGNORE begin
-         print*,mp,lp,idb,wamfield(idb,lp,mp,1),tn_k(idb,lp,mp),plasma_grid_z(idb,lp)*1.e-3,utime
-!SMS$IGNORE end
-      end do
-      STOP
-
-   else 
       do idb=IN,IS
 
 !SMS$IGNORE begin
@@ -266,96 +232,44 @@ if ( minval(tn_k(IN:IS,lp,mp))<0.0 ) then
 
       end do
       STOP
-   end if ! (mp==41.and.lp==7) then
 
-endif !(minval
+   end if !(minval
+END IF !( sw_debug ) THEN
 
-!
-!if(mp==1.or.mp==6.or.mp==11.or.mp==16) then
-!  if(lp==1) then
-!     do idb=1,88
-!!SMS$IGNORE begin
-!        print*,'sub-neut:wamfield',mype,mp,lp,idb,tn_k(idb,lp,mp),wamfield(idb,lp,mp,jth),plasma_grid_Z(idb,lp)*1.e-3
-!!SMS$IGNORE end
-!     enddo !idb
-!  endif !lp
-!endif !mp
-!
-         end if
+end if !  ( swNeuPar(jth) ) then
+
 
          jth_loop: do jth=1,6 !2:east;3:notrh;4:up for WamField,swNeuPar
             jjth=jth+1 !2:4 for WamField,swNeuPar; !5:O,6:O2,7:N2
             if ( swNeuPar(jjth) ) then
 
                if ( jjth<5 ) then
-                  if(lp==1) print*,mp,'calculating wam Un',jjth
+                  if(sw_debug.and.lp==1) print*,mp,'calculating wam Un',jjth
                   !below 800km: NH
                   Vn_ms1(jth,IN-IN+1:ihTopN-IN+1) = WamField(IN:ihTopN,lp,mp, jjth) !Un NH
                   !below 800km: SH
                   Vn_ms1(jth,ihTopS-IN+1:IS-IN+1) = WamField(ihTopS:IS,lp,mp, jjth) !Un SH
 
                else if ( jjth==5 ) then
-                  if(lp==1) print*,mp,'calculating wam compO',jjth 
+                  if(sw_debug.and.lp==1) print*,mp,'calculating wam compO',jjth 
                   !O below 800km: NH
                   on_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jjth) !O
                   !O below 800km: SH
                   on_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jjth) !O
                else if ( jjth==6 ) then
                   !O2 below 800km: NH
-                  o2n_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jth) !O2
+                  o2n_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jjth) !O2
                   !O2 below 800km: SH
-                  o2n_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jth) !O2
+                  o2n_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jjth) !O2
                else if ( jjth==7 ) then
                   !N2 below 800km: NH
-                  n2n_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jth) !n2
+                  n2n_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jjth) !n2
                   !N2 below 800km: SH
-                  n2n_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jth) !n2
+                  n2n_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jjth) !n2
                end if !jjth
 
 
-!dbg20160913: it did not work! why?
-!dbg20160824
-!20160908 commeted out because this did not work why?
-!temporary quick fix for the 3 strange points near the magnetic South pole
-!(1)temporarily assigned from lp=14
-!if( mp==4.and.lp==15 ) then 
-!   if(jjth==5)then
-!      on_m3(ihTopS:IS,lp,mp) = on_m3( ihTopS:IS,lp-1,mp)
-!   else if(jjth==6)then
-!      o2n_m3(ihTopS:IS,lp,mp) = o2n_m3( ihTopS:IS,lp-1,mp)
-!   else if(jjth==7)then
-!      n2n_m3(ihTopS:IS,lp,mp) = n2n_m3( ihTopS:IS,lp-1,mp)
-!   endif !jjth=5
-!endif !mp=3
-!
-!!(2)temporarily assigned from lp=13
-!if( mp==5.and.lp==14 ) then 
-!   if(jjth==5)then
-!      on_m3(ihTopS:IS,lp,mp) = on_m3( ihTopS:IS,lp-1,mp)
-!   else if(jjth==6)then
-!      o2n_m3(ihTopS:IS,lp,mp) = o2n_m3( ihTopS:IS,lp-1,mp)
-!   else if(jjth==7)then
-!      n2n_m3(ihTopS:IS,lp,mp) = n2n_m3( ihTopS:IS,lp-1,mp)
-!   endif !jjth=5
-!endif !mp=4
-!
-!!(3)temporarily assigned from lp=12
-!if( mp==5.and.lp==14 ) then 
-!   if(jjth==5)then
-!      on_m3(ihTopS:IS,lp,mp) = on_m3( ihTopS:IS,lp-2,mp)
-!   else if(jjth==6)then
-!      o2n_m3(ihTopS:IS,lp,mp) = o2n_m3( ihTopS:IS,lp-2,mp)
-!   else if(jjth==7)then
-!      n2n_m3(ihTopS:IS,lp,mp) = n2n_m3( ihTopS:IS,lp-2,mp)
-!   endif !jjth=5
-!endif !mp=4
-!dbg20160824:end
 
-
-
-
-
-            
                !dbg20160823:
                ihemLoop: DO ihem=1,2
                   if ( ihem==1 ) then 
@@ -381,21 +295,25 @@ endif !(minval
                         
                         
                      else  !jjth>=5
-
+                        ipts1=ipts-iStep 
+!scale height at k=k
                         dist = earth_radius/(earth_radius+plasma_grid_Z(ipts,lp))
-                        H = GSCON * Tn_k(ihTop,lp,mp) / (massn_kg(jjth-4)*G0*dist*dist)
+                        Hk  = GSCON * Tn_k(ipts ,lp,mp) / (massn_kg(jjth-4)*G0*dist*dist)
+!scale height at k=k-1
+                        dist1 = earth_radius/(earth_radius+plasma_grid_Z(ipts1,lp))
+                        Hk1 = GSCON * Tn_k(ipts1,lp,mp) / (massn_kg(jjth-4)*G0*dist1*dist1)
+                        Hav=(Hk+Hk1)*0.50
+                        dht=-plasma_grid_Z(ipts,lp)+plasma_grid_Z(ipts1,lp)
 
                         if ( jjth==5 ) then !O
-                        
-                           if(lp==1) print*,mp,'calculating wam comp>800km NH',jjth 
-                           on_m3( ipts,lp,mp) = WamField(ihTop,lp,mp,jjth) * exp((-plasma_grid_Z(ipts,lp)+plasma_grid_Z(ihTop,lp))/H)
-                        
+                           if(sw_debug.and.lp==1) print*,mp,'calculating wam comp>800km NH',jjth 
+                           on_m3( ipts,lp,mp) = on_m3(ipts1,lp,mp) * exp(dht/Hav)
                         else if (jjth==6 ) then !O2
-                           o2n_m3(ipts,lp,mp) = WamField(ihTop,lp,mp,jjth) * exp((-plasma_grid_Z(ipts,lp)+plasma_grid_Z(ihTop,lp))/H)
+                           o2n_m3(ipts,lp,mp) = o2n_m3(ipts1,lp,mp) * exp(dht/Hav)
                         else if (jjth==7 ) then !N2
-                           n2n_m3(ipts,lp,mp) = WamField(ihTop,lp,mp,jjth) * exp((-plasma_grid_Z(ipts,lp)+plasma_grid_Z(ihTop,lp))/H)
+                           n2n_m3(ipts,lp,mp) = n2n_m3(ipts1,lp,mp) * exp(dht/Hav)
                         end if !jjth==5
-
+                        
                      end if !jjth<5
                      
                   end do above800kmLoop!: DO ipts=ihTop+istep, midPoints, iStep 
@@ -406,12 +324,12 @@ endif !(minval
 
          end do jth_loop !jth=1,3 !2:4 for WamField,swNeuPar            
 
-
+if(sw_debug)then 
 !SMS$IGNORE begin
 print '(2i3,i4," vn MIN",f7.1,"MAX",f7.1)',mype,mp,lp,minval(vn_ms1(2,IN:IS)),maxval(vn_ms1(2,IN:IS))
 print '(2i3,i4," on MIN",e12.1,"MAX",e12.1)',mype,mp,lp,minval(on_m3(IN:IS,lp,mp)),maxval(on_m3(IN:IS,lp,mp))
 !SMS$IGNORE end
-
+end if !sw_debug
 
             end if !      if ( sw_neutral == 3
         end if !( utime==432000 ) then

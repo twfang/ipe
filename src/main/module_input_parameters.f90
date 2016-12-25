@@ -36,8 +36,11 @@
       INTEGER (KIND=int_prec), PUBLIC :: NYEAR ! year
       INTEGER (KIND=int_prec), PUBLIC :: NDAY  ! day number
 
-      INTEGER (KIND=int_prec), PUBLIC :: ip_freq_output  ![sec] must be multiple of time_step
-      INTEGER (KIND=int_prec), PUBLIC :: ip_freq_msis    !frequency[sec] to call MSIS/HWM: default 15min
+      INTEGER (KIND=int_prec), PUBLIC :: internalTimeLoopMax=1  ![times]internal time loop: default 1
+      INTEGER (KIND=int_prec), PUBLIC :: ip_freq_output=900  ![sec] must be multiple of time_step: default 15m
+      INTEGER (KIND=int_prec), PUBLIC :: ip_freq_msis=180    !frequency[sec] to call MSIS/HWM: default 3m
+      INTEGER (KIND=int_prec), PUBLIC :: ip_freq_plasma=60   !frequency[sec] to call plasma: default 1m
+      INTEGER (KIND=int_prec), PUBLIC :: ip_freq_eldyn=180   !frequency[sec] to call eldyn: default 3m(for quiet climatology),60s for storm
       LOGICAL                , PUBLIC :: parallelBuild=.false.
 
 !--- FLIP specific input parameters
@@ -111,6 +114,7 @@
       LOGICAL, dimension(7), PUBLIC :: swNeuPar!     =.false. !f:OFF (from MSIS); t:ON (from WAM)
 !determines which neutral parameters to derive from WAM only when sw_neutral=0/1? 
 !1:tn; 2:un1(east); 3:un2(north); 4:un3(up); 5:[O]; 6:[O2]; 7:[N2]
+      LOGICAL, PUBLIC :: swEsmfTime =.false.
       INTEGER(KIND=int_prec), PUBLIC :: sw_eldyn
 !0:self-consistent eldyn solver; 1:WACCM efield ;2:  ;3: read in external efield
       INTEGER(KIND=int_prec), PUBLIC :: sw_pcp        !0:heelis; 1:weimer
@@ -165,8 +169,11 @@
      &,F107AV  &
      &,NYEAR  &
      &,NDAY   &
+     &,internalTimeLoopMax &
+     &,ip_freq_eldyn &
      &,ip_freq_output &
-     &,ip_freq_msis
+     &,ip_freq_msis &
+     &,ip_freq_plasma
       NAMELIST/NMFLIP/DTMIN_flip  & 
      &,sw_INNO   & 
      &,FPAS_flip   & 
@@ -197,6 +204,7 @@
       NAMELIST/NMSWITCH/&
            &  sw_neutral     &
            &, swNeuPar       &
+           &, swEsmfTime     &
            &,  sw_eldyn     &
            &, sw_pcp         &
            &, sw_grid        &
