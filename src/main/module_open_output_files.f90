@@ -23,10 +23,10 @@
       CONTAINS
 !---------------------------
         SUBROUTINE open_output_files ( )
-        USE module_input_parameters,ONLY: NYEAR,NDAY,HPEQ_flip,sw_debug,sw_output_plasma_grid,record_number_plasma_start,sw_output_fort167,sw_output_wind
+        USE module_input_parameters,ONLY: NYEAR,NDAY,HPEQ_flip,sw_debug,sw_output_plasma_grid,record_number_plasma_start,sw_output_fort167,sw_output_wind,mype
         USE module_IO,ONLY: &
 &  filename,FORM_dum,STATUS_dum &
-&, LUN_pgrid,PRUNIT,LUN_LOG &
+&, LUN_pgrid,LUN_LOG &
 &, LUN_FLIP1,LUN_FLIP2,LUN_FLIP3,LUN_FLIP4 &
 &, LUN_PLASMA0, LUN_PLASMA1,LUN_PLASMA2, LUN_UT, LUN_UT2 &
 &, lun_min1,lun_max1,lun_min2,lun_max2 &
@@ -45,12 +45,6 @@
         END IF
         WRITE( UNIT=LUN_LOG, FMT=*) string_tmp
 
-!--- unit=8
-!nm20120303        filename ='FLIP_ERROR_FLAG_'//TRIM(string_tmp)//'.log'
-        filename ='FLIP_ERR'
-        FORM_dum ='formatted  ' 
-        STATUS_dum ='unknown'
-        CALL open_file ( filename, PRUNIT, FORM_dum, STATUS_dum )  
 
 !--- unit=9
 !nm20120303        filename ='logfile'//TRIM(string_tmp)//'.log'
@@ -60,32 +54,35 @@
         CALL open_file ( filename, LUN_LOG, FORM_dum, STATUS_dum )  
 
         IF ( sw_output_fort167 ) THEN
-!--- unit=167
-        LUN_FLIP1=167
-        WRITE ( filename, FMT="('fort.',i3)" ) LUN_FLIP1  !'fort.167'
-print *,'fort.167?', filename, LUN_FLIP1
-        FORM_dum ='formatted  ' 
-        STATUS_dum ='unknown'
-        CALL open_file ( filename, LUN_FLIP1, FORM_dum, STATUS_dum ) 
+!SMS$IGNORE begin
+           !--- unit=167
+           LUN_FLIP1=167
+           WRITE ( filename, FMT="('fort.',i3)" ) LUN_FLIP1  !'fort.167'
+           if(mype==0)print *,'fort.167?', filename,'unit_number=',LUN_FLIP1
+           FORM_dum ='formatted  ' 
+           STATUS_dum ='unknown'
+CALL open_file ( filename, LUN_FLIP1, FORM_dum, STATUS_dum ) 
 
-!--- unit=168
-        LUN_FLIP2=168
-        WRITE ( filename, FMT="('fort.',i3)" ) LUN_FLIP2  !'fort.168'
-print *,'fort.168?', filename, LUN_FLIP2
-        CALL open_file ( filename, LUN_FLIP2, FORM_dum, STATUS_dum )
+           !--- unit=168
+           LUN_FLIP2=168
+           WRITE ( filename, FMT="('fort.',i3)" ) LUN_FLIP2  !'fort.168'
+           if(mype==0)print *,'fort.168?', filename,'unit_number=',LUN_FLIP2
+CALL open_file ( filename, LUN_FLIP2, FORM_dum, STATUS_dum )
 
-!--- unit=170
-        LUN_FLIP3=170
-        WRITE ( filename, FMT="('fort.',i3)" ) LUN_FLIP3  !'fort.170'
-print *,'fort.170?', filename, LUN_FLIP3
-        CALL open_file ( filename, LUN_FLIP3, FORM_dum, STATUS_dum )
+           !--- unit=170
+           LUN_FLIP3=170
+           WRITE ( filename, FMT="('fort.',i3)" ) LUN_FLIP3  !'fort.170'
+           if(mype==0)print *,'fort.170?', filename,'unit_number=',LUN_FLIP3
+CALL open_file ( filename, LUN_FLIP3, FORM_dum, STATUS_dum )
 
-!--- unit=171
-        LUN_FLIP4=171
-        WRITE ( filename, FMT="('fort.',i3)" ) LUN_FLIP4  !'fort.171'
-print *,'fort.171?', filename, LUN_FLIP4
-        CALL open_file ( filename, LUN_FLIP4, FORM_dum, STATUS_dum )
-        END IF !( sw_debug ) THEN
+           !--- unit=171
+           LUN_FLIP4=171
+           WRITE ( filename, FMT="('fort.',i3)" ) LUN_FLIP4  !'fort.171'
+           if(mype==0)print *,'fort.171?', filename,'unit_number=',LUN_FLIP4
+CALL open_file ( filename, LUN_FLIP4, FORM_dum, STATUS_dum )
+print*,mype,'check unit#',LUN_FLIP1,LUN_FLIP3,LUN_FLIP2,LUN_FLIP4
+!SMS$IGNORE end
+        END IF !( sw_output_fort167
 
 
 IF ( sw_output_plasma_grid ) THEN
@@ -208,7 +205,7 @@ END IF !( sw_output_plasma_grid ) THEN
            STATUS_dum ='unknown'
            CALL open_file ( filename, LUN_wind5, FORM_dum, STATUS_dum ) 
 
-        END IF !( sw_output_fort167 ) THEN
+        END IF !( sw_output_wind
 
         END SUBROUTINE open_output_files
 !---------------------------

@@ -101,10 +101,11 @@
       LOGICAL, PUBLIC :: sw_debug_mpi
       LOGICAL, PUBLIC :: sw_output_fort167 =.false.
       LOGICAL, PUBLIC :: sw_output_wind    =.false. !unit=6000,6001
-      INTEGER(KIND=int_prec), PUBLIC :: mpfort167 = 52
-      INTEGER(KIND=int_prec), PUBLIC :: lpfort167 = 37
+      INTEGER(KIND=int_prec), PUBLIC :: peFort167=0 !default mype=0
+      INTEGER(KIND=int_prec), PUBLIC :: mpfort167 = 10
+      INTEGER(KIND=int_prec), PUBLIC :: lpfort167 = 14
       INTEGER(KIND=int_prec), DIMENSION(2), PUBLIC :: iout
-      INTEGER(KIND=int_prec), PUBLIC :: mpstop
+      INTEGER(KIND=int_prec), PUBLIC :: mpstop=80
       INTEGER(KIND=int_prec), PUBLIC :: sw_neutral=3    
 !0: WAM debug: use which ever ESMF fields are coming across for debugging purpose
 !1: WAM default science mode: specify ESMF fields you wish to use
@@ -226,6 +227,7 @@
            &, sw_output_wind   &
            &, mpfort167   &
            &, lpfort167   &
+           &, peFort167   &
            &, record_number_plasma_start   &
            &, sw_record_number   &
            &, ut_start_perp_trans   &

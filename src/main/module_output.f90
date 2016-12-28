@@ -12,7 +12,8 @@
 !--------------------------------------------  
       MODULE module_output
       USE module_precision
-      USE module_IPE_dimension,ONLY: ISPEC,ISPEV
+      USE module_IPE_dimension   ,ONLY: ISPEC,ISPEV
+      USE module_input_parameters,ONLY: mype
       IMPLICIT NONE
 
 !nm20121003:module parameters are separated into module_io.f90!
@@ -25,10 +26,14 @@
         SUBROUTINE output ( utime )
         USE module_IO,ONLY: PRUNIT
         IMPLICIT NONE
+        include "gptl.inc"
+        integer ret
 !------------------------
         INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]
 
-        WRITE(UNIT=PRUNIT,FMT="('uts=',i7)") utime
+        if(mype==0) then
+          WRITE(UNIT=PRUNIT,FMT="('uts=',i7,i7)") utime,prunit
+        endif
 
         END SUBROUTINE output
 !---------------------------
