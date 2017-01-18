@@ -4,7 +4,6 @@
 #       MAKEJOBS variable, e.g.: MAKEJOBS=1 make theia_intel_parallel
 
 # Static / Unconditional / Default variables
-sw_grid = 1
 ###nm20151113 DIRS          = main neutral eldyn flip plasma dummygptl driver
 ###nm20151110 DIRS          = main neutral flip eldyn plasma dummygptl driver
 DIRS          = main neutral eldyn flip plasma driver
@@ -24,8 +23,7 @@ TARGETS = clean                   \
 
 # Dynamic / Conditional variables
 
-EXE           = $(CURDIR)/../bin/ipe_$(MACHINE)_$(COMPILER)_$(PARALLELISM)${sw_grid}.exe
-#EXE           = $(CURDIR)/../bin/ipe_$(MACHINE)_$(COMPILER)_$(PARALLELISM).exe
+EXE           = $(CURDIR)/../bin/ipe_$(MACHINE)_$(COMPILER)_$(PARALLELISM).exe
 FFLAGS        = $(strip $(OPT_FLAGS) $(GPTL_INCFLAGS) $(GPTL_LDFLAGS))
 PARALLEL_MAKE = $(MAKE) -j $(MAKEJOBS)
 PPP           = $(SMS)/bin/ppp
