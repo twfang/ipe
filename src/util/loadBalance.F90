@@ -4,6 +4,8 @@ Program loadBalance
 !This code combines some of the lp points to create groups that have similar numbers of flux tube points.
 !For load balancing the groups, not the lp points, will be apportioned among the processors.
 
+!*****To run choose the number of groups (ngroups) you want to end up with.*****
+
 implicit none
 integer,parameter   :: ngroups=40       !Number of groups NLP will be reduced to.
 integer,parameter   :: Ntries=1000      !Number of tries before giving up.
@@ -63,7 +65,7 @@ target_loop: do maxPts = maxPtsStart,maxPtsEnd
       sumTubes(i) = sumTubes(i)+JMAX_IS(lp)
     enddo !lp
     if(i < ngroups) then
-      print*,'i < ngroups',i,ngroups
+      print*,'i < ngroups',i,ngroups,d
       stop
     elseif(i  == ngroups) then
       finalRatio = float(maxPts)/float(MaxFluxTube)

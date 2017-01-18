@@ -264,12 +264,17 @@ case $machine in
 #0)    setc IPEDATA  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/IPEdata/data
 #1)    setc IPEDATA  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/tmp20150730/trunk/run/1444997033_ipe_theia_intel_parallel_80
 #    setc IPEDATA  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/tmp20150730/trunk/run/1447671826_ipe_theia_intel_parallel2_80
-#   setc IPEDATA  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/tmp20150730/trunk/run/1459115822_ipe_theia_intel_parallel2_80
+#    setc IPEDATA  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/tmp20150730/trunk/run/1459115822_ipe_theia_intel_parallel2_80
+#    storm is run1
+#    setc IPEDATA  /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/mpi20160330v2/run1/1461436195_ipe_theia_intel_parallel2_93
+#    no storm is run2
+#    setc IPEDATA  /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/mpi20160330v2/run2/1462657622_ipe_theia_intel_parallel2_93
     setc IPEDATA  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/tmp20150730/trunk/run/1469880705_ipe_theia_intel_parallel1_80
+
     echo "IPEDATA=" $IPEDATA
     setc IPEQUEUE debug
     echo "IPEQUEUE=" $IPEQUEUE
-    setc IPETIME  00:30:00
+    setc IPETIME  00:10:00
     echo "IPETIME=" $IPETIME
     setc IPEWIND  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/IPEdata/wind
     acct=swpc

@@ -13,7 +13,6 @@
       MODULE module_open_file
       USE module_precision
       USE module_IPE_dimension   ,ONLY: ISPEC,ISPEV
-      USE module_input_parameters,ONLY: mype
       IMPLICIT NONE
 
 !nm20121003:module parameters are separated into module_io.f90!
