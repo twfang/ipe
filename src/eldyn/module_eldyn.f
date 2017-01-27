@@ -60,6 +60,10 @@
 !SMS$DISTRIBUTE(dh,2,3) BEGIN
       REAL   (KIND=real_prec),allocatable,public :: Ed1_90  (:,:,:)
       REAL   (KIND=real_prec),allocatable,public :: Ed2_90  (:,:,:)
+!nm20131025:...ideally, this should be located for sw_eldyn=0, should not be mixed with waccm efield!!!
+      REAL   (KIND=real_prec),allocatable,public :: plas_fli (:,:,:,:) !(2,NLP,NMP,6)
+!t      REAL   (KIND=real_prec),allocatable,public ::sigma_ped(:,:,:)
+!t      REAL   (KIND=real_prec),allocatable,public ::sigma_hall(:,:,:)
 !SMS$DISTRIBUTE END
 
 !nm20121003:subroutine init_eldyn, eldyn are separated into module_sub_eldyn.f

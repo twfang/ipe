@@ -35,18 +35,61 @@
       PUBLIC :: init_eldyn
       CONTAINS
       SUBROUTINE init_eldyn ( )
-      USE module_eldyn,only : j0,j1,Ed1_90,Ed2_90,coslam_m
+      USE module_eldyn,only :j0,j1,Ed1_90,Ed2_90,coslam_m               &
+     &, plas_fli !t,Je_3d
+      USE module_input_parameters,only: sw_eldyn
+      use module_init_cons,only:init_cons 
+      use module_init_heelis,only:init_heelis 
+      use module_nc_create,only:nc_create
+!t      use module_readin_netcdf,only:readin_netcdf
+      use module_readin_ascii,only:readin_ascii
+      use read_module,only:input_type
       IMPLICIT NONE
       integer :: status
 !20120304:      CHARACTER(len=*),PARAMETER :: path='~/sandbox/efield/'
 
-      print *,'begin init_eldyn'
+      print *,'begin init_eldyn: sw_eldyn=', sw_eldyn
+
+!1: self-consistent electrodynamic solver
+!t      IF ( sw_eldyn==0 ) THEN 
+
+          print *,'sub-init_eldyn: calling init_cons'
+          CALL init_cons
+
+          print *,'sub-init_eldyn: calling init_heelis'
+          CALL init_heelis
+
+          print *,'sub-init_eldyn: calling nc_create'
+          CALL nc_create
+
+          ! read in integrals                                                             
+          if(input_type == 'NETCDF') then
+!            print *,'sub-init_eldyn: calling readin_netcdf'
+!            call readin_netcdf
+          elseif(input_type == 'ASCII') then
+            print *,'sub-init_eldyn: calling readin_ascii'
+            call readin_ascii
+          else
+            write(6,*)'Did not recognize input_type=',input_type
+            stop 'couple'
+          endif
+
+
+
+  
+!2: WACCM empirical electric field model
+!t      ELSE IF ( sw_eldyn==1 ) THEN 
+        print *,'allocating Ed1_90etc'
 
       allocate( j0      (2,NLP    ),                                    &
      &          j1      (2,NLP    ),                                    &
      &          coslam_m(2,NLP    ),                                    &
      &          Ed1_90  (2,NLP,NMP),                                    &
      &          Ed2_90  (2,NLP,NMP),                                    &
+!nm20131025:...ideally, the array should be located for sw_eldyn=0
+     &          plas_fli (2,NLP,NMP,6),                                 &
+!t     &          sigma_ped(     2,NLP,NMP),                              &
+!t     &          sigma_hall(    2,NLP,NMP),                              &
      &          STAT=status       )
       if(status /=0) then
         print*,'Allocation failed in module_init_eldyn',status
@@ -56,6 +99,8 @@
       CALL efield_init( 'coeff_lflux.dat',                              &
      &                  'coeff_hflux.dat',                              &
      &                  'wei96.cofcnts'   )
+
+!t      END IF !( sw_eldyn==0 ) THEN 
 
       print *,'END sub-init_eld'
       END SUBROUTINE init_eldyn

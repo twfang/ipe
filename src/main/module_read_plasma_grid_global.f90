@@ -216,7 +216,7 @@ enddo
 !JFM  Be3(1:2,1:NMP,1:NLP)=    Be3_all(1:2,1:NMP,1:NLP)
 
 !nm20130830
-!d print *, "!nm20130830: make sure Be3 is constant!? Be3_all1=", Be3_all1(1,130)," Be3_all2=",Be3_all2(1,130)
+print *, "!nm20130830: make sure Be3 is constant!? Be3_all1=", Be3_all1(1,130)," Be3_all2=",Be3_all2(1,130)
 
       do mp=1,NMP
         do lp=1,NLP

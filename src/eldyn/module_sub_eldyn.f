@@ -17,13 +17,13 @@
 !ylatm(1:nmlat=90)
 !      program ts_efield
       MODULE module_sub_eldyn
-      USE module_precision
+      use module_precision
 !----------------------
 !c idea
 !      subroutine idea_geteb(im,ix,dayno,utsec,f107,kp,maglat,maglon,
 !     &essa,ee1,ee2)
       USE efield !,ONLY:iday,imo,iday_m,iyear,ut,kp,by,bz,f107d
-      USE module_get_efield,ONLY:get_efield
+      use module_get_efield,ONLY:get_efield
 !c     use date_def
 !c     use physcons, pi => con_pi
       IMPLICIT NONE
@@ -35,17 +35,84 @@
       CONTAINS
 !---
       SUBROUTINE eldyn ( utime )
-      USE module_precision
-      USE module_cal_monthday
-      USE module_input_parameters,ONLY:NYEAR,NDAY,start_time,mype       &
-     &, ip_freq_output, sw_debug, kp_eld, F107D_ipe => F107D            !,AP
-      USE module_physical_constants,ONLY:rtd
+      use module_precision
+      use module_cal_monthday
+      use module_input_parameters,ONLY:NYEAR,NDAY,start_time,mype       &
+     &,ip_freq_output,sw_debug,kp_eld,sw_eldyn,F107D_ipe => F107D       !,AP
+      use module_physical_constants,ONLY:rtd
 !nm20121003:
-      USE module_eldyn,ONLY:theta90_rad,j0,Ed1_90,Ed2_90
+      use module_eldyn,ONLY:theta90_rad,j0,Ed1_90,Ed2_90
+      use module_sunloc,only: sunloc
+      use module_highlat,only: highlat
+      use module_sub_dynamo,only: dynamo
+      use module_magfield,ONLY:sunlons
+      use module_update_fli,ONLY:update_fli
+      use dynamo_module,only:zigm11
+!t      use nc_module,only:noid,                                          &! id of output netcdf-file
+!t     &     start1_out,                                                  &! only for put out 3D fields 
+!t     &     dim3,dim1,count1,n_time
+
       IMPLICIT NONE
       INTEGER (KIND=int_prec),INTENT(IN)   :: utime !universal time [sec]
 !---local
       real :: kp ! 
+      integer (KIND=int_prec) :: iyr
+      real (KIND=real_prec)   :: utsecs
+      character :: fname*10,labl*56,units*12
+!
+      print *,'begin sub_eldyn: sw_eldyn=', sw_eldyn
+!1: self-consistent electrodynamic solver
+!t      IF ( sw_eldyn==0 ) THEN 
+
+!t      n_time=n_time+1
+      print *, 'self-consistent eldyn started' !t ,n_time
+
+      iyr = 1997
+      utsecs=REAL(utime, real_prec)
+
+      
+!t output time in netcdf
+!t      fname = 'time'
+!t      labl = 'time'
+!t      units = 'sec'
+!t      call ncplot1D(noid,fname,labl,start1t,count1t,idtime              &
+!t     &     ,utsecs,4,units,3)
+
+
+
+      print *,'sub-eldyn: sunloc: utsecs=',iyr,NDAY,utsecs
+!      call sunloc(iyr,NDAY,utsecs)
+      call sunloc(iyr,97,utsecs)
+
+!dbg20150615: temporary commented out
+! output sunlons(1)
+!      fname = 'sunlons'
+!      labl = 'sunlons'
+!      units = 'radian'
+!      start1_out(1)=n_time
+!      count1(1)    =n_time
+!      dim1         =dim3(3)
+!      call ncplot1D(noid,fname,labl,start1_out,count1,dim1              &
+!     &     ,sunlons,7,units,6)
+
+! output sunlons
+      print *,'(21) output dyn sunlons at utime=',utime
+!      write(unit=4021,FMT='(I12)')utime
+      write(unit=4021,FMT='(20E12.4)')sunlons(1)
+      if (sw_debug) print *,'sunlons(1)',sunlons(1)
+
+      if (sw_debug) print *,'sub-eldyn: update_fli'
+      call update_fli ( utime )
+
+      if (sw_debug) print *,'sub-eldyn: highlat'
+      call highlat
+
+      if (sw_debug) print *,'sub-dynamo: dynamo'
+      call dynamo
+      print *,'self-consistent dynamo finished'
+
+!2: WACCM empirical electric field model
+!t      ELSE IF ( sw_eldyn==1 ) THEN 
 !c initiate
 !c calculate efield only if diff time step
 !      if(utsec.ne.utsec_last) then
@@ -59,11 +126,11 @@
 !nm20121127: calculate month/day from iyear and iday
       call cal_monthday ( iyear,iday, imo,iday_m )
 !nm20130402: temporarily hard-code the iday to get b4bconfirmed.
-!      iday_m=15                 !day of month 
+      iday_m=15                 !day of month 
 
 !!! F107D is global both in module efield & ipe input
       f107d = F107D_ipe         !f107
-      ut = REAL(utime,real_prec)/3600.0
+      ut = REAL(utime,real_prec)/3600.0 !sec-->hr
       kp = kp_eld  !=1.                   !???
       bz = .433726 - kp*(.0849999*kp + .0810363)                        &
      &        + f107d*(.00793738 - .00219316*kp)
@@ -72,7 +139,7 @@
       if ( utime==start_time ) then
         print *,'iday',iday, 'imo',imo,' iday_m',iday_m,' iyear',iyear
         print *,' kp',kp
-        print *,'IPE By=',by,' Bz=',bz,' F107d=',f107d
+        print *,'By=',by,' Bz=',bz,' F107d=',f107d
       end if
 
       call get_efield
@@ -92,6 +159,10 @@
       endif
       CALL GET_EFIELD90km ( utime )
       if ( sw_debug )  print *,'GET_EFIELD90km finished'
+
+!t      END IF !( sw_eldyn==0 ) THEN 
+
+
       IF ( utime==start_time ) THEN 
         write(unit=2007,FMT='(20f10.4)') (90.-theta90_rad*rtd)    
       ENDIF

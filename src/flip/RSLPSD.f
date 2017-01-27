@@ -14,6 +14,8 @@ C--- Consult file RSLPSD-Algorithm.doc for detailed explanation
      >                    TI,   !.. Ion and electron temperatures
      >                  DTIN,   !.. Time step from calling program
      >                 DTMIN,   !.. Minimum time step
+     &                mp,
+     &                lp,
      >                 EFLAG)   !.. OUTPUT: Error flag array
       USE SOLVARR       !... DELTA RHS WORK S, Variables for solver
       USE THERMOSPHERE  !.. ON HN N2N O2N HE TN UN EHT COLFAC
@@ -30,6 +32,7 @@ C--- Consult file RSLPSD-Algorithm.doc for detailed explanation
       INTEGER JBNN,JBNS,NION             !.. boundary indices, # of ions
       INTEGER JMIN,JEQ,JMAX,JK,JCON      !.. spatial grid indices
       INTEGER DCLON,DCLOS,DCUPP          !.. tests for convergence region
+      INTEGER mp,lp
       DOUBLE PRECISION DT,DTIN,DTMIN,DTINC !.. Time step variables
       DOUBLE PRECISION ZLBDY               !.. lower boundary altitudes for N
       DOUBLE PRECISION DCRQ(2,FLDIM),DCR(2)      !.. solution variables
@@ -112,7 +115,7 @@ C*** OUTER LOOP: Return here on Non-Convergence with reduced time step
         IEQ=2*(MIT-2)         !.. Number of equations to set up      
 !dbg20120304:
       if ( IEQ<=2 ) then
-        print *,'!STOP! INVALID MIT=',MIT,JBNS,JBNN,ZLBDY
+        print *,'!STOP! INVALID MIT=',MIT,JBNS,JBNN,ZLBDY,mp,lp
         do j=jmin,jmax
          print *,j,z(j)
         enddo

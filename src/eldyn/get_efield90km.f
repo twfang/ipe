@@ -157,8 +157,6 @@
           END IF                   ! ( plasma_grid_3d(IN,mp)%GL>theta90_rad(nmlat/2) ) THEN
 
         END DO mlat_loop90km0!: DO lp=1,NLP
-!dbg20160408 sms debug
-!SMS$PARALLEL END
 
       END IF !( j0(1,1)>0 ) THEN
 
@@ -181,8 +179,6 @@
         IF( mlon130_rad(i)>=pi*2.0) mlon130_rad(i)=mlon130_rad(i)-pi*2.0
       END DO mlon130_loop0 !: DO i=0,nmlon
 
-!dbg20160408 sms debug:
-!SMS$PARALLEL(dh, lp, mp) BEGIN
       mlon_loop90km0: DO mp=1,NMP
 !       mlon_rad: from 0 to 355.5 with dlon_ipe=4.5 deg resolution
 !       mlon90_deg = mlon_rad(mp)*rtd
@@ -306,12 +302,8 @@
           ed2_90(2,lp,mp)=+1.0/r/sinI_m(ihem)*(pot_j1-pot_j0) /d_lam_m
 !         dbg20111108     &*(-1.)*sinI_m(ihem)  !E_m_lambda (5.10)
 
-          IF(sw_exb_up<=1.and.sw_perp_transport>=1) then
-             if(lp>=lpmin_perp_trans.AND.lp<=lpmax_perp_trans) THEN 
-
-!initialization
-                VEXBup(lp,mp)=zero
-                VEXBe(lp,mp)=zero
+          IF(sw_exb_up<=1.and.sw_perp_transport>=1.and.                 &
+     &      lp>=lpmin_perp_trans.AND.lp<=lpmax_perp_trans) THEN 
 
 !           (0) self consistent electrodynamics comming soon...
 !           (1) WACCM E empirical model
@@ -320,8 +312,8 @@
             midpoint = JMIN_IN(lp) + (JMAX_IS(lp) - JMIN_IN(lp))/2
 
 !nm20130830: Ed1/2_90 should be constant along magnetic field lines!!!
-      if(sw_debug.AND.mp==1) print *,lp,mp,'!nm20130830: ed1_90NH='     &
-     &,  ed1_90(1,lp,mp),' SH=',ed1_90(2,lp,mp) 
+      if(mp==1) print *,lp,mp,'!nm20130830: ed1_90NH=',ed1_90(1,lp,mp)  &
+     &,' SH=',ed1_90(2,lp,mp)
 
             v_e(1) =   Ed2_90(1,lp,mp) / Be3(lp,mp) !(4.18) +mag-east(d1?) 
             v_e(2) = - Ed1_90(1,lp,mp) / Be3(lp,mp) !(4.19) +down/equatorward(d2?)
@@ -329,6 +321,13 @@
               print *,'sub-StR:',ihem,'ve2[m/s]',v_e(2),'ed1[mV/m]',    &
      &           Ed1_90(1,lp,mp)*1.0E+3,' Be3[tesla]',Be3(lp,mp) 
             endif
+
+!dbg20140807 jicamarca exb drift
+      if (lp==130) then
+              write(unit=7000,fmt=*) mp
+              write(unit=7000,fmt=*) Be3(lp,mp) 
+      endif
+
 !nm20130201
 ! EXB in geographic frame
             vexbgeo(east )=(v_e(1)*apexE(midpoint,lp,mp,east,1))        &
@@ -341,6 +340,13 @@
               print *,'sub-StR:',v_e(1),apexE(midpoint,lp,mp,up,1)      &
      &                          ,v_e(2),apexE(midpoint,lp,mp,up,2)
             endif
+
+!dbg20140807 jicamarca exb drift
+      if (lp==130) then
+       write(unit=7000,fmt=*) apexE(midpoint,lp,mp,up   ,1)
+       write(unit=7000,fmt=*) apexE(midpoint,lp,mp,up   ,2)
+      endif
+
 ! EXB in magnetic APEX frame
 ! magnetic exact upward
             VEXBup(lp,mp)=vexbgeo(up)
@@ -357,13 +363,12 @@
      &                  +vexbgeo(north)*l_mag(midpoint,lp,mp,north,1)   &
      &                  +vexbgeo(up  ) *l_mag(midpoint,lp,mp,up   ,1)
 !nm20130201: temporary solution to test the code
-            VEXBe(lp,mp)=zero
+            VEXBe(lp,mp)=0.0D0
 
 
-         end if                 !(lp>=lpmin_perp_trans.AND.lp<=lpmax_perp_trans) THEN 
-      END IF                    !( sw_exb_up<=1.and. ... ) 
+          ENDIF !( sw_exb_up<=1.and. ... ) 
 
-      END DO mlat_loop90km1     !: DO lp=1,NLP
+        END DO mlat_loop90km1 !: DO lp=1,NLP
       END DO mlon_loop90km0     !: DO mp=1,nmp
 !SMS$PARALLEL END
 

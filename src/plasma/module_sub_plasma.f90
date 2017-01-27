@@ -14,7 +14,7 @@
 !--------------------------------------------  
       MODULE module_sub_PLASMA
       USE module_precision
-      USE module_IPE_dimension,ONLY: ISPEC,ISPET,ISPEV,IPDIM,NLP,NMP,ISTOT
+      USE module_IPE_dimension,ONLY: NLP,ISTOT
       USE module_FIELD_LINE_GRID_MKS,ONLY: plasma_3d,VEXBup,plasma_3d_old
       IMPLICIT NONE
       include "gptl.inc"
@@ -32,11 +32,16 @@
       USE module_input_parameters,ONLY:mpstop,ip_freq_output,start_time,stop_time,&
 &     sw_neutral_heating_flip,sw_perp_transport,lpmin_perp_trans,lpmax_perp_trans,sw_para_transport,sw_debug,        &
 &     sw_dbg_perp_trans,sw_exb_up,parallelBuild,mype, &
-& HPEQ_flip, ut_start_perp_trans
+& HPEQ_flip, sw_eldyn
       USE module_physical_constants,ONLY:rtd,zero
-      USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,plasma_grid_3d,plasma_grid_GL,plasma_grid_Z,JMAX_IS,hrate_mks3d
-      USE module_PLASMA,ONLY:utime_save,plasma_1d
+      USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,plasma_grid_3d,plasma_grid_GL,plasma_grid_Z,JMAX_IS,hrate_mks3d,MaxFluxTube
+      USE module_PLASMA,ONLY:utime_save,plasma_1d    
+!   & sigma_ped_3d,sigma_hall_3d,Ue1_3d,Ue2_3d
       USE module_perpendicular_transport,ONLY:perpendicular_transport
+      USE module_interface_field_line_integrals,ONLY:interface_field_line_integrals
+      USE module_initialize_fli_array,ONLY:initialize_fli_array
+      USE module_IPE_dimension,ONLY: NMP
+!      USE module_output_dyn_fli_array,ONLY:output_dyn_fli_array
       IMPLICIT NONE
 !------------------------
       INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]
@@ -45,6 +50,12 @@
       INTEGER (KIND=int_prec) :: lp
       INTEGER (KIND=int_prec) :: i,j,midpoint, i1d,k,ret  !dbg20120501
       INTEGER (KIND=int_prec) :: jth  !dbg20120501
+      REAL (KIND=real_prec) ::  sigma_ped_3d(MaxFluxTube,47,NMP)  !pedersen conductivity [mho/m]
+      REAL (KIND=real_prec) ::  sigma_hall_3d(MaxFluxTube,47,NMP)  !hall conductivity [mho/m]
+      REAL (KIND=real_prec) ::  Ue1_3d(MaxFluxTube,47,NMP)
+      REAL (KIND=real_prec) ::  Ue2_3d(MaxFluxTube,47,NMP)
+      REAL (KIND=real_prec) ::  Ne_3d(MaxFluxTube,47,NMP)
+
       integer :: status
 !d      INTEGER :: lun_dbg=999
 !t      REAL(KIND=real_prec) :: phi_t0   !magnetic longitude,phi at T0
@@ -58,6 +69,8 @@ if ( sw_exb_up/=5 ) then
 !JFM moved to allocate_arrays
 !     VEXBup=zero
 end if
+! electrpdumics FLI array initialization
+           CALL initialize_fli_array ( )
 
 
 ! save ut so that other subroutines can refer to it
@@ -154,7 +167,7 @@ end if
 !dbg20120509          IF ( sw_perp_transport(mp)>=1 ) THEN
 !nm20130401: transport is not called when HPEQ_flip=0.5 as initial profiles do
 !not exist!
-        IF ( HPEQ_flip==0.5 .AND. utime==ut_start_perp_trans ) THEN
+        IF ( HPEQ_flip==0.5 .AND. utime==0 ) THEN
 
           print *,lp,mp,'utime=',utime,' plasma perp transport is not called when HPEQ_flip=0.5 & start_time=0 because initial profiles do not exist!'
 
@@ -224,10 +237,19 @@ endif
 !dbg20110927     &       CALL get_neutral_heating_rate ( )
 
 ! calculate the field line integrals for the electrodynamic solver
-!t        CALL calculate_field_line_integrals ( )
+         IF ( sw_eldyn<=1 ) THEN
+         print *, 'calling interface_field_line_integrals'
+            CALL interface_field_line_integrals (lp,mp,utime,  &
+       &    sigma_ped_3d,sigma_hall_3d,Ue1_3d,Ue2_3d,Ne_3d)
+         END IF
 
         END DO apex_latitude_height_loop !: DO lp = 1
       END DO apex_longitude_loop !: DO mp = 
+ 
+! Tzu-Wei: Write out the conductivities and winds
+         write(5000,*) sigma_ped_3d,sigma_hall_3d
+         write(5001,*) Ue1_3d,Ue2_3d
+         write(5002,*) Ne_3d
 !SMS$PARALLEL END
       ret = gptlstop ('apex_lon_loop')
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-4")
@@ -242,6 +264,8 @@ if(sw_debug) print *,'before call to output plasma',utime,start_time,ip_freq_out
 !dbg20110923segmentation fault??? memory allocation run time error???
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-5")
         CALL io_plasma_bin ( 1, utime )
+
+!        CALL output_dyn_fli_array (utime)
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-6")
 
 !dbg20110927: o+ only

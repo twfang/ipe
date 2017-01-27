@@ -15,7 +15,7 @@
       USE module_IPE_dimension,ONLY: ISPEC,ISPEV,IPDIM
       USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,Pvalue,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,plasma_3d,ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k,un_ms1
       USE module_input_parameters,ONLY: time_step,F107D,F107AV,DTMIN_flip  &
-     &, sw_INNO,FPAS_flip,HPEQ_flip,HEPRAT_flip,COLFAC_flip,sw_IHEPLS,sw_INPLS,sw_debug,iout, start_time, sw_wind_flip, sw_depleted_flip, start_time_depleted, sw_output_fort167,mpFort167,lpFort167 &
+     &, sw_INNO,FPAS_flip,HPEQ_flip,HEPRAT_flip,COLFAC_flip,sw_IHEPLS,sw_INPLS,sw_debug,iout, start_time, sw_wind_flip, sw_depleted_flip, start_time_depleted, sw_output_fort167,mpfort167,lpfort167 &
      &, sw_neutral_heating_flip, ip_freq_output, parallelBuild,mype
       USE module_PLASMA,ONLY: plasma_1d !dbg20120501
 !dbg20110927      USE module_heating_rate,ONLY: NHEAT_cgs
@@ -221,6 +221,10 @@ print "('INPLS        =',I6)",INPLS
 
 END IF !( sw_debug ) then
 
+
+ret = gptlstart ('sw_output_fort167')
+!IF( sw_output_fort167 ) then
+IF( sw_output_fort167.AND.mp==mpfort167.AND.lp==lpfort167 ) THEN
 !dbg20120125:      midpoint = JMINX + (CTIPDIM-1)/2
       midpoint = IN + (IS-IN)/2
       IF ( lp>=1 .AND. lp<=6 )  midpoint = midpoint - 1
@@ -228,24 +232,20 @@ END IF !( sw_debug ) then
       ltime = REAL(utime)/3600.0 + (plasma_grid_3d(midpoint,lp,mp,IGLON)*180.0/pi)/15.0
       IF ( ltime > 24.0 )  ltime = MOD(ltime, 24.0)
 
-ret = gptlstart ('sw_output_fort167')
-IF( sw_output_fort167.AND.mp==mpFort167.AND.lp==lpFort167 ) then
       WRITE(UNIT=LUN_FLIP1,FMT="('mp=',i3,' lp=',i3,' U',i3,' North, UT=',2F10.3)") mp,lp,LUN_FLIP1,REAL(UTIME)/3600., ltime
       WRITE(UNIT=LUN_FLIP2,FMT="('mp=',i3,' lp=',i3,' U',i3,' North, UT=',2F10.3)") mp,lp,LUN_FLIP2,REAL(UTIME)/3600., ltime
       WRITE(UNIT=LUN_FLIP3,FMT="('mp=',i3,' lp=',i3,' U',i3,' South, UT=',2F10.3)") mp,lp,LUN_FLIP3,REAL(UTIME)/3600., ltime
       WRITE(UNIT=LUN_FLIP4,FMT="('mp=',i3,' lp=',i3,' U',i3,' South, UT=',2F10.3)") mp,lp,LUN_FLIP4,REAL(UTIME)/3600., ltime
 
-END IF !( sw_output_fort167
+print *,'sub-fl: UTs=',UTIME,' LThr=',ltime,' mp',mp,' lp',lp
+END IF !( sw_debug ) then
 ret = gptlstop  ('sw_output_fort167')
-if(sw_debug) print*,'sub-fl: UTs=',UTIME,' LThr=',ltime,' mp',mp,' lp',lp
+
 
 
 !dbg20110131:
-      IF ( sw_debug ) then
-!sms$ignore begin
-         WRITE(UNIT=PRUNIT,FMT="('mp=',i6,' lp=',i6,' UT=',F10.2)") mp,lp,REAL(UTIME)/3600.,mype
-!sms$ignore end
-      END IF! ( sw_debug ) then
+IF ( sw_debug )  WRITE(UNIT=PRUNIT,FMT="('mp=',i6,' lp=',i6,' UT=',F10.2)") mp,lp,REAL(UTIME)/3600.
+
       ret = gptlstart ('flux_tube_solver_loop1')
       DO ipts=1,CTIPDIM
 !N&T from the previous time step are absolute necesary for the solver...
@@ -442,7 +442,7 @@ END IF
       CALL WRITE_EFLAG(PRUNIT_dum, &  !.. Unit number to print results
      &                      EFLAG, &  !.. Error flag array
      &                         mp, &
-     &                         lp,utime,ltime )
+     &                         lp )
       ret = gptlstop  ('WRITE_EFLAG')
 
 

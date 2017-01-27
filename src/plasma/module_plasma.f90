@@ -14,7 +14,8 @@
 !--------------------------------------------  
       MODULE module_PLASMA
       USE module_precision
-      USE module_IPE_dimension,ONLY: IPDIM,ISTOT
+      USE module_IPE_dimension,ONLY: IPDIM,ISTOT,NMP
+      USE module_FIELD_LINE_GRID_MKS,ONLY: MaxFluxTube
       IMPLICIT NONE
       include "gptl.inc"
 ! --- PRIVATE ---
@@ -48,6 +49,14 @@
 !10 :te
 !11:12:ti
 !13:16:vi:o+,h+,he+,n+
+
+!    !pedersen conductivity [mho/m]
+!     REAL (KIND=real_prec),DIMENSION(MAXFluxTube,47,NMP),PUBLIC ::sigma_ped_3d  
+!    !hall conductivity [mho/m]
+!     REAL (KIND=real_prec),DIMENSION(MAXFluxTube,47,NMP),PUBLIC ::sigma_hall_3d  
+!     REAL (KIND=real_prec),DIMENSION(MAXFluxTube,47,NMP),PUBLIC ::Ue1_3d  
+!     REAL (KIND=real_prec),DIMENSION(MAXFluxTube,47,NMP),PUBLIC ::Ue2_3d  
+
 
 
 !only for debug, o+
