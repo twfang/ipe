@@ -23,12 +23,12 @@
 ! !INTERFACE:
       subroutine dynamo
 !     !USES:
-      use params_module,only: 
-     |  kmlon,  ! number of geomagnetic grid longitudes
-     |  kmlonp1,! kmlon+1
-     |  kmlat,  ! number of geomagnetic grid latitudes
-     |  kmlatp1,! kmlat+1
-     |  kmlath  ! (kmlat+1)/2 (index to magnetic equator)
+      use params_module,only:                                           &
+     &  kmlon,                                                          &! number of geomagnetic grid longitudes
+     &  kmlonp1,                                                        &! kmlon+1
+     &  kmlat,                                                          &! number of geomagnetic grid latitudes
+     &  kmlatp1,                                                        &! kmlat+1
+     &  kmlath  ! (kmlat+1)/2 (index to magnetic equator)
       use dynamo_module,only:zigm11,zigm22,zigmc,zigm2,rim,phim,phihm   &
      &,isolve,ncee,cee,nc,nc0,nc1,nc2,nc3,nc4,cofum,rhs,c0,c1,c2,c3,c4  &
      &,kmlon0,kmlon1,kmlon2,kmlon3,kmlon4,kmlat0,kmlat1,kmlat2,kmlat3   &
@@ -267,8 +267,8 @@
       call edges(c2,kmlon2,kmlat2)
       call edges(c3,kmlon3,kmlat3)
       call edges(c4,kmlon4,kmlat4)
-      if (isolve==2) 
-     |  call edges(cofum,kmlon0,kmlat0)
+      if (isolve==2)                                                    &
+     &  call edges(cofum,kmlon0,kmlat0)
 !
 ! Divide stencils by cos(lam_0) (not rhs):
       call divide(c0,kmlon0,kmlat0,kmlon0,kmlat0,cs,1)
@@ -276,8 +276,8 @@
       call divide(c2,kmlon2,kmlat2,kmlon0,kmlat0,cs,1)
       call divide(c3,kmlon3,kmlat3,kmlon0,kmlat0,cs,1)
       call divide(c4,kmlon4,kmlat4,kmlon0,kmlat0,cs,1)
-      if (isolve==2) 
-     |  call divide(cofum,kmlon0,kmlat0,kmlon0,kmlat0,cs,0)
+      if (isolve==2)                                                    &
+     &  call divide(cofum,kmlon0,kmlat0,kmlon0,kmlat0,cs,0)
 !
 ! Set value of solution to 1. at pole:
       do i=1,kmlon0
@@ -347,7 +347,7 @@
         do i=1,kmlonp1
           phim(i,j)=rim(i,j,1)+(1.-pfrac(i,jp))*(phihm(i,j)-phihm(i,jn))
 !	  write(6,'(2i4,3(x,f12.5))') i,j,rim(i,j,1),pfrac(i,jp),
-!     |          phihm(i,j)
+!     &          phihm(i,j)
         enddo ! i=1,kmlonp1
       enddo ! j=1,kmlat0
       do j=kmlat0+1,kmlat
@@ -360,8 +360,8 @@
       fname = 'poten'
       labl = 'poten'
       units = 'V'
-      call ncplot(noid,fname,labl,start3_out,count3,dim3,
-     |  	  phim,5,units,1)
+      call ncplot(noid,fname,labl,start3_out,count3,dim3,               &
+     &  	  phim,5,units,1)
 
 !dbg20140801(27)
       print *,'(27)output dyn PHIM at utime=',jsecs

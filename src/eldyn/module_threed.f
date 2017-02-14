@@ -26,9 +26,9 @@
 !     
 ! !USES:
       use cons_module,only: dlatm,dlonm,rcos0s,r0,pi_dyn,dt1dts
-      use nc_module,only: noid,	! id of output netcdf-file
-     |     start3_out,   ! only for put out 3D fields 
-     |     dim3,count3
+      use nc_module,only: noid,	                                        &! id of output netcdf-file
+     &     start3_out,                                                  &! only for put out 3D fields 
+     &     dim3,count3
 !t      use module_sub_ncplot,ONLY:ncplot
       IMPLICIT NONE
 !     
@@ -62,11 +62,11 @@
       do j=2,kmlat-1
         csth0 = cos(-pi/2.+(j-1)*dlatm)
         do i=2,kmlon
-          ed1dy(i,j) = -(phim(i+1,j)-phim(i-1,j))/(2.*dlonm*csth0)*
-     |      rcos0s(j)/(r0*1.e-2)
+          ed1dy(i,j) = -(phim(i+1,j)-phim(i-1,j))/(2.*dlonm*csth0)*     &
+     &      rcos0s(j)/(r0*1.e-2)
         enddo ! i=2,kmlon
-        ed1dy(1,j) = -(phim(2,j)-phim(kmlon,j))/(2.*dlonm*csth0)*
-     |      rcos0s(j)/(r0*1.e-2)
+        ed1dy(1,j) = -(phim(2,j)-phim(kmlon,j))/(2.*dlonm*csth0)*       &
+     &      rcos0s(j)/(r0*1.e-2)
         ed1dy(kmlonp1,j) = ed1dy(1,j)
       enddo ! j=2,kmlat-1
 !
@@ -74,16 +74,16 @@
 ! Southern hemisphere:
       do j=2,kmlath-1
         do i=1,kmlonp1
-          ed2dy(i,j) = -(phim(i,j+1)-phim(i,j-1))/(2.*dlatm)*dt1dts(j)/
-     |      (r0*1.e-2)
+          ed2dy(i,j) = -(phim(i,j+1)-phim(i,j-1))/(2.*dlatm)*dt1dts(j)/ &
+     &      (r0*1.e-2)
         enddo ! i=1,kmlonp1
       enddo ! j=2,kmlath-1
 !
 ! Northern hemisphere:
       do j=kmlath+1,kmlat-1
         do i=1,kmlonp1
-          ed2dy(i,j) = (phim(i,j+1)-phim(i,j-1))/(2.*dlatm)*dt1dts(j)/
-     |      (r0*1.e-2)
+          ed2dy(i,j) = (phim(i,j+1)-phim(i,j-1))/(2.*dlatm)*dt1dts(j)/  &
+     &      (r0*1.e-2)
         enddo ! i=1,kmlonp1
       enddo ! j=kmlath+1,kmlat-1
 !
@@ -95,22 +95,22 @@
         if (ip2f > kmlonp1) ip2f = ip2f - kmlon
         ip3f = i + 3*kmlon/4
         if (ip3f > kmlonp1) ip3f = ip3f - kmlon
-        ed1dy(i,1) = .25*(ed1dy(i,2) - ed1dy(ip2f,2) +
-     |                  ed2dy(ip1f,2) - ed2dy(ip3f,2))
-        ed1dy(i,kmlat) = .25*(ed1dy(i,kmlat-1) - ed1dy(ip2f,kmlat-1) +
-     |                      ed2dy(ip1f,kmlat-1) - ed2dy(ip3f,kmlat-1))
-        ed2dy(i,1) = .25*(ed2dy(i,2) - ed2dy(ip2f,2) -
-     |                  ed1dy(ip1f,2) + ed1dy(ip3f,2))
-        ed2dy(i,kmlat) = .25*(ed2dy(i,kmlat-1) - ed2dy(ip2f,kmlat-1) -
-     |                      ed1dy(ip1f,kmlat-1) + ed1dy(ip3f,kmlat-1))
+        ed1dy(i,1) = .25*(ed1dy(i,2) - ed1dy(ip2f,2) +                  &
+     &                  ed2dy(ip1f,2) - ed2dy(ip3f,2))
+        ed1dy(i,kmlat) = .25*(ed1dy(i,kmlat-1) - ed1dy(ip2f,kmlat-1) +  &
+     &                      ed2dy(ip1f,kmlat-1) - ed2dy(ip3f,kmlat-1))
+        ed2dy(i,1) = .25*(ed2dy(i,2) - ed2dy(ip2f,2) -                  &
+     &                  ed1dy(ip1f,2) + ed1dy(ip3f,2))
+        ed2dy(i,kmlat) = .25*(ed2dy(i,kmlat-1) - ed2dy(ip2f,kmlat-1) -  &
+     &                      ed1dy(ip1f,kmlat-1) + ed1dy(ip3f,kmlat-1))
 !
 ! Equator
-       ed2dy(i,kmlath) = (4.*phim(i,kmlath+1)-phim(i,kmlath+2)
-     |    -3.*phim(i,kmlath))/(2.*dlatm)/(R0*1.e-2)
-       ed2dy(i,kmlath+1) = (4.*phim(i,kmlath+2)-phim(i,kmlath+3)
-     |    -3.*phim(i,kmlath+1))/(2.*dlatm)/(R0*1.e-2)
-       ed2dy(i,kmlath-1) = (4.*phim(i,kmlath-2)-phim(i,kmlath-3)
-     |    -3.*phim(i,kmlath-1))/(2.*dlatm)/(R0*1.e-2)
+       ed2dy(i,kmlath) = (4.*phim(i,kmlath+1)-phim(i,kmlath+2)          &
+     &    -3.*phim(i,kmlath))/(2.*dlatm)/(R0*1.e-2)
+       ed2dy(i,kmlath+1) = (4.*phim(i,kmlath+2)-phim(i,kmlath+3)        &
+     &    -3.*phim(i,kmlath+1))/(2.*dlatm)/(R0*1.e-2)
+       ed2dy(i,kmlath-1) = (4.*phim(i,kmlath-2)-phim(i,kmlath-3)        &
+     &    -3.*phim(i,kmlath-1))/(2.*dlatm)/(R0*1.e-2)
       enddo ! i = 1,kmlonp1
 !
 
@@ -127,14 +127,14 @@
 
 !d      print *,'!dbg20140409 threed ed1dy',ed1dy(:,33)
 
-      call ncplot(noid,fname,labl,start3_out,count3,dim3,
-     |            ed1dy,3,units,3)
+      call ncplot(noid,fname,labl,start3_out,count3,dim3,               &
+     &            ed1dy,3,units,3)
 !      
       fname = 'ed2'
       labl = 'ed2'
       units = 'V/m'
-      call ncplot(noid,fname,labl,start3_out,count3,dim3,
-     |            ed2dy,3,units,3)
+      call ncplot(noid,fname,labl,start3_out,count3,dim3,               &
+     &            ed2dy,3,units,3)
 
 
 

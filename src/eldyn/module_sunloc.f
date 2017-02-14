@@ -40,17 +40,24 @@
 ! This is called every timestep from advance.
 !
 ! Args:
-      integer (KIND=int_prec),intent(in) :: iyr,                        & ! year
-     &   iday ! day of year
+!iyr: year
+!iday: day of year
+      integer (KIND=int_prec),intent(in) :: iyr,                        &
+     &   iday 
       real (KIND=real_prec),intent(in) :: secs    ! ut in seconds
 !
 ! Local:
       integer :: ihr,imn
-      real :: sec,date,vp,xmlon                                         &! apex magnetic longitude
-     &  sbsllat,                                                        &! geographic latitude of subsolar point (degrees)
-     &  sbsllon,                                                        &! geographic longitude of subsolar point (degrees)
-     &  colat,                                                          &! Geocentric colatitude of geomagnetic dipole north pole (deg)
-     &  elon        ! East longitude of geomagnetic dipole north pole (deg)
+!xmlon  : apex magnetic longitude
+!sbsllat: geographic latitude of subsolar point (degrees)
+!sbsllon: geographic longitude of subsolar point (degrees)
+!colat  : Geocentric colatitude of geomagnetic dipole north pole (deg)
+!elon   : East longitude of geomagnetic dipole north pole (deg)
+      real :: sec,date,vp,xmlon                                         &
+     &  ,sbsllat,                                                        &
+     &  sbsllon,                                                        &
+     &  colat,                                                          &
+     &  elon
       character :: fname*10,labl*56,units*12
 !      integer(kind=4) :: dim1
 !      

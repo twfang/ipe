@@ -102,10 +102,10 @@
            ip3f = ip3f - nmlon
         end if
         ed1(i,0)=.25*(ed1(i,1)-ed1(ip2f,1)+ed2(ip1f,1)-ed2(ip3f,1))
-        ed1(i,nmlat) = .25*(ed1(i,nmlat-1) - ed1(ip2f,nmlat-1)  
+        ed1(i,nmlat) = .25*(ed1(i,nmlat-1) - ed1(ip2f,nmlat-1)          &  
      &        + ed2(ip1f,nmlat-1) - ed2(ip3f,nmlat-1))
         ed2(i,0)=.25*(ed2(i,1)-ed2(ip2f,1)-ed1(ip1f,1)+ed1(ip3f,1))
-        ed2(i,nmlat) = .25*(ed2(i,nmlat-1) - ed2(ip2f,nmlat-1)  
+        ed2(i,nmlat) = .25*(ed2(i,nmlat-1) - ed2(ip2f,nmlat-1)          & 
      &        - ed1(ip1f,nmlat-1) + ed1(ip3f,nmlat-1))
       end do
 

@@ -38,7 +38,7 @@
 !          NCAR addition (Jan 97).  R.Barnes
 !-----------------------------------------------------------------------
 !
-c     use shr_kind_mod, only: r8 => shr_kind_r8
+!c     use shr_kind_mod, only: r8 => shr_kind_r8
       USE module_EpotVal ,ONLY: EpotVal
       implicit none 
 !
@@ -55,7 +55,7 @@ c     use shr_kind_mod, only: r8 => shr_kind_r8
 !-----------------------------Parameters------------------------------
 !
       real d2r, r2d
-      PARAMETER ( D2R =  0.0174532925199432957692369076847 , 
+      PARAMETER ( D2R =  0.0174532925199432957692369076847 ,            &
      &           R2D = 57.2957795130823208767981548147)
 !
 !---------------------------Local variables-----------------------------

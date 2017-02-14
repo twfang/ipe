@@ -45,10 +45,10 @@
 ! Author: A. Maute Dec 2003  am 12/30/03 
 !------------------------------------------------------------------------------ 
 
-c     use shr_kind_mod,  only: r8 => shr_kind_r8
-c     use physconst,     only: pi
-c     use abortutils,    only: endrun
-c     use cam_logfile,   only: iulog
+!c     use shr_kind_mod,  only: r8 => shr_kind_r8
+!c     use physconst,     only: pi
+!c     use abortutils,    only: endrun
+!c     use cam_logfile,   only: iulog
    
       implicit none
 
@@ -57,7 +57,7 @@ c     use cam_logfile,   only: iulog
 
       contains
 !-----------------------------------------------------------------------
-      subroutine highlat_adjust( pot_highlats, pot_highlat, 
+      subroutine highlat_adjust( pot_highlats, pot_highlat,             &
      &pot_midlat, ihlat_bnd )
 !------------------------------------------------------------------
 ! Purpose: Adjust mid/low latitude electric potential and high latitude
@@ -103,10 +103,10 @@ c     use cam_logfile,   only: iulog
       pot60  = pot60/(nmlon)
       pot_hl = pot_hl/(nmlon)
       
-c     if (debug) write(iulog,*) 'Mid-Latitude Boundary Potential =',
-c    &pot60
-c     if (debug) write(iulog,*) 'High-Latitude Boundary Potential=',
-c    &pot_hl
+!c     if (debug) write(iulog,*) 'Mid-Latitude Boundary Potential =',
+!c    &pot60
+!c     if (debug) write(iulog,*) 'High-Latitude Boundary Potential=',
+!c    &pot_hl
 
 !-------------------------------------------------------------------
 ! 3. adjust Phi_high by delta =

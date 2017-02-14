@@ -45,10 +45,10 @@
 ! Author: A. Maute Dec 2003  am 12/30/03 
 !------------------------------------------------------------------------------ 
 
-c     use shr_kind_mod,  only: r8 => shr_kind_r8
-c     use physconst,     only: pi
-c     use abortutils,    only: endrun
-c     use cam_logfile,   only: iulog
+!c     use shr_kind_mod,  only: r8 => shr_kind_r8
+!c     use physconst,     only: pi
+!c     use abortutils,    only: endrun
+!c     use cam_logfile,   only: iulog
    
       implicit none
 
@@ -83,14 +83,14 @@ c     use cam_logfile,   only: iulog
       y2 = y2*y2
       S_aM = (atan2(y2,x2) - a90)/(a180 - a90) 
       S_aM = 90.*(1. + S_aM)
-c     if(debug) write(iulog,*) 'f107d=',f107d,' S_aM =',S_aM
-c     if(debug) write(iulog,*) 'By=',by
+!c     if(debug) write(iulog,*) 'f107d=',f107d,' S_aM =',S_aM
+!c     if(debug) write(iulog,*) 'By=',by
 
 !-----------------------------------------------------------------
 ! inter/extrapolate to S_a (f107d)
 !----------------------------------------------------------------
       do i = 0,ni                       ! eqn.8 Scherliess draft
-        a_klnm(i) = S_aM*(a_hf(i)-a_lf(i))/90.+
+        a_klnm(i) = S_aM*(a_hf(i)-a_lf(i))/90.+                         &
      &2.*a_lf(i)- a_hf(i)
 ! for testing like in original code
 !        a_klnm(i)=S_a*(a_hf(i)-a_lf(i))/90.+2.*a_lf(i)-a_hf(i)

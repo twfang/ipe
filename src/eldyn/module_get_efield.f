@@ -116,7 +116,7 @@
 !    &f107d*(0.0079373-0.00219316*kp)
 !     print*,kp,bz
 !     bz=-2.5
-      if ( sw_debug ) 
+      if ( sw_debug )                                                   & 
      & print*,'By=',by,' Bz=',bz,' F107d=',f107d,' UT[hr]',ut
 !#ifdef EFIELD_DIAGS
 !      if( masterproc ) then

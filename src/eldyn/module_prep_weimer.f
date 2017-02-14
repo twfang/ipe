@@ -35,9 +35,9 @@
 !-----------------------------------------------------------------
 !  local variables
 !-----------------------------------------------------------------
-      real ::  
-     &  angle,  ! IMF angle
-     &  bt,    ! IMF magnitude
+      real ::                                                           &
+     &  angle,                                                          &! IMF angle
+     &  bt,                                                             &! IMF magnitude
      &  tilt       ! tilt of earth
 
 !-----------------------------------------------------------------
@@ -58,19 +58,19 @@
 ! use month and day of month - calculated with average no.of days per month
 ! as in Weimer
 !-------------------------------------------------------------------
-c     if(debug) write(iulog,*) 'prep_weimer: day->day of month',
-c    &iday,imo,iday_m,ut
+!c     if(debug) write(iulog,*) 'prep_weimer: day->day of month',
+!c    &iday,imo,iday_m,ut
       tilt = get_tilt( iyear, imo, iday_m, ut )
 
-c      if(debug) then
-c       write(iulog,"(/,'efield prep_weimer:')")
-c       write(iulog,*)  '  Bz   =',bz
-c       write(iulog,*)  '  By   =',by
-c       write(iulog,*)  '  Bt   =',bt
-c       write(iulog,*)  '  angle=',angle
-c       write(iulog,*)  '  VSW  =',v_sw
-c       write(iulog,*)  '  tilt =',tilt
-c      end if
+!c      if(debug) then
+!c       write(iulog,"(/,'efield prep_weimer:')")
+!c       write(iulog,*)  '  Bz   =',bz
+!c       write(iulog,*)  '  By   =',by
+!c       write(iulog,*)  '  Bt   =',bt
+!c       write(iulog,*)  '  angle=',angle
+!c       write(iulog,*)  '  VSW  =',v_sw
+!c       write(iulog,*)  '  tilt =',tilt
+!c      end if
 
       call SetModel( angle, bt, tilt, v_sw )
 

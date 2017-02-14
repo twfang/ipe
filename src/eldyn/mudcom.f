@@ -1,41 +1,41 @@
-c
-c     file mudcom.f
-c
-c  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-c  .                                                             .
-c  .                  copyright (c) 1998 by UCAR                 .
-c  .                                                             .
-c  .       UNIVERSITY CORPORATION for ATMOSPHERIC RESEARCH       .
-c  .                                                             .
-c  .                      all rights reserved                    .
-c  .                                                             .
-c  .                                                             .
-c  .                      MUDPACK version 4.0                    .
-c  .                                                             .
-c  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-c
-c ... author and specialist
-c
-c          John C. Adams (National Center for Atmospheric Research)
-c          email: johnad@ucar.edu, phone: 303-497-1213
+!c
+!     file mudcom.f
+!c
+!c  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+!c  .                                                             .
+!c  .                  copyright (c) 1998 by UCAR                 .
+!c  .                                                             .
+!c  .       UNIVERSITY CORPORATION for ATMOSPHERIC RESEARCH       .
+!c  .                                                             .
+!c  .                      all rights reserved                    .
+!c  .                                                             .
+!c  .                                                             .
+!c  .                      MUDPACK version 4.0                    .
+!c  .                                                             .
+!c  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+!c
+!c ... author and specialist
+!c
+!          John C. Adams (National Center for Atmospheric Research)
+!          email: johnad@ucar.edu, phone: 303-497-1213
 
-c ... For MUDPACK 4.0 information, visit the website:
-c     (http://www.scd.ucar.edu/css/software/mudpack)
-c
-c ... purpose
-c
-c     mudcom.f is a common subroutines file containing subroutines
-c     called by some or all of the real two- and three-dimensional
-c     mudpack solvers.  mudcom.f must be loaded with any real mudpack
-c     solver.
-c
+!c ... For MUDPACK 4.0 information, visit the website:
+!     (http://www.scd.ucar.edu/css/software/mudpack)
+!c
+!c ... purpose
+!c
+!     mudcom.f is a common subroutines file containing subroutines
+!     called by some or all of the real two- and three-dimensional
+!     mudpack solvers.  mudcom.f must be loaded with any real mudpack
+!     solver.
+!c
 !     cb mud2cr1: call swk2(nx,ny,phif,rhsf,wk(ip),wk(ir))
 !
       subroutine swk2(nfx,nfy,phif,rhsf,phi,rhs)
-c
-c     set phif,rhsf input in arrays which include
-c     virtual boundaries for phi (for all 2-d real codes)
-c
+!c
+!     set phif,rhsf input in arrays which include
+!     virtual boundaries for phi (for all 2-d real codes)
+!c
       implicit none
       integer nfx,nfy,i,j
       real phif(nfx,nfy),rhsf(nfx,nfy)
@@ -46,9 +46,9 @@ c
 	  rhs(i,j) = rhsf(i,j)
 	end do
       end do
-c
-c     set virtual boundaries in phi to zero
-c
+!c
+!     set virtual boundaries in phi to zero
+!c
       do j=0,nfy+1
 	phi(0,j) = 0.0
 	phi(nfx+1,j) = 0.0
@@ -61,16 +61,16 @@ c
       end
 
       subroutine trsfc2(nx,ny,phi,rhs,ncx,ncy,phic,rhsc)
-c
-c     transfer fine grid to coarse grid
-c
+!c
+!     transfer fine grid to coarse grid
+!c
       implicit none
       integer nx,ny,ncx,ncy,i,j,ic,jc
       real phi(0:nx+1,0:ny+1),rhs(nx,ny)
       real phic(0:ncx+1,0:ncy+1),rhsc(ncx,ncy)
-c
-c     set virtual boundaries in phic to zero
-c
+!c
+!     set virtual boundaries in phic to zero
+!c
       do jc=0,ncy+1
 	phic(0,jc) = 0.0
 	phic(ncx+1,jc) = 0.0
@@ -80,9 +80,9 @@ c
 	phic(ic,ncy+1) = 0.0
       end do
       if (ncx.lt.nx .and. ncy.lt.ny) then
-c
-c     coarsening in both x and y
-c
+!c
+!     coarsening in both x and y
+!c
 	do jc=1,ncy
 	  j = jc+jc-1
 	  do ic=1,ncx
@@ -92,9 +92,9 @@ c
 	  end do
 	end do
       else if (ncx.lt.nx .and. ncy.eq.ny) then
-c
-c     coarsening in x only
-c
+!c
+!     coarsening in x only
+!c
 	do jc=1,ncy
 	  j = jc
 	  do ic=1,ncx
@@ -104,9 +104,9 @@ c
 	  end do
 	end do
       else
-c
-c     coarsening in y only
-c
+!c
+!     coarsening in y only
+!c
 	do jc=1,ncy
 	  j = jc+jc-1
 	  do ic=1,ncx
@@ -123,99 +123,99 @@ c
       implicit none
       integer nx,ny,ncx,ncy,nxa,nxb,nyc,nyd
       integer i,j,ic,jc,im1,ip1,jm1,jp1,ix,jy
-c
-c     restrict fine grid residual in resf to coarse grid in rhsc
-c     using full weighting for all real 2d codes
-c
+!c
+!     restrict fine grid residual in resf to coarse grid in rhsc
+!     using full weighting for all real 2d codes
+!c
       real resf(nx,ny),rhsc(ncx,ncy)
-c
-c     set x,y coarsening integer subscript scales
-c
+!c
+!     set x,y coarsening integer subscript scales
+!c
       ix = 1
       if (ncx.eq.nx) ix = 0
       jy = 1
       if (ncy.eq.ny) jy = 0
-c
-c     restrict on interior
-c
+!c
+!     restrict on interior
+!c
       if (ncy.lt.ny .and. ncx.lt.nx) then
-c
-c     coarsening in both directions
-c
+!c
+!     coarsening in both directions
+!c
 	do jc=2,ncy-1
 	  j = jc+jc-1
 	  do ic=2,ncx-1
 	    i = ic+ic-1
-	    rhsc(ic,jc) = (resf(i-1,j-1)+resf(i+1,j-1)+resf(i-1,j+1)+
-     +                     resf(i+1,j+1)+2.*(resf(i-1,j)+resf(i+1,j)+
-     +                     resf(i,j-1)+resf(i,j+1))+4.*resf(i,j))*.0625
+            rhsc(ic,jc) = (resf(i-1,j-1)+resf(i+1,j-1)+resf(i-1,j+1)+   &
+     &                     resf(i+1,j+1)+2.*(resf(i-1,j)+resf(i+1,j)+   &
+     &                     resf(i,j-1)+resf(i,j+1))+4.*resf(i,j))*.0625
 	  end do
 	end do
       else if (ncy.eq.ny) then
-c
-c     no coarsening in y but coarsening in x
-c
+!c
+!     no coarsening in y but coarsening in x
+!c
 	do jc=2,ncy-1
 	  j = jc
 	  do ic=2,ncx-1
 	    i = ic+ic-1
-	    rhsc(ic,jc) = (resf(i-1,j-1)+resf(i+1,j-1)+resf(i-1,j+1)+
-     +                     resf(i+1,j+1)+2.*(resf(i-1,j)+resf(i+1,j)+
-     +                     resf(i,j-1)+resf(i,j+1))+4.*resf(i,j))*.0625
+            rhsc(ic,jc) = (resf(i-1,j-1)+resf(i+1,j-1)+resf(i-1,j+1)+   &
+     &                     resf(i+1,j+1)+2.*(resf(i-1,j)+resf(i+1,j)+   &
+     &                     resf(i,j-1)+resf(i,j+1))+4.*resf(i,j))*.0625
 	  end do
 	end do
       else
-c
-c     no coarsening in x but coarsening in y
-c
+!c
+!     no coarsening in x but coarsening in y
+!c
 	do jc=2,ncy-1
 	  j = jc+jc-1
 	  do ic=2,ncx-1
 	    i = ic
-	    rhsc(ic,jc) = (resf(i-1,j-1)+resf(i+1,j-1)+resf(i-1,j+1)+
-     +                     resf(i+1,j+1)+2.*(resf(i-1,j)+resf(i+1,j)+
-     +                     resf(i,j-1)+resf(i,j+1))+4.*resf(i,j))*.0625
+            rhsc(ic,jc) = (resf(i-1,j-1)+resf(i+1,j-1)+resf(i-1,j+1)+   &
+     &                     resf(i+1,j+1)+2.*(resf(i-1,j)+resf(i+1,j)+   &
+     &                     resf(i,j-1)+resf(i,j+1))+4.*resf(i,j))*.0625
 	  end do
 	end do
       end if
-c
-c     set residual on boundaries
-c
+!c
+!     set residual on boundaries
+!c
       do jc=1,ncy,ncy-1
-c
-c     y=yc,yd boundaries
-c
+!c
+!     y=yc,yd boundaries
+!c
 	j = jc+jy*(jc-1)
 	jm1 = max0(j-1,2)
 	jp1 = min0(j+1,ny-1)
 	if (j.eq.1 .and. nyc.eq.0) jm1 = ny-1
 	if (j.eq.ny .and. nyc.eq.0) jp1 = 2
-c
-c     y=yc,yd and x=xa,xb cornors
-c
+!c
+!     y=yc,yd and x=xa,xb cornors
+!c
 	do ic=1,ncx,ncx-1
 	  i = ic+ix*(ic-1)
 	  im1 = max0(i-1,2)
 	  ip1 = min0(i+1,nx-1)
 	  if (i.eq.1 .and. nxa.eq.0) im1 = nx-1
 	  if (i.eq.nx .and. nxa.eq.0) ip1 = 2
-	  rhsc(ic,jc) = (resf(im1,jm1)+resf(ip1,jm1)+resf(im1,jp1)+
-     +                   resf(ip1,jp1)+2.*(resf(im1,j)+resf(ip1,j)+
-     +                   resf(i,jm1)+resf(i,jp1))+4.*resf(i,j))*.0625
+          rhsc(ic,jc) = (resf(im1,jm1)+resf(ip1,jm1)+resf(im1,jp1)+     &
+     &                   resf(ip1,jp1)+2.*(resf(im1,j)+resf(ip1,j)+     &
+     &                   resf(i,jm1)+resf(i,jp1))+4.*resf(i,j))*.0625
 	end do
-c
-c     set y=yc,yd interior edges
-c
+!c
+!     set y=yc,yd interior edges
+!c
 	do ic=2,ncx-1
 	  i = ic+ix*(ic-1)
-	  rhsc(ic,jc) = (resf(i-1,jm1)+resf(i+1,jm1)+resf(i-1,jp1)+
-     +                   resf(i+1,jp1)+2.*(resf(i-1,j)+resf(i+1,j)+
-     +                   resf(i,jm1)+resf(i,jp1))+4.*resf(i,j))*.0625
+          rhsc(ic,jc) = (resf(i-1,jm1)+resf(i+1,jm1)+resf(i-1,jp1)+     &
+     &                   resf(i+1,jp1)+2.*(resf(i-1,j)+resf(i+1,j)+     &
+     &                   resf(i,jm1)+resf(i,jp1))+4.*resf(i,j))*.0625
 	end do
       end do
-c
-c     set x=xa,xb interior edges
-c
+!c
+!     set x=xa,xb interior edges
+!c
       do ic=1,ncx,ncx-1
 	i = ic+ix*(ic-1)
 	im1 = max0(i-1,2)
@@ -224,14 +224,14 @@ c
 	if (i.eq.nx .and. nxa.eq.0) ip1 = 2
 	do jc=2,ncy-1
 	  j = jc+jy*(jc-1)
-	  rhsc(ic,jc) = (resf(im1,j-1)+resf(ip1,j-1)+resf(im1,j+1)+
-     +                   resf(ip1,j+1)+2.*(resf(im1,j)+resf(ip1,j)+
-     +                   resf(i,j-1)+resf(i,j+1))+4.*resf(i,j))*.0625
+          rhsc(ic,jc) = (resf(im1,j-1)+resf(ip1,j-1)+resf(im1,j+1)+     &
+     &                   resf(ip1,j+1)+2.*(resf(im1,j)+resf(ip1,j)+     &
+     &                   resf(i,j-1)+resf(i,j+1))+4.*resf(i,j))*.0625
 	end do
       end do
-c
-c     set coarse grid residual zero on specified boundaries
-c
+!c
+!     set coarse grid residual zero on specified boundaries
+!c
       if (nxa.eq.1) then
 	do jc=1,ncy
 	  rhsc(1,jc) = 0.0
@@ -254,9 +254,9 @@ c
       end if
       return
       end
-c
-c     prolon2 modified from rgrd2u 11/20/97
-c
+!c
+!     prolon2 modified from rgrd2u 11/20/97
+!c
       subroutine prolon2(ncx,ncy,p,nx,ny,q,nxa,nxb,nyc,nyd,intpol)
       implicit none
       integer ncx,ncy,nx,ny,intpol,nxa,nxb,nyc,nyd
@@ -283,15 +283,15 @@ c
 	joddfn = ny-2
       end if
       if (intpol.eq.1 .or. ncy.lt.4) then
-c
-c     linearly interpolate in y
-c
+!c
+!     linearly interpolate in y
+!c
 	if (ncy .lt. ny) then
-c
-c     ncy grid is an every other point subset of ny grid
-c     set odd j lines interpolating in x and then set even
-c     j lines by averaging odd j lines
-c
+!c
+!     ncy grid is an every other point subset of ny grid
+!     set odd j lines interpolating in x and then set even
+!     j lines by averaging odd j lines
+!c
 	  do j=joddst,joddfn,2
 	    jc = j/2+1
 	    call prolon1(ncx,p(0,jc),nx,q(0,j),nxa,nxb,intpol)
@@ -301,9 +301,9 @@ c
 	      q(i,j) = 0.5*(q(i,j-1)+q(i,j+1))
 	    end do
 	  end do
-c
-c     set periodic virtual boundaries if necessary
-c
+!c
+!     set periodic virtual boundaries if necessary
+!c
 	  if (nyc.eq.0) then
 	    do i=ist,ifn
 	      q(i,0) = q(i,ny-1)
@@ -312,16 +312,16 @@ c
 	  end if
 	  return
 	else
-c
-c     ncy grid is equals ny grid so interpolate in x only
-c
+!c
+!     ncy grid is equals ny grid so interpolate in x only
+!c
 	  do j=jst,jfn
 	    jc = j
 	    call prolon1(ncx,p(0,jc),nx,q(0,j),nxa,nxb,intpol)
 	  end do
-c
-c     set periodic virtual boundaries if necessary
-c
+!c
+!     set periodic virtual boundaries if necessary
+!c
 	  if (nyc.eq.0) then
 	    do i=ist,ifn
 	      q(i,0) = q(i,ny-1)
@@ -331,42 +331,42 @@ c
 	  return
 	end if
       else
-c
-c     cubically interpolate in y
-c
+!c
+!     cubically interpolate in y
+!c
 	if (ncy .lt. ny) then
-c
-c     set every other point of ny grid by interpolating in x
-c
+!c
+!     set every other point of ny grid by interpolating in x
+!c
 	  do j=joddst,joddfn,2
 	    jc = j/2+1
 	    call prolon1(ncx,p(0,jc),nx,q(0,j),nxa,nxb,intpol)
 	  end do
-c
-c     set deep interior of ny grid using values just
-c     generated and symmetric cubic interpolation in y
-c
+!c
+!     set deep interior of ny grid using values just
+!     generated and symmetric cubic interpolation in y
+!c
 	  do j=4,ny-3,2
 	    do i=ist,ifn
 	    q(i,j)=(-q(i,j-3)+9.*(q(i,j-1)+q(i,j+1))-q(i,j+3))*.0625
 	    end do
 	  end do
-c
-c     interpolate from q at j=2 and j=ny-1
-c
+!c
+!     interpolate from q at j=2 and j=ny-1
+!c
 	  if (nyc.ne.0) then
-c
-c     asymmetric formula near nonperiodic y boundaries
-c
+!c
+!     asymmetric formula near nonperiodic y boundaries
+!c
 	    do i=ist,ifn
 	      q(i,2)=(5.*q(i,1)+15.*q(i,3)-5.*q(i,5)+q(i,7))*.0625
-	      q(i,ny-1)=(5.*q(i,ny)+15.*q(i,ny-2)-5.*q(i,ny-4)+
-     +                    q(i,ny-6))*.0625
+              q(i,ny-1)=(5.*q(i,ny)+15.*q(i,ny-2)-5.*q(i,ny-4)+         &
+     &                    q(i,ny-6))*.0625
 	    end do
 	  else
-c
-c     periodicity in y alows symmetric formula near bndys
-c
+!c
+!     periodicity in y alows symmetric formula near bndys
+!c
 	    do i=ist,ifn
 	      q(i,2) = (-q(i,ny-2)+9.*(q(i,1)+q(i,3))-q(i,5))*.0625
 	      q(i,ny-1)=(-q(i,ny-4)+9.*(q(i,ny-2)+q(i,ny))-q(i,3))*.0625
@@ -376,16 +376,16 @@ c
 	  end if
 	  return
 	else
-c
-c     ncy grid is equals ny grid so interpolate in x only
-c
+!c
+!     ncy grid is equals ny grid so interpolate in x only
+!c
 	  do j=jst,jfn
 	    jc = j
 	    call prolon1(ncx,p(0,jc),nx,q(0,j),nxa,nxb,intpol)
 	  end do
-c
-c     set periodic virtual boundaries if necessary
-c
+!c
+!     set periodic virtual boundaries if necessary
+!c
 	  if (nyc.eq.0) then
 	    do i=ist,ifn
 	      q(i,0) = q(i,ny-1)
@@ -397,9 +397,9 @@ c
       end if
       end
 
-c
-c     11/20/97  modification of rgrd1u.f for mudpack
-c
+!c
+!     11/20/97  modification of rgrd1u.f for mudpack
+!c
       subroutine prolon1(ncx,p,nx,q,nxa,nxb,intpol)
       implicit none
       integer intpol,nxa,nxb,ncx,nx,i,ic,ist,ifn,ioddst,ioddfn
@@ -417,13 +417,13 @@ c
 	ioddfn = nx-2
       end if
       if (intpol.eq.1 .or. ncx.lt.4) then
-c
-c     linear interpolation in x
-c
+!c
+!     linear interpolation in x
+!c
 	if (ncx .lt. nx) then
-c
-c     every other point of nx grid is ncx grid
-c
+!c
+!     every other point of nx grid is ncx grid
+!c
 	  do i=ioddst,ioddfn,2
 	    ic = (i+1)/2
 	    q(i) = p(ic)
@@ -432,49 +432,49 @@ c
 	    q(i) = 0.5*(q(i-1)+q(i+1))
 	  end do
 	else
-c
-c     nx grid equals ncx grid
-c
+!c
+!     nx grid equals ncx grid
+!c
 	  do i=ist,ifn
 	    q(i) = p(i)
 	  end do
 	end if
-c
-c     set virtual end points if periodic
-c
+!c
+!     set virtual end points if periodic
+!c
 	if (nxa.eq.0) then
 	  q(0) = q(nx-1)
 	  q(nx+1) = q(2)
 	end if
 	return
       else
-c
-c     cubic interpolation in x
-c
+!c
+!     cubic interpolation in x
+!c
 	if (ncx .lt. nx) then
 	  do i=ioddst,ioddfn,2
 	    ic = (i+1)/2
 	    q(i) = p(ic)
 	  end do
-c
-c      set deep interior with symmetric formula
-c
+!c
+!      set deep interior with symmetric formula
+!c
 	  do i=4,nx-3,2
 	    q(i)=(-q(i-3)+9.*(q(i-1)+q(i+1))-q(i+3))*.0625
 	  end do
-c
-c     interpolate from q at i=2 and i=nx-1
-c
+!c
+!     interpolate from q at i=2 and i=nx-1
+!c
 	  if (nxa.ne.0) then
-c
-c     asymmetric formula near nonperiodic bndys
-c
+!c
+!     asymmetric formula near nonperiodic bndys
+!c
 	    q(2)=(5.*q(1)+15.*q(3)-5.*q(5)+q(7))*.0625
 	    q(nx-1)=(5.*q(nx)+15.*q(nx-2)-5.*q(nx-4)+q(nx-6))*.0625
 	  else
-c
-c     periodicity in x alows symmetric formula near bndys
-c
+!c
+!     periodicity in x alows symmetric formula near bndys
+!c
 	    q(2) = (-q(nx-2)+9.*(q(1)+q(3))-q(5))*.0625
 	    q(nx-1) = (-q(nx-4)+9.*(q(nx-2)+q(nx))-q(3))*.0625
 	    q(nx+1) = q(2)
@@ -482,9 +482,9 @@ c
 	  end if
 	  return
 	else
-c
-c     ncx grid equals nx grid
-c
+!c
+!     ncx grid equals nx grid
+!c
 	  do i=ist,ifn
 	    q(i) = p(i)
 	  end do
@@ -498,12 +498,12 @@ c
       end
 
 
-      subroutine cor2(nx,ny,phif,ncx,ncy,phic,nxa,nxb,nyc,nyd,intpol,
-     +                phcor)
-c
-c     add coarse grid correction in phic to fine grid approximation
-c     in phif using linear or cubic interpolation
-c
+      subroutine cor2(nx,ny,phif,ncx,ncy,phic,nxa,nxb,nyc,nyd,intpol,   &
+     &                phcor)
+!c
+!     add coarse grid correction in phic to fine grid approximation
+!     in phif using linear or cubic interpolation
+!c
       implicit none
       integer i,j,nx,ny,ncx,ncy,nxa,nxb,nyc,nyd,intpol,ist,ifn,jst,jfn
       real phif(0:nx+1,0:ny+1),phic(0:ncx+1,0:ncy+1)
@@ -513,13 +513,13 @@ c
 	  phcor(i,j) = 0.0
 	end do
       end do
-c
-c     lift correction in phic to fine grid in phcor
-c
+!c
+!     lift correction in phic to fine grid in phcor
+!c
       call prolon2(ncx,ncy,phic,nx,ny,phcor,nxa,nxb,nyc,nyd,intpol)
-c
-c     add correction in phcor to phif on nonspecified boundaries
-c
+!c
+!     add correction in phcor to phif on nonspecified boundaries
+!c
       ist = 1
       ifn = nx
       jst = 1
@@ -533,9 +533,9 @@ c
 	  phif(i,j) = phif(i,j) + phcor(i,j)
 	end do
       end do
-c
-c     add periodic points if necessary
-c
+!c
+!     add periodic points if necessary
+!c
       if (nyc.eq.0) then
 	do i=ist,ifn
 	  phif(i,0) = phif(i,ny-1)
@@ -556,131 +556,131 @@ c
       real u(nx,ny),dlx,dly,dlxx,dlyy,tdlx3,tdly3,dlx4,dly4
       common/pde2com/dlx,dly,dlxx,dlyy,tdlx3,tdly3,dlx4,dly4
       real ux3,ux4,uy3,uy4
-c
-c     use second order approximation in u to estimate (second order)
-c     third and fourth partial derivatives in the x and y direction
-c     non-symmetric difference formula (derived from the  routine
-c     finpdf,findif) are used at and one point in from mixed boundaries.
-c
+!c
+!     use second order approximation in u to estimate (second order)
+!     third and fourth partial derivatives in the x and y direction
+!     non-symmetric difference formula (derived from the  routine
+!     finpdf,findif) are used at and one point in from mixed boundaries.
+!c
       if (nxa.ne.0) then
-c
-c     nonperiodic in x
-c
+!c
+!     nonperiodic in x
+!c
 	if(i.gt.2 .and. i.lt.nx-1) then
 	  ux3 = (-u(i-2,j)+2.0*u(i-1,j)-2.0*u(i+1,j)+u(i+2,j))/tdlx3
-	  ux4 = (u(i-2,j)-4.0*u(i-1,j)+6.0*u(i,j)-4.0*u(i+1,j)+u(i+2,j))
-     +           /dlx4
+          ux4 = (u(i-2,j)-4.0*u(i-1,j)+6.0*u(i,j)-4.0*u(i+1,j)+u(i+2,j))&
+     &           /dlx4
 	else if (i.eq.1) then
-	  ux3 = (-5.0*u(1,j)+18.0*u(2,j)-24.0*u(3,j)+14.0*u(4,j)-
-     +           3.0*u(5,j))/tdlx3
-	  ux4 = (3.0*u(1,j)-14.0*u(2,j)+26.0*u(3,j)-24.0*u(4,j)+
-     +           11.0*u(5,j)-2.0*u(6,j))/dlx4
+          ux3 = (-5.0*u(1,j)+18.0*u(2,j)-24.0*u(3,j)+14.0*u(4,j)-       &
+     &           3.0*u(5,j))/tdlx3
+          ux4 = (3.0*u(1,j)-14.0*u(2,j)+26.0*u(3,j)-24.0*u(4,j)+        &
+     &           11.0*u(5,j)-2.0*u(6,j))/dlx4
 	else if (i.eq.2) then
-	  ux3 = (-3.0*u(1,j)+10.0*u(2,j)-12.0*u(3,j)+6.0*u(4,j)-u(5,j))
-     +           /tdlx3
-	  ux4 = (2.0*u(1,j)-9.0*u(2,j)+16.0*u(3,j)-14.0*u(4,j)+
-     +           6.0*u(5,j)-u(6,j))/dlx4
+          ux3 = (-3.0*u(1,j)+10.0*u(2,j)-12.0*u(3,j)+6.0*u(4,j)-u(5,j)) &
+     &           /tdlx3
+          ux4 = (2.0*u(1,j)-9.0*u(2,j)+16.0*u(3,j)-14.0*u(4,j)+         &
+     &           6.0*u(5,j)-u(6,j))/dlx4
 	else if (i.eq.nx-1) then
-	  ux3 = (u(nx-4,j)-6.0*u(nx-3,j)+12.0*u(nx-2,j)-10.0*u(nx-1,j)+
-     +           3.0*u(nx,j))/tdlx3
-	 ux4 = (-u(nx-5,j)+6.0*u(nx-4,j)-14.0*u(nx-3,j)+16.0*u(nx-2,j)-
-     +           9.0*u(nx-1,j)+2.0*u(nx,j))/dlx4
+          ux3 = (u(nx-4,j)-6.0*u(nx-3,j)+12.0*u(nx-2,j)-10.0*u(nx-1,j)+ &
+     &           3.0*u(nx,j))/tdlx3
+         ux4 = (-u(nx-5,j)+6.0*u(nx-4,j)-14.0*u(nx-3,j)+16.0*u(nx-2,j)- &
+     &           9.0*u(nx-1,j)+2.0*u(nx,j))/dlx4
 	else if (i.eq.nx) then
-	  ux3 = (3.0*u(nx-4,j)-14.0*u(nx-3,j)+24.0*u(nx-2,j)-
-     +           18.0*u(nx-1,j)+5.0*u(nx,j))/tdlx3
-	  ux4 = (-2.0*u(nx-5,j)+11.0*u(nx-4,j)-24.0*u(nx-3,j)+
-     +           26.0*u(nx-2,j)-14.0*u(nx-1,j)+3.0*u(nx,j))/dlx4
+          ux3 = (3.0*u(nx-4,j)-14.0*u(nx-3,j)+24.0*u(nx-2,j)-           &
+     &           18.0*u(nx-1,j)+5.0*u(nx,j))/tdlx3
+          ux4 = (-2.0*u(nx-5,j)+11.0*u(nx-4,j)-24.0*u(nx-3,j)+          &
+     &           26.0*u(nx-2,j)-14.0*u(nx-1,j)+3.0*u(nx,j))/dlx4
 	end if
       else
-c
-c     periodic in x
-c
+!c
+!     periodic in x
+!c
 	if(i.gt.2 .and. i.lt.nx-1) then
 	  ux3 = (-u(i-2,j)+2.0*u(i-1,j)-2.0*u(i+1,j)+u(i+2,j))/tdlx3
-	  ux4 = (u(i-2,j)-4.0*u(i-1,j)+6.0*u(i,j)-4.0*u(i+1,j)+u(i+2,j))
-     +           /dlx4
+          ux4 = (u(i-2,j)-4.0*u(i-1,j)+6.0*u(i,j)-4.0*u(i+1,j)+u(i+2,j))&
+     &           /dlx4
 	else if (i.eq.1) then
 	  ux3 = (-u(nx-2,j)+2.0*u(nx-1,j)-2.0*u(2,j)+u(3,j))/tdlx3
-	  ux4 = (u(nx-2,j)-4.0*u(nx-1,j)+6.0*u(1,j)-4.0*u(2,j)+u(3,j))
-     +          /dlx4
+          ux4 = (u(nx-2,j)-4.0*u(nx-1,j)+6.0*u(1,j)-4.0*u(2,j)+u(3,j))  &
+     &          /dlx4
 	else if (i.eq.2) then
 	  ux3 = (-u(nx-1,j)+2.0*u(1,j)-2.0*u(3,j)+u(4,j))/(tdlx3)
 	  ux4 = (u(nx-1,j)-4.0*u(1,j)+6.0*u(2,j)-4.0*u(3,j)+u(4,j))/dlx4
 	else if (i.eq.nx-1) then
 	  ux3 = (-u(nx-3,j)+2.0*u(nx-2,j)-2.0*u(1,j)+u(2,j))/tdlx3
-	  ux4 = (u(nx-3,j)-4.0*u(nx-2,j)+6.0*u(nx-1,j)-4.0*u(1,j)+
-     +           u(2,j))/dlx4
+          ux4 = (u(nx-3,j)-4.0*u(nx-2,j)+6.0*u(nx-1,j)-4.0*u(1,j)+      &
+     &           u(2,j))/dlx4
 	else if (i.eq.nx) then
 	  ux3 = (-u(nx-2,j)+2.0*u(nx-1,j)-2.0*u(2,j)+u(3,j))/tdlx3
-	  ux4 = (u(nx-2,j)-4.0*u(nx-1,j)+6.0*u(nx,j)-4.0*u(2,j)+u(3,j))
-     +          /dlx4
+          ux4 = (u(nx-2,j)-4.0*u(nx-1,j)+6.0*u(nx,j)-4.0*u(2,j)+u(3,j)) &
+     &          /dlx4
 	end if
       end if
-c
-c     y partial derivatives
-c
+!c
+!     y partial derivatives
+!c
       if (nyc.ne.0) then
-c
-c     not periodic in y
-c
+!c
+!     not periodic in y
+!c
 	if (j.gt.2 .and. j.lt.ny-1) then
 	  uy3 = (-u(i,j-2)+2.0*u(i,j-1)-2.0*u(i,j+1)+u(i,j+2))/tdly3
-	  uy4 = (u(i,j-2)-4.0*u(i,j-1)+6.0*u(i,j)-4.0*u(i,j+1)+u(i,j+2))
-     +          /dly4
+          uy4 = (u(i,j-2)-4.0*u(i,j-1)+6.0*u(i,j)-4.0*u(i,j+1)+u(i,j+2))&
+     &          /dly4
 	else if (j.eq.1) then
-	  uy3 = (-5.0*u(i,1)+18.0*u(i,2)-24.0*u(i,3)+14.0*u(i,4)-
-     +            3.0*u(i,5))/tdly3
-	  uy4 = (3.0*u(i,1)-14.0*u(i,2)+26.0*u(i,3)-24.0*u(i,4)+
-     +           11.0*u(i,5)-2.0*u(i,6))/dly4
+          uy3 = (-5.0*u(i,1)+18.0*u(i,2)-24.0*u(i,3)+14.0*u(i,4)-       &
+     &            3.0*u(i,5))/tdly3
+          uy4 = (3.0*u(i,1)-14.0*u(i,2)+26.0*u(i,3)-24.0*u(i,4)+        &
+     &           11.0*u(i,5)-2.0*u(i,6))/dly4
 	else if (j.eq.2) then
-	  uy3 = (-3.0*u(i,1)+10.0*u(i,2)-12.0*u(i,3)+6.0*u(i,4)-u(i,5))
-     +          /tdly3
-	  uy4 = (2.0*u(i,1)-9.0*u(i,2)+16.0*u(i,3)-14.0*u(i,4)+
-     +           6.0*u(i,5)-u(i,6))/dly4
+          uy3 = (-3.0*u(i,1)+10.0*u(i,2)-12.0*u(i,3)+6.0*u(i,4)-u(i,5)) &
+     &          /tdly3
+          uy4 = (2.0*u(i,1)-9.0*u(i,2)+16.0*u(i,3)-14.0*u(i,4)+         &
+     &           6.0*u(i,5)-u(i,6))/dly4
 	else if (j.eq.ny-1) then
-	  uy3 = (u(i,ny-4)-6.0*u(i,ny-3)+12.0*u(i,ny-2)-10.0*u(i,ny-1)+
-     +           3.0*u(i,ny))/tdly3
-	  uy4 = (-u(i,ny-5)+6.0*u(i,ny-4)-14.0*u(i,ny-3)+16.0*u(i,ny-2)-
-     +           9.0*u(i,ny-1)+2.0*u(i,ny))/dly4
+          uy3 = (u(i,ny-4)-6.0*u(i,ny-3)+12.0*u(i,ny-2)-10.0*u(i,ny-1)+ &
+     &           3.0*u(i,ny))/tdly3
+          uy4 = (-u(i,ny-5)+6.0*u(i,ny-4)-14.0*u(i,ny-3)+16.0*u(i,ny-2)-&
+     &           9.0*u(i,ny-1)+2.0*u(i,ny))/dly4
 	else if (j.eq.ny) then
-	  uy3 = (3.0*u(i,ny-4)-14.0*u(i,ny-3)+24.0*u(i,ny-2)-
-     +           18.0*u(i,ny-1)+5.0*u(i,ny))/tdly3
-	  uy4 = (-2.0*u(i,ny-5)+11.0*u(i,ny-4)-24.0*u(i,ny-3)+
-     +           26.0*u(i,ny-2)-14.0*u(i,ny-1)+3.0*u(i,ny))/dly4
+          uy3 = (3.0*u(i,ny-4)-14.0*u(i,ny-3)+24.0*u(i,ny-2)-           &
+     &           18.0*u(i,ny-1)+5.0*u(i,ny))/tdly3
+          uy4 = (-2.0*u(i,ny-5)+11.0*u(i,ny-4)-24.0*u(i,ny-3)+          &
+     &           26.0*u(i,ny-2)-14.0*u(i,ny-1)+3.0*u(i,ny))/dly4
 	end if
       else
-c
-c     periodic in y
-c
+!c
+!     periodic in y
+!c
 	if (j.gt.2 .and. j.lt.ny-1) then
 	  uy3 = (-u(i,j-2)+2.0*u(i,j-1)-2.0*u(i,j+1)+u(i,j+2))/tdly3
-	  uy4 = (u(i,j-2)-4.0*u(i,j-1)+6.0*u(i,j)-4.0*u(i,j+1)+u(i,j+2))
-     +           /dly4
+          uy4 = (u(i,j-2)-4.0*u(i,j-1)+6.0*u(i,j)-4.0*u(i,j+1)+u(i,j+2))&
+     &           /dly4
 	else if (j.eq.1) then
 	  uy3 = (-u(i,ny-2)+2.0*u(i,ny-1)-2.0*u(i,2)+u(i,3))/tdly3
-	  uy4 = (u(i,ny-2)-4.0*u(i,ny-1)+6.0*u(i,1)-4.0*u(i,2)+u(i,3))
-     +          /dly4
+          uy4 = (u(i,ny-2)-4.0*u(i,ny-1)+6.0*u(i,1)-4.0*u(i,2)+u(i,3))  &
+     &          /dly4
 	else if (j.eq.2) then
 	  uy3 = (-u(i,ny-1)+2.0*u(i,1)-2.0*u(i,3)+u(i,4))/(tdly3)
 	  uy4 = (u(i,ny-1)-4.0*u(i,1)+6.0*u(i,2)-4.0*u(i,3)+u(i,4))/dly4
 	else if (j.eq.ny-1) then
 	  uy3 = (-u(i,ny-3)+2.0*u(i,ny-2)-2.0*u(i,1)+u(i,2))/tdly3
-	  uy4 = (u(i,ny-3)-4.0*u(i,ny-2)+6.0*u(i,ny-1)-4.0*u(i,1)+
-     +           u(i,2))/dly4
+          uy4 = (u(i,ny-3)-4.0*u(i,ny-2)+6.0*u(i,ny-1)-4.0*u(i,1)+      &
+     &           u(i,2))/dly4
 	else if (j.eq.ny) then
 	  uy3 = (-u(i,ny-2)+2.0*u(i,ny-1)-2.0*u(i,2)+u(i,3))/tdly3
-	  uy4 = (u(i,ny-2)-4.0*u(i,ny-1)+6.0*u(i,ny)-4.0*u(i,2)+u(i,3))
-     +          /dly4
+          uy4 = (u(i,ny-2)-4.0*u(i,ny-1)+6.0*u(i,ny)-4.0*u(i,2)+u(i,3)) &
+     &          /dly4
 	end if
       end if
       return
       end
 
       subroutine swk3(nfx,nfy,nfz,phif,rhsf,phi,rhs)
-c
-c     set phif,rhsf input in arrays which include
-c     virtual boundaries for phi (for all 2-d real codes)
-c
+!c
+!     set phif,rhsf input in arrays which include
+!     virtual boundaries for phi (for all 2-d real codes)
+!c
       implicit none
       integer nfx,nfy,nfz,i,j,k
       real phif(nfx,nfy,nfz),rhsf(nfx,nfy,nfz)
@@ -693,9 +693,9 @@ c
 	  end do
 	end do
       end do
-c
-c     set virtual boundaries in phi to zero
-c
+!c
+!     set virtual boundaries in phi to zero
+!c
       do k=0,nfz+1
 	do j=0,nfy+1
 	  phi(0,j,k) = 0.0
@@ -718,16 +718,16 @@ c
       end
 
       subroutine trsfc3(nx,ny,nz,phi,rhs,ncx,ncy,ncz,phic,rhsc)
-c
-c     transfer fine grid to coarse grid
-c
+!c
+!     transfer fine grid to coarse grid
+!c
       implicit none
       integer nx,ny,nz,ncx,ncy,ncz,i,j,k,ic,jc,kc,ix,jy,kz
       real phi(0:nx+1,0:ny+1,0:nz+1),rhs(nx,ny,nz)
       real phic(0:ncx+1,0:ncy+1,0:ncz+1),rhsc(ncx,ncy,ncz)
-c
-c     set virtual boundaries in phic to zero
-c
+!c
+!     set virtual boundaries in phic to zero
+!c
       do kc=0,ncz+1
 	do jc=0,ncy+1
 	  phic(0,jc,kc) = 0.0
@@ -747,9 +747,9 @@ c
 	end do
       end do
       if (ncx.lt.nx .and. ncy.lt.ny .and. ncz.lt.nz) then
-c
-c     coarsening in x,y,z (usually the case?)
-c
+!c
+!     coarsening in x,y,z (usually the case?)
+!c
 	do kc=1,ncz
 	k = kc+kc-1
 	do jc=1,ncy
@@ -762,9 +762,9 @@ c
 	end do
 	end do
       else
-c
-c     no coarsening in at least one dimension
-c
+!c
+!     no coarsening in at least one dimension
+!c
 	ix = 1
 	if (ncx.eq.nx) ix = 0
 	jy = 1
@@ -787,122 +787,122 @@ c
       return
       end
 
-      subroutine res3(nx,ny,nz,resf,ncx,ncy,ncz,rhsc,
-     +                nxa,nxb,nyc,nyd,nze,nzf)
+      subroutine res3(nx,ny,nz,resf,ncx,ncy,ncz,rhsc,                   &
+     &                nxa,nxb,nyc,nyd,nze,nzf)
       implicit none
       integer nx,ny,nz,ncx,ncy,ncz,nxa,nxb,nyc,nyd,nze,nzf
       integer ix,jy,kz,i,j,k,ic,jc,kc,im1,ip1,jm1,jp1,km1,kp1
       real rm,rk,rp
-c
-c     restrict fine grid residual in resf to coarse grid in rhsc
-c     using full weighting
-c
+!c
+!     restrict fine grid residual in resf to coarse grid in rhsc
+!     using full weighting
+!c
       real resf(nx,ny,nz),rhsc(ncx,ncy,ncz)
-c
-c     set x,y,z coarsening integer subscript scales
-c
+!c
+!     set x,y,z coarsening integer subscript scales
+!c
       ix = 1
       if (ncx.eq.nx) ix = 0
       jy = 1
       if (ncy.eq.ny) jy = 0
       kz = 1
       if (ncz.eq.nz) kz = 0
-c
-c     restrict on interior
-c
+!c
+!     restrict on interior
+!c
       if (ncz.lt.nz .and. ncy.lt.ny .and. ncx.lt.nx) then
-c
-c     coarsening in x,y,z
-c
+!c
+!     coarsening in x,y,z
+!c
       do kc=2,ncz-1
 	k = kc+kc-1
 	do jc=2,ncy-1
 	  j = jc+jc-1
 	  do ic=2,ncx-1
 	    i = ic+ic-1
-c
-c     weight on k-1,k,k+1 z planes in rm,rk,rp
-c
-	    rm=(resf(i-1,j-1,k-1)+resf(i+1,j-1,k-1)+resf(i-1,j+1,k-1)+
-     +      resf(i+1,j+1,k-1)+2.*(resf(i-1,j,k-1)+resf(i+1,j,k-1)+
-     +      resf(i,j-1,k-1)+resf(i,j+1,k-1))+4.*resf(i,j,k-1))*.0625
-	    rk=(resf(i-1,j-1,k)+resf(i+1,j-1,k)+resf(i-1,j+1,k)+
-     +      resf(i+1,j+1,k)+2.*(resf(i-1,j,k)+resf(i+1,j,k)+
-     +      resf(i,j-1,k)+resf(i,j+1,k))+4.*resf(i,j,k))*.0625
-	    rp=(resf(i-1,j-1,k+1)+resf(i+1,j-1,k+1)+resf(i-1,j+1,k+1)+
-     +      resf(i+1,j+1,k+1)+2.*(resf(i-1,j,k+1)+resf(i+1,j,k+1)+
-     +      resf(i,j-1,k+1)+resf(i,j+1,k+1))+4.*resf(i,j,k+1))*.0625
-c
-c     weight in z direction for final result
-c
+!c
+!     weight on k-1,k,k+1 z planes in rm,rk,rp
+!c
+            rm=(resf(i-1,j-1,k-1)+resf(i+1,j-1,k-1)+resf(i-1,j+1,k-1)+  &
+     &      resf(i+1,j+1,k-1)+2.*(resf(i-1,j,k-1)+resf(i+1,j,k-1)+      &
+     &      resf(i,j-1,k-1)+resf(i,j+1,k-1))+4.*resf(i,j,k-1))*.0625
+            rk=(resf(i-1,j-1,k)+resf(i+1,j-1,k)+resf(i-1,j+1,k)+        &  
+     &      resf(i+1,j+1,k)+2.*(resf(i-1,j,k)+resf(i+1,j,k)+            &
+     &      resf(i,j-1,k)+resf(i,j+1,k))+4.*resf(i,j,k))*.0625
+            rp=(resf(i-1,j-1,k+1)+resf(i+1,j-1,k+1)+resf(i-1,j+1,k+1)+  &
+     &      resf(i+1,j+1,k+1)+2.*(resf(i-1,j,k+1)+resf(i+1,j,k+1)+      &
+     &      resf(i,j-1,k+1)+resf(i,j+1,k+1))+4.*resf(i,j,k+1))*.0625
+!c
+!     weight in z direction for final result
+!c
 	    rhsc(ic,jc,kc) = 0.25*(rm+2.*rk+rp)
 	  end do
 	end do
       end do
       else
-c
-c     allow for noncoarsening in any of x,y,z
-c
+!c
+!     allow for noncoarsening in any of x,y,z
+!c
       do kc=2,ncz-1
 	k = kc+kz*(kc-1)
 	do jc=2,ncy-1
 	  j = jc+jy*(jc-1)
 	  do ic=2,ncx-1
 	    i = ic+ix*(ic-1)
-c
-c     weight on k-1,k,k+1 z planes in rm,rk,rp
-c
-	    rm=(resf(i-1,j-1,k-1)+resf(i+1,j-1,k-1)+resf(i-1,j+1,k-1)+
-     +      resf(i+1,j+1,k-1)+2.*(resf(i-1,j,k-1)+resf(i+1,j,k-1)+
-     +      resf(i,j-1,k-1)+resf(i,j+1,k-1))+4.*resf(i,j,k-1))*.0625
-	    rk=(resf(i-1,j-1,k)+resf(i+1,j-1,k)+resf(i-1,j+1,k)+
-     +      resf(i+1,j+1,k)+2.*(resf(i-1,j,k)+resf(i+1,j,k)+
-     +      resf(i,j-1,k)+resf(i,j+1,k))+4.*resf(i,j,k))*.0625
-	    rp=(resf(i-1,j-1,k+1)+resf(i+1,j-1,k+1)+resf(i-1,j+1,k+1)+
-     +      resf(i+1,j+1,k+1)+2.*(resf(i-1,j,k+1)+resf(i+1,j,k+1)+
-     +      resf(i,j-1,k+1)+resf(i,j+1,k+1))+4.*resf(i,j,k+1))*.0625
-c
-c     weight in z direction for final result
-c
+!c
+!     weight on k-1,k,k+1 z planes in rm,rk,rp
+!c
+            rm=(resf(i-1,j-1,k-1)+resf(i+1,j-1,k-1)+resf(i-1,j+1,k-1)+  &
+     &      resf(i+1,j+1,k-1)+2.*(resf(i-1,j,k-1)+resf(i+1,j,k-1)+      &
+     &      resf(i,j-1,k-1)+resf(i,j+1,k-1))+4.*resf(i,j,k-1))*.0625
+            rk=(resf(i-1,j-1,k)+resf(i+1,j-1,k)+resf(i-1,j+1,k)+        &
+     &      resf(i+1,j+1,k)+2.*(resf(i-1,j,k)+resf(i+1,j,k)+            &
+     &      resf(i,j-1,k)+resf(i,j+1,k))+4.*resf(i,j,k))*.0625
+            rp=(resf(i-1,j-1,k+1)+resf(i+1,j-1,k+1)+resf(i-1,j+1,k+1)+  &
+     &      resf(i+1,j+1,k+1)+2.*(resf(i-1,j,k+1)+resf(i+1,j,k+1)+      &
+     &      resf(i,j-1,k+1)+resf(i,j+1,k+1))+4.*resf(i,j,k+1))*.0625
+!c
+!     weight in z direction for final result
+!c
 	    rhsc(ic,jc,kc) = 0.25*(rm+2.*rk+rp)
 	  end do
 	end do
       end do
       end if
-c
-c     set residual on boundaries
-c
+!c
+!     set residual on boundaries
+!c
       do ic=1,ncx,ncx-1
-c
-c     x=xa and x=xb
-c
+!c
+!     x=xa and x=xb
+!c
 	i = ic+ix*(ic-1)
 	im1 = max0(i-1,2)
 	ip1 = min0(i+1,nx-1)
 	if (i.eq.1 .and. nxa.eq.0) im1 = nx-1
 	if (i.eq.nx .and. nxb.eq.0) ip1 = 2
-c
-c    (y,z) interior
-c
+!c
+!    (y,z) interior
+!c
 	do kc=2,ncz-1
 	  k = kc+kz*(kc-1)
 	  do jc=2,ncy-1
 	    j = jc+jy*(jc-1)
-	    rm=(resf(im1,j-1,k-1)+resf(ip1,j-1,k-1)+resf(im1,j+1,k-1)+
-     +      resf(ip1,j+1,k-1)+2.*(resf(im1,j,k-1)+resf(ip1,j,k-1)+
-     +      resf(i,j-1,k-1)+resf(i,j+1,k-1))+4.*resf(i,j,k-1))*.0625
-	    rk=(resf(im1,j-1,k)+resf(ip1,j-1,k)+resf(im1,j+1,k)+
-     +      resf(ip1,j+1,k)+2.*(resf(im1,j,k)+resf(ip1,j,k)+
-     +      resf(i,j-1,k)+resf(i,j+1,k))+4.*resf(i,j,k))*.0625
-	    rp=(resf(im1,j-1,k+1)+resf(ip1,j-1,k+1)+resf(im1,j+1,k+1)+
-     +      resf(ip1,j+1,k+1)+2.*(resf(im1,j,k+1)+resf(ip1,j,k+1)+
-     +      resf(i,j-1,k+1)+resf(i,j+1,k+1))+4.*resf(i,j,k+1))*.0625
+            rm=(resf(im1,j-1,k-1)+resf(ip1,j-1,k-1)+resf(im1,j+1,k-1)+  &
+     &      resf(ip1,j+1,k-1)+2.*(resf(im1,j,k-1)+resf(ip1,j,k-1)+      &
+     &      resf(i,j-1,k-1)+resf(i,j+1,k-1))+4.*resf(i,j,k-1))*.0625
+            rk=(resf(im1,j-1,k)+resf(ip1,j-1,k)+resf(im1,j+1,k)+        &
+     &      resf(ip1,j+1,k)+2.*(resf(im1,j,k)+resf(ip1,j,k)+            &
+     &      resf(i,j-1,k)+resf(i,j+1,k))+4.*resf(i,j,k))*.0625
+            rp=(resf(im1,j-1,k+1)+resf(ip1,j-1,k+1)+resf(im1,j+1,k+1)+  &
+     &      resf(ip1,j+1,k+1)+2.*(resf(im1,j,k+1)+resf(ip1,j,k+1)+      &
+     &      resf(i,j-1,k+1)+resf(i,j+1,k+1))+4.*resf(i,j,k+1))*.0625
 	    rhsc(ic,jc,kc) = 0.25*(rm+2.*rk+rp)
 	  end do
 	end do
-c
-c     x=xa,xb and y=yc,yd interior edges
-c
+!c
+!     x=xa,xb and y=yc,yd interior edges
+!c
 	do jc=1,ncy,ncy-1
 	  j = jc+jy*(jc-1)
 	  jm1 = max0(j-1,2)
@@ -911,39 +911,39 @@ c
 	  if (j.eq.ny .and. nyc.eq.0) jp1 = 2
 	  do kc=2,ncz-1
 	    k = kc+kz*(kc-1)
-	    rm=(resf(im1,jm1,k-1)+resf(ip1,jm1,k-1)+resf(im1,jp1,k-1)+
-     +      resf(ip1,jp1,k-1)+2.*(resf(im1,j,k-1)+resf(ip1,j,k-1)+
-     +      resf(i,jm1,k-1)+resf(i,jp1,k-1))+4.*resf(i,j,k-1))*.0625
-	    rk=(resf(im1,jm1,k)+resf(ip1,jm1,k)+resf(im1,jp1,k)+
-     +      resf(ip1,jp1,k)+2.*(resf(im1,j,k)+resf(ip1,j,k)+
-     +      resf(i,jm1,k)+resf(i,jp1,k))+4.*resf(i,j,k))*.0625
-	    rp=(resf(im1,jm1,k+1)+resf(ip1,jm1,k+1)+resf(im1,jp1,k+1)+
-     +      resf(ip1,jp1,k+1)+2.*(resf(im1,j,k+1)+resf(ip1,j,k+1)+
-     +      resf(i,jm1,k+1)+resf(i,jp1,k+1))+4.*resf(i,j,k+1))*.0625
+            rm=(resf(im1,jm1,k-1)+resf(ip1,jm1,k-1)+resf(im1,jp1,k-1)+  &
+     &      resf(ip1,jp1,k-1)+2.*(resf(im1,j,k-1)+resf(ip1,j,k-1)+      &
+     &      resf(i,jm1,k-1)+resf(i,jp1,k-1))+4.*resf(i,j,k-1))*.0625
+            rk=(resf(im1,jm1,k)+resf(ip1,jm1,k)+resf(im1,jp1,k)+        &
+     &      resf(ip1,jp1,k)+2.*(resf(im1,j,k)+resf(ip1,j,k)+            &
+     &      resf(i,jm1,k)+resf(i,jp1,k))+4.*resf(i,j,k))*.0625
+            rp=(resf(im1,jm1,k+1)+resf(ip1,jm1,k+1)+resf(im1,jp1,k+1)+  &
+     &      resf(ip1,jp1,k+1)+2.*(resf(im1,j,k+1)+resf(ip1,j,k+1)+      &
+     &      resf(i,jm1,k+1)+resf(i,jp1,k+1))+4.*resf(i,j,k+1))*.0625
 	    rhsc(ic,jc,kc) = 0.25*(rm+2.*rk+rp)
 	  end do
-c     x=xa,xb; y=yc,yd; z=ze,zf cornors
+!     x=xa,xb; y=yc,yd; z=ze,zf cornors
 	  do kc=1,ncz,ncz-1
 	  k = kc+kz*(kc-1)
 	  km1 = max0(k-1,2)
 	  kp1 = min0(k+1,nz-1)
 	  if (k.eq.1 .and. nze.eq.0) km1 = nz-1
 	  if (k.eq.nz .and. nzf.eq.0) kp1 = 2
-	  rm=(resf(im1,jm1,km1)+resf(ip1,jm1,km1)+resf(im1,jp1,km1)+
-     +    resf(ip1,jp1,km1)+2.*(resf(im1,j,km1)+resf(ip1,j,km1)+
-     +    resf(i,jm1,km1)+resf(i,jp1,km1))+4.*resf(i,j,km1))*.0625
-	  rk=(resf(im1,jm1,k)+resf(ip1,jm1,k)+resf(im1,jp1,k)+
-     +    resf(ip1,jp1,k)+2.*(resf(im1,j,k)+resf(ip1,j,k)+
-     +    resf(i,jm1,k)+resf(i,jp1,k))+4.*resf(i,j,k))*.0625
-	  rp=(resf(im1,jm1,kp1)+resf(ip1,jm1,kp1)+resf(im1,jp1,kp1)+
-     +    resf(ip1,jp1,kp1)+2.*(resf(im1,j,kp1)+resf(ip1,j,kp1)+
-     +    resf(i,jm1,kp1)+resf(i,jp1,kp1))+4.*resf(i,j,kp1))*.0625
+          rm=(resf(im1,jm1,km1)+resf(ip1,jm1,km1)+resf(im1,jp1,km1)+    &
+     &    resf(ip1,jp1,km1)+2.*(resf(im1,j,km1)+resf(ip1,j,km1)+        &
+     &    resf(i,jm1,km1)+resf(i,jp1,km1))+4.*resf(i,j,km1))*.0625
+          rk=(resf(im1,jm1,k)+resf(ip1,jm1,k)+resf(im1,jp1,k)+          &
+     &    resf(ip1,jp1,k)+2.*(resf(im1,j,k)+resf(ip1,j,k)+              &
+     &    resf(i,jm1,k)+resf(i,jp1,k))+4.*resf(i,j,k))*.0625
+          rp=(resf(im1,jm1,kp1)+resf(ip1,jm1,kp1)+resf(im1,jp1,kp1)+    &
+     &    resf(ip1,jp1,kp1)+2.*(resf(im1,j,kp1)+resf(ip1,j,kp1)+        &
+     &    resf(i,jm1,kp1)+resf(i,jp1,kp1))+4.*resf(i,j,kp1))*.0625
 	  rhsc(ic,jc,kc) = 0.25*(rm+2.*rk+rp)
 	  end do
 	end do
-c
-c      x=xa,xb and z=ze,zf edges
-c
+!c
+!      x=xa,xb and z=ze,zf edges
+!c
 	do kc=1,ncz,ncz-1
 	  k = kc+kz*(kc-1)
 	  km1 = max0(k-1,2)
@@ -952,106 +952,106 @@ c
 	  if (k.eq.nz .and. nzf.eq.0) kp1 = 2
 	   do jc=2,ncy-1
 	    j = jc+jy*(jc-1)
-	    rm=(resf(im1,j-1,km1)+resf(ip1,j-1,km1)+resf(im1,j+1,km1)+
-     +      resf(ip1,j+1,km1)+2.*(resf(im1,j,km1)+resf(ip1,j,km1)+
-     +      resf(i,j-1,km1)+resf(i,j+1,km1))+4.*resf(i,j,km1))*.0625
-	    rk=(resf(im1,j-1,k)+resf(ip1,j-1,k)+resf(im1,j+1,k)+
-     +      resf(ip1,j+1,k)+2.*(resf(im1,j,k)+resf(ip1,j,k)+
-     +      resf(i,j-1,k)+resf(i,j+1,k))+4.*resf(i,j,k))*.0625
-	    rp=(resf(im1,j-1,kp1)+resf(ip1,j-1,kp1)+resf(im1,j+1,kp1)+
-     +      resf(ip1,j+1,kp1)+2.*(resf(im1,j,kp1)+resf(ip1,j,kp1)+
-     +      resf(i,j-1,kp1)+resf(i,j+1,kp1))+4.*resf(i,j,kp1))*.0625
+            rm=(resf(im1,j-1,km1)+resf(ip1,j-1,km1)+resf(im1,j+1,km1)+  &
+     &      resf(ip1,j+1,km1)+2.*(resf(im1,j,km1)+resf(ip1,j,km1)+      &
+     &      resf(i,j-1,km1)+resf(i,j+1,km1))+4.*resf(i,j,km1))*.0625
+            rk=(resf(im1,j-1,k)+resf(ip1,j-1,k)+resf(im1,j+1,k)+        &
+     &      resf(ip1,j+1,k)+2.*(resf(im1,j,k)+resf(ip1,j,k)+            &
+     &      resf(i,j-1,k)+resf(i,j+1,k))+4.*resf(i,j,k))*.0625
+            rp=(resf(im1,j-1,kp1)+resf(ip1,j-1,kp1)+resf(im1,j+1,kp1)+  &
+     &      resf(ip1,j+1,kp1)+2.*(resf(im1,j,kp1)+resf(ip1,j,kp1)+      &
+     &      resf(i,j-1,kp1)+resf(i,j+1,kp1))+4.*resf(i,j,kp1))*.0625
 	    rhsc(ic,jc,kc) = 0.25*(rm+2.*rk+rp)
 	  end do
 	end do
       end do
-c
-c     y boundaries y=yc and y=yd
-c
+!c
+!     y boundaries y=yc and y=yd
+!c
       do jc=1,ncy,ncy-1
 	j = jc+jy*(jc-1)
 	jm1 = max0(j-1,2)
 	jp1 = min0(j+1,ny-1)
 	if (j.eq.1 .and. nyc.eq.0) jm1 = ny-1
 	if (j.eq.ny .and. nyd.eq.0) jp1 = 2
-c
-c     (x,z) interior
-c
+!c
+!     (x,z) interior
+!c
 	do kc=2,ncz-1
 	  k = kc+kz*(kc-1)
 	  do ic=2,ncx-1
 	    i = ic+ix*(ic-1)
-	    rm=(resf(i-1,jm1,k-1)+resf(i+1,jm1,k-1)+resf(i-1,jp1,k-1)+
-     +      resf(i+1,jp1,k-1)+2.*(resf(i-1,j,k-1)+resf(i+1,j,k-1)+
-     +      resf(i,jm1,k-1)+resf(i,jp1,k-1))+4.*resf(i,j,k-1))*.0625
-	    rk=(resf(i-1,jm1,k)+resf(i+1,jm1,k)+resf(i-1,jp1,k)+
-     +      resf(i+1,jp1,k)+2.*(resf(i-1,j,k)+resf(i+1,j,k)+
-     +      resf(i,jm1,k)+resf(i,jp1,k))+4.*resf(i,j,k))*.0625
-	    rp=(resf(i-1,jm1,k+1)+resf(i+1,jm1,k+1)+resf(i-1,jp1,k+1)+
-     +      resf(i+1,jp1,k+1)+2.*(resf(i-1,j,k+1)+resf(i+1,j,k+1)+
-     +      resf(i,jm1,k+1)+resf(i,jp1,k+1))+4.*resf(i,j,k+1))*.0625
+            rm=(resf(i-1,jm1,k-1)+resf(i+1,jm1,k-1)+resf(i-1,jp1,k-1)+  &
+     &      resf(i+1,jp1,k-1)+2.*(resf(i-1,j,k-1)+resf(i+1,j,k-1)+      &
+     &      resf(i,jm1,k-1)+resf(i,jp1,k-1))+4.*resf(i,j,k-1))*.0625
+            rk=(resf(i-1,jm1,k)+resf(i+1,jm1,k)+resf(i-1,jp1,k)+        &
+     &      resf(i+1,jp1,k)+2.*(resf(i-1,j,k)+resf(i+1,j,k)+            &
+     &      resf(i,jm1,k)+resf(i,jp1,k))+4.*resf(i,j,k))*.0625
+            rp=(resf(i-1,jm1,k+1)+resf(i+1,jm1,k+1)+resf(i-1,jp1,k+1)+  &
+     &      resf(i+1,jp1,k+1)+2.*(resf(i-1,j,k+1)+resf(i+1,j,k+1)+      &
+     &      resf(i,jm1,k+1)+resf(i,jp1,k+1))+4.*resf(i,j,k+1))*.0625
 	    rhsc(ic,jc,kc) = 0.25*(rm+2.*rk+rp)
 	  end do
 	end do
-c
-c     y=yc,yd and z=ze,zf edges
-c
+!c
+!     y=yc,yd and z=ze,zf edges
+!c
 	do kc=1,ncz,ncz-1
 	  k = kc+kz*(kc-1)
 	  km1 = max0(k-1,2)
 	  kp1 = min0(k+1,nz-1)
 	  if (k.eq.1 .and. nze.eq.0) km1 = nz-1
 	  if (k.eq.nz .and. nzf.eq.0) kp1 = 2
-c
-c     interior in x
-c
+!c
+!     interior in x
+!c
 	  do ic=2,ncx-1
 	    i = ic+ix*(ic-1)
-	    rm=(resf(i-1,jm1,km1)+resf(i+1,jm1,km1)+resf(i-1,jp1,km1)+
-     +      resf(i+1,jp1,km1)+2.*(resf(i-1,j,km1)+resf(i+1,j,km1)+
-     +      resf(i,jm1,km1)+resf(i,jp1,km1))+4.*resf(i,j,km1))*.0625
-	    rk=(resf(i-1,jm1,k)+resf(i+1,jm1,k)+resf(i-1,jp1,k)+
-     +      resf(i+1,jp1,k)+2.*(resf(i-1,j,k)+resf(i+1,j,k)+
-     +      resf(i,jm1,k)+resf(i,jp1,k))+4.*resf(i,j,k))*.0625
-	    rp=(resf(i-1,jm1,kp1)+resf(i+1,jm1,kp1)+resf(i-1,jp1,kp1)+
-     +      resf(i+1,jp1,kp1)+2.*(resf(i-1,j,kp1)+resf(i+1,j,kp1)+
-     +      resf(i,jm1,kp1)+resf(i,jp1,kp1))+4.*resf(i,j,kp1))*.0625
+            rm=(resf(i-1,jm1,km1)+resf(i+1,jm1,km1)+resf(i-1,jp1,km1)+  &
+     &      resf(i+1,jp1,km1)+2.*(resf(i-1,j,km1)+resf(i+1,j,km1)+      &
+     &      resf(i,jm1,km1)+resf(i,jp1,km1))+4.*resf(i,j,km1))*.0625
+            rk=(resf(i-1,jm1,k)+resf(i+1,jm1,k)+resf(i-1,jp1,k)+        &
+     &      resf(i+1,jp1,k)+2.*(resf(i-1,j,k)+resf(i+1,j,k)+            &
+     &      resf(i,jm1,k)+resf(i,jp1,k))+4.*resf(i,j,k))*.0625
+            rp=(resf(i-1,jm1,kp1)+resf(i+1,jm1,kp1)+resf(i-1,jp1,kp1)+  &
+     &      resf(i+1,jp1,kp1)+2.*(resf(i-1,j,kp1)+resf(i+1,j,kp1)+      &
+     &      resf(i,jm1,kp1)+resf(i,jp1,kp1))+4.*resf(i,j,kp1))*.0625
 	    rhsc(ic,jc,kc) = 0.25*(rm+2.*rk+rp)
 	  end do
 	end do
       end do
-c
-c     z=ze,zf boundaries
-c
+!c
+!     z=ze,zf boundaries
+!c
       do kc=1,ncz,ncz-1
 	k = kc+kz*(kc-1)
 	km1 = max0(k-1,2)
 	kp1 = min0(k+1,nz-1)
 	if (k.eq.1 .and. nze.eq.0) km1 = nz-1
 	if (k.eq.nz .and. nzf.eq.0) kp1 = 2
-c
-c     (x,y) interior
-c
+!c
+!     (x,y) interior
+!c
 	do jc=2,ncy-1
 	  j = jc+jy*(jc-1)
 	  do ic=2,ncx-1
 	    i = ic+ix*(ic-1)
-	    rm=(resf(i-1,j-1,km1)+resf(i+1,j-1,km1)+resf(i-1,j+1,km1)+
-     +      resf(i+1,j+1,km1)+2.*(resf(i-1,j,km1)+resf(i+1,j,km1)+
-     +      resf(i,j-1,km1)+resf(i,j+1,km1))+4.*resf(i,j,km1))*.0625
-	    rk=(resf(i-1,j-1,k)+resf(i+1,j-1,k)+resf(i-1,j+1,k)+
-     +      resf(i+1,j+1,k)+2.*(resf(i-1,j,k)+resf(i+1,j,k)+
-     +      resf(i,j-1,k)+resf(i,j+1,k))+4.*resf(i,j,k))*.0625
-	    rp=(resf(i-1,j-1,kp1)+resf(i+1,j-1,kp1)+resf(i-1,j+1,kp1)+
-     +      resf(i+1,j+1,kp1)+2.*(resf(i-1,j,kp1)+resf(i+1,j,kp1)+
-     +      resf(i,j-1,kp1)+resf(i,j+1,kp1))+4.*resf(i,j,kp1))*.0625
+            rm=(resf(i-1,j-1,km1)+resf(i+1,j-1,km1)+resf(i-1,j+1,km1)+  &
+     &      resf(i+1,j+1,km1)+2.*(resf(i-1,j,km1)+resf(i+1,j,km1)+      &
+     &      resf(i,j-1,km1)+resf(i,j+1,km1))+4.*resf(i,j,km1))*.0625
+            rk=(resf(i-1,j-1,k)+resf(i+1,j-1,k)+resf(i-1,j+1,k)+        &
+     &      resf(i+1,j+1,k)+2.*(resf(i-1,j,k)+resf(i+1,j,k)+            &
+     &      resf(i,j-1,k)+resf(i,j+1,k))+4.*resf(i,j,k))*.0625
+            rp=(resf(i-1,j-1,kp1)+resf(i+1,j-1,kp1)+resf(i-1,j+1,kp1)+  &
+     &      resf(i+1,j+1,kp1)+2.*(resf(i-1,j,kp1)+resf(i+1,j,kp1)+      &
+     &      resf(i,j-1,kp1)+resf(i,j+1,kp1))+4.*resf(i,j,kp1))*.0625
 	    rhsc(ic,jc,kc) = 0.25*(rm+2.*rk+rp)
 	  end do
 	end do
       end do
-c
-c     set coarse grid residual to zero at specified boundaries
-c
+!c
+!     set coarse grid residual to zero at specified boundaries
+!c
       if (nxa.eq.1) then
 	ic = 1
 	do kc=1,ncz
@@ -1103,11 +1103,11 @@ c
       return
       end
 
-c
-c     prolon3 modified from prolon2 11/25/97
-c
-      subroutine prolon3(ncx,ncy,ncz,p,nx,ny,nz,q,nxa,nxb,nyc,nyd,
-     +                   nze,nzf,intpol)
+!c
+!     prolon3 modified from prolon2 11/25/97
+!c
+      subroutine prolon3(ncx,ncy,ncz,p,nx,ny,nz,q,nxa,nxb,nyc,nyd,      &
+     &                   nze,nzf,intpol)
       implicit none
       integer ncx,ncy,ncz,nx,ny,nz,intpol,nxa,nxb,nyc,nyd,nze,nzf
       real p(0:ncx+1,0:ncy+1,0:ncz+1),q(0:nx+1,0:ny+1,0:nz+1)
@@ -1141,19 +1141,19 @@ c
 	koddfn = nz-2
       end if
       if (intpol.eq.1 .or. ncz.lt.4) then
-c
-c     linearly interpolate in z
-c
+!c
+!     linearly interpolate in z
+!c
 	if (ncz .lt. nz) then
-c
-c     ncz grid is an every other point subset of nz grid
-c     set odd k planes interpolating in x&y and then set even
-c     k planes by averaging odd k planes
-c
+!c
+!     ncz grid is an every other point subset of nz grid
+!     set odd k planes interpolating in x&y and then set even
+!     k planes by averaging odd k planes
+!c
 	  do k=koddst,koddfn,2
 	    kc = k/2+1
-	    call prolon2(ncx,ncy,p(0,0,kc),nx,ny,q(0,0,k),nxa,nxb,nyc,
-     +                   nyd,intpol)
+           call prolon2(ncx,ncy,p(0,0,kc),nx,ny,q(0,0,k),nxa,nxb,nyc,   &
+     &                   nyd,intpol)
 	  end do
 	  do k=2,kfn,2
 	    do j=jst,jfn
@@ -1162,9 +1162,9 @@ c
 	      end do
 	    end do
 	  end do
-c
-c     set periodic virtual boundaries if necessary
-c
+!c
+!     set periodic virtual boundaries if necessary
+!c
 	  if (nze.eq.0) then
 	    do j=jst,jfn
 	      do i=ist,ifn
@@ -1175,17 +1175,17 @@ c
 	  end if
 	  return
 	else
-c
-c     ncz grid is equals nz grid so interpolate in x&y only
-c
+!c
+!     ncz grid is equals nz grid so interpolate in x&y only
+!c
 	  do k=kst,kfn
 	    kc = k
-	    call prolon2(ncx,ncy,p(0,0,kc),nx,ny,q(0,0,k),nxa,nxb,nyc,
-     +                   nyd,intpol)
+            call prolon2(ncx,ncy,p(0,0,kc),nx,ny,q(0,0,k),nxa,nxb,nyc,  &
+     &                   nyd,intpol)
 	  end do
-c
-c     set periodic virtual boundaries if necessary
-c
+!c
+!     set periodic virtual boundaries if necessary
+!c
 	  if (nze.eq.0) then
 	    do j=jst,jfn
 	    do i=ist,ifn
@@ -1197,55 +1197,55 @@ c
 	  return
 	end if
       else
-c
-c     cubically interpolate in z
-c
+!c
+!     cubically interpolate in z
+!c
 	if (ncz .lt. nz) then
-c
-c     set every other point of nz grid by interpolating in x&y
-c
+!c
+!     set every other point of nz grid by interpolating in x&y
+!c
 	  do k=koddst,koddfn,2
 	    kc = k/2+1
-	    call prolon2(ncx,ncy,p(0,0,kc),nx,ny,q(0,0,k),nxa,nxb,nyc,
-     +                   nyd,intpol)
+            call prolon2(ncx,ncy,p(0,0,kc),nx,ny,q(0,0,k),nxa,nxb,nyc,  &
+     &                   nyd,intpol)
 	  end do
-c
-c     set deep interior of nz grid using values just
-c     generated and symmetric cubic interpolation in z
-c
+!c
+!     set deep interior of nz grid using values just
+!     generated and symmetric cubic interpolation in z
+!c
 	  do k=4,nz-3,2
 	    do j=jst,jfn
 	    do i=ist,ifn
-	    q(i,j,k)=(-q(i,j,k-3)+9.*(q(i,j,k-1)+q(i,j,k+1))-q(i,j,k+3))
-     +                *.0625
+            q(i,j,k)=(-q(i,j,k-3)+9.*(q(i,j,k-1)+q(i,j,k+1))-q(i,j,k+3))&
+     &                *.0625
 	    end do
 	    end do
 	  end do
-c
-c     interpolate from q at k=2 and k=nz-1
-c
+!c
+!     interpolate from q at k=2 and k=nz-1
+!c
 	  if (nze.ne.0) then
-c
-c     asymmetric formula near nonperiodic z boundaries
-c
+!c
+!     asymmetric formula near nonperiodic z boundaries
+!c
 	    do j=jst,jfn
 	    do i=ist,ifn
-	      q(i,j,2)=(5.*q(i,j,1)+15.*q(i,j,3)-5.*q(i,j,5)+q(i,j,7))
-     +                  *.0625
-	      q(i,j,nz-1)=(5.*q(i,j,nz)+15.*q(i,j,nz-2)-5.*q(i,j,nz-4)+
-     +                    q(i,j,nz-6))*.0625
+              q(i,j,2)=(5.*q(i,j,1)+15.*q(i,j,3)-5.*q(i,j,5)+q(i,j,7))  &
+     &                  *.0625
+              q(i,j,nz-1)=(5.*q(i,j,nz)+15.*q(i,j,nz-2)-5.*q(i,j,nz-4)+ &
+     &                    q(i,j,nz-6))*.0625
 	    end do
 	    end do
 	  else
-c
-c     periodicity in y alows symmetric formula near bndys
-c
+!c
+!     periodicity in y alows symmetric formula near bndys
+!c
 	    do j=jst,jfn
 	    do i=ist,ifn
-	      q(i,j,2) = (-q(i,j,nz-2)+9.*(q(i,j,1)+q(i,j,3))-q(i,j,5))
-     +                   *.0625
-	      q(i,j,nz-1)=(-q(i,j,nz-4)+9.*(q(i,j,nz-2)+q(i,j,nz))-
-     +                      q(i,j,3))*.0625
+              q(i,j,2) = (-q(i,j,nz-2)+9.*(q(i,j,1)+q(i,j,3))-q(i,j,5)) &
+     &                   *.0625
+              q(i,j,nz-1)=(-q(i,j,nz-4)+9.*(q(i,j,nz-2)+q(i,j,nz))-     &
+     &                      q(i,j,3))*.0625
 	      q(i,j,nz+1) = q(i,j,2)
 	      q(i,j,0) = q(i,j,nz-1)
 	    end do
@@ -1253,17 +1253,17 @@ c
 	  end if
 	  return
 	else
-c
-c     ncz grid is equals nx grid so interpolate in x&y only
-c
+!c
+!     ncz grid is equals nx grid so interpolate in x&y only
+!c
 	  do k=kst,kfn
 	    kc = k
-	    call prolon2(ncx,ncy,p(0,0,kc),nx,ny,q(0,0,k),nxa,nxb,nyc,
-     +                   nyd,intpol)
+            call prolon2(ncx,ncy,p(0,0,kc),nx,ny,q(0,0,k),nxa,nxb,nyc,  &
+     &                   nyd,intpol)
 	  end do
-c
-c     set periodic virtual boundaries if necessary
-c
+!c
+!     set periodic virtual boundaries if necessary
+!c
 	  if (nze.eq.0) then
 	    do j=jst,jfn
 	    do i=ist,ifn
@@ -1277,15 +1277,15 @@ c
       end if
       end
 
-      subroutine cor3(nx,ny,nz,phif,ncx,ncy,ncz,phic,nxa,nxb,nyc,nyd,
-     +                nze,nzf,intpol,phcor)
+      subroutine cor3(nx,ny,nz,phif,ncx,ncy,ncz,phic,nxa,nxb,nyc,nyd,   &
+     &                nze,nzf,intpol,phcor)
       implicit none
       integer nx,ny,nz,ncx,ncy,ncz,nxa,nxb,nyc,nyd,nze,nzf,intpol
       integer i,j,k,ist,ifn,jst,jfn,kst,kfn
-c
-c     add coarse grid correction in phic to fine grid approximation
-c     in phif using linear or cubic interpolation
-c
+!c
+!     add coarse grid correction in phic to fine grid approximation
+!     in phif using linear or cubic interpolation
+!c
       real phif(0:nx+1,0:ny+1,0:nz+1),phic(0:ncx+1,0:ncy+1,0:ncz+1)
       real phcor(0:nx+1,0:ny+1,0:nz+1)
       do k=0,nz+1
@@ -1295,14 +1295,14 @@ c
 	  end do
 	end do
       end do
-c
-c     lift correction in phic to fine grid in phcor
-c
-      call prolon3(ncx,ncy,ncz,phic,nx,ny,nz,phcor,nxa,nxb,nyc,nyd,
-     +             nze,nzf,intpol)
-c
-c     add correction in phcor to phif on nonspecified boundaries
-c
+!c
+!     lift correction in phic to fine grid in phcor
+!c
+      call prolon3(ncx,ncy,ncz,phic,nx,ny,nz,phcor,nxa,nxb,nyc,nyd,     &
+     &             nze,nzf,intpol)
+!c
+!     add correction in phcor to phif on nonspecified boundaries
+!c
       ist = 1
       ifn = nx
       jst = 1
@@ -1322,9 +1322,9 @@ c
 	  end do
 	end do
       end do
-c
-c     add periodic points if necessary
-c
+!c
+!     add periodic points if necessary
+!c
       if (nze.eq.0) then
 	do j=jst,jfn
 	  do i=ist,ifn
@@ -1352,10 +1352,10 @@ c
       end
 
       subroutine per3vb(nx,ny,nz,phi,nxa,nyc,nze)
-c
-c     set virtual periodic boundaries from interior values
-c     in three dimensions (for all 3-d solvers)
-c
+!c
+!     set virtual periodic boundaries from interior values
+!     in three dimensions (for all 3-d solvers)
+!c
       implicit none
       integer nx,ny,nz,nxa,nyc,nze,j,k,i
       real phi(0:nx+1,0:ny+1,0:nz+1)
@@ -1390,25 +1390,25 @@ c
       end
 
       subroutine pde2cr(nx,ny,u,i,j,ux3y,uxy3,ux2y2)
-c
-c     compute mixed partial derivative approximations
-c
+!c
+!     compute mixed partial derivative approximations
+!c
       implicit none
       integer nx,ny,i,j,n1,n2,n3,n4,m1,m2,m3,m4
       real u(nx,ny),ux3y,uxy3,ux2y2
-      integer intl,nxa,nxb,nyc,nyd,ixp,jyq,iex,jey,nfx,nfy,iguess,
-     +             maxcy,method,nwork,lwork,itero,ngrid,klevel,kcur,
-     +             kcycle,iprer,ipost,intpol,kps
+      integer intl,nxa,nxb,nyc,nyd,ixp,jyq,iex,jey,nfx,nfy,iguess,      &
+     &             maxcy,method,nwork,lwork,itero,ngrid,klevel,kcur,    &
+     &             kcycle,iprer,ipost,intpol,kps
       real xa,xb,yc,yd,tolmax,relmax
-      common/imud2cr/intl,nxa,nxb,nyc,nyd,ixp,jyq,iex,jey,nfx,nfy,
-     +               iguess, maxcy,method,nwork,lwork,itero,ngrid,
-     +               klevel,kcur,kcycle,iprer,ipost,intpol,kps
+      common/imud2cr/intl,nxa,nxb,nyc,nyd,ixp,jyq,iex,jey,nfx,nfy,      &
+     &               iguess, maxcy,method,nwork,lwork,itero,ngrid,      &
+     &               klevel,kcur,kcycle,iprer,ipost,intpol,kps
       common/fmud2cr/xa,xb,yc,yd,tolmax,relmax
-      real dlx,dly,dyox,dxoy,dlx2,dly2,dlxx,dlxy,dlyy,dlxy2,
-     +             dlxy4,dxxxy4,dxyyy4,dxxyy,tdlx3,tdly3,dlx4,dly4,
-     +             dlxxx,dlyyy
-      common/com2dcr/dyox,dxoy,dlx2,dly2,dlxy,dlxy2,dlxy4,
-     +               dxxxy4,dxyyy4,dxxyy,dlxxx,dlyyy
+      real dlx,dly,dyox,dxoy,dlx2,dly2,dlxx,dlxy,dlyy,dlxy2,            &
+     &             dlxy4,dxxxy4,dxyyy4,dxxyy,tdlx3,tdly3,dlx4,dly4,     &
+     &             dlxxx,dlyyy
+      common/com2dcr/dyox,dxoy,dlx2,dly2,dlxy,dlxy2,dlxy4,              &
+     &               dxxxy4,dxyyy4,dxxyy,dlxxx,dlyyy
       common/pde2com/dlx,dly,dlxx,dlyy,tdlx3,tdly3,dlx4,dly4
       n1=ny-1
       n2=ny-2
@@ -1422,404 +1422,404 @@ c
       if (i.eq.1) then
 
       if ((j.gt.2.and.j.lt.ny-1)) then
-c     x=xa, yinterior
-      ux3y=(5*u(1,j-1)-18*u(2,j-1)+24*u(3,j-1)-14*u(4,j-1)+3*u(5,j-1)
-     +     -5*u(1,j+1)+18*u(2,j+1)-24*u(3,j+1)+14*u(4,j+1)-3*u(5,j+1))
-     + /dxxxy4
-      uxy3=(3*u(1,j-2)-4*u(2,j-2)+u(3,j-2)
-     +     -6*u(1,j-1)+8*u(2,j-1)-2*u(3,j-1)
-     +     +6*u(1,j+1)-8*u(2,j+1)+2*u(3,j+1)
-     +    -3*u(1,j+2)+4*u(2,j+2)-u(3,j+2))/dxyyy4
+!     x=xa, yinterior
+      ux3y=(5*u(1,j-1)-18*u(2,j-1)+24*u(3,j-1)-14*u(4,j-1)+3*u(5,j-1)   &
+     &     -5*u(1,j+1)+18*u(2,j+1)-24*u(3,j+1)+14*u(4,j+1)-3*u(5,j+1))  &
+     & /dxxxy4
+      uxy3=(3*u(1,j-2)-4*u(2,j-2)+u(3,j-2)                              &
+     &     -6*u(1,j-1)+8*u(2,j-1)-2*u(3,j-1)                            &
+     &     +6*u(1,j+1)-8*u(2,j+1)+2*u(3,j+1)                            &
+     &    -3*u(1,j+2)+4*u(2,j+2)-u(3,j+2))/dxyyy4
       else if (j.eq.1) then
-c     (xa,yc)
-      ux3y=(15*u(1,1)-54*u(2,1)+72*u(3,1)-42*u(4,1)+9*u(5,1)
-     + -20*u(1,2)+72*u(2,2)-96*u(3,2)+56*u(4,2)-12*u(5,2)
-     + +5*u(1,3)-18*u(2,3)+24*u(3,3)-14*u(4,3)+3*u(5,3))
-     + /dxxxy4
-      uxy3=(15*u(1,1)-20*u(2,1)+5*u(3,1)
-     +           -54*u(1,2)+72*u(2,2)-18*u(3,2)
-     +           +72*u(1,3)-96*u(2,3)+24*u(3,3)
-     +           -42*u(1,4)+56*u(2,4)-14*u(3,4)
-     +           +9*u(1,5)-12*u(2,5)+3*u(3,5))
-     + /dxyyy4
-      ux2y2=(4*u(1,1)-10*u(2,1)+8*u(3,1)-2*u(4,1)
-     +           -10*u(1,2)+25*u(2,2)-20*u(3,2)+5*u(4,2)
-     +           +8*u(1,3)-20*u(2,3)+16*u(3,3)-4*u(4,3)
-     +           -2*u(1,4)+5*u(2,4)-4*u(3,4)+u(4,4))
-     + /dxxyy
+!     (xa,yc)
+      ux3y=(15*u(1,1)-54*u(2,1)+72*u(3,1)-42*u(4,1)+9*u(5,1)            &
+     & -20*u(1,2)+72*u(2,2)-96*u(3,2)+56*u(4,2)-12*u(5,2)               &
+     & +5*u(1,3)-18*u(2,3)+24*u(3,3)-14*u(4,3)+3*u(5,3))                &
+     & /dxxxy4
+      uxy3=(15*u(1,1)-20*u(2,1)+5*u(3,1)                                &
+     &           -54*u(1,2)+72*u(2,2)-18*u(3,2)                         &
+     &           +72*u(1,3)-96*u(2,3)+24*u(3,3)                         &
+     &           -42*u(1,4)+56*u(2,4)-14*u(3,4)                         &
+     &           +9*u(1,5)-12*u(2,5)+3*u(3,5))                          &
+     & /dxyyy4
+      ux2y2=(4*u(1,1)-10*u(2,1)+8*u(3,1)-2*u(4,1)                       &
+     &           -10*u(1,2)+25*u(2,2)-20*u(3,2)+5*u(4,2)                &
+     &           +8*u(1,3)-20*u(2,3)+16*u(3,3)-4*u(4,3)                 &
+     &           -2*u(1,4)+5*u(2,4)-4*u(3,4)+u(4,4))                    &
+     & /dxxyy
       else if (j.eq.2) then
-c     (xa,yc+dly)
-      ux3y=(5*u(1,1)-18*u(2,1)+24*u(3,1)-14*u(4,1)+3*u(5,1)
-     +           -5*u(1,3)+18*u(2,3)-24*u(3,3)+14*u(4,3)-3*u(5,3))
-     + /dxxxy4
-      uxy3=(9*u(1,1)-12*u(2,1)+3*u(3,1)
-     +      -30*u(1,2)+40*u(2,2)-10*u(3,2)
-     +      +36*u(1,3)-48*u(2,3)+12*u(3,3)
-     +      -18*u(1,4)+24*u(2,4)-6*u(3,4)
-     +      +3*u(1,5)-4*u(2,5)+u(3,5))
-     + /dxyyy4
+!     (xa,yc+dly)
+      ux3y=(5*u(1,1)-18*u(2,1)+24*u(3,1)-14*u(4,1)+3*u(5,1)             &
+     &           -5*u(1,3)+18*u(2,3)-24*u(3,3)+14*u(4,3)-3*u(5,3))      &
+     & /dxxxy4
+      uxy3=(9*u(1,1)-12*u(2,1)+3*u(3,1)                                 &
+     &      -30*u(1,2)+40*u(2,2)-10*u(3,2)                              &
+     &      +36*u(1,3)-48*u(2,3)+12*u(3,3)                              &
+     &      -18*u(1,4)+24*u(2,4)-6*u(3,4)                               &
+     &      +3*u(1,5)-4*u(2,5)+u(3,5))                                  &
+     & /dxyyy4
       else if (j.eq.ny-1) then
-c     x=xa,y=yd-dly
-      ux3y=(5*u(1,j-1)-18*u(2,j-1)+24*u(3,j-1)-14*u(4,j-1)+3*u(5,j-1)
-     +     -5*u(1,j+1)+18*u(2,j+1)-24*u(3,j+1)+14*u(4,j+1)-3*u(5,j+1))
-      uxy3=(5*u(1,n2)-18*u(2,n2)+24*u(3,n2)-14*u(4,n2)+3*u(5,n2)
-     +   -5*u(1,ny)+18*u(2,ny)-24*u(3,ny)+14*u(4,ny)-3*u(5,ny))
-     + /dxyyy4
+!     x=xa,y=yd-dly
+      ux3y=(5*u(1,j-1)-18*u(2,j-1)+24*u(3,j-1)-14*u(4,j-1)+3*u(5,j-1)   &
+     &     -5*u(1,j+1)+18*u(2,j+1)-24*u(3,j+1)+14*u(4,j+1)-3*u(5,j+1))
+      uxy3=(5*u(1,n2)-18*u(2,n2)+24*u(3,n2)-14*u(4,n2)+3*u(5,n2)        &
+     &   -5*u(1,ny)+18*u(2,ny)-24*u(3,ny)+14*u(4,ny)-3*u(5,ny))         &
+     & /dxyyy4
       else if (j.eq.ny) then
-c     x=xa, y=yd
-      ux3y=(-5*u(1,n2)+18*u(2,n2)-24*u(3,n2)+14*u(4,n2)-3*u(5,n2)
-     +     +20*u(1,n1)-72*u(2,n1)+96*u(3,n1)-56*u(4,n1)+12*u(5,n1)
-     +   -15*u(1,ny)+54*u(2,ny)-72*u(3,ny)+42*u(4,ny)-9*u(5,ny))
-     + /dxxxy4
-      uxy3=(-9*u(1,n4)+12*u(2,n4)-3*u(3,n4)
-     +      +42*u(1,n3)-56*u(2,n3)+14*u(3,n3)
-     +      -72*u(1,n2)+96*u(2,n2)-24*u(3,n2)
-     +      +54*u(1,n1)-72*u(2,n1)+18*u(3,n1)
-     +      -15*u(1,ny)+20*u(2,ny)-5*u(3,ny))
-     + /dxyyy4
-      ux2y2=(-2*u(1,n3)+5*u(2,n3)-4*u(3,n3)+u(4,n3)
-     +      +8*u(1,n2)-20*u(2,n2)+16*u(3,n2)-4*u(4,n2)
-     +           -10*u(1,n1)+25*u(2,n1)-20*u(3,n1)+5*u(4,n1)
-     +      +4*u(1,ny)-10*u(2,ny)+8*u(3,ny)-2*u(4,ny))
-     + /dxxyy
+!     x=xa, y=yd
+      ux3y=(-5*u(1,n2)+18*u(2,n2)-24*u(3,n2)+14*u(4,n2)-3*u(5,n2)       &
+     &     +20*u(1,n1)-72*u(2,n1)+96*u(3,n1)-56*u(4,n1)+12*u(5,n1)      &
+     &   -15*u(1,ny)+54*u(2,ny)-72*u(3,ny)+42*u(4,ny)-9*u(5,ny))        &
+     & /dxxxy4
+      uxy3=(-9*u(1,n4)+12*u(2,n4)-3*u(3,n4)                             &
+     &      +42*u(1,n3)-56*u(2,n3)+14*u(3,n3)                           &
+     &      -72*u(1,n2)+96*u(2,n2)-24*u(3,n2)                           &
+     &      +54*u(1,n1)-72*u(2,n1)+18*u(3,n1)                           &
+     &      -15*u(1,ny)+20*u(2,ny)-5*u(3,ny))                           &
+     & /dxyyy4
+      ux2y2=(-2*u(1,n3)+5*u(2,n3)-4*u(3,n3)+u(4,n3)                     &
+     &      +8*u(1,n2)-20*u(2,n2)+16*u(3,n2)-4*u(4,n2)                  &
+     &           -10*u(1,n1)+25*u(2,n1)-20*u(3,n1)+5*u(4,n1)            &
+     &      +4*u(1,ny)-10*u(2,ny)+8*u(3,ny)-2*u(4,ny))                  &
+     & /dxxyy
       end if
 
       else if (i.eq.2) then
 
       if ((j.gt.2.and.j.lt.ny-1)) then
-c     x=xa+dlx, y interior
-      ux3y=(3*u(1,j-1)-10*u(2,j-1)+12*u(3,j-1)-6*u(4,j-1)+u(5,j-1)
-     +-3*u(1,j+1)+10*u(2,j+1)-12*u(3,j+1)+6*u(4,j+1)-u(5,j+1))/dxxxy4
-      uxy3=(u(1,j-2)-u(3,j-2)-2*u(1,j-1)+2*u(3,j-1)
-     +     +2*u(1,j+1)-2*u(3,j+1)-u(1,j+2)+u(3,j+2))/dxyyy4
+!     x=xa+dlx, y interior
+      ux3y=(3*u(1,j-1)-10*u(2,j-1)+12*u(3,j-1)-6*u(4,j-1)+u(5,j-1)      &
+     &-3*u(1,j+1)+10*u(2,j+1)-12*u(3,j+1)+6*u(4,j+1)-u(5,j+1))/dxxxy4
+      uxy3=(u(1,j-2)-u(3,j-2)-2*u(1,j-1)+2*u(3,j-1)                     &
+     &     +2*u(1,j+1)-2*u(3,j+1)-u(1,j+2)+u(3,j+2))/dxyyy4
       else if (j.eq.1) then
-c     x=xa+dlx, y=yc
-      ux3y=(9*u(1,1)-30*u(2,1)+36*u(3,1)-18*u(4,1)+3*u(5,1)
-     +      -12*u(1,2)+40*u(2,2)-48*u(3,2)+24*u(4,2)-4*u(5,2)
-     +      +3*u(1,3)-10*u(2,3)+12*u(3,3)-6*u(4,3)+u(5,3))
-     + /dxxxy4
-      uxy3=(5*u(1,1)-5*u(3,1)-18*u(1,2)+18*u(3,2)
-     +      +24*u(1,3)-24*u(3,3)-14*u(1,4)
-     +      +14*u(3,4)+3*u(1,5)-3*u(3,5))
-     + /dxyyy4
+!     x=xa+dlx, y=yc
+      ux3y=(9*u(1,1)-30*u(2,1)+36*u(3,1)-18*u(4,1)+3*u(5,1)             &
+     &      -12*u(1,2)+40*u(2,2)-48*u(3,2)+24*u(4,2)-4*u(5,2)           &
+     &      +3*u(1,3)-10*u(2,3)+12*u(3,3)-6*u(4,3)+u(5,3))              &
+     & /dxxxy4
+      uxy3=(5*u(1,1)-5*u(3,1)-18*u(1,2)+18*u(3,2)                       &
+     &      +24*u(1,3)-24*u(3,3)-14*u(1,4)                              &
+     &      +14*u(3,4)+3*u(1,5)-3*u(3,5))                               &
+     & /dxyyy4
       else if (j.eq.2) then
-c     at x=xa+dlx,y=yc+dly
-      ux3y=(3*u(1,1)-10*u(2,1)+12*u(3,1)-6*u(4,1)+u(5,1)
-     +      -3*u(1,3)+10*u(2,3)-12*u(3,3)+6*u(4,3)-u(5,3))
-     + /dxxxy4
-      uxy3=(3*u(1,1)-3*u(3,1)-10*u(1,2)+10*u(3,2)
-     +      +12*u(1,3)-12*u(3,3)-6*u(1,4)+6*u(3,4)
-     +      +u(1,5)-u(3,5))
-     + /dxyyy4
+!     at x=xa+dlx,y=yc+dly
+      ux3y=(3*u(1,1)-10*u(2,1)+12*u(3,1)-6*u(4,1)+u(5,1)                &
+     &      -3*u(1,3)+10*u(2,3)-12*u(3,3)+6*u(4,3)-u(5,3))              &
+     & /dxxxy4
+      uxy3=(3*u(1,1)-3*u(3,1)-10*u(1,2)+10*u(3,2)                       &
+     &      +12*u(1,3)-12*u(3,3)-6*u(1,4)+6*u(3,4)                      &
+     &      +u(1,5)-u(3,5))                                             &
+     & /dxyyy4
       else if (j.eq.ny-1) then
-c     x=xa+dlx,y=yd-dly
-      ux3y=(3*u(1,n2)-10*u(2,n2)+12*u(3,n2)-6*u(4,n2)+u(5,n2)
-     +      -3*u(1,ny)+10*u(2,ny)-12*u(3,ny)+6*u(4,ny)-u(5,ny))
-     + /dxxxy4
-      uxy3=(-u(1,n4)+u(3,n4)+6*u(1,n3)-6*u(3,n3)
-     +      -12*u(1,n2)+12*u(3,n2)+10*u(1,n1)-10*u(3,n1)
-     +      -3*u(1,ny)+3*u(3,ny))
-     + /dxyyy4
+!     x=xa+dlx,y=yd-dly
+      ux3y=(3*u(1,n2)-10*u(2,n2)+12*u(3,n2)-6*u(4,n2)+u(5,n2)           &
+     &      -3*u(1,ny)+10*u(2,ny)-12*u(3,ny)+6*u(4,ny)-u(5,ny))         &
+     & /dxxxy4
+      uxy3=(-u(1,n4)+u(3,n4)+6*u(1,n3)-6*u(3,n3)                        &
+     &      -12*u(1,n2)+12*u(3,n2)+10*u(1,n1)-10*u(3,n1)                &
+     &      -3*u(1,ny)+3*u(3,ny))                                       &
+     & /dxyyy4
       else if (j.eq.ny) then
-c     at x=xa+dlx,y=yd
-      ux3y=(-3*u(1,n2)+10*u(2,n2)-12*u(3,n2)+6*u(4,n2)-u(5,n2)
-     +  +12*u(1,n1)-40*u(2,n1)+48*u(3,n1)-24*u(4,n1)+4*u(5,n1)
-     +  -9*u(1,ny)+30*u(2,ny)-36*u(3,ny)+18*u(4,ny)-3*u(5,ny))
-     + /dxxxy4
-      uxy3=(-3*u(1,n4)+3*u(3,n4)+14*u(1,n3)-14*u(3,n3)
-     +      -24*u(1,n2)+24*u(3,n2)+18*u(1,n1)-18*u(3,n1)
-     +      -5*u(1,ny)+5*u(3,ny))
-     + /dxyyy4
+!     at x=xa+dlx,y=yd
+      ux3y=(-3*u(1,n2)+10*u(2,n2)-12*u(3,n2)+6*u(4,n2)-u(5,n2)          &
+     &  +12*u(1,n1)-40*u(2,n1)+48*u(3,n1)-24*u(4,n1)+4*u(5,n1)          &
+     &  -9*u(1,ny)+30*u(2,ny)-36*u(3,ny)+18*u(4,ny)-3*u(5,ny))          &
+     & /dxxxy4
+      uxy3=(-3*u(1,n4)+3*u(3,n4)+14*u(1,n3)-14*u(3,n3)                  &
+     &      -24*u(1,n2)+24*u(3,n2)+18*u(1,n1)-18*u(3,n1)                &
+     &      -5*u(1,ny)+5*u(3,ny))                                       &
+     & /dxyyy4
       end if
 
       else if (i.gt.2 .and. i.lt.nx-1) then
 
       if (j.eq.1) then
-c     y=yc,x interior
-      ux3y=(3.0*u(i-2,1)-6.0*u(i-1,1)+6.0*u(i+1,1)-3.0*u(i+2,1)
-     +       -4.0*u(i-2,2)+8.0*u(i-1,2)-8.0*u(i+1,2)+4.0*u(i+2,2)
-     +       +u(i-2,3)-2.0*u(i-1,3)+2.0*u(i+1,3)-u(i+2,3))
-     + /dxxxy4
-      uxy3=(5.0*u(i-1,1)-5.0*u(i+1,1)-18.0*u(i-1,2)+18.0*u(i+1,2)
-     +   +24.0*u(i-1,3)-24.0*u(i+1,3)-14.0*u(i-1,4)+14.0*u(i+1,4)
-     +   +3.0*u(i-1,5)-3.0*u(i+1,5))
-     + /dxyyy4
+!     y=yc,x interior
+      ux3y=(3.0*u(i-2,1)-6.0*u(i-1,1)+6.0*u(i+1,1)-3.0*u(i+2,1)         &
+     &       -4.0*u(i-2,2)+8.0*u(i-1,2)-8.0*u(i+1,2)+4.0*u(i+2,2)       &
+     &       +u(i-2,3)-2.0*u(i-1,3)+2.0*u(i+1,3)-u(i+2,3))              &
+     & /dxxxy4
+      uxy3=(5.0*u(i-1,1)-5.0*u(i+1,1)-18.0*u(i-1,2)+18.0*u(i+1,2)       &
+     &   +24.0*u(i-1,3)-24.0*u(i+1,3)-14.0*u(i-1,4)+14.0*u(i+1,4)       &
+     &   +3.0*u(i-1,5)-3.0*u(i+1,5))                                    &
+     & /dxyyy4
       else if (j.eq.2) then
-c     y=yc+dly,x interior
-      ux3y=(u(i-2,1)-2.0*u(i-1,1)+2.0*u(i+1,1)-u(i+2,1)
-     +      -u(i-2,3)+2.0*u(i-1,3)-2.0*u(i+1,3)+u(i+2,3))
-     + /dxxxy4
-      uxy3=(u(i-1,1)-u(i+1,1)-2.0*u(i-1,2)+2.0*u(i+1,2)
-     +      +2.0*u(i-1,4)-2.0*u(i+1,4)-u(i-1,5)+u(i+1,5))
-     + /dxyyy4
+!     y=yc+dly,x interior
+      ux3y=(u(i-2,1)-2.0*u(i-1,1)+2.0*u(i+1,1)-u(i+2,1)                 &
+     &      -u(i-2,3)+2.0*u(i-1,3)-2.0*u(i+1,3)+u(i+2,3))               &
+     & /dxxxy4
+      uxy3=(u(i-1,1)-u(i+1,1)-2.0*u(i-1,2)+2.0*u(i+1,2)                 &
+     &      +2.0*u(i-1,4)-2.0*u(i+1,4)-u(i-1,5)+u(i+1,5))               &
+     & /dxyyy4
       else if (j.eq.ny-1) then
-c     y=yd-dly, x interior
-      ux3y=(u(i-2,n2)-2.0*u(i-1,n2)+2.0*u(i+1,n2)-u(i+2,n2)
-     +      -u(i-2,ny)+2.0*u(i-1,ny)-2.0*u(i+1,ny)+u(i+2,ny))
-     + /dxxxy4
-      uxy3=(-u(i-1,n4)+u(i+1,n4)+6.0*u(i-1,n3)-6.0*u(i+1,n3)
-     +  -12.0*u(i-1,n2)+12.0*u(i+1,n2)+10.0*u(i-1,n1)-10.0*u(i+1,n1)
-     +  -3.0*u(i-1,ny)+3.0*u(i+1,ny))
-     + /dxyyy4
+!     y=yd-dly, x interior
+      ux3y=(u(i-2,n2)-2.0*u(i-1,n2)+2.0*u(i+1,n2)-u(i+2,n2)             &
+     &      -u(i-2,ny)+2.0*u(i-1,ny)-2.0*u(i+1,ny)+u(i+2,ny))           &
+     & /dxxxy4
+      uxy3=(-u(i-1,n4)+u(i+1,n4)+6.0*u(i-1,n3)-6.0*u(i+1,n3)            &
+     &  -12.0*u(i-1,n2)+12.0*u(i+1,n2)+10.0*u(i-1,n1)-10.0*u(i+1,n1)    &
+     &  -3.0*u(i-1,ny)+3.0*u(i+1,ny))                                   &
+     & /dxyyy4
       else if (j.eq.ny) then
-c     at y=yd, x interior
-      ux3y=(-u(i-2,n2)+2.0*u(i-1,n2)-2.0*u(i+1,n2)+u(i+2,n2)
-     + +4.0*u(i-2,n1)-8.0*u(i-1,n1)+8.0*u(i+1,n1)-4.0*u(i+2,n1)
-     + -3.0*u(i-2,ny)+6.0*u(i-1,ny)-6.0*u(i+1,ny)+3.0*u(i+2,ny))
-     + /dxxxy4
-      uxy3=(-3.0*u(i-1,n4)+3.0*u(i+1,n4)+14.0*u(i-1,n3)-14.0*u(i+1,n3)
-     +  -24.0*u(i-1,n2) +24.0*u(i+1,n2)+18.0*u(i-1,n1)-18.0*u(i+1,n1)
-     +  -5.0*u(i-1,ny)+5.0*u(i+1,ny))
-     +/dxyyy4
+!     at y=yd, x interior
+      ux3y=(-u(i-2,n2)+2.0*u(i-1,n2)-2.0*u(i+1,n2)+u(i+2,n2)            &
+     & +4.0*u(i-2,n1)-8.0*u(i-1,n1)+8.0*u(i+1,n1)-4.0*u(i+2,n1)         &
+     & -3.0*u(i-2,ny)+6.0*u(i-1,ny)-6.0*u(i+1,ny)+3.0*u(i+2,ny))        &
+     & /dxxxy4
+      uxy3=(-3.0*u(i-1,n4)+3.0*u(i+1,n4)+14.0*u(i-1,n3)-14.0*u(i+1,n3)  &
+     &  -24.0*u(i-1,n2) +24.0*u(i+1,n2)+18.0*u(i-1,n1)-18.0*u(i+1,n1)   &
+     &  -5.0*u(i-1,ny)+5.0*u(i+1,ny))                                   &
+     &/dxyyy4
       end if
 
       else if (i.eq.nx-1) then
 
       if ((j.gt.2.and.j.lt.ny-1)) then
-c     x=xb-dlx,y interior
-      ux3y=(-u(m4,j-1)+6.*u(m3,j-1)-12.*u(m2,j-1)+10.*u(m1,j-1)-3.*u(nx
-     +,j-1)+u(m4,j+1)-6.*u(m3,j+1)+12.*u(m2,j+1)-10.*u(m1,j+1)+3.*u(nx,j
-     ++1)) /dxxxy4
-      uxy3=(u(m2,j-2)-u(nx,j-2)-2.*u(m2,j-1)+2.*u(nx,j-1)
-     + +2.*u(m2,j+1)-2.*u(nx,j+1)-u(m2,j+2)+u(nx,j+2)) /dxyyy4
+!     x=xb-dlx,y interior
+      ux3y=(-u(m4,j-1)+6.*u(m3,j-1)-12.*u(m2,j-1)+10.*u(m1,j-1)-3.*u(nx &
+     &,j-1)+u(m4,j+1)-6.*u(m3,j+1)+12.*u(m2,j+1)-10.*u(m1,j+1)+3.*u(nx,j&
+     &+1)) /dxxxy4
+      uxy3=(u(m2,j-2)-u(nx,j-2)-2.*u(m2,j-1)+2.*u(nx,j-1)               &
+     & +2.*u(m2,j+1)-2.*u(nx,j+1)-u(m2,j+2)+u(nx,j+2)) /dxyyy4
       else if (j.eq.1) then
-c     at x=xb-dlx, y=yc
-      ux3y=(-3.0*u(m4,1)+18.0*u(m3,1)-36.0*u(m2,1)+30.0*u(m1,1)-9.0*u(
-     +nx,1)+4.0*u(m4,2)-24.0*u(m3,2)+48.0*u(m2,2)-40.0*u(m1,2)+12.0*u(nx
-     +,2)-u(m4,3)+6.0*u(m3,3)-12.0*u(m2,3)+10.0*u(m1,3)-3.0*u(nx,3))
-     + /dxxxy4
-      uxy3=(5.0*u(m2,1)-5.0*u(nx,1)-18.0*u(m2,2)+18.0*u(nx,2)
-     + +24.0*u(m2,3)-24.0*u(nx,3)-14.0*u(m2,4)+14.0*u(nx,4)
-     + +3.0*u(m2,5)-3.0*u(nx,5))
-     + /dxyyy4
+!     at x=xb-dlx, y=yc
+      ux3y=(-3.0*u(m4,1)+18.0*u(m3,1)-36.0*u(m2,1)+30.0*u(m1,1)-9.0*u(  &
+     &nx,1)+4.0*u(m4,2)-24.0*u(m3,2)+48.0*u(m2,2)-40.0*u(m1,2)+12.0*u(nx&
+     &,2)-u(m4,3)+6.0*u(m3,3)-12.0*u(m2,3)+10.0*u(m1,3)-3.0*u(nx,3))    &
+     & /dxxxy4
+      uxy3=(5.0*u(m2,1)-5.0*u(nx,1)-18.0*u(m2,2)+18.0*u(nx,2)           &
+     & +24.0*u(m2,3)-24.0*u(nx,3)-14.0*u(m2,4)+14.0*u(nx,4)             & 
+     & +3.0*u(m2,5)-3.0*u(nx,5))                                        &
+     & /dxyyy4
       else if (j.eq.2) then
-c     x=xb-dlx,y=yc+dly
-      ux3y=(-u(m4,1)+6.0*u(m3,1)-12.0*u(m2,1)+10.*u(m1,1)-3.*u(nx,1)
-     +         +u(m4,3)-6.0*u(m3,3)+12.0*u(m2,3)-10.*u(m1,3)+3.*u(nx,3))
-     + /dxxxy4
-      uxy3=(3.0*u(m2,1)-3.*u(nx,1)-10.*u(m2,2)+10.*u(nx,2)
-     + +12.*u(m2,3)-12.*u(nx,3)-6.*u(m2,4)+6.*u(nx,4)
-     + +u(m2,5)-u(nx,5)) / dxyyy4
+!     x=xb-dlx,y=yc+dly
+      ux3y=(-u(m4,1)+6.0*u(m3,1)-12.0*u(m2,1)+10.*u(m1,1)-3.*u(nx,1)    &
+     &         +u(m4,3)-6.0*u(m3,3)+12.0*u(m2,3)-10.*u(m1,3)+3.*u(nx,3))&
+     & /dxxxy4
+      uxy3=(3.0*u(m2,1)-3.*u(nx,1)-10.*u(m2,2)+10.*u(nx,2)              &
+     & +12.*u(m2,3)-12.*u(nx,3)-6.*u(m2,4)+6.*u(nx,4)                   &
+     & +u(m2,5)-u(nx,5)) / dxyyy4
       else if (j.eq.ny-1) then
-c     at x=xb-dlx,y=yd-dly
-      ux3y=(-u(m4,n2)+6.*u(m3,n2)-12.*u(m2,n2)+10.*u(m1,n2)-3.*u(nx,n2)
-     + +u(m4,ny)-6.*u(m3,ny)+12.*u(m2,ny)-10.*u(m1,ny)+3.*u(nx,ny))
-     + /dxxxy4
-      uxy3=(-u(m2,n4)+u(nx,n4)+6*u(m2,n3)-6.*u(nx,n3)
-     + -12.*u(m2,n2)+12.*u(nx,n2)+10.*u(m2,n1)-10.*u(nx,n1)
-     + -3.*u(m2,ny)+3.*u(nx,ny)) / dxyyy4
+!     at x=xb-dlx,y=yd-dly
+      ux3y=(-u(m4,n2)+6.*u(m3,n2)-12.*u(m2,n2)+10.*u(m1,n2)-3.*u(nx,n2) &
+     & +u(m4,ny)-6.*u(m3,ny)+12.*u(m2,ny)-10.*u(m1,ny)+3.*u(nx,ny))     &
+     & /dxxxy4
+      uxy3=(-u(m2,n4)+u(nx,n4)+6*u(m2,n3)-6.*u(nx,n3)                   &
+     & -12.*u(m2,n2)+12.*u(nx,n2)+10.*u(m2,n1)-10.*u(nx,n1)             &
+     & -3.*u(m2,ny)+3.*u(nx,ny)) / dxyyy4
       else if (j.eq.ny) then
-c     at x=xb.dlx,y=yd
-      ux3y=(u(m4,n2)-6.*u(m3,n2)+12.*u(m2,n2)-10.*u(m1,n2)+3.*u(nx,n2)
-     + -4.*u(m4,n1)+24.*u(m3,n1)-48.*u(m2,n1)+40.*u(m1,n1)-12.*u(nx,n1)
-     + +3.*u(m4,ny)-18.*u(m3,ny)+36.*u(m2,ny)-30.*u(m1,ny)+9.*u(nx,ny))
-     + / dxxxy4
-      uxy3=(-3.*u(m2,n4)+3.*u(nx,n4)+14.*u(m2,n3)-14.*u(nx,n3)
-     + -24.*u(m2,n2)+24.*u(nx,n2)+18.*u(m2,n1)-18.*u(nx,n1)
-     + -5.*u(m2,ny)+5.*u(nx,ny)) / dxyyy4
+!     at x=xb.dlx,y=yd
+      ux3y=(u(m4,n2)-6.*u(m3,n2)+12.*u(m2,n2)-10.*u(m1,n2)+3.*u(nx,n2)  &
+     & -4.*u(m4,n1)+24.*u(m3,n1)-48.*u(m2,n1)+40.*u(m1,n1)-12.*u(nx,n1) &
+     & +3.*u(m4,ny)-18.*u(m3,ny)+36.*u(m2,ny)-30.*u(m1,ny)+9.*u(nx,ny)) &
+     & / dxxxy4
+      uxy3=(-3.*u(m2,n4)+3.*u(nx,n4)+14.*u(m2,n3)-14.*u(nx,n3)          &
+     & -24.*u(m2,n2)+24.*u(nx,n2)+18.*u(m2,n1)-18.*u(nx,n1)             &
+     & -5.*u(m2,ny)+5.*u(nx,ny)) / dxyyy4
       end if
 
       else if (i.eq.nx) then
 
       if ((j.gt.2.and.j.lt.ny-1)) then
-c     x=xb,y interior
-      ux3y=(-3.*u(m4,j-1)+14.*u(m3,j-1)-24.*u(m2,j-1)+18.*u(m1,j-1)-5.*
-     +u(nx,j-1)+3.*u(m4,j+1)-14.*u(m3,j+1)+24.*u(m2,j+1)-18.*u(m1,j+1)+5
-     +.*u(nx,j+1)) / dxxxy4
-      uxy3=(-u(m2,j-2)+4.*u(m1,j-2)-3.*u(nx,j-2)
-     +  +2.*u(m2,j-1)-8.*u(m1,j-1)+6.*u(nx,j-1)
-     +  -2.*u(m2,j+1)+8.*u(m1,j+1)-6.*u(nx,j+1)
-     +  +u(m2,j+2)-4.*u(m1,j+2)+3.*u(nx,j+2)) / dxyyy4
+!     x=xb,y interior
+      ux3y=(-3.*u(m4,j-1)+14.*u(m3,j-1)-24.*u(m2,j-1)+18.*u(m1,j-1)-5.* &
+     &u(nx,j-1)+3.*u(m4,j+1)-14.*u(m3,j+1)+24.*u(m2,j+1)-18.*u(m1,j+1)+5&
+     &.*u(nx,j+1)) / dxxxy4
+      uxy3=(-u(m2,j-2)+4.*u(m1,j-2)-3.*u(nx,j-2)                        &
+     &  +2.*u(m2,j-1)-8.*u(m1,j-1)+6.*u(nx,j-1)                         &
+     &  -2.*u(m2,j+1)+8.*u(m1,j+1)-6.*u(nx,j+1)                         &
+     &  +u(m2,j+2)-4.*u(m1,j+2)+3.*u(nx,j+2)) / dxyyy4
       else if (j.eq.1) then
-c     x=xb,y=yc
-      ux3y=(-9.*u(m4,1)+42.*u(m3,1)-72.*u(m2,1)+54.*u(m1,1)-15.*u(nx,1)
-     + +12.*u(m4,2)-56.*u(m3,2)+96.*u(m2,2)-72.*u(m1,2)+20.*u(nx,2)
-     + -3.*u(m4,3)+14.*u(m3,3)-24.*u(m2,3)+18.*u(m1,3)-5.*u(nx,3))
-     + /dxxxy4
-      uxy3=(-5.*u(m2,1)+20.*u(m1,1)-15.*u(nx,1)
-     +  +18.*u(m2,2)-72.*u(m1,2)+54.*u(nx,2)
-     +  -24.*u(m2,3)+96.*u(m1,3)-72.*u(nx,3)
-     +  +14.*u(m2,4)-56.*u(m1,4)+42.*u(nx,4)
-     +  -3.*u(m2,5)+12.*u(m1,5)-9.*u(nx,5)) / dxyyy4
-      ux2y2=(-2.*u(m3,1)+8.*u(m2,1)-10.*u(m1,1)+4.*u(nx,1)
-     + +5.*u(m3,2)-20.*u(m2,2)+25.*u(m1,2)-10.*u(nx,2)
-     + -4.*u(m3,3)+16.*u(m2,3)-20.*u(m1,3)+8.*u(nx,3)
-     + +u(m3,4)-4.*u(m2,4)+5.*u(m1,4)-2.*u(nx,4)) / dxxyy
+!     x=xb,y=yc
+      ux3y=(-9.*u(m4,1)+42.*u(m3,1)-72.*u(m2,1)+54.*u(m1,1)-15.*u(nx,1) &
+     & +12.*u(m4,2)-56.*u(m3,2)+96.*u(m2,2)-72.*u(m1,2)+20.*u(nx,2)     &
+     & -3.*u(m4,3)+14.*u(m3,3)-24.*u(m2,3)+18.*u(m1,3)-5.*u(nx,3))      &
+     & /dxxxy4
+      uxy3=(-5.*u(m2,1)+20.*u(m1,1)-15.*u(nx,1)                         &
+     &  +18.*u(m2,2)-72.*u(m1,2)+54.*u(nx,2)                            &
+     &  -24.*u(m2,3)+96.*u(m1,3)-72.*u(nx,3)                            &
+     &  +14.*u(m2,4)-56.*u(m1,4)+42.*u(nx,4)                            &
+     &  -3.*u(m2,5)+12.*u(m1,5)-9.*u(nx,5)) / dxyyy4
+      ux2y2=(-2.*u(m3,1)+8.*u(m2,1)-10.*u(m1,1)+4.*u(nx,1)              &
+     & +5.*u(m3,2)-20.*u(m2,2)+25.*u(m1,2)-10.*u(nx,2)                  &
+     & -4.*u(m3,3)+16.*u(m2,3)-20.*u(m1,3)+8.*u(nx,3)                   &
+     & +u(m3,4)-4.*u(m2,4)+5.*u(m1,4)-2.*u(nx,4)) / dxxyy
       else if (j.eq.2) then
-c     x=xb,y=yc+dly
-      ux3y=(-3.*u(m4,1)+14.*u(m3,1)-24.*u(m2,1)+18.*u(m1,1)-5.*u(nx,1)
-     + +3.*u(m4,3)-14.*u(m3,3)+24.*u(m2,3)-18.*u(m1,3)+5.*u(nx,3))
-     + / dxxxy4
-      uxy3=(-3.*u(m2,1)+12.*u(m1,1)-9.*u(nx,1)
-     + +10.*u(m2,2)-40.*u(m1,2)+30.*u(nx,2)
-     + -12.*u(m2,3)+48.*u(m1,3)-36.*u(nx,3)
-     + +6.*u(m2,4)-24.*u(m1,4)+18.*u(nx,4)
-     + -u(m2,5)+4.*u(m1,5)-3.*u(nx,5)) / dxyyy4
+!     x=xb,y=yc+dly
+      ux3y=(-3.*u(m4,1)+14.*u(m3,1)-24.*u(m2,1)+18.*u(m1,1)-5.*u(nx,1)  &
+     & +3.*u(m4,3)-14.*u(m3,3)+24.*u(m2,3)-18.*u(m1,3)+5.*u(nx,3))      &
+     & / dxxxy4
+      uxy3=(-3.*u(m2,1)+12.*u(m1,1)-9.*u(nx,1)                          &
+     & +10.*u(m2,2)-40.*u(m1,2)+30.*u(nx,2)                             &
+     & -12.*u(m2,3)+48.*u(m1,3)-36.*u(nx,3)                             &
+     & +6.*u(m2,4)-24.*u(m1,4)+18.*u(nx,4)                              &
+     & -u(m2,5)+4.*u(m1,5)-3.*u(nx,5)) / dxyyy4
       else if (j.eq.ny-1) then
-c     x=xb,y=yd-dly
-      ux3y=(-3.*u(m4,n2)+14.*u(m3,n2)-24.*u(m2,n2)+18.*u(m1,n2)-5.*u(nx
-     +,n2)+3.*u(m4,ny)-14.*u(m3,ny)+24.*u(m2,ny)-18.*u(m1,ny)+5.*u(nx,ny
-     +)) / dxxxy4
-      uxy3=(u(m2,n4)-4.*u(m1,n4)+3.*u(nx,n4)
-     + -6.*u(m2,n3)+24.*u(m1,n3)-18.*u(nx,n3)
-     + +12.*u(m2,n2)-48.*u(m1,n2)+36.*u(nx,n2)
-     + -10.*u(m2,n1)+40.*u(m1,n1)-30.*u(nx,n1)
-     + +3.*u(m2,ny)-12.*u(m1,ny)+9.*u(nx,ny)) / dxyyy4
+!     x=xb,y=yd-dly
+      ux3y=(-3.*u(m4,n2)+14.*u(m3,n2)-24.*u(m2,n2)+18.*u(m1,n2)-5.*u(nx &
+     &,n2)+3.*u(m4,ny)-14.*u(m3,ny)+24.*u(m2,ny)-18.*u(m1,ny)+5.*u(nx,ny&
+     &)) / dxxxy4
+      uxy3=(u(m2,n4)-4.*u(m1,n4)+3.*u(nx,n4)                            &
+     & -6.*u(m2,n3)+24.*u(m1,n3)-18.*u(nx,n3)                           &
+     & +12.*u(m2,n2)-48.*u(m1,n2)+36.*u(nx,n2)                          &
+     & -10.*u(m2,n1)+40.*u(m1,n1)-30.*u(nx,n1)                          &
+     & +3.*u(m2,ny)-12.*u(m1,ny)+9.*u(nx,ny)) / dxyyy4
       else if (j.eq.ny) then
-c     x=xb,y=yd
-      ux3y=(3.*u(m4,n2)-14.*u(m3,n2)+24.*u(m2,n2)-18.*u(m1,n2)+5.*u(nx,
-     +n2)-12.*u(m4,n1)+56.*u(m3,n1)-96.*u(m2,n1)+72.*u(m1,n1)-20.*u(nx,
-     +n1)+9.*u(m4,ny)-42.*u(m3,ny)+72.*u(m2,ny)-54.*u(m1,ny)+15.*u(nx,ny
-     +)) / dxxxy4
-      uxy3=(3.*u(m2,n4)-12.*u(m1,n4)+9.*u(nx,n4)
-     + -14.*u(m2,n3)+56.*u(m1,n3)-42.*u(nx,n3)
-     + +24.*u(m2,n2)-96.*u(m1,n2)+72.*u(nx,n2)
-     + -18.*u(m2,n1)+72.*u(m1,n1)-54.*u(nx,n1)
-     + +5.*u(m2,ny)-20.*u(m1,ny)+15.*u(nx,ny)) / dxyyy4
-      ux2y2=(u(m3,n3)-4.*u(m2,n3)+5.*u(m1,n3)-2.*u(nx,n3)
-     + -4.*u(m3,n2)+16.*u(m2,n2)-20.*u(m1,n2)+8.*u(nx,n2)
-     + +5.0*u(m3,n1)-20.*u(m2,n1)+25.*u(m1,n1)-10.*u(nx,n1)
-     + -2.*u(m3,ny)+8.*u(m2,ny)-10.*u(m1,ny)+4.*u(nx,ny))
-     + / dxxyy
+!     x=xb,y=yd
+      ux3y=(3.*u(m4,n2)-14.*u(m3,n2)+24.*u(m2,n2)-18.*u(m1,n2)+5.*u(nx, &
+     &n2)-12.*u(m4,n1)+56.*u(m3,n1)-96.*u(m2,n1)+72.*u(m1,n1)-20.*u(nx, &
+     &n1)+9.*u(m4,ny)-42.*u(m3,ny)+72.*u(m2,ny)-54.*u(m1,ny)+15.*u(nx,ny&
+     &)) / dxxxy4
+      uxy3=(3.*u(m2,n4)-12.*u(m1,n4)+9.*u(nx,n4)                        &
+     & -14.*u(m2,n3)+56.*u(m1,n3)-42.*u(nx,n3)                          &
+     & +24.*u(m2,n2)-96.*u(m1,n2)+72.*u(nx,n2)                          &
+     & -18.*u(m2,n1)+72.*u(m1,n1)-54.*u(nx,n1)                          &
+     & +5.*u(m2,ny)-20.*u(m1,ny)+15.*u(nx,ny)) / dxyyy4
+      ux2y2=(u(m3,n3)-4.*u(m2,n3)+5.*u(m1,n3)-2.*u(nx,n3)               &
+     & -4.*u(m3,n2)+16.*u(m2,n2)-20.*u(m1,n2)+8.*u(nx,n2)               &
+     & +5.0*u(m3,n1)-20.*u(m2,n1)+25.*u(m1,n1)-10.*u(nx,n1)             &
+     & -2.*u(m3,ny)+8.*u(m2,ny)-10.*u(m1,ny)+4.*u(nx,ny))               &
+     & / dxxyy
       end if
 
       end if
 
       return
       end
-      subroutine pde3(nx,ny,nz,u,i,j,k,ux3,ux4,uy3,uy4,uz3,uz4,
-     +                nxa,nyc,nze)
-c
-c     estimate third and fourth partial derivatives in x,y,z
-c
+      subroutine pde3(nx,ny,nz,u,i,j,k,ux3,ux4,uy3,uy4,uz3,uz4,         &
+     &                nxa,nyc,nze)
+!c
+!     estimate third and fourth partial derivatives in x,y,z
+!c
       implicit none
       integer nx,ny,nz,i,j,k,nxa,nyc,nze
       real u(nx,ny,nz)
       real dlx,dly,dlz,dlxx,dlyy,dlzz,tdlx3,tdly3,tdlz3,dlx4,dly4,dlz4
-      common/pde3com/dlx,dly,dlz,dlxx,dlyy,dlzz,tdlx3,tdly3,tdlz3,
-     +               dlx4,dly4,dlz4
+      common/pde3com/dlx,dly,dlz,dlxx,dlyy,dlzz,tdlx3,tdly3,tdlz3,      &
+     &               dlx4,dly4,dlz4
       real ux3,ux4,uy3,uy4,uz3,uz4
-c
-c     x,y partial derivatives
-c
+!c
+!     x,y partial derivatives
+!c
       call p3de2(nx,ny,u(1,1,k),i,j,ux3,ux4,uy3,uy4,nxa,nyc)
-c
-c     z partial derivatives
-c
+!c
+!     z partial derivatives
+!c
       if (nze.ne.0) then
-c
-c     nonperiodic in z
-c
+!c
+!     nonperiodic in z
+!c
       if(k.gt.2 .and. k.lt.nz-1) then
       uz3=(-u(i,j,k-2)+2.0*u(i,j,k-1)-2.0*u(i,j,k+1)+u(i,j,k+2))/tdlz3
-      uz4=(u(i,j,k-2)-4.0*u(i,j,k-1)+6.0*u(i,j,k)-4.0*u(i,j,k+1)+
-     +         u(i,j,k+2))/dlz4
+      uz4=(u(i,j,k-2)-4.0*u(i,j,k-1)+6.0*u(i,j,k)-4.0*u(i,j,k+1)+       &
+     &         u(i,j,k+2))/dlz4
       else if (k.eq.1) then
-      uz3=(-5.0*u(i,j,1)+18.0*u(i,j,2)-24.0*u(i,j,3)+14.0*u(i,j,4)-
-     +          3.0*u(i,j,5))/tdlz3
-      uz4 = (3.0*u(i,j,1)-14.0*u(i,j,2)+26.0*u(i,j,3)-24.0*u(i,j,4)+
-     +           11.0*u(i,j,5)-2.0*u(i,j,6))/dlz4
+      uz3=(-5.0*u(i,j,1)+18.0*u(i,j,2)-24.0*u(i,j,3)+14.0*u(i,j,4)-     &
+     &          3.0*u(i,j,5))/tdlz3
+      uz4 = (3.0*u(i,j,1)-14.0*u(i,j,2)+26.0*u(i,j,3)-24.0*u(i,j,4)+    &
+     &           11.0*u(i,j,5)-2.0*u(i,j,6))/dlz4
       else if (k.eq.2) then
-      uz3 = (-3.0*u(i,j,1)+10.0*u(i,j,2)-12.0*u(i,j,3)+6.0*u(i,j,4)-
-     +            u(i,j,5))/tdlz3
-      uz4 = (2.0*u(i,j,1)-9.0*u(i,j,2)+16.0*u(i,j,3)-14.0*u(i,j,4)+6.0*
-     +           u(i,j,5)-u(i,j,6))/dlz4
+      uz3 = (-3.0*u(i,j,1)+10.0*u(i,j,2)-12.0*u(i,j,3)+6.0*u(i,j,4)-    &
+     &            u(i,j,5))/tdlz3
+      uz4 = (2.0*u(i,j,1)-9.0*u(i,j,2)+16.0*u(i,j,3)-14.0*u(i,j,4)+6.0* &
+     &           u(i,j,5)-u(i,j,6))/dlz4
       else if (k.eq.nz-1) then
-      uz3 = (u(i,j,nz-4)-6.0*u(i,j,nz-3)+12.0*u(i,j,nz-2)-10.0*
-     +           u(i,j,nz-1)+3.0*u(i,j,nz))/tdlz3
-      uz4 = (-u(i,j,nz-5)+6.0*u(i,j,nz-4)-14.0*u(i,j,nz-3)+16.0*
-     +            u(i,j,nz-2)-9.0*u(i,j,nz-1)+2.0*u(i,j,nz))/dlz4
+      uz3 = (u(i,j,nz-4)-6.0*u(i,j,nz-3)+12.0*u(i,j,nz-2)-10.0*         &
+     &           u(i,j,nz-1)+3.0*u(i,j,nz))/tdlz3
+      uz4 = (-u(i,j,nz-5)+6.0*u(i,j,nz-4)-14.0*u(i,j,nz-3)+16.0*        &
+     &            u(i,j,nz-2)-9.0*u(i,j,nz-1)+2.0*u(i,j,nz))/dlz4
       else if (k.eq.nz) then
-      uz3 = (3.0*u(i,j,nz-4)-14.0*u(i,j,nz-3)+24.0*u(i,j,nz-2)-18.0*
-     +           u(i,j,nz-1)+5.0*u(i,j,nz))/tdlz3
-      uz4 = (-2.0*u(i,j,nz-5)+11.0*u(i,j,nz-4)-24.0*u(i,j,nz-3)+26.0*
-     +           u(i,j,nz-2)-14.0*u(i,j,nz-1)+3.0*u(i,j,nz))/dlz4
+      uz3 = (3.0*u(i,j,nz-4)-14.0*u(i,j,nz-3)+24.0*u(i,j,nz-2)-18.0*    &
+     &           u(i,j,nz-1)+5.0*u(i,j,nz))/tdlz3
+      uz4 = (-2.0*u(i,j,nz-5)+11.0*u(i,j,nz-4)-24.0*u(i,j,nz-3)+26.0*   &
+     &           u(i,j,nz-2)-14.0*u(i,j,nz-1)+3.0*u(i,j,nz))/dlz4
       end if
       else
-c
-c     periodic in z so use symmetric formula even "near" z boundaies
-c
+!c
+!     periodic in z so use symmetric formula even "near" z boundaies
+!c
       if(k.gt.2 .and. k.lt.nz-1) then
       uz3=(-u(i,j,k-2)+2.0*u(i,j,k-1)-2.0*u(i,j,k+1)+u(i,j,k+2))/tdlz3
-      uz4=(u(i,j,k-2)-4.0*u(i,j,k-1)+6.0*u(i,j,k)-4.0*u(i,j,k+1)+
-     +     u(i,j,k+2))/dlz4
+      uz4=(u(i,j,k-2)-4.0*u(i,j,k-1)+6.0*u(i,j,k)-4.0*u(i,j,k+1)+       &
+     &     u(i,j,k+2))/dlz4
       else if (k.eq.1) then
       uz3 = (-u(i,j,nz-2)+2.0*u(i,j,nz-1)-2.0*u(i,j,2)+u(i,j,3))/tdlz3
-      uz4 = (u(i,j,nz-2)-4.0*u(i,j,nz-1)+6.0*u(i,j,1)-4.0*u(i,j,2)+
-     +       u(i,j,3))/dlz4
+      uz4 = (u(i,j,nz-2)-4.0*u(i,j,nz-1)+6.0*u(i,j,1)-4.0*u(i,j,2)+     &
+     &       u(i,j,3))/dlz4
       else if (k.eq.2) then
       uz3 = (-u(i,j,nz-1)+2.0*u(i,j,1)-2.0*u(i,j,3)+u(i,j,4))/(tdlz3)
-      uz4 = (u(i,j,nz-1)-4.0*u(i,j,1)+6.0*u(i,j,2)-4.0*u(i,j,3)+
-     +       u(i,j,4))/dlz4
+      uz4 = (u(i,j,nz-1)-4.0*u(i,j,1)+6.0*u(i,j,2)-4.0*u(i,j,3)+        &
+     &       u(i,j,4))/dlz4
       else if (k.eq.nz-1) then
       uz3 = (-u(i,j,nz-3)+2.0*u(i,j,nz-2)-2.0*u(i,j,1)+u(i,j,2))/tdlz3
-      uz4 = (u(i,j,nz-3)-4.0*u(i,j,nz-2)+6.0*u(i,j,nz-1)-4.0*u(i,j,1)+
-     +       u(i,j,2))/ dlz4
+      uz4 = (u(i,j,nz-3)-4.0*u(i,j,nz-2)+6.0*u(i,j,nz-1)-4.0*u(i,j,1)+  &
+     &       u(i,j,2))/ dlz4
       else if (k.eq.nz) then
       uz3 = (-u(i,j,nz-2)+2.0*u(i,j,nz-1)-2.0*u(i,j,2)+u(i,j,3))/tdlz3
-      uz4 = (u(i,j,nz-2)-4.0*u(i,j,nz-1)+6.0*u(i,j,nz)-4.0*u(i,j,2)+
-     +       u(i,j,3))/dlz4
+      uz4 = (u(i,j,nz-2)-4.0*u(i,j,nz-1)+6.0*u(i,j,nz)-4.0*u(i,j,2)+    &
+     &       u(i,j,3))/dlz4
       end if
       end if
       return
       end
 
       subroutine p3de2(nx,ny,u,i,j,ux3,ux4,uy3,uy4,nxa,nyc)
-c
-c     third and fourth partial derivatives in x and y
-c
+!c
+!     third and fourth partial derivatives in x and y
+!c
       implicit none
       integer nx,ny,i,j,nxa,nyc,l
       real u(nx,ny)
       real dlx,dly,dlz,dlxx,dlyy,dlzz,tdlx3,tdly3,tdlz3,dlx4,dly4,dlz4
-      common/pde3com/dlx,dly,dlz,dlxx,dlyy,dlzz,tdlx3,tdly3,tdlz3,
-     +               dlx4,dly4,dlz4
+      common/pde3com/dlx,dly,dlz,dlxx,dlyy,dlzz,tdlx3,tdly3,tdlz3,      &
+     &               dlx4,dly4,dlz4
       real ux3,ux4,uy3,uy4
       l=ny
-c
-c     x partial derivatives
-c
+!c
+!     x partial derivatives
+!c
       call p3de1(nx,u(1,j),i,ux3,ux4,nxa)
-c
-c     y partial derivatives
-c
+!c
+!     y partial derivatives
+!c
       if (nyc.ne.0) then
-c
-c     not periodic in y
-c
+!c
+!     not periodic in y
+!c
       if (j.gt.2 .and. j.lt.ny-1) then
       uy3 = (-u(i,j-2)+2.0*u(i,j-1)-2.0*u(i,j+1)+u(i,j+2))/tdly3
-      uy4 = (u(i,j-2)-4.0*u(i,j-1)+6.0*u(i,j)-4.0*u(i,j+1)+u(i,j+2))/
-     +       dly4
+      uy4 = (u(i,j-2)-4.0*u(i,j-1)+6.0*u(i,j)-4.0*u(i,j+1)+u(i,j+2))/   &
+     &       dly4
       else if (j.eq.1) then
-      uy3 = (-5.0*u(i,1)+18.0*u(i,2)-24.0*u(i,3)+14.0*u(i,4)-
-     +        3.0*u(i,5))/tdly3
-      uy4 = (3.0*u(i,1)-14.0*u(i,2)+26.0*u(i,3)-24.0*u(i,4)+
-     +       11.0*u(i,5)-2.0*u(i,6))/dly4
+      uy3 = (-5.0*u(i,1)+18.0*u(i,2)-24.0*u(i,3)+14.0*u(i,4)-           &
+     &        3.0*u(i,5))/tdly3
+      uy4 = (3.0*u(i,1)-14.0*u(i,2)+26.0*u(i,3)-24.0*u(i,4)+            &
+     &       11.0*u(i,5)-2.0*u(i,6))/dly4
       else if (j.eq.2) then
-      uy3 = (-3.0*u(i,1)+10.0*u(i,2)-12.0*u(i,3)+6.0*u(i,4)-u(i,5))/
-     +       tdly3
-      uy4 = (2.0*u(i,1)-9.0*u(i,2)+16.0*u(i,3)-14.0*u(i,4)+6.0*u(i,5)-
-     +       u(i,6))/dly4
+      uy3 = (-3.0*u(i,1)+10.0*u(i,2)-12.0*u(i,3)+6.0*u(i,4)-u(i,5))/    &
+     &       tdly3
+      uy4 = (2.0*u(i,1)-9.0*u(i,2)+16.0*u(i,3)-14.0*u(i,4)+6.0*u(i,5)-  &
+     &       u(i,6))/dly4
       else if (j.eq.ny-1) then
-      uy3 = (u(i,l-4)-6.0*u(i,l-3)+12.0*u(i,l-2)-10.0*u(i,l-1)+
-     +       3.0*u(i,l))/tdly3
-      uy4 = (-u(i,l-5)+6.0*u(i,l-4)-14.0*u(i,l-3)+16.0*u(i,l-2)-
-     +       9.0*u(i,l-1)+2.0*u(i,l))/dly4
+      uy3 = (u(i,l-4)-6.0*u(i,l-3)+12.0*u(i,l-2)-10.0*u(i,l-1)+         &
+     &       3.0*u(i,l))/tdly3
+      uy4 = (-u(i,l-5)+6.0*u(i,l-4)-14.0*u(i,l-3)+16.0*u(i,l-2)-        &
+     &       9.0*u(i,l-1)+2.0*u(i,l))/dly4
       else if (j.eq.ny) then
-      uy3 = (3.0*u(i,l-4)-14.0*u(i,l-3)+24.0*u(i,l-2)-18.0*u(i,l-1)+
-     +       5.0*u(i,l))/tdly3
-      uy4 = (-2.0*u(i,l-5)+11.0*u(i,l-4)-24.0*u(i,l-3)+26.0*u(i,l-2)-
-     +       14.0*u(i,l-1)+3.0*u(i,l))/dly4
+      uy3 = (3.0*u(i,l-4)-14.0*u(i,l-3)+24.0*u(i,l-2)-18.0*u(i,l-1)+    &
+     &       5.0*u(i,l))/tdly3
+      uy4 = (-2.0*u(i,l-5)+11.0*u(i,l-4)-24.0*u(i,l-3)+26.0*u(i,l-2)-   &
+     &       14.0*u(i,l-1)+3.0*u(i,l))/dly4
       end if
       else
-c
-c     periodic in y
-c
+!c
+!     periodic in y
+!c
       if (j.gt.2 .and. j.lt.ny-1) then
       uy3 = (-u(i,j-2)+2.0*u(i,j-1)-2.0*u(i,j+1)+u(i,j+2))/tdly3
-      uy4 = (u(i,j-2)-4.0*u(i,j-1)+6.0*u(i,j)-4.0*u(i,j+1)+u(i,j+2))/
-     +        dly4
+      uy4 = (u(i,j-2)-4.0*u(i,j-1)+6.0*u(i,j)-4.0*u(i,j+1)+u(i,j+2))/   &
+     &        dly4
       else if (j.eq.1) then
       uy3 = (-u(i,l-2)+2.0*u(i,l-1)-2.0*u(i,2)+u(i,3))/tdly3
       uy4 = (u(i,l-2)-4.0*u(i,l-1)+6.0*u(i,1)-4.0*u(i,2)+u(i,3))/dly4
@@ -1828,8 +1828,8 @@ c
       uy4 = (u(i,l-1)-4.0*u(i,1)+6.0*u(i,2)-4.0*u(i,3)+u(i,4))/dly4
       else if (j.eq.ny-1) then
       uy3 = (-u(i,l-3)+2.0*u(i,l-2)-2.0*u(i,1)+u(i,2))/tdly3
-      uy4 = (u(i,l-3)-4.0*u(i,l-2)+6.0*u(i,l-1)-4.0*u(i,1)+u(i,2))/
-     +        dly4
+      uy4 = (u(i,l-3)-4.0*u(i,l-2)+6.0*u(i,l-1)-4.0*u(i,1)+u(i,2))/     &
+     &        dly4
       else if (j.eq.ny) then
       uy3 = (-u(i,l-2)+2.0*u(i,l-1)-2.0*u(i,2)+u(i,3))/tdly3
       uy4 = (u(i,l-2)-4.0*u(i,l-1)+6.0*u(i,l)-4.0*u(i,2)+u(i,3))/dly4
@@ -1839,45 +1839,45 @@ c
       end
 
       subroutine p3de1(nx,u,i,ux3,ux4,nxa)
-c
-c     third and fourth derivatives in x
-c
+!c
+!     third and fourth derivatives in x
+!c
       implicit none
       integer nx,i,nxa,k
       real u(nx)
       real dlx,dly,dlz,dlxx,dlyy,dlzz,tdlx3,tdly3,tdlz3,dlx4,dly4,dlz4
-      common/pde3com/dlx,dly,dlz,dlxx,dlyy,dlzz,tdlx3,tdly3,tdlz3,
-     +               dlx4,dly4,dlz4
+      common/pde3com/dlx,dly,dlz,dlxx,dlyy,dlzz,tdlx3,tdly3,tdlz3,      &
+     &               dlx4,dly4,dlz4
       real ux3,ux4
       k = nx
       if (nxa.ne.0) then
-c
-c     nonperiodic in x
-c
+!c
+!     nonperiodic in x
+!c
       if(i.gt.2 .and. i.lt.nx-1) then
       ux3 = (-u(i-2)+2.0*u(i-1)-2.0*u(i+1)+u(i+2))/tdlx3
       ux4 = (u(i-2)-4.0*u(i-1)+6.0*u(i)-4.0*u(i+1)+u(i+2))/dlx4
       else if (i.eq.1) then
       ux3 = (-5.0*u(1)+18.0*u(2)-24.0*u(3)+14.0*u(4)-3.0*u(5))/tdlx3
-      ux4 = (3.0*u(1)-14.0*u(2)+26.0*u(3)-24.0*u(4)+11.0*u(5)-2.0*u(6))
-     +       /dlx4
+      ux4 = (3.0*u(1)-14.0*u(2)+26.0*u(3)-24.0*u(4)+11.0*u(5)-2.0*u(6)) &
+     &       /dlx4
       else if (i.eq.2) then
       ux3 = (-3.0*u(1)+10.0*u(2)-12.0*u(3)+6.0*u(4)-u(5))/tdlx3
       ux4 = (2.0*u(1)-9.0*u(2)+16.0*u(3)-14.0*u(4)+6.0*u(5)-u(6))/dlx4
       else if (i.eq.nx-1) then
       ux3 = (u(k-4)-6.0*u(k-3)+12.0*u(k-2)-10.0*u(k-1)+3.0*u(k))/tdlx3
-      ux4 = (-u(k-5)+6.0*u(k-4)-14.0*u(k-3)+16.0*u(k-2)-9.0*u(k-1)+
-     +      2.0*u(k))/dlx4
+      ux4 = (-u(k-5)+6.0*u(k-4)-14.0*u(k-3)+16.0*u(k-2)-9.0*u(k-1)+     &
+     &      2.0*u(k))/dlx4
       else if (i.eq.nx) then
-      ux3 = (3.0*u(k-4)-14.0*u(k-3)+24.0*u(k-2)-18.0*u(k-1)+5.0*u(k))/
-     +       tdlx3
-      ux4 = (-2.0*u(k-5)+11.0*u(k-4)-24.0*u(k-3)+26.0*u(k-2)-
-     +       14.0*u(k-1)+3.0*u(k))/dlx4
+      ux3 = (3.0*u(k-4)-14.0*u(k-3)+24.0*u(k-2)-18.0*u(k-1)+5.0*u(k))/  &
+     &       tdlx3
+      ux4 = (-2.0*u(k-5)+11.0*u(k-4)-24.0*u(k-3)+26.0*u(k-2)-           &
+     &       14.0*u(k-1)+3.0*u(k))/dlx4
       end if
       else
-c
-c     periodic in x
-c
+!c
+!     periodic in x
+!c
       if(i.gt.2 .and. i.lt.nx-1) then
       ux3 = (-u(i-2)+2.0*u(i-1)-2.0*u(i+1)+u(i+2))/tdlx3
       ux4 = (u(i-2)-4.0*u(i-1)+6.0*u(i)-4.0*u(i+1)+u(i+2))/dlx4
@@ -1897,18 +1897,18 @@ c
       end if
       return
       end
-c
-c
-c     factri and factrip are:
-c     subroutines called by any real mudpack solver which uses line
-c     relaxation(s) within multigrid iteration.  these subroutines do
-c     a vectorized factorization of m simultaneous tridiagonal systems
-c     of order n arising from nonperiodic or periodic discretizations
-c
+!c
+!c
+!     factri and factrip are:
+!     subroutines called by any real mudpack solver which uses line
+!     relaxation(s) within multigrid iteration.  these subroutines do
+!     a vectorized factorization of m simultaneous tridiagonal systems
+!     of order n arising from nonperiodic or periodic discretizations
+!c
       subroutine factri(m,n,a,b,c)
-c
-c     factor the m simultaneous tridiagonal systems of order n
-c
+!c
+!     factor the m simultaneous tridiagonal systems of order n
+!c
       implicit none
       integer m,n,i,j
       real a(n,m),b(n,m),c(n,m)
@@ -1922,11 +1922,11 @@ c
       end
 
       subroutine factrp(m,n,a,b,c,d,e,sum)
-c
-c     factor the m simultaneous "tridiagonal" systems of order n
-c     from discretized periodic system (leave out periodic n point)
-c     (so sweeps below only go from i=1,2,...,n-1) n > 3 is necessary
-c
+!c
+!     factor the m simultaneous "tridiagonal" systems of order n
+!     from discretized periodic system (leave out periodic n point)
+!     (so sweeps below only go from i=1,2,...,n-1) n > 3 is necessary
+!c
       implicit none
       integer m,n,i,j
       real a(n,m),b(n,m),c(n,m),d(n,m),e(n,m),sum(m)
@@ -1940,9 +1940,9 @@ c
 	  d(i,j) = -a(i,j)*d(i-1,j)
        end do
       end do
-c
-c     correct computation of last d element
-c
+!c
+!     correct computation of last d element
+!c
       do j=1,m
 	d(n-2,j) = c(n-2,j)+d(n-2,j)
       end do
@@ -1957,9 +1957,9 @@ c
       do j=1,m
 	e(n-2,j) = (a(n-1,j)-e(n-3,j)*c(n-3,j))/b(n-2,j)
       end do
-c
-c     compute  inner product (e,d) for each j in sum(j)
-c
+!c
+!     compute  inner product (e,d) for each j in sum(j)
+!c
       do j=1,m
 	sum(j) = 0.
       end do
@@ -1968,9 +1968,9 @@ c
 	  sum(j) = sum(j)+e(i,j)*d(i,j)
 	end do
       end do
-c
-c     set last diagonal element
-c
+!c
+!     set last diagonal element
+!c
       do j=1,m
 	b(n-1,j) = b(n-1,j)-sum(j)
       end do
@@ -1978,9 +1978,9 @@ c
       end
 
       subroutine transp(n,amat)
-c
-c     transpose n by n real matrix
-c
+!c
+!c     transpose n by n real matrix
+!c
       implicit none
       integer n,i,j
       real amat(n,n),temp
@@ -2105,8 +2105,8 @@ c
       if( n .lt. 5 ) go to 60                                                   
    40 mp1 = m + 1                                                               
       do 50 i = mp1,n,5                                                         
-        stemp = stemp + sx(i)*sy(i) + sx(i + 1)*sy(i + 1) +                     
-     +   sx(i + 2)*sy(i + 2) + sx(i + 3)*sy(i + 3) + sx(i + 4)*sy(i + 4)        
+        stemp = stemp + sx(i)*sy(i) + sx(i + 1)*sy(i + 1) +             &        
+     &   sx(i + 2)*sy(i + 2) + sx(i + 3)*sy(i + 3) + sx(i + 4)*sy(i + 4)        
    50 continue                                                                  
    60 sdt = stemp
       return                                                                    

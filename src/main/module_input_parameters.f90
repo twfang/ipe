@@ -13,10 +13,12 @@
 !--------------------------------------------  
       MODULE module_input_parameters
       USE module_precision
-      USE module_IPE_dimension,ONLY: NLP,NMP
+      USE module_IPE_dimension,ONLY: NLP,NMP,NPTS2D
       IMPLICIT NONE
 
 !--- IPE wide run parameters
+      INTEGER (KIND=int_prec), PUBLIC   :: utime           !UT[sec] IPE internal time management
+      INTEGER (KIND=int_prec), PUBLIC   :: nTimeStep=1     !internal number of time steps
       INTEGER (KIND=int_prec), PUBLIC   :: start_time      !=0  !UT[sec]
       INTEGER (KIND=int_prec), PUBLIC   :: stop_time       !=60 !UT[sec]
       INTEGER (KIND=int_prec), PUBLIC   :: time_step       !=60 ![sec]
@@ -34,8 +36,11 @@
       INTEGER (KIND=int_prec), PUBLIC :: NYEAR ! year
       INTEGER (KIND=int_prec), PUBLIC :: NDAY  ! day number
 
-      INTEGER (KIND=int_prec), PUBLIC :: ip_freq_output  ![sec] must be multiple of time_step
-      INTEGER (KIND=int_prec), PUBLIC :: ip_freq_msis    !frequency[sec] to call MSIS/HWM: default 15min
+      INTEGER (KIND=int_prec), PUBLIC :: internalTimeLoopMax=1  ![times]internal time loop: default 1
+      INTEGER (KIND=int_prec), PUBLIC :: ip_freq_output=900  ![sec] must be multiple of time_step: default 15m
+      INTEGER (KIND=int_prec), PUBLIC :: ip_freq_msis=180    !frequency[sec] to call MSIS/HWM: default 3m
+      INTEGER (KIND=int_prec), PUBLIC :: ip_freq_plasma=60   !frequency[sec] to call plasma: default 1m
+      INTEGER (KIND=int_prec), PUBLIC :: ip_freq_eldyn=180   !frequency[sec] to call eldyn: default 3m(for quiet climatology),60s for storm
       LOGICAL                , PUBLIC :: parallelBuild=.false.
 
 !--- FLIP specific input parameters
@@ -94,13 +99,23 @@
 !--- all the SWITCHes either integer or logical or character
       LOGICAL, PUBLIC :: sw_debug
       LOGICAL, PUBLIC :: sw_debug_mpi
-      LOGICAL, PUBLIC :: sw_output_fort167
+      LOGICAL, PUBLIC :: sw_output_fort167 =.false.
+      LOGICAL, PUBLIC :: sw_output_wind    =.false. !unit=6000,6001
       INTEGER(KIND=int_prec), PUBLIC :: peFort167=0 !default mype=0
-      INTEGER(KIND=int_prec), PUBLIC :: mpfort167=10
-      INTEGER(KIND=int_prec), PUBLIC :: lpfort167=14
+      INTEGER(KIND=int_prec), PUBLIC :: mpfort167 = 10
+      INTEGER(KIND=int_prec), PUBLIC :: lpfort167 = 14
       INTEGER(KIND=int_prec), DIMENSION(2), PUBLIC :: iout
-      INTEGER(KIND=int_prec), PUBLIC :: mpstop
-      INTEGER(KIND=int_prec), PUBLIC :: sw_neutral    !0:GT; 1:MSIS
+      INTEGER(KIND=int_prec), PUBLIC :: mpstop=80
+      INTEGER(KIND=int_prec), PUBLIC :: sw_neutral=3    
+!0: WAM debug: use which ever ESMF fields are coming across for debugging purpose
+!1: WAM default science mode: specify ESMF fields you wish to use
+!2: GT
+!3: MSIS(default)
+!4: read in files
+      LOGICAL, dimension(7), PUBLIC :: swNeuPar!     =.false. !f:OFF (from MSIS); t:ON (from WAM)
+!determines which neutral parameters to derive from WAM only when sw_neutral=0/1? 
+!1:tn; 2:un1(east); 3:un2(north); 4:un3(up); 5:[O]; 6:[O2]; 7:[N2]
+      LOGICAL, PUBLIC :: swEsmfTime =.false.
       INTEGER(KIND=int_prec), PUBLIC :: sw_eldyn
 !0:self-consistent eldyn solver; 1:WACCM efield ;2:  ;3: read in external efield
       INTEGER(KIND=int_prec), PUBLIC :: sw_3DJ !1:calculate 3D currents, je_3d
@@ -124,6 +139,8 @@
       INTEGER (KIND=int_prec), PUBLIC :: sw_th_or_r
       INTEGER (KIND=int_prec), PUBLIC :: record_number_plasma_start
       INTEGER (KIND=int_prec), PUBLIC :: sw_record_number
+!nm20160329: used only when HPEQ_flip=0.5
+      INTEGER (KIND=int_prec), PUBLIC :: ut_start_perp_trans=0
       INTEGER (KIND=int_prec), PUBLIC :: duration !used when sw_record_n=1
       INTEGER (KIND=int_prec), PUBLIC :: sw_exb_up
 ! (0) self consistent electrodynamics
@@ -142,8 +159,11 @@
 !1: div * V// included in the Te/i solver
 !dbg20120313 
       REAL(KIND=real_prec), PUBLIC :: fac_BM
-
-      NAMELIST/IPEDIMS/NLP,NMP 
+!
+! MPI communicator to be passed to SMS
+      integer, PUBLIC :: my_comm
+!---
+      NAMELIST/IPEDIMS/NLP,NMP,NPTS2D 
       NAMELIST/NMIPE/start_time &
      &,stop_time &
      &,time_step &
@@ -151,8 +171,11 @@
      &,F107AV  &
      &,NYEAR  &
      &,NDAY   &
+     &,internalTimeLoopMax &
+     &,ip_freq_eldyn &
      &,ip_freq_output &
-     &,ip_freq_msis
+     &,ip_freq_msis &
+     &,ip_freq_plasma
       NAMELIST/NMFLIP/DTMIN_flip  & 
      &,sw_INNO   & 
      &,FPAS_flip   & 
@@ -182,8 +205,10 @@
      &,kp_eld
       NAMELIST/NMSWITCH/&
            &  sw_neutral     &
-           &,  sw_eldyn     &
-           &,  sw_3DJ        &
+           &, swNeuPar       &
+           &, swEsmfTime     &
+           &, sw_eldyn     &
+           &, sw_3DJ         &
            &, sw_pcp         &
            &, sw_grid        &
            &, sw_output_plasma_grid        &
@@ -201,11 +226,13 @@
            &, sw_debug       &
            &, sw_debug_mpi   &
            &, sw_output_fort167   &
+           &, sw_output_wind   &
            &, mpfort167   &
            &, lpfort167   &
            &, peFort167   &
            &, record_number_plasma_start   &
            &, sw_record_number   &
+           &, ut_start_perp_trans   &
            &, duration   &
            &, fac_BM   &
            &, iout
@@ -225,6 +252,9 @@
         USE module_IPE_dimension,ONLY: NLP,NMP,NPTS2D
         IMPLICIT NONE
 !---------
+!MPI requirement 
+!SMS$INSERT      include "mpif.h"
+!---
         INTEGER(KIND=int_prec),PARAMETER :: LUN_nmlt=1
         CHARACTER(LEN=*),PARAMETER :: INPTNMLT='IPE.inp'
         INTEGER(KIND=int_prec) :: IOST_OP=0
@@ -235,17 +265,32 @@
 
 !SMS$IGNORE BEGIN
         OPEN(LUN_nmlt,FILE=INPTNMLT,ERR=222,IOSTAT=IOST_OP,STATUS='OLD')
+        REWIND LUN_nmlt
         READ(LUN_nmlt,NML=IPEDIMS  ,ERR=222,IOSTAT=IOST_RD)
+        REWIND LUN_nmlt
         READ(LUN_nmlt,NML=NMIPE    ,ERR=222,IOSTAT=IOST_RD)
 !SMS$IGNORE END
 
 !SMS$INSERT lpHaloSize=5
 !SMS$INSERT mpHaloSize=1
-!SMS$CREATE_DECOMP(dh,<NLP,NMP>,<lpHaloSize,mpHaloSize>: <PERIODIC, PERIODIC>)
+!
+!set up MPI communicator for SMS
+!(1) when NEMS is not used, pass MPI_COMM_WORLD into SET_COMMUNICATOR()
+!SMS$INSERT        my_comm=MPI_COMM_WORLD
+!(2) when NEMS is used, my_comm=mpiCommunicator has been assigned already in sub-myIPE_Init
+!        print *, 'sub-read_input_para:my_comm=', my_comm
+!SMS$SET_COMMUNICATOR( my_comm )
+!
+!nm20160608 sms debug
+!SMS$CREATE_DECOMP(dh,<NLP,NMP>,<lpHaloSize,mpHaloSize>: <NONPERIODIC, PERIODIC>)
+!!!SMS$CREATE_DECOMP(dh,<NLP,NMP>,<lpHaloSize,mpHaloSize>: <PERIODIC, PERIODIC>)
 
 !SMS$SERIAL BEGIN
+        REWIND LUN_nmlt
         READ(LUN_nmlt,NML=NMFLIP   ,ERR=222,IOSTAT=IOST_RD)
+        REWIND LUN_nmlt
         READ(LUN_nmlt,NML=NMMSIS   ,ERR=222,IOSTAT=IOST_RD)
+        REWIND LUN_nmlt
         READ(LUN_nmlt,NML=NMSWITCH ,ERR=222,IOSTAT=IOST_RD)
 
         OPEN(UNIT=LUN_LOG0,FILE=filename,STATUS='unknown',FORM='formatted',IOSTAT=istat)
@@ -313,6 +358,11 @@ print *,' '
 !dbg20120509        IF ( sw_rw_sw_perp_trans )  CALL setup_sw_perp_transport ()
 !note:20120207: v36: used only activating the perp.transport gradually...
 
+
+!dbg20160711
+!SMS$IGNORE begin
+print*,mype,'sub-read_input: swNeuPar',swNeuPar
+!SMS$IGNORE end
  
         END SUBROUTINE read_input_parameters
 

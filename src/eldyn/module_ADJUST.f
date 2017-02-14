@@ -22,7 +22,7 @@
 !	ADJUST AN ANGLE IN DEGREES TO BE IN RANGE OF 0 TO 360.
 !-----------------------------------------------------------------------
 !
-c       use shr_kind_mod, only: r8 => shr_kind_r8
+!c       use shr_kind_mod, only: r8 => shr_kind_r8
         implicit none 
 !
 !------------------------------Arguments--------------------------------

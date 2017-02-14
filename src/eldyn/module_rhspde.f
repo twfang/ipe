@@ -55,8 +55,8 @@
           tint33(i+kmlon) = tint33(i)     ! kmlon+1:kmlon+2 <= 1,2
         enddo ! i=1,2
         do i=1,kmlon                                         
-          rhs(i,j) = 1./(dlonm*tint1(kmlath+j-1))*
-     |      .5*(tint33(i+1)-tint33(i-1))  ! tint33 2:kmlon+1 and 0:kmlon-1
+          rhs(i,j) = 1./(dlonm*tint1(kmlath+j-1))*                      &
+     &      .5*(tint33(i+1)-tint33(i-1))  ! tint33 2:kmlon+1 and 0:kmlon-1
         enddo ! i=1,kmlon
       enddo ! j=2,kmlath-1
 !
@@ -68,14 +68,14 @@
       do j=kmlath+1,kmlat-1 ! 50,96                          
         jj = j-kmlath+1     !  2,48
         do i=1,kmlon
-          rhs(i,jj) = rhs(i,jj)+1./(dlatm*tint1(j))*
-     |      .5*(rim(i,j+1,2)*tint1(j+1)-rim(i,j-1,2)*tint1(j-1))
+          rhs(i,jj) = rhs(i,jj)+1./(dlatm*tint1(j))*                    &
+     &      .5*(rim(i,j+1,2)*tint1(j+1)-rim(i,j-1,2)*tint1(j-1))
         enddo ! i=1,kmlon
       enddo ! j=kmlath+1,kmlat-1
 !
 ! polar value:
-      rhs(1,kmlath) = -2./float(kmlon)*
-     |  sddot(kmlon,unitvm,rim(1,kmlat-1,2))/tint1(kmlat-1)
+      rhs(1,kmlath) = -2./float(kmlon)*                                 &
+     &  sddot(kmlon,unitvm,rim(1,kmlat-1,2))/tint1(kmlat-1)
 !
 ! equatorial value:
 ! [K_(m phi)^DT(0)(i+1,j)-K_(m phi)^DT(0)(i-1,j)]/ (2 d lon) +
@@ -85,17 +85,17 @@
 !
       i = 1
       rhs(i,1) = 0.5/dlonm*(rim(i+1,kmlath,1)-rim(kmlon,kmlath,1))
-      rhs(i,1) = rhs(i,1)+1./dlatm*(tint1(kmlath)*rim(i,kmlath,2)+
-     |                            tint1(kmlath+1)*rim(i,kmlath+1,2))
+      rhs(i,1) = rhs(i,1)+1./dlatm*(tint1(kmlath)*rim(i,kmlath,2)+      &
+     &                            tint1(kmlath+1)*rim(i,kmlath+1,2))
       do i = 2,kmlon-1
         rhs(i,1) = 0.5/dlonm*(rim(i+1,kmlath,1)-rim(i-1,kmlath,1))
-        rhs(i,1) = rhs(i,1)+1./dlatm*(tint1(kmlath)*rim(i,kmlath,2)+
-     |                              tint1(kmlath+1)*rim(i,kmlath+1,2))
+        rhs(i,1) = rhs(i,1)+1./dlatm*(tint1(kmlath)*rim(i,kmlath,2)+    &
+     &                              tint1(kmlath+1)*rim(i,kmlath+1,2))
       enddo ! i = 2,kmlon-1
       i = kmlon
       rhs(i,1) = 0.5/dlonm*(rim(1,kmlath,1)-rim(i-1,kmlath,1))
-      rhs(i,1) = rhs(i,1)+1./dlatm*(tint1(kmlath)*rim(i,kmlath,2)+
-     |                            tint1(kmlath+1)*rim(i,kmlath+1,2))
+      rhs(i,1) = rhs(i,1)+1./dlatm*(tint1(kmlath)*rim(i,kmlath,2)+      &
+     &                            tint1(kmlath+1)*rim(i,kmlath+1,2))
 !
 ! Extend over longitude:
       do i=2,kmlon

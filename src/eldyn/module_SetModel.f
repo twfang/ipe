@@ -46,10 +46,10 @@
 ! Author: A. Maute Dec 2003  am 12/30/03 
 !------------------------------------------------------------------------------ 
 
-c     use shr_kind_mod,  only: r8 => shr_kind_r8
-c     use physconst,     only: pi
-c     use abortutils,    only: endrun
-c     use cam_logfile,   only: iulog
+!c     use shr_kind_mod,  only: r8 => shr_kind_r8
+!c     use physconst,     only: pi
+!c     use abortutils,    only: endrun
+!c     use cam_logfile,   only: iulog
    
       implicit none
 
@@ -73,7 +73,7 @@ c     use cam_logfile,   only: iulog
 !*********************** Copyright 1996, Dan Weimer/MRC ***********************
 !-----------------------------------------------------------------------
 !
-c       use shr_kind_mod, only: r8 => shr_kind_r8
+!c       use shr_kind_mod, only: r8 => shr_kind_r8
         USE module_FSVal, ONLY: FSVal
         implicit none 
 !
@@ -129,8 +129,8 @@ c       use shr_kind_mod, only: r8 => shr_kind_r8
 	          ilimit=1
 	        ENDIF
 		DO i=0,ilimit
-		  FSC(i,n)=Cn(0,i,n,k,l,m) + Bt*Cn(1,i,n,k,l,m) +  
-     &	   SinTilt*Cn(2,i,n,k,l,m) + SWVel*Cn(3,i,n,k,l,m)
+      FSC(i,n)=Cn(0,i,n,k,l,m)+Bt*Cn(1,i,n,k,l,m)                       &
+     &+SinTilt*Cn(2,i,n,k,l,m) + SWVel*Cn(3,i,n,k,l,m)
 		ENDDO
 	      ENDDO
 ! Next evaluate the Fourier series as a function of angle.

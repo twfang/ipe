@@ -45,10 +45,10 @@
 ! Author: A. Maute Dec 2003  am 12/30/03 
 !------------------------------------------------------------------------------ 
 
-c     use shr_kind_mod,  only: r8 => shr_kind_r8
-c     use physconst,     only: pi
-c     use abortutils,    only: endrun
-c     use cam_logfile,   only: iulog
+!c     use shr_kind_mod,  only: r8 => shr_kind_r8
+!c     use physconst,     only: pi
+!c     use abortutils,    only: endrun
+!c     use cam_logfile,   only: iulog
    
       implicit none
 
@@ -82,7 +82,7 @@ c     use cam_logfile,   only: iulog
 ! Author: A. Maute Nov 2003  am 11/20/03
 !------------------------------------------------------------------
 
-c     use sv_decomp, only : svdcmp, svbksb
+!c     use sv_decomp, only : svdcmp, svbksb
 !nm20121003
       USE efield !,ONLY:  
       USE module_svdcmp ,ONLY: svdcmp 
@@ -139,13 +139,13 @@ c     use sv_decomp, only : svdcmp, svbksb
 !      
       do ilon = 0,nmlon  ! long.
 !       sum = 0.
-	sum = dot_product( lsg(-nmax_sin+ishf:nmax_sin+ishf),
-     &f(-nmax_sin:nmax_sin,ilon) )
+        sum=dot_product(lsg(-nmax_sin+ishf:nmax_sin+ishf)               &
+     &,f(-nmax_sin:nmax_sin,ilon) )
 !       do i = -nmax_sin,nmax_sin
 !         sum = sum + lsg(i+ishf)*f(i,ilon)  
 !       end do
         ihlat_bnd(ilon)    = nmlath - int( sum + .5 )                                ! closest point
-        itrans_width(ilon) = 
+        itrans_width(ilon) =                                            &
      &int( 8. - 2.*cos( ylonm(ilon)*dtr ) + .5 )/dlatm  ! 6 to 10 deg.
       end do      
 !     write(iulog,"('bnd_sinus: ihlat_bnd=',/,(12i6))") ihlat_bnd

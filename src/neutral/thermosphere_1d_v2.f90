@@ -63,9 +63,9 @@
 
       w(:)=0.0000000
 !dbg20110729
-!dbg      print *,'call gws5',iyd,sec,alt,glat,glon,stl,f107a_msis,f107d_msis,ap_hwm(1),w
+!d print *,'call gws5',iyd,sec,alt,glat,glon,stl,f107a_msis,f107d_msis,ap_hwm(1)
       call gws5(iyd,sec,alt,glat,glon,stl,f107a_msis,f107d_msis,ap_hwm(1),w)
-!dbg      print *,'(2)w=',w
+!d print*,kind(w),' gws5 w=',w
 
       vn_ms1_dum(1,i) =   w(2)  !eastward
       vn_ms1_dum(2,i) =   w(1)  !northward
@@ -74,9 +74,10 @@
       ! composition & temperature
 
 !dbg20110923
-!dbg print *,'call gtd7',iyd,sec,alt,glat,glon,stl,f107a_msis,f107d_msis,ap_msis,mass
+!d print *,'before gtd7',iyd,sec,alt,glat,glon,stl,f107a_msis,f107d_msis,ap_msis,mass
       call gtd7(iyd,sec,alt,glat,glon,stl,f107a_msis,f107d_msis,ap_msis,mass,d,t)
-!dbg print *,'msis output',d,t
+!d print*,kind(d),kind(t),' after gtd7',d,t
+
 
 ! convert from cm-3 to m-3
       he_density_m3 (i) = d(1)/M3_TO_CM3 !*1.e6

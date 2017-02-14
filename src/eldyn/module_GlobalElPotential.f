@@ -45,10 +45,10 @@
 ! Author: A. Maute Dec 2003  am 12/30/03 
 !------------------------------------------------------------------------------ 
 
-c     use shr_kind_mod,  only: r8 => shr_kind_r8
-c     use physconst,     only: pi
-c     use abortutils,    only: endrun
-c     use cam_logfile,   only: iulog
+!c     use shr_kind_mod,  only: r8 => shr_kind_r8
+!c     use physconst,     only: pi
+!c     use abortutils,    only: endrun
+!c     use cam_logfile,   only: iulog
    
       implicit none
 
@@ -162,13 +162,13 @@ c     use cam_logfile,   only: iulog
 !-----------------------------------------------------------------------
 ! 4. ajust high latitude potential to low latitude potential      
 !-----------------------------------------------------------------------
-      call highlat_adjust( pot_highlats, pot_highlat, pot_midlat, 
+      call highlat_adjust( pot_highlats, pot_highlat, pot_midlat,       &
      &ihlat_bnd )
 !-----------------------------------------------------------------------
 ! interpolation of high and low/midlatitude potential in the
 ! transition zone and put it into global potent array
 !-----------------------------------------------------------------------
-      call interp_poten( pot_highlats, pot_highlat, pot_midlat, 
+      call interp_poten( pot_highlats, pot_highlat, pot_midlat,         &
      &ihlat_bnd, itrans_width) 
 !-----------------------------------------------------------------------
 ! potential weighted smoothing in latitude

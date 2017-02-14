@@ -17,9 +17,9 @@
 ! Divide stencil C by cos(theta(i,j))
 !
 ! !ARGUMENTS:
-      integer,intent(in) :: nlon,nlat,   ! dim. of finest grid
-     |    nlon0,nlat0,                   ! dim. of actual grid
-     |    igrid                          ! flag for divide by cos lam_0
+      integer,intent(in) :: nlon,nlat,                                  &! dim. of finest grid
+     &    nlon0,nlat0,                                                  &! dim. of actual grid
+     &    igrid                          ! flag for divide by cos lam_0
       real,intent(in) :: cs(*)           ! cos lam_0
 ! !RETURN VALUE:
       real,intent(out) :: c(nlon,nlat,*) ! coefficient array for grid level

@@ -46,10 +46,10 @@
 ! Author: A. Maute Dec 2003  am 12/30/03 
 !------------------------------------------------------------------------------ 
 
-c     use shr_kind_mod,  only: r8 => shr_kind_r8
-c     use physconst,     only: pi
-c     use abortutils,    only: endrun
-c     use cam_logfile,   only: iulog
+!c     use shr_kind_mod,  only: r8 => shr_kind_r8
+!c     use physconst,     only: pi
+!c     use abortutils,    only: endrun
+!c     use cam_logfile,   only: iulog
    
       implicit none
 
@@ -69,8 +69,8 @@ c     use cam_logfile,   only: iulog
 !*********************** Copyright 1996, Dan Weimer/MRC ***********************
 !-----------------------------------------------------------------------
 !
-c       use shr_kind_mod, only: r8 => shr_kind_r8
-c       use cam_logfile,  only : iulog
+!c       use shr_kind_mod, only: r8 => shr_kind_r8
+!c       use cam_logfile,  only : iulog
 
         implicit none 
 !
@@ -94,17 +94,16 @@ c       use cam_logfile,  only : iulog
 	  ENDDO
 	xx=MIN(x,1.)
 	xx=MAX(xx,-1.)
-c         IF(lmax .LT. 0 .OR. mmax .LT. 0 .OR. mmax .GT. lmax )THEN
-c        write(iulog,*)'Bad arguments to Legendre'
-c        RETURN
-c        ENDIF
+!c         IF(lmax .LT. 0 .OR. mmax .LT. 0 .OR. mmax .GT. lmax )THEN
+!c        write(iulog,*)'Bad arguments to Legendre'
+!c        RETURN
+!c        ENDIF
 ! First calculate all Pl0 for l=0 to l
 	Plm(0,0)=1.
 	IF(lmax.GT.0)Plm(1,0)=xx
 	IF (lmax .GT. 1 )THEN
 	  DO L=2,lmax
-	    Plm(L,0)=( (2.*L-1)*xx*Plm(L-1,0) - 
-     &(L-1)*Plm(L-2,0) )/L
+	    Plm(L,0)=( (2.*L-1)*xx*Plm(L-1,0)-(L-1)*Plm(L-2,0) )/L
 	  ENDDO
 	ENDIF
 	IF (mmax .EQ. 0 )RETURN

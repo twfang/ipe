@@ -29,9 +29,9 @@
 !
 ! !PARAMETERS: 
       integer,intent(in) :: inlon,inlat
-      real,dimension(kmlon0,kmlat0),intent(in) :: 
-     |  phihm,  ! heelis potential (from subs potm, flwv32)
-     |  pfrac   ! fractional presence of dynamo (from sub colath)
+      real,dimension(kmlon0,kmlat0),intent(in) ::                       &
+     &  phihm,                                                          &! heelis potential (from subs potm, flwv32)
+     &  pfrac   ! fractional presence of dynamo (from sub colath)
 ! !RETURN VALUE:
       real,intent(inout) :: c(inlon,inlat,*)
 ! !REVISION HISTORY:
@@ -53,8 +53,8 @@
       if (nint==1) then
         do j=1,inlat
           do i=1,inlon
-            c(i,j,10) = pfrac(i,j)*c(i,j,10)+(1.-pfrac(i,j))*c(i,j,9)*
-     |        (dlatm/(10.*dtr))**2*phihm(i,j)
+            c(i,j,10) = pfrac(i,j)*c(i,j,10)+(1.-pfrac(i,j))*c(i,j,9)*  &
+     &        (dlatm/(10.*dtr))**2*phihm(i,j)
           enddo ! i=1,inlon
         enddo ! j=1,inlat
       endif
@@ -71,12 +71,12 @@
             enddo ! i = 1,inlon
           enddo ! n = 1,8
           do i = 1,inlon
-            c(i,j,9) = c(i,j,9)*pfrac(i0+i*nint,jj)+
-     |        (1.-pfrac(i0+i*nint,jj))*c(i,j,9)*
-     |        (dlatm*float(nint)/(10.*dtr))**2
-            cofum(i,j,9) =cofum(i,j,9)*pfrac(i0+i*nint,jj)+
-     |        (1.-pfrac(i0+i*nint,jj))*cofum(i,j,9)*
-     |        (dlatm*float(nint)/(10.*dtr))**2
+            c(i,j,9) = c(i,j,9)*pfrac(i0+i*nint,jj)+                    &
+     &        (1.-pfrac(i0+i*nint,jj))*c(i,j,9)*                        &
+     &        (dlatm*float(nint)/(10.*dtr))**2
+            cofum(i,j,9) =cofum(i,j,9)*pfrac(i0+i*nint,jj)+             &
+     &        (1.-pfrac(i0+i*nint,jj))*cofum(i,j,9)*                    &
+     &        (dlatm*float(nint)/(10.*dtr))**2
           enddo ! i = 1,inlon
         enddo ! j=1,inlat
       else ! nint /= 1
@@ -88,9 +88,9 @@
             enddo ! i = 1,inlon
           enddo ! n = 1,8
           do i = 1,inlon
-            c(i,j,9) = c(i,j,9)*pfrac(i0+i*nint,jj)+
-     |        (1.-pfrac(i0+i*nint,jj))*c(i,j,9)*
-     |        (dlatm*float(nint)/(10.*dtr))**2
+            c(i,j,9) = c(i,j,9)*pfrac(i0+i*nint,jj)+                    &
+     &        (1.-pfrac(i0+i*nint,jj))*c(i,j,9)*                        &
+     &        (dlatm*float(nint)/(10.*dtr))**2
           enddo ! i = 1,inlon
         enddo ! j=1,inlat
       endif ! nint

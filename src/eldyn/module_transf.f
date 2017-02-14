@@ -85,10 +85,10 @@
 !
       j = kmlath      ! kmlath = (kmlat+1)/2
       do i = 1,kmlon
-        zigm11(i,j) = zigm11(i,j)+ (zigm2(i,j)-zigmc(i,j))*
-     |                (zigm2(i,j)+zigmc(i,j))/zigm22(i,j)
-        rim(i,j,1)  = rim(i,j,1) - (zigm2(i,j)-zigmc(i,j))/
-     |                zigm22(i,j)*rim(i,j,2)
+        zigm11(i,j) = zigm11(i,j)+ (zigm2(i,j)-zigmc(i,j))*             &
+     &                (zigm2(i,j)+zigmc(i,j))/zigm22(i,j)
+        rim(i,j,1)  = rim(i,j,1) - (zigm2(i,j)-zigmc(i,j))/             &
+     &                zigm22(i,j)*rim(i,j,2)
         zigm11(i,j) = 0.5*zigm11(i,j)
         rim(i,j,1)  = 0.5*rim(i,j,1)
       enddo
@@ -146,22 +146,22 @@
 !  
 ! Compute polar values for the conductances, 4th order interpolation:
 ! 
-      zigm11(1,    1) = (4.*sddot(kmlon,unitvm,zigm11(1,      2))-
-     1  sddot(kmlon,unitvm,zigm11(1,      3)))/(3.*float(kmlon))
-      zigm11(1,kmlat) = (4.*sddot(kmlon,unitvm,zigm11(1,kmlat-1))-
-     1  sddot(kmlon,unitvm,zigm11(1,kmlat-2)))/(3.*float(kmlon))
-      zigmc(1,    1) = (4.*sddot(kmlon,unitvm,zigmc(1,      2))-
-     1  sddot(kmlon,unitvm,zigmc(1,      3)))/(3.*float(kmlon))
-      zigmc(1,kmlat) = (4.*sddot(kmlon,unitvm,zigmc(1,kmlat-1))-
-     1  sddot(kmlon,unitvm,zigmc(1,kmlat-2)))/(3.*float(kmlon))
-      zigm2(1,    1) = (4.*sddot(kmlon,unitvm,zigm2(1,      2))-
-     1  sddot(kmlon,unitvm,zigm2(1,      3)))/(3.*float(kmlon))
-      zigm2(1,kmlat) = (4.*sddot(kmlon,unitvm,zigm2(1,kmlat-1))-
-     1  sddot(kmlon,unitvm,zigm2(1,kmlat-2)))/(3.*float(kmlon))
-      zigm22(1,    1) = (4.*sddot(kmlon,unitvm,zigm22(1,      2))-
-     1  sddot(kmlon,unitvm,zigm22(1,      3)))/(3.*float(kmlon))
-      zigm22(1,kmlat) = (4.*sddot(kmlon,unitvm,zigm22(1,kmlat-1))-
-     1  sddot(kmlon,unitvm,zigm22(1,kmlat-2)))/(3.*float(kmlon))
+      zigm11(1,    1) = (4.*sddot(kmlon,unitvm,zigm11(1,      2))-      &
+     &  sddot(kmlon,unitvm,zigm11(1,      3)))/(3.*float(kmlon))
+      zigm11(1,kmlat) = (4.*sddot(kmlon,unitvm,zigm11(1,kmlat-1))-      &
+     &  sddot(kmlon,unitvm,zigm11(1,kmlat-2)))/(3.*float(kmlon))
+      zigmc(1,    1) = (4.*sddot(kmlon,unitvm,zigmc(1,      2))-        &
+     &  sddot(kmlon,unitvm,zigmc(1,      3)))/(3.*float(kmlon))
+      zigmc(1,kmlat) = (4.*sddot(kmlon,unitvm,zigmc(1,kmlat-1))-        &
+     &  sddot(kmlon,unitvm,zigmc(1,kmlat-2)))/(3.*float(kmlon))
+      zigm2(1,    1) = (4.*sddot(kmlon,unitvm,zigm2(1,      2))-        &
+     &  sddot(kmlon,unitvm,zigm2(1,      3)))/(3.*float(kmlon))
+      zigm2(1,kmlat) = (4.*sddot(kmlon,unitvm,zigm2(1,kmlat-1))-        &
+     &  sddot(kmlon,unitvm,zigm2(1,kmlat-2)))/(3.*float(kmlon))
+      zigm22(1,    1) = (4.*sddot(kmlon,unitvm,zigm22(1,      2))-      &
+     &  sddot(kmlon,unitvm,zigm22(1,      3)))/(3.*float(kmlon))
+      zigm22(1,kmlat) = (4.*sddot(kmlon,unitvm,zigm22(1,kmlat-1))-      &
+     &  sddot(kmlon,unitvm,zigm22(1,kmlat-2)))/(3.*float(kmlon))
 ! 
 ! Extend over longitude                                        
       do i = 2,kmlon
@@ -178,11 +178,11 @@
 ! RHS vector (I_1,I_2): average over poles:
       do i = 1,kmlon
         rim(i,1,1) = .5*(rim(i,2,1)-rim(1+mod(i-1+kmlon/2,kmlon),2,1))
-        rim(i,kmlat,1) = .5*(rim(i,kmlat-1,1)-
-     |    rim(1+mod(i-1+kmlon/2,kmlon),kmlat-1,1))
+        rim(i,kmlat,1) = .5*(rim(i,kmlat-1,1)-                          &
+     &    rim(1+mod(i-1+kmlon/2,kmlon),kmlat-1,1))
         rim(i,1,2) = .5*(rim(i,2,2)-rim(1+mod(i-1+kmlon/2,kmlon),2,2))
-        rim(i,kmlat,2) = .5*(rim(i,kmlat-1,2)-
-     |    rim(1+mod(i-1+kmlon/2,kmlon),kmlat-1,2))
+        rim(i,kmlat,2) = .5*(rim(i,kmlat-1,2)-                          &
+     &    rim(1+mod(i-1+kmlon/2,kmlon),kmlat-1,2))
       enddo ! i = 1,kmlon
 ! 
 ! Periodic points:

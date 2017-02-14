@@ -45,10 +45,10 @@
 ! Author: A. Maute Dec 2003  am 12/30/03 
 !------------------------------------------------------------------------------ 
 
-c     use shr_kind_mod,  only: r8 => shr_kind_r8
-c     use physconst,     only: pi
-c     use abortutils,    only: endrun
-c     use cam_logfile,   only: iulog
+!c     use shr_kind_mod,  only: r8 => shr_kind_r8
+!c     use physconst,     only: pi
+!c     use abortutils,    only: endrun
+!c     use cam_logfile,   only: iulog
    
       implicit none
 
@@ -57,7 +57,7 @@ c     use cam_logfile,   only: iulog
 
       contains
 !-----------------------------------------------------------------------
-      subroutine interp_poten( pot_highlats, pot_highlat, pot_midlat, 
+      subroutine interp_poten( pot_highlats, pot_highlat, pot_midlat,   &
      &ihlat_bnd, itrans_width ) 
 !-------------------------------------------------------------------
 ! Purpose: construct a smooth global electric potential field 
@@ -148,8 +148,8 @@ c     use cam_logfile,   only: iulog
 !        write(iulog,*) 'pot_all ',ilon,hb1,hb2,nmlath -ibnd,tw
 	do ilat = ibnd-tw,ibnd+tw
 	  lat_ind = nmlath - ilat
-          potent(ilon,ilat) =  
-     &    fac*((wrk1 + 2.*pot_midlat(ilon,ilat))*(b1 - a*lat_ind)  
+          potent(ilon,ilat) =                                           &
+     &    fac*((wrk1 + 2.*pot_midlat(ilon,ilat))*(b1 - a*lat_ind)       &
      &	  + (wrk2 + 2.*pot_highlats(ilon,ilat))*(a*lat_ind - b2))
           potent(ilon,nmlat-ilat) = potent(ilon,ilat)
         end do
@@ -160,7 +160,7 @@ c     use cam_logfile,   only: iulog
 	do ilat = hb2+1,nmlath
 	  a = max( 3./dlatm - (ilat - hb2 - 1),0. )
 	  b = 3./dlatm - a
-          potent(ilon,nmlath-ilat) = (a*potent(ilon,nmlath-ilat)   
+          potent(ilon,nmlath-ilat) = (a*potent(ilon,nmlath-ilat)        &
      &    + b*pot_highlat(ilon,nmlath-ilat))/3.*dlatm
           potent(ilon,nmlath+ilat) = potent(ilon,nmlath-ilat)
         end do

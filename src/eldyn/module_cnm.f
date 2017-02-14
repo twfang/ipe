@@ -23,14 +23,14 @@
 ! ncoef = 4 for zigm22 Sigma_(lam lam)
 !
 ! !ARGUMENTS:
-      integer,intent(in) :: 
-     |  nlon0,nlat0, ! finest grid dimensions
-     |  nlon,nlat    ! output grid dimensions
+      integer,intent(in) ::                                             &  
+     &  nlon0,nlat0,                                                    & ! finest grid dimensions
+     &  nlon,nlat    ! output grid dimensions
       integer,intent(in) :: ncoef
 
 ! !RETURN VALUE:
-      real,intent(inout) :: 
-     |  c(nlon,nlat,*)    ! output array for grid point stencils at
+      real,intent(inout) ::                                             &
+     &  c(nlon,nlat,*)    ! output array for grid point stencils at
                           ! resolution nlon x nlat
 !
 ! !REVISION HISTORY:
@@ -57,13 +57,13 @@
       if (ncoef==1) then
         do j = 1,nlat-1
           do i = 1,nlon
-            c(i,j,1) = c(i,j,1)+.5*(wkarray(i0+i*nint,j0+j*nint)+
-     |        wkarray(i0+(i+1)*nint,j0+j*nint))
-            c(i,j,5) = c(i,j,5)+.5*(wkarray(i0+i*nint,j0+j*nint)+
-     |        wkarray(i0+(i-1)*nint,j0+j*nint))
-            c(i,j,9) = c(i,j,9)-.5*(wkarray(i0+(i+1)*nint,j0+j*nint)+
-     |        2.*wkarray(i0+i*nint,j0+j*nint)+
-     |        wkarray(i0+(i-1)*nint,j0+j*nint))
+            c(i,j,1) = c(i,j,1)+.5*(wkarray(i0+i*nint,j0+j*nint)+       &
+     &        wkarray(i0+(i+1)*nint,j0+j*nint))
+            c(i,j,5) = c(i,j,5)+.5*(wkarray(i0+i*nint,j0+j*nint)+       &
+     &        wkarray(i0+(i-1)*nint,j0+j*nint))
+            c(i,j,9) = c(i,j,9)-.5*(wkarray(i0+(i+1)*nint,j0+j*nint)+   &
+     &        2.*wkarray(i0+i*nint,j0+j*nint)+                          &
+     &        wkarray(i0+(i-1)*nint,j0+j*nint))
           enddo ! i = 1,nlon
         enddo ! j = 2,nlat-1
 !
@@ -71,16 +71,16 @@
       elseif (ncoef==2) then
         do j = 2,nlat-1
           do i = 1,nlon
-            c(i,j,2) = c(i,j,2)+.5*(wkarray(i0+i*nint,j0+j*nint)+
-     |        wkarray(i0+(i+1)*nint,j0+j*nint))
-            c(i,j,4) = c(i,j,4)-.5*(wkarray(i0+i*nint,j0+j*nint)+
-     |        wkarray(i0+(i-1)*nint,j0+j*nint))
-            c(i,j,6) = c(i,j,6)+.5*(wkarray(i0+i*nint,j0+j*nint)+
-     |        wkarray(i0+(i-1)*nint,j0+j*nint))
-            c(i,j,8) = c(i,j,8)-.5*(wkarray(i0+i*nint,j0+j*nint)+
-     |        wkarray(i0+(i+1)*nint,j0+j*nint))
-            wk(i,1) = .5*(wkarray(i0+(i+1)*nint,j0+j*nint)-
-     |        wkarray(i0+(i-1)*nint,j0+j*nint))
+            c(i,j,2) = c(i,j,2)+.5*(wkarray(i0+i*nint,j0+j*nint)+       &
+     &        wkarray(i0+(i+1)*nint,j0+j*nint))
+            c(i,j,4) = c(i,j,4)-.5*(wkarray(i0+i*nint,j0+j*nint)+       &
+     &        wkarray(i0+(i-1)*nint,j0+j*nint))
+            c(i,j,6) = c(i,j,6)+.5*(wkarray(i0+i*nint,j0+j*nint)+       &
+     &        wkarray(i0+(i-1)*nint,j0+j*nint))
+            c(i,j,8) = c(i,j,8)-.5*(wkarray(i0+i*nint,j0+j*nint)+       &
+     &        wkarray(i0+(i+1)*nint,j0+j*nint))
+            wk(i,1) = .5*(wkarray(i0+(i+1)*nint,j0+j*nint)-             &
+     &        wkarray(i0+(i-1)*nint,j0+j*nint))
             wk(i,2) = (c(i,j,3)+wk(i,1))*(c(i,j,7)-wk(i,1))
             wk(i,3) = sign(wk(i,1),c(i,j,3)+c(i,j,7))
             if (wk(i,2) >= 0.) wk(i,3) = 0.
@@ -94,16 +94,16 @@
       elseif (ncoef==3) then
         do j = 2,nlat-1
           do i = 1,nlon
-            c(i,j,2) = c(i,j,2)+.5*(wkarray(i0+i*nint,j0+j*nint)+
-     |        wkarray(i0+i*nint,j0+(j+1)*nint))
-            c(i,j,4) = c(i,j,4)-.5*(wkarray(i0+i*nint,j0+j*nint)+
-     |        wkarray(i0+i*nint,j0+(j+1)*nint))
-            c(i,j,6) = c(i,j,6)+.5*(wkarray(i0+i*nint,j0+j*nint)+
-     |        wkarray(i0+i*nint,j0+(j-1)*nint))
-            c(i,j,8) = c(i,j,8)-.5*(wkarray(i0+i*nint,j0+j*nint)+
-     |        wkarray(i0+i*nint,j0+(j-1)*nint))
-            wk(i,1) = .5*(wkarray(i0+i*nint,j0+(j+1)*nint)-
-     |        wkarray(i0+i*nint,j0+(j-1)*nint))
+            c(i,j,2) = c(i,j,2)+.5*(wkarray(i0+i*nint,j0+j*nint)+       &
+     &        wkarray(i0+i*nint,j0+(j+1)*nint))
+            c(i,j,4) = c(i,j,4)-.5*(wkarray(i0+i*nint,j0+j*nint)+       &
+     &        wkarray(i0+i*nint,j0+(j+1)*nint))
+            c(i,j,6) = c(i,j,6)+.5*(wkarray(i0+i*nint,j0+j*nint)+       &
+     &        wkarray(i0+i*nint,j0+(j-1)*nint))
+            c(i,j,8) = c(i,j,8)-.5*(wkarray(i0+i*nint,j0+j*nint)+       &
+     &        wkarray(i0+i*nint,j0+(j-1)*nint))
+            wk(i,1) = .5*(wkarray(i0+i*nint,j0+(j+1)*nint)-             &
+     &        wkarray(i0+i*nint,j0+(j-1)*nint))
             wk(i,2) = (c(i,j,1)+wk(i,1))*(c(i,j,5)-wk(i,1))
             wk(i,3) = sign(wk(i,1),c(i,j,1)+c(i,j,5))
             if (wk(i,2) >= 0.) wk(i,3) = 0.
@@ -116,12 +116,12 @@
 ! Low latitude boundary condition:
         j = 1
         do i=1,nlon
-          c(i,j,2) = c(i,j,2)+.5*(wkarray(i0+i*nint,j0+j*nint)+
-     |      wkarray(i0+i*nint,j0+(j+1)*nint))
-          c(i,j,4) = c(i,j,4)-.5*(wkarray(i0+i*nint,j0+j*nint)+
-     |      wkarray(i0+i*nint,j0+(j+1)*nint))
-          wk(i,1) = .5*(wkarray(i0+i*nint,j0+j*nint)+
-     |      wkarray(i0+i*nint,j0+(j+1)*nint))
+          c(i,j,2) = c(i,j,2)+.5*(wkarray(i0+i*nint,j0+j*nint)+         &
+     &      wkarray(i0+i*nint,j0+(j+1)*nint))
+          c(i,j,4) = c(i,j,4)-.5*(wkarray(i0+i*nint,j0+j*nint)+         &
+     &      wkarray(i0+i*nint,j0+(j+1)*nint))
+          wk(i,1) = .5*(wkarray(i0+i*nint,j0+j*nint)+                   &
+     &      wkarray(i0+i*nint,j0+(j+1)*nint))
           wk(i,2) = (c(i,j,1)+wk(i,1))*(c(i,j,5)-wk(i,1))
           wk(i,3) = sign(wk(i,1),c(i,j,1)+c(i,j,5))
           if (wk(i,2) >= 0.) wk(i,3) = 0.
@@ -134,23 +134,23 @@
       elseif (ncoef==4) then
         do j = 2,nlat-1
           do i = 1,nlon
-            c(i,j,3) = c(i,j,3)+.5*(wkarray(i0+i*nint,j0+j*nint)
-     |        +wkarray(i0+i*nint,j0+(j+1)*nint))
-            c(i,j,7) = c(i,j,7)+.5*(wkarray(i0+i*nint,j0+j*nint)
-     |        +wkarray(i0+i*nint,j0+(j-1)*nint))
-            c(i,j,9) = c(i,j,9)-.5*(wkarray(i0+i*nint,j0+(j-1)*nint)
-     |        +2.*wkarray(i0+i*nint,j0+j*nint)
-     |        +wkarray(i0+i*nint,j0+(j+1)*nint))
+            c(i,j,3) = c(i,j,3)+.5*(wkarray(i0+i*nint,j0+j*nint)        &
+     &        +wkarray(i0+i*nint,j0+(j+1)*nint))
+            c(i,j,7) = c(i,j,7)+.5*(wkarray(i0+i*nint,j0+j*nint)        &
+     &        +wkarray(i0+i*nint,j0+(j-1)*nint))
+            c(i,j,9) = c(i,j,9)-.5*(wkarray(i0+i*nint,j0+(j-1)*nint)    &
+     &        +2.*wkarray(i0+i*nint,j0+j*nint)                          &
+     &        +wkarray(i0+i*nint,j0+(j+1)*nint))
           enddo ! i = 1,nlon
         enddo ! j = 2,nlat-1
 !
 ! Low latitude boundary condition:
         j = 1
         do i=1,nlon
-          c(i,j,3) = c(i,j,3)+.5*(wkarray(i0+i*nint,j0+j*nint)
-     |      +wkarray(i0+i*nint,j0+(j+1)*nint))
-          c(i,j,9) = c(i,j,9)-.5*(wkarray(i0+i*nint,j0+j*nint)+
-     |                            wkarray(i0+i*nint,j0+(j+1)*nint))
+          c(i,j,3) = c(i,j,3)+.5*(wkarray(i0+i*nint,j0+j*nint)          &
+     &      +wkarray(i0+i*nint,j0+(j+1)*nint))
+          c(i,j,9) = c(i,j,9)-.5*(wkarray(i0+i*nint,j0+j*nint)+         &
+     &                            wkarray(i0+i*nint,j0+(j+1)*nint))
         enddo ! i=1,nlon
       endif ! ncoef
 !      

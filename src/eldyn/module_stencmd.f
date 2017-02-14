@@ -20,16 +20,16 @@
 ! at each grid point and level.
 !
 ! !RETURN VALUE:
-      integer,intent(in) :: 
-     |  nlon0, ! longitude dimension of finest grid level
-     |  nlat0, ! latitude dimension of finest grid level
-     |  ncoef  ! integer identifier of coefficient
-      real,intent(in) :: 
-     |  zigm(nlon0,nlat0)  ! coefficients (nlon0+1/2,(nlat0+1)/2) 
+      integer,intent(in) ::                                             &
+     &  nlon0,                                                          & ! longitude dimension of finest grid level
+     &  nlat0,                                                          & ! latitude dimension of finest grid level
+     &  ncoef  ! integer identifier of coefficient
+      real,intent(in) ::                                                &
+     &  zigm(nlon0,nlat0)  ! coefficients (nlon0+1/2,(nlat0+1)/2) 
 !     
 ! !RETURN VALUE:
-      real,intent(inout) :: 
-     |  cee(*)  ! output stencil array consisting of c0,c1,c2,c3,c4
+      real,intent(inout) ::                                             &
+     &  cee(*)  ! output stencil array consisting of c0,c1,c2,c3,c4
 !       
 ! !REVISION HISTORY:
 ! 18.02.05  <Astrid Maute> <include header> 

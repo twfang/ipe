@@ -152,6 +152,11 @@
       data mn2/4/,zn2/72.5,55.,45.,32.5/ 
       data zmix/62.5/,alast/99999./,mssl/-999/ 
       data sv/25*1./ 
+!dbg nm20170131 
+!d      print*,'inside msis',kind(d),kind(t)
+!d      print*,'iyd=',iyd,sec,alt,glat,glong,stl,f107a,f107,ap,mass
+!dbg
+
       if(isw.ne.64999) call tselec(sv) 
 !      put identification data into common/datime/                      
       do 1 i=1,3 

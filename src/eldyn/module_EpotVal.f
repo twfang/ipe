@@ -46,10 +46,10 @@
 ! Author: A. Maute Dec 2003  am 12/30/03 
 !------------------------------------------------------------------------------ 
 
-c     use shr_kind_mod,  only: r8 => shr_kind_r8
-c     use physconst,     only: pi
-c     use abortutils,    only: endrun
-c     use cam_logfile,   only: iulog
+!c     use shr_kind_mod,  only: r8 => shr_kind_r8
+!c     use physconst,     only: pi
+!c     use abortutils,    only: endrun
+!c     use cam_logfile,   only: iulog
    
       implicit none
 
@@ -68,7 +68,7 @@ c     use cam_logfile,   only: iulog
 ! the desired values of Bt, IMF clock angle, Dipole tilt angle, and SW Vel.
 !-----------------------------------------------------------------------
 !
-c       use shr_kind_mod, only: r8 => shr_kind_r8
+!c       use shr_kind_mod, only: r8 => shr_kind_r8
         USE module_LEGENDRE, ONLY: LEGENDRE
         implicit none 
 !
@@ -112,7 +112,7 @@ c       use shr_kind_mod, only: r8 => shr_kind_r8
 	    ENDIF
 	    DO m=1,limit
 	      phim=phi*m
-              Z=Z + Coef(0,l,m)*Plm(l,m)*COS(phim) +  
+              Z=Z + Coef(0,l,m)*Plm(l,m)*COS(phim) +                    &
      &	   Coef(1,l,m)*Plm(l,m)*SIN(phim)
 	    ENDDO
 	  ENDDO

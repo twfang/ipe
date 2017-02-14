@@ -81,14 +81,14 @@
 !
 ! O2 collision frequencies:
            rnu_o2p_o2(ipts) = 2.59E-11*sqrt(tnti(ipts))*  &! O2+ ~ O2 (resonant)
-            (1.-0.073*alog10(tnti(ipts)))**2
+            (1.-0.073*log10(tnti(ipts)))**2
            rnu_op_o2 (ipts) = 6.64E-10                  ! O+  ~ O2
            rnu_nop_o2(ipts) = 4.27E-10                  ! NO+ ~ O2
 !
 ! O collision frequencies:
            rnu_o2p_o(ipts) = 2.31E-10                   ! O2+ ~ O
            rnu_op_o (ipts) = 3.67e-11*sqrt(tnti(ipts))* &  ! O+  ~ O (resonant)
-            (1.-0.064*alog10(tnti(ipts)))**2*colfac
+            (1.-0.064*log10(tnti(ipts)))**2*colfac
            rnu_nop_o(ipts) = 2.44E-10                   ! NO+ ~ O
 !
 ! N2 collision frequencies:

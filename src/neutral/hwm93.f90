@@ -64,7 +64,8 @@
      & 15.,7.5,0/                                                       
 
 !dbg20110729
-!dbg      print *,' sub gws5',iyd,sec,alt,glat,glong,stl,f107a,f107,ap,w 
+!d      print*,'inside hwm kind w',kind(w)
+!d      print*,'inside hwm',iyd,sec,alt,glat,glong,stl,f107a,f107,ap
 
 !      put identification data into common/datime/                      
       do 1 i=1,3 

@@ -46,10 +46,10 @@
 ! Author: A. Maute Dec 2003  am 12/30/03 
 !------------------------------------------------------------------------------ 
 
-c     use shr_kind_mod,  only: r8 => shr_kind_r8
-c     use physconst,     only: pi
-c     use abortutils,    only: endrun
-c     use cam_logfile,   only: iulog
+!c     use shr_kind_mod,  only: r8 => shr_kind_r8
+!c     use physconst,     only: pi
+!c     use abortutils,    only: endrun
+!c     use cam_logfile,   only: iulog
    
       implicit none
 
@@ -117,7 +117,7 @@ c     use cam_logfile,   only: iulog
 !
 !-----------------------------------------------------------------
 !
-c       use shr_kind_mod, only: r8 => shr_kind_r8
+!c       use shr_kind_mod, only: r8 => shr_kind_r8
         USE module_ADJUST, ONLY: ADJUST
         USE module_JULDAY, ONLY: JULDAY
         implicit none 
@@ -133,7 +133,7 @@ c       use shr_kind_mod, only: r8 => shr_kind_r8
 
         real epoch, th0, ph0, dipole
         COMMON/MFIELD/EPOCH,TH0,PH0,DIPOLE
-c       DATA EPOCH,TH0,PH0,DIPOLE/1980.,11.19,-70.76,.30574/
+!c       DATA EPOCH,TH0,PH0,DIPOLE/1980.,11.19,-70.76,.30574/
 !
 !------------------------------Arguments--------------------------------
 !
@@ -188,10 +188,9 @@ c       DATA EPOCH,TH0,PH0,DIPOLE/1980.,11.19,-70.76,.30574/
 	UT=HOUR
 	JD=JULDAY(MONTH,DAY,IYR)
 	MJD=JD-2400001
-c       T0=(real(MJD,r8)-51544.5)/36525.0
+!c       T0=(real(MJD,r8)-51544.5)/36525.0
 	T0=(float(MJD)-51544.5)/36525.0
-	GMSTD=100.4606184 +36000.770*T0 +3.87933E-4*T0*T0 + 
-     &       15.0410686*UT
+        GMSTD=100.4606184+36000.770*T0+3.87933E-4*T0*T0+15.0410686*UT
 	CALL ADJUST(GMSTD)
 	GMSTH=GMSTD*24./360.
 	ECLIP=23.439 - 0.013*T0
@@ -199,19 +198,19 @@ c       T0=(real(MJD,r8)-51544.5)/36525.0
         CALL ADJUST(MA)
         LAMD=280.460 + 36000.772*T0 + 0.041068642*UT
         CALL ADJUST(LAMD)
-        SUNLON=LAMD + (1.915-0.0048*T0)*SIN(MA*pi/180.) + 0.020* 
+        SUNLON=LAMD + (1.915-0.0048*T0)*SIN(MA*pi/180.) + 0.020*        &
      &     SIN(2.*MA*pi/180.)
         CALL ADJUST(SUNLON)
-c         IF(IDBUG.NE.0)THEN
-c         WRITE(IDBUG,*) YEAR,MONTH,DAY,HOUR
-c         WRITE(IDBUG,*) 'MJD=',MJD
-c         WRITE(IDBUG,*) 'T0=',T0
-c         WRITE(IDBUG,*) 'GMSTH=',GMSTH
-c         WRITE(IDBUG,*) 'ECLIPTIC OBLIQUITY=',ECLIP
-c         WRITE(IDBUG,*) 'MEAN ANOMALY=',MA
-c         WRITE(IDBUG,*) 'MEAN LONGITUDE=',LAMD
-c         WRITE(IDBUG,*) 'TRUE LONGITUDE=',SUNLON
-c         ENDIF
+!c         IF(IDBUG.NE.0)THEN
+!c         WRITE(IDBUG,*) YEAR,MONTH,DAY,HOUR
+!c         WRITE(IDBUG,*) 'MJD=',MJD
+!c         WRITE(IDBUG,*) 'T0=',T0
+!c         WRITE(IDBUG,*) 'GMSTH=',GMSTH
+!c         WRITE(IDBUG,*) 'ECLIPTIC OBLIQUITY=',ECLIP
+!c         WRITE(IDBUG,*) 'MEAN ANOMALY=',MA
+!c         WRITE(IDBUG,*) 'MEAN LONGITUDE=',LAMD
+!c         WRITE(IDBUG,*) 'TRUE LONGITUDE=',SUNLON
+!c         ENDIF
 
 	CX(1)= GMSTD
 	CX(2) = ECLIP
@@ -251,7 +250,7 @@ c         ENDIF
 !         
       DO I=1,3   
       DO J=1,3   
-        AM(I,J,GSEGEO) = AM(I,1,GEIGEO)*AM(1,J,GSEGEI) + 
+        AM(I,J,GSEGEO) = AM(I,1,GEIGEO)*AM(1,J,GSEGEI) +                &
      &AM(I,2,GEIGEO)*AM(2,J,GSEGEI) +AM(I,3,GEIGEO)*AM(3,J,GSEGEI)
       ENDDO
       ENDDO
@@ -268,7 +267,7 @@ c         ENDIF
 !         
       DO I=1,3   
       DO J=1,3   
-       AM(I,J,GSEMAG) = AM(I,1,GEOMAG)*AM(1,J,GSEGEO) + 
+       AM(I,J,GSEMAG) = AM(I,1,GEOMAG)*AM(1,J,GSEGEO) +                 &
      &AM(I,2,GEOMAG)*AM(2,J,GSEGEO) +AM(I,3,GEOMAG)*AM(3,J,GSEGEO)
       ENDDO
       ENDDO
@@ -290,16 +289,16 @@ c         ENDIF
 !         
       DO I=1,3   
       DO J=1,3   
-        AM(I,J,GEOGSM) = AM(I,1,GSEGSM)*AM(J,1,GSEGEO) + 
-     &AM(I,2,GSEGSM)*AM(J,2,GSEGEO) + 
+        AM(I,J,GEOGSM) = AM(I,1,GSEGSM)*AM(J,1,GSEGEO) +                &
+     &AM(I,2,GSEGSM)*AM(J,2,GSEGEO) +                                   &
      &AM(I,3,GSEGSM)*AM(J,3,GSEGEO)
       ENDDO
       ENDDO
 !         
       DO I=1,3   
       DO J=1,3   
-        AM(I,J,GSMMAG) = AM(I,1,GEOMAG)*AM(J,1,GEOGSM) + 
-     &AM(I,2,GEOMAG)*AM(J,2,GEOGSM) + 
+        AM(I,J,GSMMAG) = AM(I,1,GEOMAG)*AM(J,1,GEOGSM) +                &
+     &AM(I,2,GEOMAG)*AM(J,2,GEOGSM) +                                   &
      &AM(I,3,GEOMAG)*AM(J,3,GEOGSM)
       ENDDO
       ENDDO 
@@ -320,16 +319,16 @@ c         ENDIF
 !         
       DO I=1,3   
       DO J=1,3   
-        AM(I,J,GEOSM) = AM(I,1,GSMSM)*AM(1,J,GEOGSM) +  
-     &AM(I,2,GSMSM)*AM(2,J,GEOGSM) +  
+        AM(I,J,GEOSM) = AM(I,1,GSMSM)*AM(1,J,GEOGSM) +                  &
+     &AM(I,2,GSMSM)*AM(2,J,GEOGSM) +                                    &
      &AM(I,3,GSMSM)*AM(3,J,GEOGSM)
       ENDDO
       ENDDO
 !         
       DO I=1,3   
       DO J=1,3   
-        AM(I,J,MAGSM) = AM(I,1,GSMSM)*AM(J,1,GSMMAG) +  
-     &  AM(I,2,GSMSM)*AM(J,2,GSMMAG) + 
+        AM(I,J,MAGSM) = AM(I,1,GSMSM)*AM(J,1,GSMMAG) +                  &
+     &  AM(I,2,GSMSM)*AM(J,2,GSMMAG) +                                  &
      &AM(I,3,GSMSM)*AM(J,3,GSMMAG)
       ENDDO
       ENDDO
@@ -343,16 +342,16 @@ c         ENDIF
       CX(9)=CX(9)*180./pi
 
       IF(IDBUG.NE.0)THEN
-c     WRITE(IDBUG,*) 'Dipole tilt angle=',CX(6)
-c     WRITE(IDBUG,*) 'Angle between sun and magnetic pole=',
-c    &CX(7)
-c     WRITE(IDBUG,*) 'Subsolar point latitude=',CX(8)
-c     WRITE(IDBUG,*) 'Subsolar point longitude=',CX(9)
+!c     WRITE(IDBUG,*) 'Dipole tilt angle=',CX(6)
+!c     WRITE(IDBUG,*) 'Angle between sun and magnetic pole=',
+!c    &CX(7)
+!c     WRITE(IDBUG,*) 'Subsolar point latitude=',CX(8)
+!c     WRITE(IDBUG,*) 'Subsolar point longitude=',CX(9)
 
         DO K=1,11
-c        WRITE(IDBUG,1001) K
+!c        WRITE(IDBUG,1001) K
          DO I=1,3
-c          WRITE(IDBUG,1002) (AM(I,J,K),J=1,3)
+!c          WRITE(IDBUG,1002) (AM(I,J,K),J=1,3)
          ENDDO
         ENDDO
  1001   FORMAT(' ROTATION MATRIX ',I2)

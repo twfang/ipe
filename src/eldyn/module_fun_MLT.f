@@ -29,7 +29,7 @@
 ! Call sub adjust instead of referencing it as a function
 !-----------------------------------------------------------------------
 !
-c       use shr_kind_mod, only: r8 => shr_kind_r8
+!c       use shr_kind_mod, only: r8 => shr_kind_r8
         USE module_ADJUST, ONLY: ADJUST
         implicit none 
 !

@@ -249,7 +249,7 @@
                   v(j,k) = -v(j,k)
                 end do
               end if
-c             exit loop2
+!c             exit loop2
               go to 20
             end if
           end if

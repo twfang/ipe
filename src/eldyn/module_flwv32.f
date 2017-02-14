@@ -120,7 +120,9 @@
         else
           ifn(i) = 2
         endif
-        if (iflag(i) == 1) iflag(i) = ifn(i)
+        if (iflag(i) == 1) then
+           iflag(i) = ifn(i)
+        end if
 !
 ! Add ring current rotation to potential (phirc)
 !

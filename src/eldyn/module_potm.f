@@ -10,9 +10,9 @@
       use heelis_module !,ONLY:
       use module_flwv32,ONLY: flwv32
       use module_magfield,only: sunlons 
-      use cons_module,only: 
-     |  xlonm,xlatm, ! magnetic grid lons, lats
-     |  pi_dyn       ! pi used in dynamo calculations
+      use cons_module,only:                                             &
+     &  xlonm,xlatm,                                                    &! magnetic grid lons, lats
+     &  pi_dyn       ! pi used in dynamo calculations
       use params_module,ONLY: kmlat,kmlon,kmlonp1
       use module_flwv32,ONLY: flwv32
       use dynamo_module,ONLY: phihm
