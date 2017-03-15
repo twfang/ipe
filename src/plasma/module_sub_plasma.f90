@@ -177,6 +177,11 @@
 
 !SMS$PARALLEL END
       ret = gptlstop ('apex_lon_loop')
+      if(barriersOn) then
+        ret = gptlstart ('barrierAfterApexLongitudeLoop')
+!sms$insert      call ppp_barrier(status)
+        ret = gptlstop  ('barrierAfterApexLongitudeLoop')
+      endif
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-4")
 ! output plasma parameters to a file
       ret = gptlstart ('io_plasma_bin')

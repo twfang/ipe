@@ -45,7 +45,7 @@
 !SMS$INSERT parallelBuild=.true.
 ! set up input parameters
       ret = gptlstart ('read_input')
-      CALL read_input_parameters ( )
+      CALL read_input_parameters ( ) !calls create_decomp
       ret = gptlstop  ('read_input')
 
 ! open Input/Output files
