@@ -14,7 +14,7 @@
 !
       PROGRAM  test_plasma
       USE module_precision
-      USE module_input_parameters,ONLY: read_input_parameters,start_time,stop_time,time_step,HPEQ_flip,ip_freq_msis,sw_output_plasma_grid,sw_debug,sw_perp_transport,parallelBuild,mype,ip_freq_eldyn
+      USE module_input_parameters,ONLY: read_input_parameters,start_time,stop_time,time_step,HPEQ_flip,ip_freq_msis,sw_output_plasma_grid,sw_debug,sw_perp_transport,parallelBuild,mype,ip_freq_eldyn,SMScomm,lps,lpe,mps,mpe
       USE module_FIELD_LINE_GRID_MKS,ONLY: plasma_3d
       USE module_init_plasma_grid,ONLY: init_plasma_grid
       USE module_NEUTRAL_MKS,ONLY: neutral 
@@ -32,21 +32,55 @@
       USE module_IO,ONLY: PRUNIT
       USE module_open_file,ONLY: open_file
       IMPLICIT NONE
+!SMS$INSERT include "mpif.h"
       include "gptl.inc"
 
       INTEGER(KIND=int_prec)           :: utime !universal time [sec]
       INTEGER(KIND=int_prec),parameter :: luntmp=300
-      INTEGER(KIND=int_prec)           :: istat,mp,ret
+      INTEGER(KIND=int_prec)           :: istat,mp,ret,OLDcomm,key,status=0,color=0,mypeWorld
+      INTEGER(KIND=int_prec)           :: resultlen ! length return from MPI routines
+!SMS$INSERT character(len=mpi_max_processor_name) :: mynode ! node name
 
       call gptlprocess_namelist ('GPTLnamelist', 77, ret) 
       ret = gptlinitialize ()
       ret = gptlstart ('Total')
 
-!SMS$INSERT parallelBuild=.true.
 ! set up input parameters
       ret = gptlstart ('read_input')
       CALL read_input_parameters ( ) !calls create_decomp
       ret = gptlstop  ('read_input')
+
+!      key = mype
+!      if(0<mype.and.mype<40)  then 
+!        if(mod(mype,2) /= 0) then
+!          key = mype+38
+!        endif
+!      endif
+!      if(39<mype.and.mype<79)  then 
+!        if(mod(mype,2) == 0) then
+!          key = mype-38
+!        endif
+!      endif
+!!SMS$ignore begin
+!      print*,'mype,key=',mype,key
+!!SMS$ignore end
+!      key=mype
+!SMS$INSERT parallelBuild=.true.
+!!SMS$INSERT CALL MPI_COMM_SPLIT(MPI_COMM_WORLD,color,key,SMScomm,status)
+!!SMS$SET_COMMUNICATOR(SMScomm)
+!      IF (status /= 0) THEN
+!        print*,'Error in driver_ipe gettin new MPI commumicator',status
+!        stop
+!      endif
+!!SMS$INSERT call NNT_ME    (mype  )
+!if(mype == 40) then
+!   call set_affinity (0)
+!endif
+!SMS$INSERT call mpi_get_processor_name (mynode, resultlen, status)
+!SMS$ignore begin
+!SMS$INSERT print"('mynode,mype,lps,lpe,mps,mpe',2x,a10,5i5)",mynode,mype,lps,lpe,mps,mpe
+!SMS$ignore end
+!SMS$INSERT call print_affinity (mype)
 
 ! open Input/Output files
       ret = gptlstart ('open_output_files')

@@ -88,7 +88,8 @@ endif
     MODCMD    = $(shell ./modcmd theia intel)
     FCP       = mpiifort
     FCS       = ifort
-    OPT_FLAGS = -O3 -fp-model precise
+    CC        = icc
+    OPT_FLAGS = -O3 -fp-model precise  -vec-report2 
     SMS       = /contrib/sms/legacy/SMSr825-intel
     ifeq ($(DEBUG),yes)
       OPT_FLAGS = -g -O0 -ftz -traceback -check bounds -fpe0

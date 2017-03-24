@@ -299,7 +299,7 @@
         INTEGER (KIND=int_prec) :: istat        
 !dbg20160408 sms debug
         INTEGER (KIND=int_prec) :: nElements,ierr
-
+        INTEGER (KIND=int_prec) :: mycore !Processor to which mype is assigned
 
 !SMS$IGNORE BEGIN
         OPEN(LUN_nmlt, FILE=INPTNMLT ,IOSTAT=IOST_OP,STATUS='OLD')
@@ -329,6 +329,12 @@
 !SMS$INSERT lpHaloSize=1
 !SMS$INSERT mpHaloSize=2
 !dbg20160408 sms debug
+
+       call MPI_COMM_RANK(MPI_COMM_WORLD,mype,istat)
+!SMS$ignore begin
+       print*,'mype,mod(mype,48)',mype,mod(mype,48)
+!SMS$ignore end
+!!SMS$INSERT call set_affinity (mod(mype,48)) !Pin MPI rank mype to core mod(mype,48)
 
 !SMS$CREATE_DECOMP(dh,<NLP,NMP>,<lpHaloSize,mpHaloSize>: <NONPERIODIC, PERIODIC>)
 
@@ -413,6 +419,7 @@ lpe = NLP
 mps = 1
 mpe = NMP
 !SMS$TO_LOCAL END
+
 print *,'finished reading namelist:',filename
 print *,' '
 print"(' NLP:                 ',I6)",NLP
@@ -424,6 +431,15 @@ print"(' lpHaloSize:          ',I6)",lpHaloSize
 print"(' mpHaloSize:          ',I6)",mpHaloSize
 print *,' '
 print *,' '
+!mycore = mod(mype,NMP/2)
+!!SMS$ignore begin
+!print*,'mype,mycore=',mype,mycore
+!!SMS$ignore end
+if(mype == 39) then
+!!SMS$INSERT call   set_affinity (24) !Pin MPI rank mype to core mycore
+endif
+!!SMS$INSERT call   set_affinity (mype) !Pin MPI rank mype to core mype
+!!SMS$INSERT call print_affinity (mype)
 
 !dbg20120509        IF ( sw_rw_sw_perp_trans )  CALL setup_sw_perp_transport ()
 !note:20120207: v36: used only activating the perp.transport gradually...

@@ -27,9 +27,9 @@ if(nprocs > 1) then
 endif
 
 ! Print timing results to file named timing.mype
-if (mype == 0 .or. mype == nprocs-1) then
+!if (mype == 0 .or. mype == nprocs-1) then
   ret = gptlpr (mype)
-endif
+!endif
 
 !SMS$INSERT ret = gptlpr_summary(SMScomm)
 

@@ -22,8 +22,12 @@ SSRCS = module_close_files.f90             \
         module_precision.f90               \
         module_unit_conversion.f90
 
+CSRCS = runnable.c                         \
+        print_affinity.c                   \
+        set_affinity.c
+
 ifeq ($(PARALLELISM),parallel)
-  PSRCS += prepPoleVal.f90
+  PSRCS += prepPoleVal.f90 
 endif
 
 include $(TOP)/Makefile.common

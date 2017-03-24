@@ -64,7 +64,7 @@
   exact_parallel_sum=f
   load_balance_method=2,1
   load_balance_on=t,f
-  load_balance_size=40,0
-  process_layout=40,2
+  load_balance_size=60,0
+  process_layout=60,4
   set_process_layout=t
 /
