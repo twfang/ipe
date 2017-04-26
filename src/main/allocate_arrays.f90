@@ -19,7 +19,8 @@
      &,apexD,apexE,VEXBup,VEXBe,MaxFluxTube,HE_m3,N4S_m3,TN_k,TINF_K,Un_ms1 &
      &,Be3, Pvalue, JMIN_IN, JMAX_IS,hrate_mks3d,midpnt &
      &,mlon_rad, plasma_grid_Z, plasma_grid_GL, plasma_3d_old &
-     &,apexDscalar, l_mag, WamField
+     &,apexDscalar, l_mag, WamField &
+     &,ON_m3_msis,Tn_K_msis,N2N_m3_msis,O2N_m3_msis
   
       USE module_input_parameters,ONLY: sw_neutral_heating_flip
       IMPLICIT NONE
@@ -52,6 +53,10 @@
      &,           TINF_K(MaxFluxTube,NLP,NMP)     &
      &,           Un_ms1(MaxFluxTube,NLP,NMP,3:3) )
 
+        allocate( ON_m3_msis (MaxFluxTube,NLP,NMP)     &
+     &,           Tn_K_msis (MaxFluxTube,NLP,NMP)     &
+     &,           N2N_m3_msis(MaxFluxTube,NLP,NMP)     &
+     &,           O2N_m3_msis(MaxFluxTube,NLP,NMP))
 
       allocate( WamField(MaxFluxTube,NLP,NMP,7) )
 

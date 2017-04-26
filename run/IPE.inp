@@ -60,7 +60,7 @@
   mpstop=80
   record_number_plasma_start=6
   sw_dbg_perp_trans=f
-  sw_debug=f
+  sw_debug=t
   sw_debug_mpi=f
   sw_divv=0
   sw_eldyn=1

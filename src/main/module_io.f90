@@ -38,5 +38,7 @@
       INTEGER (KIND=int_prec), PUBLIC :: luntmp1,luntmp2,luntmp3
 !nm20141001:
       INTEGER (KIND=int_prec), PUBLIC :: lun_wind0,lun_wind1,lun_wind2,lun_wind3,lun_wind4,lun_wind5
+      INTEGER (KIND=int_prec), PUBLIC :: LUN_WAM_RESTART0,LUN_WAM_RESTART1,LUN_WAM_RESTART2
+      INTEGER (KIND=int_prec), PUBLIC :: LUN_WAM_RESTART3,LUN_WAM_RESTART4,LUN_WAM_RESTART5
 
 END MODULE module_IO

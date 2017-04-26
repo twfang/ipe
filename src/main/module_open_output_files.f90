@@ -23,15 +23,18 @@
       CONTAINS
 !---------------------------
         SUBROUTINE open_output_files ( )
-        USE module_input_parameters,ONLY: NYEAR,NDAY,HPEQ_flip,sw_debug,sw_output_plasma_grid,record_number_plasma_start,sw_output_fort167,sw_output_wind,mype
+        USE module_input_parameters,ONLY: NYEAR,NDAY,HPEQ_flip,sw_debug,sw_output_plasma_grid &
+           ,record_number_plasma_start,sw_output_fort167,sw_output_wind,mype,sw_use_wam_fields_for_restart
         USE module_IO,ONLY: &
-&  filename,FORM_dum,STATUS_dum &
-&, LUN_pgrid,LUN_LOG &
-&, LUN_FLIP1,LUN_FLIP2,LUN_FLIP3,LUN_FLIP4 &
-&, LUN_PLASMA0, LUN_PLASMA1,LUN_PLASMA2, LUN_UT, LUN_UT2 &
-&, lun_min1,lun_max1,lun_min2,lun_max2 &
-&, record_number_plasma,luntmp1,luntmp2,luntmp3 &
-&, lun_wind0,lun_wind1, lun_wind2,lun_wind3,lun_wind4,lun_wind5
+  filename,FORM_dum,STATUS_dum &
+, LUN_pgrid,LUN_LOG &
+, LUN_FLIP1,LUN_FLIP2,LUN_FLIP3,LUN_FLIP4 &
+, LUN_PLASMA0, LUN_PLASMA1,LUN_PLASMA2, LUN_UT, LUN_UT2 &
+, lun_min1,lun_max1,lun_min2,lun_max2 &
+, record_number_plasma,luntmp1,luntmp2,luntmp3 &
+, lun_wind0,lun_wind1, lun_wind2,lun_wind3,lun_wind4,lun_wind5 &
+, LUN_WAM_RESTART0,LUN_WAM_RESTART1,LUN_WAM_RESTART2 &
+,LUN_WAM_RESTART3,LUN_WAM_RESTART4,LUN_WAM_RESTART5
         USE module_open_file,ONLY: open_file
 
         IMPLICIT NONE
@@ -206,6 +209,57 @@ END IF !( sw_output_plasma_grid ) THEN
            CALL open_file ( filename, LUN_wind5, FORM_dum, STATUS_dum ) 
 
         END IF !( sw_output_wind
+
+        IF ( sw_use_wam_fields_for_restart ) THEN
+!--- unit=5000 ut for wind
+           LUN_WAM_RESTART0=5000
+           filename='ut_out4wind'
+           print *,'fort.5000? ', filename, LUN_WAM_RESTART0
+           FORM_dum ='formatted  ' 
+           STATUS_dum ='old'
+           CALL open_file ( filename, LUN_WAM_RESTART0, FORM_dum, STATUS_dum )
+
+!--- unit=5001 wind
+           LUN_WAM_RESTART1=5001
+           filename='wam_wind_input'
+           print *,'fort.5001? ', filename, LUN_WAM_RESTART1
+           FORM_dum ='unformatted' 
+           STATUS_dum ='old'
+           CALL open_file ( filename, LUN_WAM_RESTART1, FORM_dum, STATUS_dum ) 
+
+!--- unit=5002 tn
+           LUN_WAM_RESTART2=5002
+           filename='wan_tn_input'
+           print *,'fort.5002? ', filename, LUN_WAM_RESTART2
+           FORM_dum ='unformatted' 
+           STATUS_dum ='old'
+           CALL open_file ( filename, LUN_WAM_RESTART2, FORM_dum, STATUS_dum ) 
+
+!--- unit=5003 on: neutral atomic oxygen density
+           LUN_WAM_RESTART3=5003
+           filename='wam_on_input'
+           print *,'fort.5003? ', filename, LUN_WAM_RESTART3
+           FORM_dum ='unformatted' 
+           STATUS_dum ='old'
+           CALL open_file ( filename, LUN_WAM_RESTART3, FORM_dum, STATUS_dum ) 
+
+!--- unit=5004 on: neutral molecular nitrogen density
+           LUN_WAM_RESTART4=5004
+           filename='wam_n2n_input'
+           print *,'fort.5004? ', filename, LUN_WAM_RESTART4
+           FORM_dum ='unformatted' 
+           STATUS_dum ='old'
+           CALL open_file ( filename, LUN_WAM_RESTART4, FORM_dum, STATUS_dum ) 
+
+!--- unit=5005 on: neutral molecular oxygen density
+           LUN_WAM_RESTART5=5005
+           filename='wam_o2n_input'
+           print *,'fort.5005? ', filename, LUN_WAM_RESTART5
+           FORM_dum ='unformatted' 
+           STATUS_dum ='old'
+           CALL open_file ( filename, LUN_WAM_RESTART5, FORM_dum, STATUS_dum ) 
+
+        END IF !( sw_use_wam_fields_for_restart
 
         END SUBROUTINE open_output_files
 !---------------------------

@@ -13,8 +13,11 @@
       MODULE module_NEUTRAL_MKS
       USE module_precision
       USE module_IPE_dimension,ONLY: NPTS2D,NLP,NMP
-      USE module_FIELD_LINE_GRID_MKS,ONLY: ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k,Un_ms1
-      USE module_input_parameters,ONLY : parallelBuild
+      USE module_FIELD_LINE_GRID_MKS,ONLY: ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k,Un_ms1 &
+          , ON_m3_msis, N2N_m3_msis, O2N_m3_msis, TN_k_msis
+
+      USE module_input_parameters,ONLY : parallelBuild &
+          , sw_use_wam_fields_for_restart
 
       IMPLICIT NONE
 
@@ -134,12 +137,12 @@ END IF
                          iyear, iday, ut_hour, f107D_dum, f107A_dum, AP_dum, &
                          glon_deg, glat_deg, alt_km, &
                          he_m3( IN:IS,lp,mp) &
-     &                 , on_m3( IN:IS,lp,mp) &
-     &                 , o2n_m3(IN:IS,lp,mp) &
-     &                 , n2n_m3(IN:IS,lp,mp) &
+     &                 , on_m3_msis( IN:IS,lp,mp) &
+     &                 , o2n_m3_msis(IN:IS,lp,mp) &
+     &                 , n2n_m3_msis(IN:IS,lp,mp) &
      &                 ,  hn_m3(IN:IS,lp,mp) &
      &                 , n4s_m3(IN:IS,lp,mp) &
-     &                 ,   tn_k(IN:IS,lp,mp) &
+     &                 ,   tn_k_msis(IN:IS,lp,mp) &
      &                 , tinf_k(IN:IS,lp,mp) &
      &              ,Vn_ms1(1:3,1:NPTS   )   )
 
@@ -166,7 +169,15 @@ END IF
 
 !dbg20160715: temporarily change the code to use MSIS/HWM for the 1st time step, because wamfield is not ready for the 1st time step for a reason...
       if ( utime==432000 ) then
-         IF( sw_debug ) print*,mype,mp,lp,'MSIS utime=',utime         
+         IF (sw_use_wam_fields_for_restart ) THEN
+           write(6,*) 'USING WAM FIELDS FOR RESTART'
+         else
+         IF( sw_debug ) print*,mype,mp,lp,'MSIS utime=',utime
+      ON_m3( IN:IS,lp,mp)  = ON_m3_msis( IN:IS,lp,mp)
+      N2N_m3( IN:IS,lp,mp) = N2N_m3_msis( IN:IS,lp,mp)
+      O2N_m3( IN:IS,lp,mp) = O2N_m3_msis( IN:IS,lp,mp)
+      TN_k( IN:IS,lp,mp)   = TN_k_msis( IN:IS,lp,mp)
+         endif         
       else if ( utime>432000 ) then
 
          if ( sw_neutral==3 ) then
