@@ -330,9 +330,9 @@
 !SMS$INSERT mpHaloSize=2
 !dbg20160408 sms debug
 
-       call MPI_COMM_RANK(MPI_COMM_WORLD,mype,istat)
+!SMS$INSERT call MPI_COMM_RANK(MPI_COMM_WORLD,mype,istat)
 !SMS$ignore begin
-       print*,'mype,mod(mype,48)',mype,mod(mype,48)
+!SMS$INSERT print*,'mype,mod(mype,48)',mype,mod(mype,48)
 !SMS$ignore end
 !!SMS$INSERT call set_affinity (mod(mype,48)) !Pin MPI rank mype to core mod(mype,48)
 

@@ -24,7 +24,7 @@
       USE module_precision
 !     plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,plasma_3d_old are all IN arrays
       USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,ht90,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,plasma_3d_old, mlon_rad,maxAltitude,minAltitude,minTheta,poleVal
-      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,sw_ksi,mype,lps,lpe,mps,mpe,nprocs
+      USE module_input_parameters,ONLY:sw_perp_transport,sw_debug,sw_ksi,mype,lps,lpe,mps,mpe,nprocs,sw_ihepls,sw_inpls
       USE module_plasma,ONLY:plasma_1d 
       USE module_IPE_dimension,ONLY: ISPEC,ISPET,IPDIM, ISTOT, NMP
       USE module_physical_constants,ONLY: earth_radius,pi,zero,rtd
@@ -50,7 +50,9 @@
       REAL(KIND=real_prec) :: ksi_fac 
       REAL(KIND=real_prec8),DIMENSION(0:2) :: r
       REAL(KIND=real_prec8),DIMENSION(0:2) :: lambda_m,rapex,B0,x,y
-      INTEGER (KIND=int_prec),PARAMETER :: TSP=3      !N(1:3) perp.transport
+!nm20170328            INTEGER (KIND=int_prec),PARAMETER :: TSP=3      !N(1:3) perp.transport
+!nm20170328: N+ must be included in perp. transport
+      INTEGER (KIND=int_prec),PARAMETER :: TSP=4      !N(1:4) perp.transport
       INTEGER (KIND=int_prec),PARAMETER :: iT=ISPEC+3   !add T(1:3)
 !nm20130228      REAL(KIND=real_prec) :: n0(iT,2) !1d:species(N&T); 2dim:ilp
 
@@ -114,7 +116,7 @@
                   lp0 = lp_t0(ihem,ilp)
                   CALL Qinterpolation (mp,lp &
                        &, lp0, mp0 &
-                       &, iR, Qint_dum )
+                       &, iR, Qint_dum, TSP ) !nm20170328: 
                   
                   Qint(1:iR,1:IPDIM,imp,ilp) = Qint_dum(1:iR,1:IPDIM)
 
@@ -344,6 +346,11 @@ mp_t0_loop1: DO imp=1,imp_max
 
     jth_loop4: DO jth=1,iT !TSP+3
        IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop4
+!nm20170328: he+ ihepls<=0
+       if ( jth==3.and.sw_ihepls<=0 ) CYCLE jth_loop4 
+!nm20170328: n+ inpls<=0
+       if ( jth==4.and.sw_inpls<=0 ) CYCLE jth_loop4
+
        IF ( x(1)/=x(2) ) THEN
           if(jth<=TSP)then      !for densities
              plasma_2d(jth,i1d,imp) = (10**(( (x(1)-x(0))*DLOG10(Qint(jth,i1d,imp,2)) + (x(0)-x(2))*DLOG10(Qint(jth,i1d,imp,1)) ) / ( x(1)-x(2) )))*(ksi_fac*ksi_fac)
@@ -387,7 +394,10 @@ END DO mp_t0_loop1 !: DO imp=1,imp_max
 
    jth_loop5: DO jth=1,iT
       IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop5
-
+!nm20170328: he+ ihepls<=0
+     if ( jth==3.and.sw_ihepls<=0 ) CYCLE jth_loop5 
+!nm20170328: n+ inpls<=0
+     if ( jth==4.and.sw_inpls<=0 ) CYCLE jth_loop5
 !---
       IF ( sw_perp_transport>=2 ) THEN
 

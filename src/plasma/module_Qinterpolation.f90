@@ -19,12 +19,12 @@
       CONTAINS
       SUBROUTINE Qinterpolation (mp,lp &
 &, lp0,mp0 &
-&, iR, Qint_dum )
+&, iR, Qint_dum, TSP ) !nm20170328: 
 
       USE module_precision
 !     plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,plasma_3d_old are all IN arrays
       USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,ht90,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,plasma_3d_old
-      USE module_input_parameters,ONLY:sw_debug,mype,lps,lpe,mps,mpe
+      USE module_input_parameters,ONLY:sw_debug,mype,lps,lpe,mps,mpe,sw_ihepls,sw_inpls
       USE module_IPE_dimension,ONLY: ISPEC,ISPET,IPDIM ,nlp
       USE module_physical_constants,ONLY: earth_radius,pi,zero
       USE module_PLASMA,ONLY:utime_save
@@ -34,6 +34,8 @@
       INTEGER (KIND=int_prec),INTENT(IN) :: lp
       INTEGER (KIND=int_prec),INTENT(IN) :: lp0,mp0
       INTEGER (KIND=int_prec),INTENT(IN) :: iR !=iB+1 !add R
+!nm20170328:
+      INTEGER (KIND=int_prec),INTENT(IN) :: TSP     !N(1:4) perp.transport
 !--- OUTPUT ---
       REAL(KIND=real_prec8),INTENT(OUT) :: Qint_dum(iR,IPDIM)  !1d:species
 
@@ -43,8 +45,8 @@
       INTEGER (KIND=int_prec) :: ispecial,isouth,inorth,i1d,ip1d,midpoint ,kk
       REAL(KIND=real_prec8) :: factor2
 
-      INTEGER (KIND=int_prec),PARAMETER :: TSP=3      !N(1:3) perp.transport
-      INTEGER (KIND=int_prec),PARAMETER :: iT=ISPEC+3   !add T(1:3)
+!nm20170328      INTEGER (KIND=int_prec),PARAMETER :: TSP=3      !N(1:3) perp.transport 
+     INTEGER (KIND=int_prec),PARAMETER :: iT=ISPEC+3   !add T(1:3)
 
 
       INTEGER (KIND=int_prec),PARAMETER :: iB=iT+1 !add B
@@ -125,6 +127,10 @@ Qint_dum(:,:)=zero
           jth_loop0:         DO jth=1,iT !=TSP+3
 
              IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop0
+             !nm20170328: he+ ihepls<=0
+             if ( jth==3.and.sw_ihepls<=0 ) CYCLE jth_loop0 
+             !nm20170328: n+ inpls<=0
+             if ( jth==4.and.sw_inpls<=0 ) CYCLE jth_loop0
 
              !nm20160421 DOUBLE log interpolation
              if(jth<=TSP)then      !for densities
@@ -160,6 +166,10 @@ Qint_dum(:,:)=zero
 
           jth_loop1: DO jth=1,iT
              IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop1
+             !nm20170328: he+ ihepls<=0
+             if ( jth==3.and.sw_ihepls<=0 ) CYCLE jth_loop1 
+             !nm20170328: n+ inpls<=0
+             if ( jth==4.and.sw_inpls<=0 ) CYCLE jth_loop1
              Qint_dum(jth   ,ip1d) = plasma_3d_old(isouth,lp0,mp0,jth)
 
 
@@ -184,6 +194,10 @@ endif
        ELSE if(ispecial == 2) then
           jth_loop2: DO jth=1,iT
              IF ( jth>TSP.AND.jth<=ISPEC )  CYCLE jth_loop2
+             !nm20170328: he+ ihepls<=0
+             if ( jth==3.and.sw_ihepls<=0 ) CYCLE jth_loop2 
+             !nm20170328: n+ inpls<=0
+             if ( jth==4.and.sw_inpls<=0 ) CYCLE jth_loop2
              Qint_dum(jth   ,ip1d) = plasma_3d_old(inorth,lp0,mp0,jth)
              !dbg20160417
              if ( jth==1.and.Qint_dum(jth, ip1d)<=zero ) then 

@@ -11,6 +11,7 @@ PSRCS = allocate_arrays.f90                \
         module_open_output_files.f90       \
         module_read_plasma_grid_global.f90 \
         output_plasma_grid.f90             \
+        prepPoleVal.f90                    \
         stop.f90
 
 SSRCS = module_close_files.f90             \
@@ -25,9 +26,5 @@ SSRCS = module_close_files.f90             \
 CSRCS = runnable.c                         \
         print_affinity.c                   \
         set_affinity.c
-
-ifeq ($(PARALLELISM),parallel)
-  PSRCS += prepPoleVal.f90 
-endif
 
 include $(TOP)/Makefile.common

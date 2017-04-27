@@ -8,10 +8,10 @@ CONTAINS
   SUBROUTINE prepPoleVal
   USE module_input_parameters   ,ONLY: nprocs,SMScomm,NumPolevalProcs,sendCount,NumPolevalProcs,mype
   USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,DISPLS,MPends,recvCounts,plasma_mp,plasma_mpG,MaxFluxTube
-  INCLUDE "mpif.h"
+!SMS$INSERT INCLUDE "mpif.h"
   INTEGER (KIND=int_prec) :: jth,NumMP,i,mp,lp,status,PE,NumMPs(nprocs),MPendMax
 
-      call GET_SMS_MPI_COMMUNICATOR(SMScomm)
+!SMS$INSERT call GET_SMS_MPI_COMMUNICATOR(SMScomm)
 !SMS$PARALLEL(dh, lp, mp) BEGIN
       sendCount=0
       do jth=1,ISTOT  
@@ -25,21 +25,21 @@ CONTAINS
           enddo
         enddo
       enddo
-      call MPI_ALLREDUCE(NumMP,MPendMax,1,MPI_INTEGER,MPI_MAX,SMScomm,status)
+!SMS$INSERT call MPI_ALLREDUCE(NumMP,MPendMax,1,MPI_INTEGER,MPI_MAX,SMScomm,status)
       if(status /= 0) then
 !SMS$ignore begin
         print*,'MPI_ALLREDUCE error in module_init_plasma_grid',mype,status
 !SMS$ignore end
         stop
       endif
-      call MPI_GATHER(sendCount,1,MPI_INTEGER,recvCounts,1,MPI_INTEGER,0,SMScomm,status)
+!SMS$INSERT call MPI_GATHER(sendCount,1,MPI_INTEGER,recvCounts,1,MPI_INTEGER,0,SMScomm,status)
       if(status /= 0) then
 !SMS$ignore begin
         print*,'MPI_GATHER sendCount error in module_init_plasma_grid',mype,status
 !SMS$ignore end
         stop
       endif
-      call MPI_GATHER(NumMP,1,MPI_INTEGER,NumMPs,1,MPI_INTEGER,0,SMScomm,status)
+!SMS$INSERT call MPI_GATHER(NumMP,1,MPI_INTEGER,NumMPs,1,MPI_INTEGER,0,SMScomm,status)
       if(status /= 0) then
 !SMS$ignore begin
         print*,'MPI_GATHER NumMP error in module_init_plasma_grid',mype,status

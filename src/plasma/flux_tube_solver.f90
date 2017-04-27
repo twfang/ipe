@@ -284,6 +284,9 @@ END IF
          NHEAT(             ipts)=zero !dbg20110927
          hrate_cgs(1:22,    ipts)=zero !nm20121020
       END DO !ipts=
+!nm20170328: correct setting for the He+/N+ switches
+          if ( sw_ihepls==0 ) XIONNX(3,:) = zero
+          if ( sw_inpls==0  ) XIONNX(4,:) = zero
       ret = gptlstop ('flux_tube_solver_loop1')
 
 !tmp20151112: mlt for aurora in flip

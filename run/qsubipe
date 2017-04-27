@@ -211,12 +211,14 @@ case $machine in
 #    setc IPEDATA  /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/mpi20160330v2/run1/1461436195_ipe_theia_intel_parallel2_93
 #    no storm is run2
 #    setc IPEDATA  /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/mpi20160330v2/run2/1462657622_ipe_theia_intel_parallel2_93
-    setc IPEDATA  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/tmp20150730/trunk/run/1469880705_ipe_theia_intel_parallel1_80
+#    setc IPEDATA  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/tmp20150730/trunk/run/1469880705_ipe_theia_intel_parallel1_80
+#    setc IPEDATA /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20170314Init4Jacques/run/1491413416_ipe_theia_intel_parallel1_80
+    setc IPEDATA /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20170314Init4Jacques/run/1490799959_ipe_theia_intel_parallel1_80/
 
     echo "IPEDATA=" $IPEDATA
-    setc IPEQUEUE debug
+    setc IPEQUEUE batch
     echo "IPEQUEUE=" $IPEQUEUE
-    setc IPETIME  00:10:00
+    setc IPETIME  08:00:00
     echo "IPETIME=" $IPETIME
     setc IPEWIND  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/IPEdata/wind
     acct=swpc
