@@ -1,5 +1,11 @@
 #!/bin/bash
 
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#ppp_module.F90 line 4268 is a test that must be commented out for hyperthreading.
+#At some point should add a variavle for hyperthreading which can be incorporated into this test.
+#Also, hyperthreading does not work with load balancing. - fails test at ppp_module.F90 L4052.
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 echo $1 $2 $3 $4
 # Control variables
 
