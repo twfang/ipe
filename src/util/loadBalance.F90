@@ -1,6 +1,7 @@
 Program loadBalance
 !This routine does LP load balancing for the IPE code.
 !This code reads in timings (times) from a representative run of the IPE code parallelized on NLP points in the LP direction only.
+!The representative run should br made with "barriersOn=f' in IPE.inp.
 !Currently flux_tube_solver times are used which are grepped from timing.* by:
 !grep '   flux_tube_solver   ' timing.* | cut -c 1-7 --complement | tr -d ':' | awk '{$2=$4=""}1' | sort -h > times
 !This code combines some of the LP points to create groups (bins) that have similar flux_tube_solver times.
