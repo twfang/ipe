@@ -1,4 +1,6 @@
 !CAUTION!!!!!!!the plasma i-o orders/file names have been changed !!!
+
+!CAUTION!!!!!!!the plasma i-o orders/file names have been changed !!!
 !date:Thu Sep 29 18:58:05 GMT 2011
 ! DATE: 08 September, 2011
 !********************************************
@@ -15,15 +17,18 @@
 SUBROUTINE io_plasma_bin ( switch, utime )
 USE module_precision
 USE module_IO,ONLY: LUN_PLASMA1,LUN_PLASMA2,lun_min1,lun_min2,lun_ut,lun_ut2,record_number_plasma,lun_max1 &
-, lun_wind0, lun_wind1, lun_wind2, lun_wind3, lun_wind4, lun_wind5 &
-, LUN_WAM_RESTART0, LUN_WAM_RESTART1, LUN_WAM_RESTART2, LUN_WAM_RESTART3 &
-, LUN_WAM_RESTART4, LUN_WAM_RESTART5
+, lun_ipe_grid_neutral_params_ut &
+, lun_ipe_grid_neutral_wind_out &
+, lun_ipe_grid_neutral_tn_out &
+, lun_ipe_grid_neutral_O_density_out &
+, lun_ipe_grid_neutral_N2_density_out &
+, lun_ipe_grid_neutral_O2_density_out &
+,LUN_WAM_RESTART0,LUN_WAM_RESTART1,LUN_WAM_RESTART2,LUN_WAM_RESTART3,LUN_WAM_RESTART4,LUN_WAM_RESTART5
 USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_3d,JMIN_ING,JMAX_ISG,VEXBup &
-, Un_ms1,tn_k,on_m3,n2n_m3,o2n_m3
+&, Un_ms1,tn_k,on_m3,n2n_m3,o2n_m3
 USE module_IPE_dimension,ONLY: NMP,NLP,NPTS2D,ISPEC,ISPEV,IPDIM,ISPET,ISTOT
 USE module_input_parameters,ONLY:sw_debug,record_number_plasma_start,mype &
-,sw_record_number,stop_time,start_time,duration,mpstop, sw_output_wind &
-,sw_use_wam_fields_for_restart
+&,sw_record_number,stop_time,start_time,duration,mpstop, sw_output_wind, sw_use_wam_fields_for_restart
 USE module_physical_constants,ONLY:zero
 IMPLICIT NONE
 
@@ -80,20 +85,20 @@ IF ( switch==1 ) THEN !1:Output the 16 plasma* files
       IF ( sw_output_wind ) THEN
 !nm20160711 debug wam field: 
 !SMS$SERIAL(<tn_k,IN>:default=ignore) BEGIN
-           write (UNIT=lun_wind1) tn_k
-           write (UNIT=lun_wind0,FMT=*) utime
+           write (UNIT=lun_ipe_grid_neutral_tn_out) tn_k
+           write (UNIT=lun_ipe_grid_neutral_params_ut,FMT=*) utime
 !SMS$SERIAL END
 !SMS$SERIAL(<Un_ms1,IN>:default=ignore) BEGIN
-           write (UNIT=lun_wind2) Un_ms1
+           write (UNIT=lun_ipe_grid_neutral_wind_out) Un_ms1
 !SMS$SERIAL END
 !SMS$SERIAL(<on_m3,IN>:default=ignore) BEGIN
-           write (UNIT=lun_wind3) on_m3
+           write (UNIT=lun_ipe_grid_neutral_O_density_out) on_m3
 !SMS$SERIAL END
 !SMS$SERIAL(<n2n_m3,IN>:default=ignore) BEGIN
-           write (UNIT=lun_wind4) n2n_m3
+           write (UNIT=lun_ipe_grid_neutral_N2_density_out) n2n_m3
 !SMS$SERIAL END
 !SMS$SERIAL(<o2n_m3,IN>:default=ignore) BEGIN
-           write (UNIT=lun_wind5) o2n_m3
+           write (UNIT=lun_ipe_grid_neutral_O2_density_out) o2n_m3
 !SMS$SERIAL END
       END IF !( sw_output_wind ) THEN
 
@@ -183,28 +188,37 @@ ELSE IF ( switch==2 ) THEN !2:RESTART: Read from the 16 plasma* files
     print *,'closing lun',LUN
     CLOSE(LUN)
   END DO j_loop2!jth
+!SMS$SERIAL END
 
 ! Read in the WAM startup fields.... 
 IF ( sw_use_wam_fields_for_restart ) THEN
+!SMS$SERIAL BEGIN
+print *,'****** GEORGE ******* READING WAM TN'
   read (UNIT=LUN_WAM_RESTART1) tn_k
+print *,'***** THIS INNIT ',tn_k(30,10,10), tn_k(20,20,20)
   close(LUN_WAM_RESTART1)
 !  read (UNIT=LUN_WAM_RESTART0,FMT=*) utime
-  close(LUN_WAM_RESTART0)
+!  close(LUN_WAM_RESTART0)
+print *,'****** GEORGE ******* READING WAM WIND'
   read (UNIT=LUN_WAM_RESTART2) Un_ms1
   close(LUN_WAM_RESTART2)
+print *,'****** GEORGE ******* READING WAM ON'
   read (UNIT=LUN_WAM_RESTART3) on_m3
   close(LUN_WAM_RESTART3)
+print *,'****** GEORGE ******* READING WAM N2N'
   read (UNIT=LUN_WAM_RESTART4) n2n_m3
   close(LUN_WAM_RESTART4)
+print *,'****** GEORGE ******* READING WAM O2N'
   read (UNIT=LUN_WAM_RESTART5) o2n_m3
   close(LUN_WAM_RESTART5)
-END IF
-
+print *,'****** GEORGE ******* DONE READING WAM FIELDS'
 !SMS$SERIAL END
+END IF
 
 END IF !( switch==1 ) THEN
 
 !SMS$PARALLEL END
+
 
 print *,'END sub-io_pl: sw=',switch,' uts=' ,utime 
 END SUBROUTINE io_plasma_bin
