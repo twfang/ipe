@@ -37,7 +37,14 @@
 !nm20120311
       INTEGER (KIND=int_prec), PUBLIC :: luntmp1,luntmp2,luntmp3
 !nm20141001:
-      INTEGER (KIND=int_prec), PUBLIC :: lun_wind0,lun_wind1,lun_wind2,lun_wind3,lun_wind4,lun_wind5
+! logical units for files with neutral parameters on the ipe grid......
+      INTEGER (KIND=int_prec), PUBLIC :: lun_ipe_grid_neutral_params_ut
+      INTEGER (KIND=int_prec), PUBLIC :: lun_ipe_grid_neutral_wind_out
+      INTEGER (KIND=int_prec), PUBLIC :: lun_ipe_grid_neutral_tn_out
+      INTEGER (KIND=int_prec), PUBLIC :: lun_ipe_grid_neutral_O_density_out
+      INTEGER (KIND=int_prec), PUBLIC :: lun_ipe_grid_neutral_N2_density_out
+      INTEGER (KIND=int_prec), PUBLIC :: lun_ipe_grid_neutral_O2_density_out
+
       INTEGER (KIND=int_prec), PUBLIC :: LUN_WAM_RESTART0,LUN_WAM_RESTART1,LUN_WAM_RESTART2
       INTEGER (KIND=int_prec), PUBLIC :: LUN_WAM_RESTART3,LUN_WAM_RESTART4,LUN_WAM_RESTART5
 

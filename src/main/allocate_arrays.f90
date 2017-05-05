@@ -54,9 +54,9 @@
      &,           Un_ms1(MaxFluxTube,NLP,NMP,3:3) )
 
         allocate( ON_m3_msis (MaxFluxTube,NLP,NMP)     &
-     &,           Tn_K_msis (MaxFluxTube,NLP,NMP)     &
-     &,           N2N_m3_msis(MaxFluxTube,NLP,NMP)     &
-     &,           O2N_m3_msis(MaxFluxTube,NLP,NMP))
+       &,           Tn_K_msis (MaxFluxTube,NLP,NMP)    &
+       &,           N2N_m3_msis(MaxFluxTube,NLP,NMP)    &
+       &,           O2N_m3_msis(MaxFluxTube,NLP,NMP))
 
       allocate( WamField(MaxFluxTube,NLP,NMP,7) )
 

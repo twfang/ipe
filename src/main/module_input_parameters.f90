@@ -101,7 +101,7 @@
       LOGICAL, PUBLIC :: sw_debug_mpi
       LOGICAL, PUBLIC :: sw_output_fort167 =.false.
       LOGICAL, PUBLIC :: sw_output_wind    =.false. !unit=6000,6001
-      LOGICAL, PUBLIC :: sw_use_wam_fields_for_restart=.false. !unit=5000,5001
+      LOGICAL, PUBLIC :: sw_use_wam_fields_for_restart=.true. !unit=5000,5001
       INTEGER(KIND=int_prec), PUBLIC :: peFort167=0 !default mype=0
       INTEGER(KIND=int_prec), PUBLIC :: mpfort167 = 10
       INTEGER(KIND=int_prec), PUBLIC :: lpfort167 = 14
