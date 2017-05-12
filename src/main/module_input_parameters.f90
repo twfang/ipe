@@ -107,13 +107,13 @@
       INTEGER(KIND=int_prec), PUBLIC :: lpfort167 = 14
       INTEGER(KIND=int_prec), DIMENSION(2), PUBLIC :: iout
       INTEGER(KIND=int_prec), PUBLIC :: mpstop=80
-      INTEGER(KIND=int_prec), PUBLIC :: sw_neutral=3    
+      INTEGER(KIND=int_prec), PUBLIC :: sw_neutral=1    
 !0: WAM debug: use which ever ESMF fields are coming across for debugging purpose
 !1: WAM default science mode: specify ESMF fields you wish to use
 !2: GT
 !3: MSIS(default)
 !4: read in files
-      LOGICAL, dimension(7), PUBLIC :: swNeuPar!     =.false. !f:OFF (from MSIS); t:ON (from WAM)
+      LOGICAL, dimension(7), PUBLIC :: swNeuPar!     =.true. !f:OFF (from MSIS); t:ON (from WAM)
 !determines which neutral parameters to derive from WAM only when sw_neutral=0/1? 
 !1:tn; 2:un1(east); 3:un2(north); 4:un3(up); 5:[O]; 6:[O2]; 7:[N2]
       LOGICAL, PUBLIC :: swEsmfTime =.false.
