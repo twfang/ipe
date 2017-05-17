@@ -165,21 +165,23 @@ END IF !( sw_output_plasma_grid ) THEN
            STATUS_dum ='unknown'
            CALL open_file ( filename, LUN_wind0, FORM_dum, STATUS_dum )
 
-!--- unit=6001 wind
+!nm20170424 unit number corrected
+!--- unit=6001 tn
            LUN_wind1=6001
-           filename='wind_out'
+           filename='tn_out'
            print *,'fort.6001? ', filename, LUN_wind1
            FORM_dum ='unformatted' 
            STATUS_dum ='unknown'
            CALL open_file ( filename, LUN_wind1, FORM_dum, STATUS_dum ) 
 
-!--- unit=6002 tn
+!--- unit=6002 neutral wind 3 components
            LUN_wind2=6002
-           filename='tn_out'
+           filename='wind_out'
            print *,'fort.6002? ', filename, LUN_wind2
            FORM_dum ='unformatted' 
            STATUS_dum ='unknown'
            CALL open_file ( filename, LUN_wind2, FORM_dum, STATUS_dum ) 
+!nm20170424:
 
 !--- unit=6003 on: neutral atomic oxygen density
            LUN_wind3=6003
