@@ -1,3 +1,4 @@
+!nm20170427: implement gradually shift from msis to wam
 ! DATE: 08 September, 2011
 !********************************************
 !***      Copyright 2011 NAOMI MARUYAMA   ***
@@ -13,7 +14,9 @@
       MODULE module_NEUTRAL_MKS
       USE module_precision
       USE module_IPE_dimension,ONLY: NPTS2D,NLP,NMP
-      USE module_FIELD_LINE_GRID_MKS,ONLY: ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k,Un_ms1
+      USE module_FIELD_LINE_GRID_MKS,ONLY: ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k,Un_ms1 &
+!nm20170424 wind output corrected
+&,vn_ms1_4output
       USE module_input_parameters,ONLY : parallelBuild
 
       IMPLICIT NONE
@@ -76,6 +79,16 @@
 !extrapolation
       REAL (KIND=real_prec) :: Hk,Hk1,Hav,dht, dist, dist1
       INTEGER(KIND=int_prec) :: ipts1
+!nm20170427: implement gradually shift from msis to wam
+REAL (KIND=real_prec) :: fracWamD
+REAL (KIND=real_prec),parameter :: dUTWamD   = 0.0 !(1)take 0hr to shift to wam
+!REAL (KIND=real_prec),parameter :: dUTWamD   = 43200. !(2)take 12hr to shift to wam
+!REAL (KIND=real_prec),parameter :: dUTWamD   = 86400. !(3)take 24hr to shift to wam
+REAL (KIND=real_prec),parameter :: UTMinWamD = 432000. 
+REAL (KIND=real_prec),parameter :: UTMaxWamD = UTMinWamD + dUTWamD !time at which fracWamD=1
+REAL (KIND=real_prec),dimension(IPDIM) :: MsisDSaved
+!dbg20170504
+INTEGER(KIND=int_prec) :: istp1,istp2
 !------
 
       iyear = NYEAR
@@ -172,6 +185,10 @@ END IF
          if ( sw_neutral==3 ) then
             if(lp==1)print*,mype,mp,'MSIS',sw_neutral,utime
          else if ( sw_neutral==0 .or. sw_neutral == 1 ) then
+
+!nm20170427: implement gradually shift from msis to wam
+
+
          !Tn
          ! nm20151130: temporarily obtain ihTopN
          NHLoop: do ipts=in,midpoint
@@ -239,6 +256,19 @@ END IF !( sw_debug ) THEN
 end if !  ( swNeuPar(jth) ) then
 
 
+!nm20170427: implement gradually shift from msis to wam
+if ( dUTWamD==0.0 ) then 
+  fracWamD = 1.0
+else
+  fracWamD = ( REAL(utime)-UTMinWamD ) * 1.0/dUTWamD 
+end if
+if(mp==1.and.lp==1)print*,'frac=',fracWamD,' dUT=',dUTWamD,' ut=',utime, UTMinWamD  
+if ( fracWamD < 0.0 .or. fracWamD > 1.0 ) then
+!SMS$IGNORE begin
+  print*,'!STOP! INVALID fracWamD',fracWamD,' dUT=',dUTWamD,' ut=',REAL(utime),UTMinWamD,(REAL(utime)-UTMinWamD)    
+!SMS$IGNORE end
+  STOP
+end if
          jth_loop: do jth=1,6 !2:east;3:notrh;4:up for WamField,swNeuPar
             jjth=jth+1 !2:4 for WamField,swNeuPar; !5:O,6:O2,7:N2
             if ( swNeuPar(jjth) ) then
@@ -252,20 +282,82 @@ end if !  ( swNeuPar(jth) ) then
 
                else if ( jjth==5 ) then
                   if(sw_debug.and.lp==1) print*,mp,'calculating wam compO',jjth 
+
+
+
+!dbg20170504:check NaNs and temporary fix
+do ihem=1,2
+   if ( ihem==1 ) then
+!NH
+      ihTop=IN+3
+      iStep=-1
+      midPoints=IN
+   else if ( ihem==2 ) then
+!SH
+      ihTop=IS-3
+      iStep=+1
+      midPoints=IS
+   end if! ( ihtm==2 ) then
+
+   do idb=ihTop,midPoints, iStep
+      if ( wamfield(idb,lp,mp,jjth) /= wamfield(idb,lp,mp,jjth) ) then
+!SMS$IGNORE begin
+         print"('ERROR NaN! module_neutral:',i3,i6,i4,i3,e12.4,f6.0,2f7.1)",mype,idb,lp,mp,wamfield(idb,lp,mp,jjth),alt_km(idb),glon_deg(idb),glat_deg(idb)
+!SMS$IGNORE end
+
+!dbg20170504 temporary fix: overwrite NaNs by downward extraporation
+         if (ihem==1) then
+!NH
+            istp1=+1
+            istp2=+2
+         else if (ihem==2) then
+!SH
+            istp1=-1
+            istp2=-2
+         end if !(idb<midpoint) then
+         WamField(idb,lp,mp,jjth)=10**( &
+              & LOG10(WamField(idb+istp2,lp,mp,jjth)) + ( &
+              & LOG10(WamField(idb+istp1,lp,mp,jjth)) - LOG10(WamField(idb+istp2,lp,mp,jjth)) &
+              &                                    ) * ( alt_km(idb)-alt_km(idb+istp2) )/ ( alt_km(idb+istp1)-alt_km(idb+istp2) )&
+              & )
+!SMS$IGNORE begin
+         print"('NaN corrected! module_neutral:',i3,i6,i4,i3,e12.4,f6.0,2f7.1)",mype,idb,lp,mp,wamfield(idb,lp,mp,jjth),alt_km(idb),glon_deg(idb),glat_deg(idb)
+!SMS$IGNORE end
+      end if !( wamfield(idb,lp,mp,jjth) /= wamfield(idb,lp,mp,jjth) ) then
+   end do !idb
+end do !ihem
+!dbg20170504 --end
+!nm20170427: implement gradually shift from msis to wam
+MsisDSaved(IN:IS)=on_m3( IN:IS,lp,mp) 
+
                   !O below 800km: NH
-                  on_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jjth) !O
+on_m3( IN:ihTopN,lp,mp) = fracWamD*WamField(IN:ihTopN,lp,mp, jjth) + (1.-fracWamD)*MsisDSaved(IN:ihTopN) !O
+!d                  on_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jjth) !O
                   !O below 800km: SH
-                  on_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jjth) !O
+on_m3( ihTopS:IS,lp,mp) = fracWamD*WamField(ihTopS:IS,lp,mp, jjth) + (1.-fracWamD)*MsisDSaved(ihTopS:IS) !O
+!d                  on_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jjth) !O
                else if ( jjth==6 ) then
+
+!nm20170427: implement gradually shift from msis to wam
+MsisDSaved(IN:IS)=o2n_m3( IN:IS,lp,mp) 
+
                   !O2 below 800km: NH
-                  o2n_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jjth) !O2
+o2n_m3( IN:ihTopN,lp,mp) = fracWamD*WamField(IN:ihTopN,lp,mp, jjth) + (1.-fracWamD)*MsisDSaved(IN:ihTopN) !O2
+!d                  o2n_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jjth) !O2
                   !O2 below 800km: SH
-                  o2n_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jjth) !O2
+o2n_m3( ihTopS:IS,lp,mp) = fracWamD*WamField(ihTopS:IS,lp,mp, jjth) + (1.-fracWamD)*MsisDSaved(ihTopS:IS)  !O2
+!d                  o2n_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jjth) !O2
                else if ( jjth==7 ) then
+
+!nm20170427: implement gradually shift from msis to wam
+MsisDSaved(IN:IS)=n2n_m3( IN:IS,lp,mp) 
+
                   !N2 below 800km: NH
-                  n2n_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jjth) !n2
+n2n_m3( IN:ihTopN,lp,mp) = fracWamD*WamField(IN:ihTopN,lp,mp, jjth) + (1.-fracWamD)*MsisDSaved(IN:ihTopN) !n2
+!d                  n2n_m3( IN:ihTopN,lp,mp) = WamField(IN:ihTopN,lp,mp, jjth) !n2
                   !N2 below 800km: SH
-                  n2n_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jjth) !n2
+n2n_m3( ihTopS:IS,lp,mp) = fracWamD*WamField(ihTopS:IS,lp,mp, jjth) + (1.-fracWamD)*MsisDSaved(ihTopS:IS) !n2
+!d                  n2n_m3( ihTopS:IS,lp,mp) = WamField(ihTopS:IS,lp,mp, jjth) !n2
                end if !jjth
 
 
@@ -323,6 +415,14 @@ end if !  ( swNeuPar(jth) ) then
             end if !( swNeuPar(jjth) ) then
 
          end do jth_loop !jth=1,3 !2:4 for WamField,swNeuPar            
+
+!nm20170424 wind output corrected
+jth_loop4wind: do jth=1,3
+  flux_tube0: do i=IN,IS
+    vn_ms1_4output(i-IN+1,lp,mp,jth)=vn_ms1(jth,i-IN+1)
+ end do flux_tube0
+end do jth_loop4wind
+!
 
 if(sw_debug)then 
 !SMS$IGNORE begin
