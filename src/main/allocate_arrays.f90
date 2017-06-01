@@ -21,8 +21,12 @@
      &,mlon_rad, plasma_grid_Z, plasma_grid_GL, plasma_3d_old &
      &,apexDscalar, l_mag, WamField &
      &,ON_m3_msis,Tn_K_msis,N2N_m3_msis,O2N_m3_msis
+&, vn_ms1_4output
   
-      USE module_input_parameters,ONLY: sw_neutral_heating_flip
+      USE module_input_parameters,ONLY: sw_neutral_heating_flip &
+!nm20170424 wind output corrected
+&, sw_neutral
+
       IMPLICIT NONE
       INTEGER (KIND=int_prec),INTENT(IN) :: switch
       INTEGER (KIND=int_prec) :: stat_alloc
@@ -58,7 +62,10 @@
        &,           N2N_m3_msis(MaxFluxTube,NLP,NMP)    &
        &,           O2N_m3_msis(MaxFluxTube,NLP,NMP))
 
-      allocate( WamField(MaxFluxTube,NLP,NMP,7) )
+!nm20170424 wind output corrected
+if ( sw_neutral==0.or.sw_neutral==1 ) then
+  allocate( WamField(MaxFluxTube,NLP,NMP,7), vn_ms1_4output(MaxFluxTube,NLP,NMP,3) )
+end if
 
 
         IF ( sw_neutral_heating_flip==1 ) THEN
@@ -125,7 +132,10 @@ print *,'DE-ALLOCATing ARRAYS'
       END IF
 
 
-      DEallocate( WamField )
+!nm20170424 wind output corrected
+if ( sw_neutral==0.or.sw_neutral==1 ) then 
+  DEallocate( WamField, vn_ms1_4output )
+end if
 
 !---neutral heating
       IF ( sw_neutral_heating_flip==1 ) THEN
