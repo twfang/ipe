@@ -20,7 +20,7 @@
      &,Be3, Pvalue, JMIN_IN, JMAX_IS,hrate_mks3d,midpnt &
      &,mlon_rad, plasma_grid_Z, plasma_grid_GL, plasma_3d_old &
      &,apexDscalar, l_mag, WamField &
-!nm20170424 wind output corrected
+     &,ON_m3_msis,Tn_K_msis,N2N_m3_msis,O2N_m3_msis
 &, vn_ms1_4output
   
       USE module_input_parameters,ONLY: sw_neutral_heating_flip &
@@ -57,6 +57,10 @@
      &,           TINF_K(MaxFluxTube,NLP,NMP)     &
      &,           Un_ms1(MaxFluxTube,NLP,NMP,3:3) )
 
+        allocate( ON_m3_msis (MaxFluxTube,NLP,NMP)     &
+       &,           Tn_K_msis (MaxFluxTube,NLP,NMP)    &
+       &,           N2N_m3_msis(MaxFluxTube,NLP,NMP)    &
+       &,           O2N_m3_msis(MaxFluxTube,NLP,NMP))
 
 !nm20170424 wind output corrected
 if ( sw_neutral==0.or.sw_neutral==1 ) then

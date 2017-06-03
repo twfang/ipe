@@ -14,7 +14,7 @@
       MODULE module_NEUTRAL_MKS
       USE module_precision
       USE module_IPE_dimension,ONLY: NPTS2D,NLP,NMP
-      USE module_FIELD_LINE_GRID_MKS,ONLY: ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k,Un_ms1 &
+      USE module_FIELD_LINE_GRID_MKS,ONLY: ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k,Un_ms1,  ON_m3_msis, N2N_m3_msis, O2N_m3_msis, TN_k_msis &
 !nm20170424 wind output corrected
 &,vn_ms1_4output
       USE module_input_parameters,ONLY : parallelBuild
@@ -41,7 +41,7 @@
       use module_FIELD_LINE_GRID_MKS, only : plasma_grid_3d,plasma_grid_Z, apexD, JMIN_IN,JMAX_IS,east,north,up,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,JMIN_ING,JMAX_ISG,WamField
       USE module_physical_constants,ONLY: pi,zero,earth_radius,g0,gscon,massn_kg
       USE module_input_parameters,ONLY: F107D,F107AV,AP,NYEAR,NDAY,sw_debug,mpstop,sw_grid,start_time,stop_time &
-     &,sw_neutral, swNeuPar,mype
+     &,sw_neutral, swNeuPar,mype, sw_use_wam_fields_for_restart
       USE module_unit_conversion,ONLY: M_TO_KM
       USE module_IO, ONLY:filename,FORM_dum,STATUS_dum,luntmp3
       USE module_open_file, ONLY:open_file
@@ -106,17 +106,21 @@ IF( sw_debug )  THEN
 END IF
 
 
-! array initialization
+! array initialization - don't do this......
 !SMS$IGNORE BEGIN
-      ON_m3  = zero
-      HN_m3  = zero
-      N2N_m3 = zero
-      O2N_m3 = zero
-      HE_m3  = zero
-      N4S_m3 = zero
-      TN_k   = zero
-      TINF_k = zero
-      Un_ms1 = zero
+!      ON_m3  = zero
+!      HN_m3  = zero
+!      N2N_m3 = zero
+!      O2N_m3 = zero
+!      HE_m3  = zero
+!      N4S_m3 = zero
+!      TN_k   = zero
+!      TINF_k = zero
+!      Un_ms1 = zero
+!      on_m3_msis = zero
+!      o2n_m3_msis = zero
+!      n2n_m3_msis = zero
+!      tn_k_msis = zero
 !SMS$IGNORE END
 
 !SMS$PARALLEL(dh, lp, mp) BEGIN
@@ -143,18 +147,37 @@ END IF
           glat_deg(1:NPTS) = 90. - plasma_grid_3d(IN:IS,lp,mp,IGCOLAT)*180./pi
           alt_km  (1:NPTS) = plasma_grid_Z(IN:IS,lp) * M_TO_KM  !/ 1000. 
 
-          call get_thermosphere (npts, &
-                         iyear, iday, ut_hour, f107D_dum, f107A_dum, AP_dum, &
-                         glon_deg, glat_deg, alt_km, &
-                         he_m3( IN:IS,lp,mp) &
-     &                 , on_m3( IN:IS,lp,mp) &
-     &                 , o2n_m3(IN:IS,lp,mp) &
-     &                 , n2n_m3(IN:IS,lp,mp) &
-     &                 ,  hn_m3(IN:IS,lp,mp) &
+          call get_thermosphere (npts, iyear, iday, ut_hour, f107D_dum, f107A_dum, AP_dum &
+     &                 , glon_deg, glat_deg, alt_km &
+     &                 , he_m3( IN:IS,lp,mp) &
+     &                 , on_m3_msis( IN:IS,lp,mp) &
+     &                 , o2n_m3_msis(IN:IS,lp,mp) &
+     &                 , n2n_m3_msis(IN:IS,lp,mp) &
+     &                 , hn_m3(IN:IS,lp,mp) &
      &                 , n4s_m3(IN:IS,lp,mp) &
-     &                 ,   tn_k(IN:IS,lp,mp) &
+     &                 , tn_k_msis(IN:IS,lp,mp) &
      &                 , tinf_k(IN:IS,lp,mp) &
-     &              ,Vn_ms1(1:3,1:NPTS   )   )
+     &                 , Vn_ms1(1:3,1:NPTS))
+
+if (mp == 1 .and. lp == 1) then
+do i = in , is
+print *,'THISS ',i,tn_k_msis(i,lp,mp),tn_k(i,mp,lp)
+enddo
+endif
+!
+! copy across the msis parameters:
+!
+if ( utime==432000 ) then
+if ( sw_use_wam_fields_for_restart ) then
+          print *, '**** GEORGE **** First Call of IPE, Using Read-in WAM fields', mp,lp
+else
+          print *, '**** GEORGE **** First Call of IPE, Using MSIS ', mp,lp
+          on_m3(IN:IS,lp,mp) =  on_m3_msis(IN:IS,lp,mp)
+          o2n_m3(IN:IS,lp,mp) = o2n_m3_msis(IN:IS,lp,mp)
+          n2n_m3(IN:IS,lp,mp) = n2n_m3_msis(IN:IS,lp,mp)
+          tn_k(IN:IS,lp,mp) = tn_k_msis(IN:IS,lp,mp)
+endif
+endif
 
 
 !nm20151130 include WAM fields options: 
@@ -178,9 +201,11 @@ END IF
       midpoint = IN + (IS-IN)/2
 
 !dbg20160715: temporarily change the code to use MSIS/HWM for the 1st time step, because wamfield is not ready for the 1st time step for a reason...
+      print*,' YAMPA0 BEFORE utime 432000 if block ',utime
       if ( utime==432000 ) then
          IF( sw_debug ) print*,mype,mp,lp,'MSIS utime=',utime         
       else if ( utime>432000 ) then
+      print*,' YAMPA0 BEFORE then HERE ',utime
 
          if ( sw_neutral==3 ) then
             if(lp==1)print*,mype,mp,'MSIS',sw_neutral,utime
@@ -214,8 +239,10 @@ END IF
 
 
          jth=1   
+         IF (lp==1) print*,mp,' YAMPA0 calculating wam Tn',jth,swNeuPar(jth)
          if ( swNeuPar(jth) ) then
-            IF (sw_debug.and.lp==1) print*,mp,'calculating wam Tn',jth 
+!            IF (sw_debug.and.lp==1) print*,mp,'calculating wam Tn',jth 
+            IF (lp==1) print*,mp,' YAMPA calculating wam Tn',jth 
             !below 800km: NH
             tn_k(IN:ihTopN,lp,mp)   = WamField(IN:ihTopN,lp,mp, jth) !Tn NH
             !below 800km: SH
@@ -577,6 +604,17 @@ end if !sw_neutral
 !SMS$PARALLEL END
 
 !      IF ( ALLOCATED(AP_dum) )  DEALLOCATE ( AP_dum )
+	print *, ' GEORGE JMIN_IN TOTAL ', JMIN_IN
+	print *, ' GEORGE JMIN_IN(10) ', JMIN_IN(10)
+	print *, ' GEORGE JMAX_IS TOTAL ', JMAX_IS
+	print *, ' GEORGE JMAX_IS(10) ', JMAX_IS(10)
+      print *,'*** GEORGE IN NEUTRAL ',tn_k(JMIN_IN(10)+2,10,10)
+      print *,'*** GEORGE IN NEUTRAL ',tn_k_msis(JMIN_IN(10)+2,10,10)
+	 print *,'***** THIS BNOW ',tn_k(JMIN_IN(10)+2,10,10)
+	 print *,'***** THIS BNOW2 ',Un_ms1(JMIN_IN(10)+2,10,10,1),Un_ms1(JMIN_IN(10)+2,10,10,2),Un_ms1(JMIN_IN(10)+2,10,10,3)
+	 print *,'***** THIS BNOW3 ',on_m3(JMIN_IN(10)+2,10,10)
+     print *,'***** THIS BNOW4 ',n2n_m3(JMIN_IN(10)+2,10,10)
+     print *,'***** THIS BNOW5 ',o2n_m3(JMIN_IN(10)+2,10,10)
       end subroutine neutral
 
       END MODULE module_NEUTRAL_MKS

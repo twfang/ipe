@@ -237,8 +237,9 @@ endif
 
 ! output plasma parameters to a file
       ret = gptlstart ('io_plasma_bin')
+write(6,*)'BEFORE MOD check output plasma',utime,start_time,ip_freq_output
       IF ( MOD( (utime-start_time),ip_freq_output)==0 ) THEN 
-if(sw_debug) print *,'before call to output plasma',utime,start_time,ip_freq_output
+write(6,*)'before call to output plasma',utime,start_time,ip_freq_output
 !dbg20110923segmentation fault??? memory allocation run time error???
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-5")
         CALL io_plasma_bin ( 1, utime )
