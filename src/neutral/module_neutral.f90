@@ -17,7 +17,8 @@
       USE module_FIELD_LINE_GRID_MKS,ONLY: ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k,Un_ms1,  ON_m3_msis, N2N_m3_msis, O2N_m3_msis, TN_k_msis &
 !nm20170424 wind output corrected
 &,vn_ms1_4output
-      USE module_input_parameters,ONLY : parallelBuild
+      USE module_input_parameters,ONLY : parallelBuild, &
+        hTop_m => mesh_height_max
 
       IMPLICIT NONE
 
@@ -69,7 +70,7 @@
 !dbg20120313
       INTEGER(KIND=int_prec) :: utime_dum
 !include WAM fields options
-      real(KIND=real_prec), parameter :: hTop_m=7.82E+05 !m
+!     real(KIND=real_prec), parameter :: hTop_m=7.82E+05 !m
 !1:O,2:O2;3:N2
       INTEGER(KIND=int_prec) :: ihTopN,ihTopS,ihTop,jth,jjth
       INTEGER(KIND=int_prec) :: ihem,iStep,midPoints
