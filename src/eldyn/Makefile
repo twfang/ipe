@@ -2,52 +2,150 @@
 
 TOP = ..
 
-PSRCS = get_efield90km.f           \
-        module_cal_monthday.f      \
+PSRCS = module_cal_monthday.f      \
+        efield.f                   \
+        module_prep_pnm.f          \
+        module_index_quiet.f       \
+        module_read_acoef.f        \
+        module_constants.f         \
+        module_prep_fk.f           \
+        module_ReadCoef.f          \
         module_efield_init.f       \
         module_eldyn.f             \
+	params.f                   \
+	cons_module.f              \
+	module_init_cons.f         \
+	heelis_module.f            \
+        module_init_heelis.f  \
+        nc_module.f  \
+        module_check_err.f  \
+        module_nc_create.f  \
+        readin.f  \
+        dynamo_module.f  \
+        module_readin_ascii.f  \
         module_init_eldyn.f        \
-        module_read_acoef.f        \
-        module_sub_eldyn.f
-
-SSRCS = apex_sunloc.f              \
-        efield.f                   \
-        module_adj_S_a.f           \
-        module_ADJUST.f            \
-        module_bnd_sinus.f         \
-        module_constants.f         \
+        module_sub_nclplot1d.f  \
+        module_sub_nclplot.f  \
+        module_magfield.f          \
+        module_colath.f \
+        module_flwv32.f \
+        module_potm.f \
+        module_sub_heelis.f \
+        module_plas2dyn_fli_array.f \
+        module_update_fli.f \
+        module_highlat.f \
+        module_transf.f \
+        module_rhspde.f \
+        module_clearcee.f \
+        module_htrpex.f \
+        module_cnmmod.f \
+        module_cnm.f \
+        module_stencmd.f \
+        module_stencil.f \
+        module_edges.f \
+        module_divide.f \
+        module_stenmd.f \
+        module_stenmod.f \
+        module_threed.f \
+        module_sub_dynamo.f \
         module_DerivPotential.f    \
-        module_efield_mid.f        \
-        module_efield_sunloc.f     \
-        module_EpotVal.f           \
+        module_interp_poten.f      \
         module_ff.f                \
+        module_pnm.f               \
+        module_set_fkflfs.f        \
+        module_efield_mid.f        \
         module_FSVal.f             \
+        module_SetModel.f          \
+        module_ADJUST.f            \
         module_fun_MagLong.f       \
         module_fun_MLT.f           \
-        module_GECMP.f             \
-        module_get_efield.f        \
-        module_GET_TILT.f          \
-        module_GlobalElPotential.f \
-        module_highlat_adjust.f    \
-        module_highlat_getbnd.f    \
-        module_index_quiet.f       \
-        module_interp_poten.f      \
         module_JULDAY.f            \
-        module_LEGENDRE.f          \
-        module_magfield.f          \
-        module_pnm.f               \
+        module_GET_TILT.f          \
+        module_prep_weimer.f       \
         module_pot_latsmo.f        \
         module_pot_latsmo2.f       \
-        module_pot_lonsmo.f        \
-        module_prep_fk.f           \
-        module_prep_pnm.f          \
-        module_prep_weimer.f       \
-        module_ReadCoef.f          \
-        module_set_fkflfs.f        \
-        module_SetModel.f          \
-        module_sunloc.f            \
-        module_svbksb.f            \
+        module_LEGENDRE.f          \
+        module_EpotVal.f           \
+        module_GECMP.f             \
+        module_highlat_getbnd.f    \
         module_svdcmp.f            \
+        module_svbksb.f            \
+        module_bnd_sinus.f         \
+        module_pot_lonsmo.f        \
+        module_highlat_adjust.f    \
+        module_GlobalElPotential.f \
+        module_adj_S_a.f           \
+        module_get_efield.f        \
+        module_sunloc.f            \
+        module_sub_eldyn.f \
+	module_regrid2ipe.f  \
+        get_efield90km_new2.f  \
+        util.f \
+        module_ceee.f \
+        muh2cr.f \
+        mudcom.f \
+        mud.f \
+        mudmod.f \
+        module_nc_close.f
+
+SSRCS = apex_sunloc.f              \
+        module_efield_sunloc.f     \
         supim_exb.f
 
-include $(TOP)/Makefile.common
+###nm20170131 merging TWeldyn
+###compiling eldyn subdirectory requires -r8 option. re-writing FFLAGS did not work. so included Makefile.common and manually added -r8.
+###FFLAGS = -r8 $(FFLAGS)
+
+###include $(TOP)/Makefile.common
+# common Makefile
+
+# Dynamic variables
+
+INCS   = $(addprefix -I$(TOP)/,$(DIRS))
+POBJ77 = $(addsuffix .o,$(basename $(filter %.f,  $(PSRCS))))
+POBJ90 = $(addsuffix .o,$(basename $(filter %.f90,$(PSRCS))))
+SOBJ77 = $(addsuffix .o,$(basename $(filter %.f,  $(SSRCS))))
+SOBJ90 = $(addsuffix .o,$(basename $(filter %.f90,$(SSRCS))))
+SRCS   = $(strip $(PSRCS) $(SSRCS))
+VPATH  = $(shell echo $(addprefix $(TOP)/,$(DIRS)) | sed 's/ /:/g')
+
+.PHONY: clean objs
+
+# Default rule
+
+objs: $(POBJ77) $(POBJ90) $(SOBJ77) $(SOBJ90)
+
+# Prerequisites for serial and parallel objects, respectively
+
+$(POBJ77) $(SOBJ77): %.o: %.f
+$(POBJ90) $(SOBJ90): %.o: %.f90
+
+# Rule for building parallel objects
+
+$(POBJ77) $(POBJ90):
+ifeq ($(PARALLELISM),parallel)
+	$(PPP) $(shell echo $(PPP_FLAGS) | sed 's/--Fmodule=$*//') -o $*_sms.f90 $<
+	$(MODCMD) && $(FCP) -c -r8 $(FFLAGS) $(INCS) $(SMS_INCFLAGS) -o $@ $*_sms.f90
+else
+	$(MODCMD) && $(FCS) -c -r8 $(FFLAGS) $(INCS) -o $@ $<
+endif
+
+# Rule for building serial objects
+
+$(SOBJ77) $(SOBJ90):
+	$(MODCMD) && $(FCS) -c -r8 $(FFLAGS) $(INCS) -o $@ $<
+
+# Rule for generating dependencies
+
+DEPENDENCIES: $(SRCS)
+	$(RM) Filepath Srcfiles
+	echo "." > Filepath
+	echo $(SRCS) | sed 's/  */\n/g' > Srcfiles
+	$(TOP)/mkDepends -m -d module_decomp.o Filepath Srcfiles > $@
+
+-include DEPENDENCIES
+
+# Rule for cleaning
+
+clean:
+	$(RM) *.i *.lst *.mod *.o *_sms.f *_sms.f90 *.tmp *.ppptmp* *~ Filepath Srcfiles

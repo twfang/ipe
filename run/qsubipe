@@ -2,8 +2,8 @@
 
 # Control variables
 
-sw_grid=0
-sw_neutral=1
+sw_grid=1
+sw_neutral=3
 
 # Functions
 
@@ -256,11 +256,14 @@ case $machine in
 
   "theia")
     compiler_check "intel pgi" $compiler $machine
-    setc IPEDATA  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/IPEdata/data
-#    setc IPEDATA  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/tmp20150730/trunk/run/1444997033_ipe_theia_intel_parallel_80
-    setc IPEQUEUE debug
-    setc IPETIME  00:30:00
-    setc IPEWIND  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/IPEdata/wind
+#    setc IPEDATA  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/IPEdata/data
+    setc IPEDATA  /scratch3/NCEPDEV/swpc/save/Tzu-Wei.Fang/IPE/trunk_electrodynamics_44514_feedback/run/ipe_S_onlyEd1_crashed_newtest
+###    setc IPEQUEUE debug
+    setc IPEQUEUE batch
+###    setc IPETIME  00:30:00
+    setc IPETIME  08:00:00
+#    setc IPEWIND  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/IPEdata/wind
+    setc IPEWIND /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/mergeEldyn20170127Stefan/ipe/run
     acct=swpc
     griddir=/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/grid
     queue_cmd=qsub
@@ -284,6 +287,9 @@ case $machine in
 
 esac
 
+###dbg20170119
+###pre=ipe_${machine}_${compiler}_${parallelism}
+#pre=ipe_${machine}_${compiler}_${parallelism}.v0  ###TW's 20161220
 pre=ipe_${machine}_${compiler}_${parallelism}
 exe=../bin/${pre}.exe
 test -x $exe || fail "$0: Cannot find executable '$exe'."
@@ -306,9 +312,11 @@ for j in $(seq 0 11); do
   test $j -lt 10 && pad=0 || pad=
   linksafe $IPEDATA/plasma${pad}${j} $rundir/stup${pad}${j}
 done
-if [ $sw_neutral -eq 3 ]; then
-  linksafe $IPEWIND/ut_input $rundir/ut_input2009017
-  linksafe $IPEWIND/wind_input $rundir/wind_input2009017
+###20170119 eldyn
+cp /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/mergeEldyn20170127Stefan/ipe/run/output_fli  $rundir/stup_fli
+if [ $sw_neutral -eq 4 ]; then
+  linksafe $IPEWIND/ut_input_mod  $rundir/ut_input_mod
+  linksafe $IPEWIND/wind_input    $rundir/wind_input
 fi
 
 # Enter the run directory, edit SMSnamelist, create and submit the run script.

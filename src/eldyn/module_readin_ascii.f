@@ -39,6 +39,7 @@
       integer :: jth,utime
       real,dimension(kmlonp1,kmlat)::dum
 !      
+!SMS$SERIAL BEGIN
       open(iunit,file=path_ascii,status='OLD',err=99)
       write(6,*) 'open ascii file ',path_ascii
       read(unit=iunit,FMT="(I12)",err=199)utime
@@ -170,7 +171,9 @@
 !      write(6,*) 'itotal ',itotal
 !
 !nm20140408--end commented out
-      close(iunit,err=100)  
+      close(iunit,err=100)
+!SMS$SERIAL end
+  
 !   
 ! for testing input: is the same as input file
 !

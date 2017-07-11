@@ -24,7 +24,7 @@
       USE module_FIELD_LINE_GRID_MKS,ONLY: plasma_grid_3d,plasma_grid_GL, apexD, JMIN_IN,JMAX_IS,Be3, apexDscalar,MaxFluxTube, ISL,IBM,east,north,up &
      &, TN_k,ON_m3,O2N_m3,N2N_m3,Un_ms1 &
      &, plasma_3d
-      USE module_input_parameters,ONLY:sw_3DJ,mpstop
+      USE module_input_parameters,ONLY:sw_3DJ,mpstop,mype
       USE module_physical_constants,ONLY:rtd
       USE module_IPE_dimension,ONLY: NPTS2D,NMP,NLP
       USE module_calculate_field_line_integrals,ONLY:calculate_field_line_integrals
@@ -253,6 +253,11 @@ print *, '!dbg20151107 make sure fli is calculated at lp_plas=170'
 &                                         sigma_phph_dsi_1d,sigma_lmlm_msi_1d, &
 &                                         sigma_h_1d,sigma_c_1d, &
 &                                         Kdmph_dsi_1d,Kdmlm_1d )
+
+!d!SMS$ignore begin
+!d      print*,mype,'after save2fli_array'
+!d!SMS$ignore end
+
 ! Tzu-Wei:save conductivities and Ue
           do i_set=in1d,is1d
                 Ue1_3d(i_set,lp_dyn,mp) = Ue(i_set,1)
@@ -261,12 +266,17 @@ print *, '!dbg20151107 make sure fli is calculated at lp_plas=170'
                 sigma_hall_3d(i_set,lp_dyn,mp) = sigma_hall_1d(i_set)
                 Ne_3d(i_set,lp_dyn,mp) = electron_density_out(i_set)
           enddo
-
+!d!SMS$ignore begin
+!d      print*,mype,lp_dyn,'after save 3d cond'
+!d!SMS$ignore end
 
             EXIT lp_dyn_loop
 !dbg20151107         END IF !imlat_dyn > imlat_plas ) THEN
       END DO      lp_dyn_loop!: DO lp_dyn=1,nmlat1
 
+!d!SMS$ignore begin
+!d      print*,mype,mp,'end of interface_field_line_integrals'
+!d!SMS$ignore end
 
       END SUBROUTINE interface_field_line_integrals
 

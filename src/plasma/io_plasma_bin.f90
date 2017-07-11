@@ -14,11 +14,13 @@
 !--------------------------------------------        
 SUBROUTINE io_plasma_bin ( switch, utime )
 USE module_precision
-USE module_IO,ONLY: LUN_PLASMA1,LUN_PLASMA2,lun_min1,lun_min2,lun_ut,lun_ut2,record_number_plasma,lun_max1
-USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_3d,JMIN_ING,JMAX_ISG,VEXBup
+USE module_IO,ONLY: LUN_PLASMA1,LUN_PLASMA2,lun_min1,lun_min2,lun_ut,lun_ut2,record_number_plasma,lun_max1 &
+&, lun_wind0, lun_wind1, lun_wind2, lun_wind3, lun_wind4, lun_wind5
+USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_3d,JMIN_ING,JMAX_ISG,VEXBup &
+&, Un_ms1,tn_k,on_m3,n2n_m3,o2n_m3
 USE module_IPE_dimension,ONLY: NMP,NLP,NPTS2D,ISPEC,ISPEV,IPDIM,ISPET,ISTOT
 USE module_input_parameters,ONLY:sw_debug,record_number_plasma_start,mype &
-&,sw_record_number,stop_time,start_time,duration,mpstop
+&,sw_record_number,stop_time,start_time,duration,mpstop, sw_output_wind
 USE module_physical_constants,ONLY:zero
 IMPLICIT NONE
 
@@ -32,6 +34,10 @@ INTEGER (KIND=int_prec )            :: n_read,n_read_min, utime_dum,record_numbe
 INTEGER (KIND=int_prec )            :: n_count
 INTEGER (KIND=int_prec )            :: ipts !dbg20120501
 REAL    (KIND=real_prec)            :: dumm(NPTS2D,NMP)
+!---
+!SMS$ignore begin
+      print*,mype,switch,utime,'sub-io_pl'
+!SMS$ignore end
 
 IF ( switch<1.or.switch>2 ) THEN
   print *,'sub-io_plasma:!STOP! INVALID switch',switch
@@ -47,6 +53,11 @@ dumm=zero
 
 IF ( switch==1 ) THEN !1:Output the 16 plasma* files
 
+!SMS$ignore begin
+      print*,mype,'0sub-io_pl'
+!SMS$ignore end
+
+
   record_number_plasma = record_number_plasma+1
 !SMS$SERIAL(<plasma_3d,IN>:default=ignore) BEGIN
   j_loop1: DO jth=1,ISTOT !=(ISPEC+3+ISPEV)
@@ -59,17 +70,59 @@ IF ( switch==1 ) THEN !1:Output the 16 plasma* files
       end do lp_loop1!lp
     end do mp_loop1!mp
 
+!SMS$ignore begin
+      print*,mype,'1sub-io_pl'
+!SMS$ignore end
+
     LUN = LUN_PLASMA1(jth-1+lun_min1)
     if(sw_debug) print *,'jth=',jth,' LUN=',LUN
     WRITE (UNIT=lun) (dumm(:,mp),mp=1,mpstop)
     if(sw_debug) print *,'!dbg! output dummy finished'
   END DO j_loop1!jth
 !SMS$SERIAL END
+
+
+!SMS$ignore begin
+      print*,mype,'2sub-io_pl'
+!SMS$ignore end
+
+
   LUN = LUN_PLASMA1(lun_max1)
 !SMS$SERIAL(<VEXBup,IN>:default=ignore) BEGIN
   WRITE (UNIT=LUN) (VEXBup(:,mp),mp=1,mpstop)
   WRITE (UNIT=lun_ut,FMT=*) record_number_plasma, utime
 !SMS$SERIAL END
+
+!SMS$ignore begin
+      print*,mype,'3sub-io_pl'
+!SMS$ignore end
+
+!nm20141001: moved from neutral
+      IF ( sw_output_wind ) THEN
+!nm20160711 debug wam field: 
+!SMS$SERIAL(<tn_k,IN>:default=ignore) BEGIN
+           write (UNIT=lun_wind1) tn_k
+           write (UNIT=lun_wind0,FMT=*) utime
+!SMS$SERIAL END
+!SMS$SERIAL(<Un_ms1,IN>:default=ignore) BEGIN
+           write (UNIT=lun_wind2) Un_ms1
+!SMS$SERIAL END
+!SMS$SERIAL(<on_m3,IN>:default=ignore) BEGIN
+           write (UNIT=lun_wind3) on_m3
+!SMS$SERIAL END
+!SMS$SERIAL(<n2n_m3,IN>:default=ignore) BEGIN
+           write (UNIT=lun_wind4) n2n_m3
+!SMS$SERIAL END
+!SMS$SERIAL(<o2n_m3,IN>:default=ignore) BEGIN
+           write (UNIT=lun_wind5) o2n_m3
+!SMS$SERIAL END
+      END IF !( sw_output_wind ) THEN
+
+!SMS$ignore begin
+      print*,mype,'4sub-io_pl'
+!SMS$ignore end
+
+
   if(sw_debug) then
     print *,'LUN=',lun_ut,'!dbg! output UT  finished: utime=',utime,record_number_plasma
   endif

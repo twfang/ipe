@@ -8,8 +8,8 @@
 ###nm20151014 
 DIRS          = main neutral flip eldyn plasma dummygptl driver ###NOgptl
 ###DIRS          = main neutral flip eldyn plasma driver  ###Yesgptl
-GPTL_INCFLAGS = -I../dummygptl
-GPTL_LDFLAGS  = -L../dummygptl -lgptl
+GPTL_INCFLAGS = -I../dummygptl -I$(NETCDF)/include
+GPTL_LDFLAGS  = -L../dummygptl -lgptl  -L$(NETCDF)/lib -lnetcdff -lnetcdf
 PPP_FLAGS     = --Fmodule=module_decomp --Free --comment --HaloSize=10
 
 TARGETS = clean                   \

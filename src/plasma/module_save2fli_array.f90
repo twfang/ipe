@@ -16,11 +16,12 @@
         PUBLIC :: save2fli_array
       contains
         subroutine save2fli_array (lp_plas,mp, &
-&                                         sigma_phph_dsi_1d,sigma_lmlm_msi_1d, &
-&                                         sigma_h_1d,sigma_c_1d, &
-&                                         Kdmph_dsi_1d,Kdmlm_1d )
+     &                                         sigma_phph_dsi_1d,sigma_lmlm_msi_1d, &
+     &                                         sigma_h_1d,sigma_c_1d, &
+     &                                         Kdmph_dsi_1d,Kdmlm_1d )
           USE module_precision
           USE module_eldyn,ONLY: plas_fli !t,Je_3d
+          use module_input_parameters,ONLY:mype 
           IMPLICIT NONE
           INTEGER (KIND=int_prec), intent(in)  ::  mp
           INTEGER (KIND=int_prec), intent(in)  ::  lp_plas
@@ -44,13 +45,15 @@
                 plas_fli(ihem,lp_plas,mp,6) = Kdmlm_1d(         ihem)
           end do
 ! Tzu-Wei TEST
-      print *,'TEST zigm within plasma folder'
-      print *,'zigm11',MAXVAL(plas_fli(:,:,:,1)),MINVAL(plas_fli(:,:,:,1))
-      print *,'zigm22',MAXVAL(plas_fli(:,:,:,2)),MINVAL(plas_fli(:,:,:,2))
-      print *,'zigm2',MAXVAL(plas_fli(:,:,:,3)),MINVAL(plas_fli(:,:,:,3))
-      print *,'zigmc',MAXVAL(plas_fli(:,:,:,4)),MINVAL(plas_fli(:,:,:,4))
-      print *,'rim1',MAXVAL(plas_fli(:,:,:,5)),MINVAL(plas_fli(:,:,:,5))
-      print *,'rim2',MAXVAL(plas_fli(:,:,:,6)),MINVAL(plas_fli(:,:,:,6))
+!SMS$IGNORE begin
+      print *,mype,ihem,lp_plas,mp,'TEST zigm within plasma folder'
+      print *,mype,'zigm11',MAXVAL(plas_fli(:,:,:,1)),MINVAL(plas_fli(:,:,:,1))
+      print *,mype,'zigm22',MAXVAL(plas_fli(:,:,:,2)),MINVAL(plas_fli(:,:,:,2))
+      print *,mype,'zigm2',MAXVAL(plas_fli(:,:,:,3)),MINVAL(plas_fli(:,:,:,3))
+      print *,mype,'zigmc',MAXVAL(plas_fli(:,:,:,4)),MINVAL(plas_fli(:,:,:,4))
+      print *,mype,'rim1',MAXVAL(plas_fli(:,:,:,5)),MINVAL(plas_fli(:,:,:,5))
+      print *,mype,'rim2',MAXVAL(plas_fli(:,:,:,6)),MINVAL(plas_fli(:,:,:,6))
+!SMS$IGNORE end
 
 !t          IF ( sw_3DJ==1 ) THEN
 !t            DO jth=1,2

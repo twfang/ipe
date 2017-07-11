@@ -32,7 +32,7 @@
       USE module_input_parameters,ONLY:mpstop,ip_freq_output,start_time,stop_time,&
 &     sw_neutral_heating_flip,sw_perp_transport,lpmin_perp_trans,lpmax_perp_trans,sw_para_transport,sw_debug,        &
 &     sw_dbg_perp_trans,sw_exb_up,parallelBuild,mype, &
-& HPEQ_flip, sw_eldyn
+& HPEQ_flip, sw_eldyn,ut_start_perp_trans
       USE module_physical_constants,ONLY:rtd,zero
       USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,plasma_grid_3d,plasma_grid_GL,plasma_grid_Z,JMAX_IS,hrate_mks3d,MaxFluxTube
       USE module_PLASMA,ONLY:utime_save,plasma_1d    
@@ -167,7 +167,7 @@ end if
 !dbg20120509          IF ( sw_perp_transport(mp)>=1 ) THEN
 !nm20130401: transport is not called when HPEQ_flip=0.5 as initial profiles do
 !not exist!
-        IF ( HPEQ_flip==0.5 .AND. utime==0 ) THEN
+        IF ( HPEQ_flip==0.5 .AND. utime==ut_start_perp_trans ) THEN
 
           print *,lp,mp,'utime=',utime,' plasma perp transport is not called when HPEQ_flip=0.5 & start_time=0 because initial profiles do not exist!'
 
@@ -243,16 +243,43 @@ endif
        &    sigma_ped_3d,sigma_hall_3d,Ue1_3d,Ue2_3d,Ne_3d)
          END IF
 
+
+!d!SMS$ignore begin
+!d      print*,mype,lp,'after interface_field_line_integrals'
+!d!SMS$ignore end
+
+
         END DO apex_latitude_height_loop !: DO lp = 1
+
+!d!SMS$ignore begin
+!d      print*,mype,mp,'end of apex_lat_loop'
+!d!SMS$ignore end
+
+
       END DO apex_longitude_loop !: DO mp = 
- 
-! Tzu-Wei: Write out the conductivities and winds
-         write(5000,*) sigma_ped_3d,sigma_hall_3d
-         write(5001,*) Ue1_3d,Ue2_3d
-         write(5002,*) Ne_3d
 !SMS$PARALLEL END
       ret = gptlstop ('apex_lon_loop')
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-4")
+
+
+!d!SMS$ignore begin
+!d      print*,mype,'end of apex_lon_loop'
+!d!SMS$ignore end
+
+
+!nm20170214 temporary comment out 
+! Tzu-Wei: Write out the conductivities and winds
+!t !SMS$SERIAL(<sigma_ped_3d,sigma_hall_3d,ue1_3d,ue2_3d,ne_3d,IN>:default=ignore) BEGIN
+         write(5000,*) sigma_ped_3d,sigma_hall_3d
+         write(5001,*) Ue1_3d,Ue2_3d
+         write(5002,*) Ne_3d
+!t !SMS$SERIAL END
+
+
+!d!SMS$ignore begin
+!d      print*,mype,'after fort.5000'
+!d!SMS$ignore end
+
 
 !dbg20120228: debug how2validate the transport
 !dbg20120501 if(sw_dbg_perp_trans) call dbg_estimate_trans_error (utime)
@@ -263,6 +290,11 @@ endif
 if(sw_debug) print *,'before call to output plasma',utime,start_time,ip_freq_output
 !dbg20110923segmentation fault??? memory allocation run time error???
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-5")
+
+!SMS$ignore begin
+      print*,mype,utime,'before io_plasma_bin'
+!SMS$ignore end
+
         CALL io_plasma_bin ( 1, utime )
 
 !        CALL output_dyn_fli_array (utime)
@@ -278,6 +310,10 @@ if(sw_debug) print *,'before call to output plasma',utime,start_time,ip_freq_out
       END IF      !IF ( MOD( (utime-start_time),ip_freq_output)==0 ) THEN 
       ret = gptlstop ('io_plasma_bin')
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-7")
+
+!SMS$ignore begin
+      print*,mype,utime,'end sub-plasma'
+!SMS$ignore end
 
       END SUBROUTINE plasma
       END MODULE module_sub_PLASMA

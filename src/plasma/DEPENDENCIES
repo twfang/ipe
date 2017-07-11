@@ -1,0 +1,22 @@
+flux_tube_solver.o : flux_tube_solver.f90 module_heating_rate.o module_plasma.o module_decomp.o 
+get_pvalue_dipole.o : get_pvalue_dipole.f90 module_decomp.o 
+get_sinim.o : get_sinim.f90 module_decomp.o 
+get_sza.o : get_sza.f90 module_decomp.o 
+interpolate_flux_tube.o : interpolate_flux_tube.f90 module_Qinterpolation.o module_plasma.o module_decomp.o 
+io_plasma_bin.o : io_plasma_bin.f90 module_decomp.o 
+module_Qinterpolation.o : module_Qinterpolation.f90 module_decomp.o 
+module_calc_collfreq.o : module_calc_collfreq.f90 module_decomp.o 
+module_calculate_field_line_integrals.o : module_calculate_field_line_integrals.f90 module_ionneut_plas.o module_calc_collfreq.o module_decomp.o 
+module_find_neighbor_grid_R.o : module_find_neighbor_grid_R.f90 module_decomp.o 
+module_find_neighbor_grid_th.o : module_find_neighbor_grid_th.f90 module_decomp.o 
+module_heating_rate.o : module_heating_rate.f90 module_decomp.o 
+module_initialize_fli_array.o : module_initialize_fli_array.f90 module_decomp.o 
+module_interface_field_line_integrals.o : module_interface_field_line_integrals.f90 module_calculate_field_line_integrals.o module_save2fli_array.o module_decomp.o 
+module_ionneut_plas.o : module_ionneut_plas.f90 module_decomp.o 
+module_perpendicular_transport.o : module_perpendicular_transport.f90 module_stepback_mag_R.o module_stepback_mag_th.o module_find_neighbor_grid_R.o module_find_neighbor_grid_th.o module_decomp.o 
+module_plasma.o : module_plasma.f90 module_decomp.o 
+module_save2fli_array.o : module_save2fli_array.f90 module_decomp.o 
+module_stepback_mag_R.o : module_stepback_mag_R.f90 module_decomp.o 
+module_stepback_mag_th.o : module_stepback_mag_th.f90 module_decomp.o 
+module_sub_plasma.o : module_sub_plasma.f90 module_interface_field_line_integrals.o module_perpendicular_transport.o module_initialize_fli_array.o module_plasma.o module_decomp.o 
+read_vexb.o : read_vexb.f90 module_decomp.o 

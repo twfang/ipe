@@ -16,7 +16,13 @@ PSRCS = flux_tube_solver.f90               \
         module_Qinterpolation.f90          \
         module_stepback_mag_R.f90          \
         module_stepback_mag_th.f90         \
-        module_sub_plasma.f90              \
+	module_ionneut_plas.f90            \
+	module_calc_collfreq.f90           \
+	module_calculate_field_line_integrals.f90	\
+	module_initialize_fli_array.f90    \
+	module_save2fli_array.f90          \
+	module_interface_field_line_integrals.f90	\
+        module_sub_plasma.f90         	   \
         read_vexb.f90
 
 include $(TOP)/Makefile.common
