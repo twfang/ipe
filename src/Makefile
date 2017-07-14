@@ -19,7 +19,9 @@ TARGETS = clean                   \
           trillian_pgi_parallel   \
           trillian_pgi_serial     \
           theia_intel_parallel    \
-          theia_intel_serial
+          theia_intel_serial      \
+          wcoss_intel_parallel    \
+          wcoss_intel_serial
 
 # Dynamic / Conditional variables
 
@@ -110,6 +112,29 @@ endif
   endif
 endif
 
+
+# wcoss stanza
+
+ifeq ($(MACHINE),wcoss)
+  GPTL_USE_GPTL = no
+ifndef MAKEJOBS
+  MAKEJOBS      = 1
+endif
+  ifeq ($(GPTL_USE_GPTL),yes)
+    $(error GPTL support currently unavailable on trillian)
+  endif
+  ifeq ($(COMPILER),intel)
+    MODCMD    = $(shell ./modcmd wcoss intel)
+    FCP       = mpfort
+    FCS       = mpfort
+    OPT_FLAGS = -O3 -fp-model precise
+    SMS       = /swpc/noscrub/George.Millward/SMSr854legacy
+    ifeq ($(DEBUG),yes)
+      DEBUG_FLAGS = -g -O0 -ftz -traceback -check bounds -fpe0
+    endif
+  endif
+endif
+
 VARS =                                \
        DIRS="$(DIRS)"                 \
        EXE="$(EXE)"                   \
@@ -156,6 +181,12 @@ theia_intel_parallel:
 
 theia_intel_serial:
 	$(MAKE) ipe MACHINE=theia COMPILER=intel PARALLELISM=serial
+
+wcoss_intel_parallel:
+	$(MAKE) ipe MACHINE=wcoss COMPILER=intel PARALLELISM=parallel
+
+wcoss_intel_serial:
+	$(MAKE) ipe MACHINE=wcoss COMPILER=intel PARALLELISM=serial
 
 ipe:
 	$(if $(filter 0,$(MAKELEVEL)),$(call USAGE))

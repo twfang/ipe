@@ -2,6 +2,7 @@
 ;ipe/plt/grd/plasma_grid.XXX
 pro read_grid,LUN,JMIN_IN,JMAX_IS,Z_km,mlat_deg,sw_debug,glat_deg,glon_deg,title_res
 
+plot_type=getenv('plot_type')
 
 ;20121025: .save did not save too much time as compared to the
 ;original binary file.....
@@ -22,7 +23,7 @@ if ( sw_save_grid eq 2 ) then  begin
   RETURN
 endif
 
-     mp=41-1L
+     mp=3L
 
 if sw_debug eq 1 then  print,'size jmin',SIZE(jmin_in)
 if sw_debug eq 1 then  print,'size jmax',SIZE(jmax_is)
@@ -75,8 +76,7 @@ ipts=JMAX_IS(75)-1
     dum = fltarr( NMP_all+1 ) ;!rad
     readu, LUN[1], dum ;( 1: NMP_all+1 ) !rad
 if sw_debug eq 1 then print,'mlon[deg]',dum[mp]*180./!PI
-;for i=0,nmp_all-1 do print,'mlon[deg]',(i+1),dum[i]*180./!PI
-;for i=40,50 do print,'mlon[deg]',(i+1),dum[i]*180./!PI
+
 
 
     dum = Z_km
@@ -84,9 +84,17 @@ if sw_debug eq 1 then print,'mlon[deg]',dum[mp]*180./!PI
     Z_km     = dum * 1.0E-3
     if sw_debug eq 1 then print,lpj,ipts,' z_km',z_km[ipts]
 
-;dbg20160811
-;for i=0,50 do print, i,z_km[i]
+
+if plot_type eq 5 then begin
+   Re_km=6.3712E+03             ;km
+   for i=0,203 do begin
+      r=((z_km[i]+re_km)/re_km )
+      print,'i=', i,' z_km=',z_km[i],' r=', r
+;if r gt 2.5 then stop
+   endfor ;i
 ;stop
+endif ;projName
+
 
     dum  = mlat_deg
     readu, LUN[1], dum ;(    1:NPTS2D_dum) !rad
@@ -105,35 +113,60 @@ if sw_debug eq 1 then print,'mlon[deg]',dum[mp]*180./!PI
     if sw_debug eq 1 then print,'GLON_rad-deg',dum[ipts, mp]*180./!PI  
 
 
-glatx=42.6195
-glonx=288.50827
-print, 'glatx', glatx,'glonx',glonx
-mp0=0
-lp0=30;22;57;22
-dmp=2;20
-dlp=2;20
-dlat=2.
-dlon=3.
-;for mp=mp0-dmp, mp0+dmp,1 do begin
-;   for lp=lp0-dlp, lp0+dlp,1 do begin
-;      i=jmin_in[lp]+35+15-10
+;if sw_debug eq 1 then begin
+   glatx= 42.8975
+   glonx= 294.9765
+   print, 'finding glatx=', glatx,'glonx=',glonx
+   mp0=2
+   lp0=31
+   dmp=1
+   dlp=1
+   dlat=0.3
+   dlon=4.7
+   for mp=mp0-dmp, mp0+dmp,1 do begin
+      if mp le 0 then mp1=mp+nmp0 else mp1=mp
+      for lp=lp0-dlp, lp0+dlp,1 do begin
 
-;      if ( (glat_deg[i,mp]-dlat) lt glatx and glatx lt (glat_deg[i,mp]+dlat) ) then begin 
-;         if ( (glon_deg[i,mp]-dlon) lt glonx and glonx lt (glon_deg[i,mp]+dlon) ) then begin 
-;            print,i,'mp=',mp,' lp=',lp,' glat=',glat_deg[i,mp],(glat_deg[i,mp]-glatx),' glon=',glon_deg[i,mp],(glon_deg[i,mp]-glonx),' z_km',z_km[i]
-;            print,jmin_in[lp],jmax_is[lp],' FLDIM=',(jmax_is[lp]-jmin_in[lp]+1)
-;         endif                  ;glon
-;      endif                     ;glat
-;   endfor                       ;lp
-;endfor                          ;mp
+         if glatx ge 0. then $
+            i=jmin_in[lp]-1L $ ;NH
+         else $
+            i=jmax_is[lp]-1L ;SH
+
+
+print,mp1,lp, glat_deg[i,mp1],glon_deg[i,mp1]
+         
+         if ( (glat_deg[i,mp1]-dlat) lt glatx and glatx lt (glat_deg[i,mp1]+dlat) ) then begin 
+            if ( (glon_deg[i,mp1]-dlon) lt glonx and glonx lt (glon_deg[i,mp1]+dlon) ) then begin 
+               print,i,'mp1=',mp1,' lp=',lp,' glat=',glat_deg[i,mp1],' dlat=',(glat_deg[i,mp1]-glatx),' glon=',glon_deg[i,mp1],' dlon=',(glon_deg[i,mp1]-glonx),' z_km',z_km[i]
+               print,' FLDIM=',(jmax_is[lp]-jmin_in[lp]+1)
+            endif               ;glon
+         endif                  ;glat
+      endfor                    ;lp
+   endfor                       ;mp
 ;STOP
+   
 
-;for lp=30,50 do begin
-for lp=6-1,8-1 do begin
-i=jmin_in[lp]
-print,i,(lp+1),mlat_deg[i]
-endfor
-;stop
+
+   Re=6.3712E+03                ;km
+   r_ref=Re+90.                 ;km for reference ht for rcm
+
+   for lp=30,33 do begin
+      i=jmin_in[lp]-1L
+
+;assuming that latitude grid is identical for all LT sectors
+
+      midpoint = JMIN_IN[lp]-1 + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
+      theta = (90.- mlat_deg[i])  *!PI / 180. ;[deg]-->[rad]
+      sinthet = SIN( theta ) 
+      lval    = r_ref / ( Re * sinthet * sinthet )
+
+print,i,' lp=',lp,' mlat=',mlat_deg[i],' L-value=',lval;,(jmin_in(lp)-1),(jmax_is(lp)-1)
+;print,midpoint,mlat_deg[midpoint]
+   endfor
+   ;stop
+
+;endif ;if sw_debug eq 1 then begin
+
 
 if ( sw_save_grid eq 1 ) then  begin
   print,'saving grid to a file=',filename_grid_sav

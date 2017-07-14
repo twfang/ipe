@@ -12,12 +12,10 @@ pro ctr_lon_lat_quick $
 ;20131209: output to ascii file
 ,sw_output2file_ascii,luntmpN,luntmpS,ncount $
 , Vn_ms1,tn_k,on_m3 $
-, n_read_max,input_DIR0 $
+, n_plt_max,input_DIR0 $
 , ht_plot,rundir $
-, VarType_max, VarType_min, VarType_step
-
-n_read_min=0L
-;print,'n_read',n_read,' n_read_max',n_read_max,' n_read_min',n_read_min
+, VarType_max, VarType_min, VarType_step $
+, n_plt_min ;=0L
 ;print, 'ht_plot', ht_plot
 ;print, 'VarType_max', VarType_max, 'VarType_min', VarType_min
 ;print,  'VarType_step',  VarType_step
@@ -65,7 +63,7 @@ unit=['[m-3]','K','K','[m-3]',$
 ;20140203: remember Vartype loop cannot be used for quick plot version!!!
 for VarType=VarType_min, VarType_max, VarType_step do begin
 
-if ( n_read eq 0 ) then  print,'VarType=',VarType
+if ( n_read eq n_plt_min ) then  print,'VarType=',VarType
 ;ht_plot =410.;[km];130
 ;ht_plot =378.;[km];100
 ;ht_plot =340.;[km]
@@ -79,19 +77,19 @@ nano=1.0E-9
  sw_plot_grid=0 ;1:retangular, 2:polar
 ; get n_read_max, ny_max
 size_result = SIZE(JMIN_IN)
-if ( sw_debug eq 1 ) and ( n_read eq 0 ) then  print,'NLP',size_result
+if ( sw_debug eq 1 ) and ( n_read eq n_plt_min ) then  print,'NLP',size_result
 NLP = size_result[1]
 ny_max =NLP*2
-if  ( sw_debug eq 1 ) and ( n_read eq 0 ) then $
+if  ( sw_debug eq 1 ) and ( n_read eq n_plt_min ) then $
    print,'NLP',NLP,'ny_max',ny_max
 
 size_result = SIZE(XIONN_m3) ;je_3d)
-if  ( sw_debug eq 1 ) and ( n_read eq 0 ) then  print,'NMP',size_result
+if  ( sw_debug eq 1 ) and ( n_read eq n_plt_min ) then  print,'NMP',size_result
 ISPEC=size_result[1]
 NPTS2D=size_result[2]
 NMP = size_result[3]
 nx_max =size_result[3]    ;NMP=80
-if  ( sw_debug eq 1 ) and ( n_read eq 0 ) then $
+if  ( sw_debug eq 1 ) and ( n_read eq n_plt_min ) then $
   print,'NMP=',NMP,' nx_max=',nx_max,' ISPEC=',ispec,' NPTS2D=',NPTS2D
 
 
@@ -250,7 +248,7 @@ alog10(on_m3[i,mp]) ;[m-3] ; oxygen density
 ;dbg20140825 validate wind direction nmf2
 ;if ( mp eq 51 ) then print, mp,lp, lp
 if ( sw_output_nmf2 ge 1 AND mp eq 51 AND lp eq 36 ) then begin
-if ( n_read eq 0 ) then begin
+if ( n_read eq n_plt_min ) then begin
 ;   luntmpN=100
    flnmtmpN='/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/r319/trunk/run/'+rundir+'/nmf2NH.dat'
    openw,luntmpN,flnmtmpN, /GET_LUN
@@ -302,12 +300,15 @@ alog10(on_m3[i,mp]) ;[m-3] ;oxygen density
 ;Vn_ms1[2-1,i,mp]*fac_wind $;[m/s] ;northward  ;20140108
 ;XIONV_ms1[1-1,i,mp] ;V//o+[m/s]
 
-;print, 'n_read', n_read
-if n_read eq 1 AND $
-   plot_zz[mp,lps] gt 16.  $
-   AND mp eq 3 AND lp eq 14 $
+if mp eq 3 then  print, 'n_read=', n_read,mp,lp
+if $
+;n_read eq 2 AND $
+;   plot_zz[mp,lps] gt 16.  $
+;   AND 
+mp eq 3 AND lp eq 14 $
 then begin
 
+print,'BEFORE CORRECTION'
   print, i,' mp=',mp,' lp=',lp,lps,mlat_deg[i],mlon_deg[mp],' glat=',glat_deg[i,mp],' glon=',glon_deg[i,mp]
 
   print, JMIN_IN[lp], JMAX_IS[lp]
@@ -595,7 +596,7 @@ if  ( n_read eq 0 ) then begin
 	WINDOW,iwindow,XSIZE=1100*fac_window,YSIZE=1000*fac_window
 ;                   columns,rows
 ;	!p.multi=[0,6,5,0]
-	!p.multi=[0,2,2,0]
+	!p.multi=[0,4,5,0]
 
 	loadct,n_ldct
 endif  ;( n_read eq 0 ) then begin 
@@ -695,7 +696,7 @@ contour,plot_zz,plot_xx,plot_yy $
 ,yrange=[Y_min,Y_max], /ystyle $
 ,XTITLE=X_TITLE,YTITLE=Y_TITLE $
 ;,TITLE=VarTitle[VarType]+unit[VarType]+'  ht='+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+'km  UT[hr]='+STRTRIM( string(ut_hr, FORMAT='(F6.2)'),1 )+'_'+TEST $
-,TITLE='UT '+STRTRIM( string(ut_hr_disp, FORMAT='(F6.2)'),1 ) $
+,TITLE='UT '+STRTRIM( string(ut_hr_disp, FORMAT='(F8.4)'),1 ) $
 ;,POSITION=[X0,Y0,X1,Y1] $
 ,COLOR=text_color $
 ,charsize=char_size,charthick=char_thick $
@@ -727,9 +728,7 @@ if ( sw_debug eq 1 ) then  print,'MAX=',MAX(plot_zz),' MIN=',MIN(plot_zz)
 ;, 'MIN='+STRTRIM(STRING( MIN(plot_zz), FORMAT='(E11.3)'),1)+' MAX='+STRTRIM(STRING( MAX(plot_zz), FORMAT='(E11.3)'),1)  $
 ;, charsize=1.0, charthick=1.0, /norm, /noclip
 
-if ( n_read eq n_read_min ) then begin
-;if ( n_read eq n_read_max-1 ) then begin ;ori
-;if ( n_read eq n_read_max-2 ) then begin ;nems 20160720
+if ( n_read eq n_plt_min ) then begin
 xyouts, 0.35, 0.04 $
 ,VarTitle[VarType]+unit[VarType]+'  ht='+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+'km'+' '+input_DIR0 $
 , charsize=0.85, charthick=0.8, /norm, /noclip
@@ -747,10 +746,11 @@ COLORBAR, BOTTOM=bottom, CHARSIZE=charsize_colorbar, COLOR=color, DIVISIONS=divi
         , NCOLORS=ncolors,TITLE=title,VERTICAL=vertical,TOP=top,RIGHT=right $
         , MINOR=minor, RANGE=range, FONT=font, TICKLEN=ticklen $
         , _EXTRA=extra, INVERTCOLORS=invertcolors, TICKNAMES=ticknames
-endif ;( n_read eq n_read_max ) begin
+endif ;( n_read eq n_plt_min
 
-;if ( n_read eq n_read_max-2 $ ;tmp20160720 nems
-if ( n_read eq n_read_max-1 $
+
+print,'n_read=',n_read,' n_plt_max=', n_plt_max
+if ( n_read eq n_plt_max $
 ) AND ( sw_output2file eq 1 ) then begin
    if ( sw_frame eq 0 ) then $  ;magnetic
       title_frame='mag' $

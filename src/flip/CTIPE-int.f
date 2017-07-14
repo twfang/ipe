@@ -674,9 +674,8 @@ c      IF(JTI.EQ.1) THEN
 !!dbg20110404
 !     &   ,XIONV(1,J)
 !     &,SUMION(1,7,J),SUMION(2,4,J),SUMION(2,5,J)
-       ENDDO
-
-      END IF                    !( sw_output_fort167.AND... ) THEN
+        ENDDO
+      END IF                    !( sw_output_fort167.AND...
 
       ret = gptlstop ('CTIPINT sw_output')
 c      ENDIF
@@ -824,14 +823,14 @@ C... Written by P. Richards September 2010
      >                        EFLAG,   !.. Error flag array
      >                           mp, 
      >                           lp,utime,ltime)
-      USE module_input_parameters,ONLY:sw_output_fort167,sw_ERSTOP_flip,  &
-     &                                 mype
+      USE module_input_parameters,ONLY:sw_output_fort167,sw_ERSTOP_flip &
+     &                                ,mype
       USE module_precision
       IMPLICIT NONE
       INTEGER PRUNIT,EFLAG(11,11)         !.. error flags
-      INTEGER, INTENT(IN):: mp,lp
-      INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]
-      REAL (KIND=real_prec),INTENT(IN) :: ltime !local time [hour]
+      INTEGER (KIND=int_prec),  INTENT(IN) :: mp,lp
+      INTEGER (KIND=int_prec),  INTENT(IN) :: utime !universal time [sec]
+      REAL    (KIND=real_prec), INTENT(IN) :: ltime !local time [hour]
 !
       IF(EFLAG(1,1).NE.0) THEN
         WRITE(PRUNIT,11)mp,lp,mype
@@ -846,11 +845,11 @@ C... Written by P. Richards September 2010
         WRITE(PRUNIT,12)mp,lp
         IF ( sw_ERSTOP_flip==1 ) THEN
 !sms$ignore begin
-          print *,"(12)ERSTOP FLIP",mp,lp,mype
+          print*,"(12)ERSTOP FLIP",mp,lp,mype
 !sms$ignore end
           STOP
-        END IF
-      endif
+        END IF !( sw_ERSTOP_flip==1 )
+      end IF !(EFLAG(1,2).NE.0)
  12   FORMAT(/'  Convergence failure in Temperature solution (TLOOPS).'
      >  ,2X,'Incorrect input to the band solver BDSLV.mp=',i3,'lp=',i4)     
 
@@ -888,12 +887,12 @@ C... Written by P. Richards September 2010
          WRITE(PRUNIT,32)mp,lp,mype
          IF ( sw_ERSTOP_flip==1 ) THEN
 !sms$ignore begin
-           print *, "(32)ERSTOP FLIP",mp,lp,mype
+           print*,"(32)ERSTOP FLIP",mp,lp,mype
 !sms$ignore end
            STOP
-         END IF
+         END IF !( sw_ERSTOP_flip==1 ) THEN
 
-      END IF
+      END IF !(EFLAG(3,2).NE.0) THEN
  32   FORMAT(/'  Convergence failure in He+ solution (XION).'
      >  ,2X,'Incorrect input to the band solver BDSLV.mp',i3,'lp',i4,i7)
 
@@ -903,27 +902,27 @@ C... Written by P. Richards September 2010
 !t           print *,"(7)ERSTOP FLIP",mp,lp            
 !t           STOP
 !t        END IF
-      END IF
+      END IF !      IF(EFLAG(4,1).NE.0) THEN
  41   FORMAT(/'  Convergence failure in N+ solution (XION).'
      >  ,2X,'Time step less than minimum.mp',i3,'lp',i4,i7)
       IF(EFLAG(4,2).NE.0) THEN
          WRITE(PRUNIT,42)mp,lp,mype
 !(8)
-         IF ( sw_ERSTOP_flip==1 ) THEN
+         IF ( sw_ERSTOP_flip==1 )  THEN
 !SMS$ignore begin
-           print *,"(42)ERSTOP FLIP",mp,lp,mype
+           print*,"(42)ERSTOP FLIP",mp,lp,mype
 !SMS$ignore end
            STOP
-         END IF
+         END IF !( sw_ERSTOP_flip==1 )  THEN
 
-      END IF
+      END IF !(EFLAG(4,2).NE.0) THEN
  42   FORMAT(/'  Convergence failure in N+ solution (XION).'
      >  ,2X,'Incorrect input to the band solver BDSLV.mp',i3,'lp',i4,i7)
 
-      IF(EFLAG(5,1).NE.0) WRITE(PRUNIT,51) mype
+      IF(EFLAG(5,1).NE.0) WRITE(PRUNIT,51)mype
  51   FORMAT(/'  Convergence failure in CMINOR.',i10)
 
-      IF(EFLAG(11,1).NE.0) WRITE(PRUNIT,111) mype
+      IF(EFLAG(11,1).NE.0) WRITE(PRUNIT,111)mype
  111  FORMAT(/3X,'** CTIP dimension not equal to FLIP dimensions'
      >  /3X,'** Check dimensions in all FLIP modules',i7)
       RETURN

@@ -14,7 +14,9 @@
 ;---
 pro plt_ipe
 
-n_read_max=2;30L
+n_plt_min=0
+n_plt_max=1
+n_read_max=1L
 runDuration= $
 ;'0to4UT';
 '1day';hr';1day';
@@ -29,19 +31,15 @@ UserName = $
 ;'Tzu-Wei.Fang';
 ;'Robert.Oehmke'
 
-rtNumber=$
-'31023'
+rtNumber = $
+;'118422';9/14 after peggy correction 
+'13204';9/12 before peggy correction 
+;'44826'
 ;'135940'
-;'123590';77348'
-;'4761'
-;'66607'
-;'67222'
-;'100540' ;swNeutral3
-;'7562' ;swNeutral1Tn
-;'72223'
-;'122363';
-;'137188';
-;'42695';
+
+
+
+
 
 rundir=$
 ;UserName+'/ipe/runs/r336.2.2/trunk/run/ipe_S_'+rtNumber
@@ -69,7 +67,7 @@ sw_output2file_ascii=0
 luntmp =100L
 luntmp1=101L
 LUN9001=102L ;ph0,th0
-LUN2013=103L ;sunlon
+
 
 openw,luntmp,'tmp.dat', /GET_LUN
 if ( sw_output2file_ascii eq 1 ) then begin
@@ -89,11 +87,13 @@ plot_UT      =432000;691200;
 plot_UT_end=plot_UT+3600.*24.
 sw_quickplot=1L
 ;20140117; plot every X hour
-sw_hourly_plot=0
+sw_hourly_plot=1
 plotXhr=1.0 
 if ( sw_hourly_plot eq 1 ) then begin
    print, 'plot every',plotXhr,' hour'
 endif 
+n_read_freq =15L
+print,'n_read_freq=',n_read_freq
 
 title_res= $
 'low20120709';
@@ -161,7 +161,7 @@ mpstep=1
 ;endif ;plot_type eq 0 then begin
 
 
-sw_debug=0L
+sw_debug=1L
 ;0:mag; 1:geo; 2:LT-maglat
 sw_frame=0L
 sw_dif=0L
@@ -190,21 +190,15 @@ title_hemi='glb';SH'eq';
 version='3d'
 
 
-fig_DIR=$
-'/scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/fig/'
-n_file=17L;6L;13L;
-input_flnm=['','','','','','' $
+;20161021: merging project
+fig_DIR ='/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/' ;theia
+n_file = 18L
+input_flnm = ['','','','','','' $
 ,'','','','' $
 ,'','','','','','','']
-input_DIR =input_flnm
-;input_DIR[*]=rundate+'.'+version+'.'+title_test+'/';backup20120223mpall/';But'+STOP_TIME+'error/'
-input_DIR[*]=$
-input_DIR0
-;'ipe4gsd/run_naomi/'
-;TEST+'/bkup19/'
-input_DIR[1]=$
-;'../plt/' ;mac
-'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/grid/plt/' ;theia
+input_DIR = input_flnm
+input_DIR[*]=input_DIR0
+input_DIR[1]='/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/grid/plt/';theia
 LUN  = INTARR(n_file)
 sw_LUN  = INTARR(n_file)
 sw_lun[0:1]=1
@@ -223,6 +217,7 @@ sw_lun[7]=0 ;Ti
 sw_lun[5]=0 ;vexbup
 sw_lun[15]=0 ;vexbe
 sw_lun[16]=0 ;vexbth
+sw_lun[17]=0 ;sunlon
 if ( sw_dif eq 1 ) then begin
 LUNq  = INTARR(n_file)
    input_flnmq =input_flnm
@@ -235,6 +230,7 @@ TESTq+'/'
 ;rundateq+'.'+version+'.'+title_testq+'/';backup20120223/'
    input_DIRq[1]=input_DIR[1]
 endif
+
 
 
 
@@ -280,7 +276,7 @@ MaxFluxTube=1115L ;=FLDIM
 FLDIM=549L;447l;455l;577L;415L  ;???used when plot_type=1
 
   
-  sunlons1 =  -1.92900  ;tmp20140701 i will need to read in every time within the loop
+  sunlons1 =  -1.92900
   UT_hr = 0.00D0
   UT_hr_save = fltarr(n_read_max)
 ;  LT_hr = fltarr(  NMP,NLP)
@@ -420,7 +416,7 @@ n_plt=-1L
 
   read_plasma_bin,LUN,UT_hr,XIONN_m3,XIONV_ms1,TE_TI_k,VEXB,sw_debug $
 ,sw_3DJ,je_3d,sw_hr,hrate, sw_dif, sw_lun $
-,NMP
+,NMP,sunlons1
   UT_hr_save[n_read]=UT_hr
 
 
@@ -590,7 +586,6 @@ n_plt = n_plt + 1
 if ( sw_quickplot eq 0 ) then $
        ctr_lon_lat $
   , JMIN_IN,JMAX_IS,Z_km,mlat_deg  $ 
-;  , je_3d   $
   , XIONN_m3, TE_TI_k $
   , XIONV_ms1 $
   , UT_hr, plot_DIR $
@@ -598,11 +593,10 @@ if ( sw_quickplot eq 0 ) then $
   , sw_output2file $
   ,glon_deg,glat_deg,sw_frame,fac_window, TEST $
   , sw_debug $
-;20131209: output to ascii file
 , sw_output2file_ascii,luntmp,ncount $
 , Vn_ms1,VEXB, sunlons1 $
 , alt,rundir, LUN9001 $
-, VarType_Min,VarType_Max, VarType_Step, LUN2013 $
+, VarType_Min,VarType_Max, VarType_Step $
 else if ( sw_quickplot eq 1 ) then $
        ctr_lon_lat_quick $
   , JMIN_IN,JMAX_IS,Z_km,mlat_deg  $ 
@@ -617,9 +611,10 @@ else if ( sw_quickplot eq 1 ) then $
 ;20131209: output to ascii file
 , sw_output2file_ascii,luntmp,luntmp1,ncount $
 , Vn_ms1,tn_k,on_m3 $
-, n_read_max,input_DIR0 $
+, n_plt_max,input_DIR0 $
 , alt,rundir $
-, VarType_max, VarType_min, VarType_step
+, VarType_max, VarType_min, VarType_step $
+,n_plt_min
 
     endif else if ( plot_type eq 6 ) then begin 
 

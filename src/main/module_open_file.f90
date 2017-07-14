@@ -13,6 +13,7 @@
       MODULE module_open_file
       USE module_precision
       USE module_IPE_dimension   ,ONLY: ISPEC,ISPEV
+      USE module_input_parameters,ONLY: mype
       IMPLICIT NONE
 
 !nm20121003:module parameters are separated into module_io.f90!
@@ -35,7 +36,7 @@
       INTEGER (KIND=int_prec)             :: istat
 
       IF (UNIT_dum>=1) THEN
-        print *,'unit number=',UNIT_dum
+        print *,'SUBROUTINE open_file, unit number = ',UNIT_dum
       ELSE
         print *,'!STOP! unit number not provided!!!'
         STOP

@@ -26,7 +26,8 @@ mp_plot=mp-1 ;IDL convention
 ;if ( mp eq 4 ) then lt_hr=UT_hr+19.9999999-24.
 ;if ( mp eq 1 ) then lt_hr=UT_hr+19.2-24.
 
-   string_tmp='     Z         TN       UN       NNO      EHT      TI       TE       O+       H+      Min+     He+      PHION'
+;   string_tmp='     Z         TN       UN       NNO      EHT      TI   TE       O+       H+      Min+     He+      PHION'
+   string_tmp='     Z         TN       UN       NNO      EHT      TI       TE       O+       H+      Min+     He+      PHION    PRODO+     N+     EQN2D   NPLSPRD'
    readf, LUN168, string_tmp
 if ( sw_debug eq 1 ) then print, string_tmp
 

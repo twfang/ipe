@@ -1,26 +1,34 @@
 pro plt_psphere_eqv0
 
-titlePlot='quiet 2013-3-17'
-sw_contourPlot=2L ;1: contour plot; 2: density profiles as function of L
+;###CHANGE
+titlePlot= $
+'2013-3-17 quiet';run2
+;'2013-3-17 storm' ;run'
+;'2015-3-17 storm' ;run1
+sw_contourPlot=1L ;1: contour plot; 2: density profiles as function of L
 sw_output2file=0L
 sw_dbg=0L
   dt =60L  ;sec
   pltXsec=900L
+;###CHANGE
   ut00=$
-518400L ;start_time 00--17ut
-;518400+17*3600;583080L  ;17--24ut
-  utStart=ut00;+3600*9
-  utStop=utStart+17*3600L
+;518400L ;start_time 00--17ut
+579600;518400+17*3600; ;17--24ut
+  utStart=ut00
+  utStop=604800;utStart+86400;17*3600L
   utHrPlt=518400./3600.
+;###CHANGE
 rundir=$
 ;'ipe_S_32328' ;original
 ;'ipe_S_25827' ;depeleted
 ;'ipe_S_26060'; ;transport only
 ;'1461312397_ipe_theia_intel_parallel2_93';20130317 00--17 before dep
-;   '1461343191_ipe_theia_intel_parallel2_93' ;20130317 17--24 ;mac
-;'1461417243_ipe_theia_intel_parallel2_93.00_17UT20150317';mac
+; '1461343191_ipe_theia_intel_parallel2_93' ;20130317 17--24 ;mac
+;'1461417243_ipe_theia_intel_parallel2_93';.00_17UT20150317';mac
+;'1461436195_ipe_theia_intel_parallel2_93'; 17ut
 ;'1463696937_ipe_theia_intel_parallel2_93' ;2013 theia after dep
-'1462618349_ipe_theia_intel_parallel2_93' ;2013 00--17ut quiet
+;'1462618349_ipe_theia_intel_parallel2_93' ;2013 00--17ut quiet
+'1462657622_ipe_theia_intel_parallel2_93' ;17ut quiet
 ;---
   ut0=0L
   ut0=ut00 - dt ;sec 133.                      ;[ut hr]
@@ -60,10 +68,12 @@ TEST=$
 ;'tmp20151117'
 'mpi20160330v2'
 ;'depletedFlux20160512'
+;###CHANGE
 rpath=$
 ;'~/iper/'+TEST+'/trunk/run/'+rundir+'/'
-;   '~/stmp2/'+TEST+'/run/'+rundir+'/' ;theia
-   '~/stmp2/'+TEST+'/run2/'+rundir+'/' ;theia quiet
+;  '~/stmp2/'+TEST+'/run/'+rundir+'/' ;theia 2013 storm
+;  '~/stmp2/'+TEST+'/run1/'+rundir+'/' ;theia 2015
+  '~/stmp2/'+TEST+'/run2/'+rundir+'/' ;theia quiet
 ;'/Users/naomimaruyama/sandbox/ipe/'+rundir+'/' ;mac
 plt_DIR=$
 ;'~/ipef/'+TEST+'/'+rundir+'/'
@@ -119,6 +129,9 @@ while ( eof(LUN00) eq 0 ) do begin
 
 ;calculate MLT, theta
       mlt    =  mlon_deg[mp]/15.0D0 - sunlons1 * 12.0D0 / !PI  +12.0 ;[hr]
+
+if mp eq 56 then print, 'mlt', mlt-24
+
       if ( mlt lt  0. ) then  mlt = mlt MOD 24.
       if ( mlt ge 24. ) then  mlt = mlt - 24.
       mlt = mlt*!PI/12.0D0      ;MLT_hr --> THETA[rad]
@@ -127,10 +140,10 @@ while ( eof(LUN00) eq 0 ) do begin
 ;shift MLT so that 12MLT on the right!
    ;clockwise 180 deg rotation
       shift_deg= $
-; 180.
-- 45. ;original20160519
+-180. ;shift 180deg clockwise
+;- 45. ;original20160519
 ;      0.  ;tried 20160519
-      theta = mlt - shift_deg/180.*!PI ;(radian)
+      theta = mlt + shift_deg/180.*!PI ;(radian)
       for lp=0,nlp-1 do begin
          midpoint = JMIN_IN[lp] + ( JMAX_IS[lp] - JMIN_IN[lp] )/2 -1
          r[mp,lp] = (Z_km[midpoint] * 1.0E+3  + Re_m) / Re_m ;L value
@@ -164,12 +177,12 @@ while ( eof(LUN00) eq 0 ) do begin
 ;debug print
 
       if ( sw_debug eq 1 ) then begin
-      for lp=0,nlp-1 do begin
-         print, mp,lp,r[mp,lp]
-         if ( r[mp,lp] ge 2. AND r[mp,lp] lt 5 ) then begin
-            print, 'check r&z', r[mp,lp],(z[mp,lp]*1.0E-6)
-         endif
-      endfor ;lp
+         for lp=0,nlp-1 do begin
+            print, mp,lp,r[mp,lp]
+            if ( r[mp,lp] ge 2. AND r[mp,lp] lt 5 ) then begin
+               print, 'check r&z', r[mp,lp],(z[mp,lp]*1.0E-6)
+            endif
+         endfor                 ;lp
       endif
       
       n_ldct=39                  ;black+white
@@ -311,7 +324,31 @@ contour,zz_e,xmin_e,ymin_e $
             , LINESTYLE = 0
   loadct, n_ldct
 
+;circle NewZ land flux tube: lpSed=31L--> L=2.74343
+  n_ldct_sv = n_ldct
+  loadct, 39
 
+  radius_circle = findgen(360)*0.0 + 2.74343
+    oplot , /polar , radius_circle , theta_rad  $
+            , THICK=0.6 $
+            , COLOR =250. $     ;red
+            , LINESTYLE = 2
+
+
+;following a specific flux tube:
+  mpSed=2L
+  lpSed=31L
+  oplot,   x[mpSed,lpSed-1:lpSed], y[mpSed,lpSed-1:lpSed]  $
+            , THICK=9.0, LINESTYLE = 0  $
+            , COLOR = 250. ;red
+
+  oplot,   x[mpSed:mpSed+1,lpSed], y[mpSed:mpSed+1,lpSed]  $
+            , THICK=9.0, LINESTYLE = 0  $
+            , COLOR = 250. ;green
+  loadct, n_ldct_sv
+;
+
+;colorbar
 title=' ';colorbar title'
 font=1   ;True-Type: 1.
 ; X_SIZE=29.7
@@ -332,7 +369,7 @@ COLORBAR, BOTTOM=bottom, CHARSIZE=charsize_colorbar, COLOR=color, DIVISIONS=divi
 
 
 loadct,0
-print,'ut before xyout', ut,  ut/3600.,  (ut/3600.-utHrPlt)
+if sw_dbg eq 1 then  print,'ut before xyout', ut,  ut/3600.,  (ut/3600.-utHrPlt)
 xyouts, 0.015, 0.02  $
 ,'UT [hrs]='+STRTRIM( string( (ut/3600.-utHrPlt), FORMAT='(F7.3)'),1 ) $
 , charsize =1.5, charthick=1.5 $
@@ -340,12 +377,19 @@ xyouts, 0.015, 0.02  $
 
 
 xyouts, 0.80, 0.02  $
-,rundir $
+,titlePlot+' '+rundir $
 , charsize =0.9, charthick=0.9 $
         , /norm, /noclip
 
+
+utDisp=ut/3600.-utHrPlt
+if utDisp lt 10. then $
+   stringUt='0'+STRTRIM( string(utDisp, FORMAT='(F6.2)'),1 ) $
+else $; if utDisp ge 10.
+   stringUt=STRTRIM( string(utDisp, FORMAT='(F6.2)'),1 )
+
 if ( sw_output2file eq 1 ) then begin
-   filename_png=plt_DIR+'hp_mgeq_ut'+STRTRIM( string((ut/3600.-utHrPlt), FORMAT='(F6.2)'),1 )+rundir+'v0.png'
+   filename_png=plt_DIR+'hp_mgeq_ut'+stringUt+rundir+'mp'+STRTRIM( string(mpSed, FORMAT='(i2)'),1 )+'.png'
 if sw_dbg eq 1 then print, filename_png
    output_png, filename_png
 endif; ( sw_output2file eq 1 ) then begin

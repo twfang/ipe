@@ -66,7 +66,8 @@ C
 919   FORMAT('    IN BDSLV, ROW',I6,' IS ZERO IN INPUT MATRIX',i10)
       NFLAG=2
 !dbg20140610: code must stop if this error happens!
-      sw_ERSTOP_flip=1
+!nm20170111: commented out to get WAM-IPE keep going at the initial trial stage by loosening error stop.
+!      sw_ERSTOP_flip=1
       RETURN
 114   SCALE(I)=1./BIG
 115   CONTINUE

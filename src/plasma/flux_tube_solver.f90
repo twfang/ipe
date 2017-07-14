@@ -16,6 +16,7 @@
       USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,Pvalue,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,plasma_3d,ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k,un_ms1,mlon_rad
       USE module_input_parameters,ONLY: time_step,F107D,F107AV,DTMIN_flip  &
      &, sw_INNO,FPAS_flip,HEPRAT_flip,COLFAC_flip,sw_IHEPLS,sw_INPLS,sw_debug,iout, start_time  &
+     &, HPEQ_flip, sw_wind_flip, sw_depleted_flip, start_time_depleted &
      &, sw_output_fort167,mpfort167,lpfort167 &
      &, sw_neutral_heating_flip, ip_freq_output, parallelBuild,mype,ip_freq_paraTrans
       USE module_PLASMA,ONLY: plasma_1d !dbg20120501
@@ -104,14 +105,8 @@
       TNX(1:CTIPDIM) = TN_k(IN:IS,lp,mp)
       TINFX(1:CTIPDIM) = TINF_k(IN:IS,lp,mp)
 
-
-! FLIP expects positive SOUTHward
-      UNX(1:CTIPDIM)  = (-1.) * Un_ms1(IN:IS,lp,mp,3) 
-!      IF ( sw_wind_flip == 0 ) THEN
-!        UNX(1:CTIPDIM)  = zero
-!      ELSE IF ( sw_wind_flip == 1 ) THEN
-!dbg20140821      UNX(1:CTIPDIM)  = (-1.) * Un_ms1(IN:IS,lp,mp,3) 
-!      END IF
+! FLIP expects positive SOUTHward along a field line
+      UNX(1:CTIPDIM)  = (-1.) * Un_ms1(IN:IS,lp,mp,3)
 
 !nm20160420: i am not totally sure about the FLIP time step???
 !      DT        = REAL(time_step)
@@ -208,8 +203,6 @@ print "('INPLS        =',I6)",INPLS
 
 END IF !( sw_debug ) then
 
-
-
 !dbg20120125:      midpoint = JMINX + (CTIPDIM-1)/2
       midpoint = IN + (IS-IN)/2
       IF ( lp>=1 .AND. lp<=6 )  midpoint = midpoint - 1
@@ -223,19 +216,18 @@ IF( sw_output_fort167.AND.mp==mpfort167.AND.lp==lpfort167 ) THEN
       WRITE(UNIT=LUN_FLIP2,FMT="('mp=',i3,' lp=',i3,' U',i3,' North, UT=',2F10.3)") mp,lp,LUN_FLIP2,REAL(UTIME)/3600., ltime
       WRITE(UNIT=LUN_FLIP3,FMT="('mp=',i3,' lp=',i3,' U',i3,' South, UT=',2F10.3)") mp,lp,LUN_FLIP3,REAL(UTIME)/3600., ltime
       WRITE(UNIT=LUN_FLIP4,FMT="('mp=',i3,' lp=',i3,' U',i3,' South, UT=',2F10.3)") mp,lp,LUN_FLIP4,REAL(UTIME)/3600., ltime
-END IF !( sw_output_fort167... ) then
+
+END IF !( sw_output_fort167
 ret = gptlstop  ('sw_output_fort167')
-if(sw_debug) print *,'sub-fl: UTs=',UTIME,' LThr=',ltime,' mp',mp,' lp',lp
-
-
+if(sw_debug) print*,'sub-fl: UTs=',UTIME,' LThr=',ltime,' mp',mp,' lp',lp
 
 
 !dbg20110131:
       IF ( sw_debug ) then
 !sms$ignore begin
-        WRITE(UNIT=PRUNIT,FMT="('mp=',i6,' lp=',i6,' UT=',F10.2,i7)") mp,lp,REAL(UTIME)/3600.,mype
+         WRITE(UNIT=PRUNIT,FMT="('mp=',i6,' lp=',i6,' UT=',F10.2,i7)") mp,lp,REAL(UTIME)/3600.,mype
 !sms$ignore end
-      endif
+      END IF! ( sw_debug ) then
       ret = gptlstart ('flux_tube_solver_loop1')
       DO ipts=1,CTIPDIM
 !N&T from the previous time step are absolute necesary for the solver...

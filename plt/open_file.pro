@@ -7,8 +7,11 @@ size_results=SIZE(input_DIR)
 n_file=size_results[1]
 if ( sw_debug eq 1 ) then  print,'n_file=',n_file
 
+;flnmExt=getenv('flnmExt')
 
-if(sw_lun[0] eq 1 ) then  input_flnm[0]='ut_rec';.log'
+if(sw_lun[0] eq 1 ) then  input_flnm[0]= $
+'ut_rec'+getenv('flnmExt') ;flnmExt
+;'ut_recAll.ascii';concatinated
 if(sw_lun[1] eq 1 ) then  input_flnm[1]='plasma_grid.'+title_res
 if(sw_lun[2] eq 1 ) then  input_flnm[2]='plasma00' ;o+
 if(sw_lun[6] eq 1 ) then  input_flnm[6]='plasma01' ;h+
@@ -27,6 +30,9 @@ if(sw_lun[4] eq 1 ) then  input_flnm[4]='plasma12' ;Vo+
 if(sw_lun[5] eq 1 ) then  input_flnm[5]='plasma16' ;VExBup
 if(sw_lun[15] eq 1 ) then  input_flnm[15]='plasma17' ;VExBe
 if(sw_lun[16] eq 1 ) then  input_flnm[16]='plasma18' ;VExBth
+if(sw_lun[17] eq 1 ) then  input_flnm[17]='fort.2013' ;sunlons
+;#nm20161128:plasma17 should be modified to plasma19 later...
+if(sw_lun[18] eq 1 ) then  input_flnm[18]='plasma17' ;sza
 
 ;if ( sw_hr  eq 1 ) then begin
 ;for jth=1,7 do begin
@@ -42,7 +48,7 @@ if(sw_lun[16] eq 1 ) then  input_flnm[16]='plasma18' ;VExBth
      if ( sw_lun[i] ne 1 ) then  CONTINUE
 
 ;dbg20121124      if ( i eq 0 ) or ( i gt 9 ) then $ 
-      if ( i eq 0 )  then $ 
+      if ( i eq 0 OR i eq 17 )  then $ 
         openr, LUNi, input_DIR[i]+input_flnm[i], /GET_LUN $
       else $       
         openr, LUNi, input_DIR[i]+input_flnm[i], /GET_LUN $

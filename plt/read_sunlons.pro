@@ -1,3 +1,4 @@
+;20161021: no longer used any more. it will be read in read_plasma_bin.pro
 pro read_sunlons $
 , sunlons1,TEST,rundir, LUN2013, n_read,n_read_freq
 

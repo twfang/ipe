@@ -1,7 +1,6 @@
 ;20131219: hinotori: Vartype in ctr_lon_lat needs to be zero to be able to output Ne. output files are saved in ~/wamns/hinotori/. sw_plot_contour=0 to run faster by saving plotting time.
 pro ctr_lon_lat $
 ,JMIN_IN,JMAX_IS,Z_km,mlat_deg $
-;,je_3d $
 , XIONN_m3, TE_TI_k $
 , XIONV_ms1 $
 ,UT_hr, plot_DIR $
@@ -10,11 +9,10 @@ pro ctr_lon_lat $
 ,glon_deg,glat_deg,sw_frame $ ;=0 ;mag; 1geo
 ,fac_window ,TEST $
 ,sw_debug $
-;20131209: output to ascii file
 ,sw_output2file_ascii,luntmp,ncount $
 , Vn_ms1,VEXB,sunlons1 $
 ,ht_plot,rundir,LUN9001 $
-,VarTypeMin,VarTypeMax, VarTypeStep,LUN2013,n_read_freq
+,VarTypeMin,VarTypeMax, VarTypeStep
 
 
 
@@ -41,7 +39,7 @@ which_hem='NH';SH';
 
 ;1:exb; 2:phi the
 sw_arrow=getenv('sw_arrow')
-sw_read_sunlon=getenv('sw_read_sunlon')
+;sw_read_sunlon=getenv('sw_read_sunlon')
 sw_polar_contour=getenv('sw_polar_contour')
 sw_polar_contour_output=0
 
@@ -79,11 +77,11 @@ nano=1.0E-9
 unit=['[*10^-11 m-3]',' [K]',' [K]',$
       '[*10^-5 cm-3]',$ ;o+
       '[*10^-5 cm-3]',$ ;no+
-      '[*10^-5 cm-3]',$ ;o2+
-'[m-3]',$
+;      '[*10^-5 cm-3]',$ ;o2+
+;'[m-3]',$
 ;'[m/s]',$  ;viup
 ;'[m/s]',$
-;'[X10^8 cm^2 s^-1 ]',$ ;o+ flux
+'[X10^8 cm^2 s^-1 ]',$ ;o+ flux
 ;'[X10^8 cm^2 s^-1 ]',$ ;h+ flux
 ;'[m/s]',$
 ;'[*10^-11 m-3]',$
@@ -130,12 +128,12 @@ endif
 VarTitle=['Ne','Te','Ti',$
 'No+',$
 'Nno+',$
-'No2+',$
+;'No2+',$
 ;'Vi!DUP!N',$
-'UN',$
+;'UN',$
 ;'Vi!DE!N',$
 ;'VN',$
-;'o+ flux',$
+'OpFlux',$
 ;'h+ flux',$
 ;'Vi!DEQ!N',$
 'NmF2',$
@@ -179,8 +177,8 @@ for lp=0,NLP-1 do begin
         plot_zz[mp,lp] =$
 ;VEXB[mp,lp,0] $;[m/s] ;eastward  ;20141104
 ;Vn_ms1[1-1,i,mp]*fac_wind $;[m/s] ;eastward  ;20140108
-                         XIONN_m3[5,i,mp]*factor  $ ;o2+
-;XIONN_m3[0,i,mp]*1.E-6 * XIONV_ms1[0,i,mp]*1.E+2 *1.E-8 $;o+ flux: o+ * V//o+[m/s]--> X10^8 cm^2 s^-1
+;                         XIONN_m3[5,i,mp]*factor  $ ;o2+
+XIONN_m3[0,i,mp]*1.E-6 * XIONV_ms1[0,i,mp]*1.E+2 *1.E-8 $;o+ flux: o+ * V//o+[m/s]--> X10^8 cm^2 s^-1
       else if ( VarType eq 6 ) then $
         plot_zz[mp,lp] =$
 ;VEXB[mp,lp,1] ;[m/s] ;southward,equatorward  ;20141104
@@ -472,8 +470,8 @@ if ( sw_range eq 1 ) then begin
 ;        zmin=1.e+10
 ;        zmax=1.77e+12
       endif else if ( VarType ge 1 ) AND (VarType le 2 ) then begin 
-        zmin=700.
-        zmax=2500.
+        zmin=810.;700.
+        zmax=1002.;2500.
       endif else if ( VarType eq 3 ) then begin
         zmin=0.
         zmax=0.0701983
@@ -487,10 +485,10 @@ if ( sw_range eq 1 ) then begin
       endif else if ( VarType eq 5 ) then begin 
 ;        zmin=-300.;zonal
 ;        zmax=+300.
-;        zmin=-1.;o+ flux
-;        zmax=+1.
-        zmin=0. ;o2+
-        zmax=0.652042
+        zmin=-1.;o+ flux
+        zmax=+1.
+;        zmin=0. ;o2+
+;        zmax=0.652042
       endif else if ( VarType eq 6 ) then begin 
         zmin=-100.;positive southward
         zmax=+100.
@@ -667,13 +665,13 @@ endif
     ;dbg print,j,jj,' comlat', comlat[jj], ' mlat=',(90.- comlat[jj])
    endfor
 
-
-;nm20150310 read sunlons
-if sw_read_sunlon eq 1 then begin
- print, 'before sunlons1=', sunlons1
- read_sunlons,sunlons1,TEST,rundir,LUN2013,n_read,n_read_freq
- print, 'after sunlons1=', sunlons1
-endif
+;20161021: sunlons will be read in read_plasma_bin.pro
+;;nm20150310 read sunlons
+;if sw_read_sunlon eq 1 then begin
+; print, 'before sunlons1=', sunlons1
+; read_sunlons,sunlons1,TEST,rundir,LUN2013,n_read,n_read_freq
+; print, 'after sunlons1=', sunlons1
+;endif
 
 ;mlt
 mlt = fltarr(nx_max)
@@ -898,12 +896,13 @@ else $; if utDisp ge 10.
    stringUt='_ut'+STRTRIM( string(utDisp, FORMAT='(F6.2)'),1 )
 filename_image=plot_DIR+VarTitle[VarType]+'_ht'+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+stringUt+title_frame+'.'+title_plr+'.'+rundir+'.'+imageFmt
 
-if  n_read gt 0 then begin
+print,'n_read',n_read,filename_image
+;t if  n_read gt 0 then begin
    if ( imageFmt eq 'png' ) then $
      output_png, filename_image $
    else if ( imageFmt eq 'jp2' ) then $
      output_jp2, filename_image
-endif
+;t endif
 
 endif ;( sw_output2file eq 1 ) then begin
 

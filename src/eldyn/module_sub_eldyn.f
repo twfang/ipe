@@ -75,8 +75,9 @@
 !     &        + f107d*(.00793738 - .00219316*kp)
 
       if ( utime==start_time ) then
-        print *,'iday',iday, 'imo',imo,' iday_m',iday_m,' iyear',iyear   &
-     &,'F107d=',f107d,' kp=',kp
+        print *,'iday',iday, 'imo',imo,' iday_m',iday_m,' iyear',iyear
+        print *,' kp',kp
+        print *,'IPE By=',by,' Bz=',bz,' F107d=',f107d
       end if
 
 !nm20151104
