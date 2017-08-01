@@ -41,3 +41,5 @@ module_initialize_fli_array ./module_initialize_fli_array_sms.f.tmp
 module_save2fli_array ./module_save2fli_array_sms.f.tmp
 module_output_dyn_fli_array ./module_output_dyn_fli_array_sms.f.tmp
 module_calc_collfreq ./module_calc_collfreq_sms.f.tmp
+cons_module ../eldyn/cons_module_sms.f.tmp
+params_module ../eldyn/params_sms.f.tmp

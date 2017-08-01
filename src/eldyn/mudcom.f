@@ -1995,6 +1995,7 @@
       end
 
       subroutine sgfa (a,lda,n,ipvt,info)
+      implicit none
       integer lda,n,ipvt(1),info                                                
       real a(lda,1)                                                             
       real t                                                                    
@@ -2034,6 +2035,7 @@
       end                                                                       
                                                                                 
       subroutine sgsl (a,lda,n,ipvt,b,job)
+      implicit none
       integer lda,n,ipvt(1),job                                                 
       real a(lda,1),b(1)                                                        
       real sdt,t
@@ -2140,6 +2142,7 @@
       end                                                                       
 
       subroutine sxpy(n,sa,sx,incx,sy,incy)
+      implicit none
       real sx(1),sy(1),sa                                                       
       integer i,incx,incy,ix,iy,m,mp1,n                                         
       if(n.le.0)return                                                          
@@ -2172,6 +2175,7 @@
       end                                                                       
 
       subroutine sscl(n,sa,sx,incx)
+      implicit none
       real sa,sx(1)                                                             
       integer i,incx,m,mp1,n,nincx                                              
       if(n.le.0)return                                                          

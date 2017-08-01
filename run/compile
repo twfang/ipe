@@ -1,8 +1,4 @@
 #!/bin/csh
-# ./script 
-###<1:d or b> <2:compute_tasks> <3:IPETIME> <4:IPEDATA: full path>  <5:sw_compile> <6:RUNDATE>  <7:imax> 
-set sw_compile = 1
-#set compute_tasks = S
 set compute_tasks = 2
 set RUNDATE = 20170214
 set i = 2
@@ -19,17 +15,15 @@ else
 endif
 echo "parallelism" $parallelism
 #
-if ( $sw_compile == 1 ) then
     cd $WORKDIR/src
     pwd
-    make clean
     module load $compiler netcdf
     set makejobs = 1
     echo "start compiling..."
     env MAKEJOBS=${makejobs}  make ${machine}_${compiler}_${parallelism} 
     if ( $compute_tasks != "S" ) then
       cp  eldyn/cons_module_sms.f.tmp  eldyn/cons_sms.f.tmp
-      make ${machine}_${compiler}_${parallelism} 
+      make ${machine}_${compiler}_${parallelism} >& mop
     endif
     ###make theia_intel_serial 
     if ( $? != 0 ) then
@@ -37,17 +31,4 @@ if ( $sw_compile == 1 ) then
 	    echo "error STOP! compiling failed!"
 		exit 1
     endif
-endif #( $compute_tasks == "S" ) then
-
-### over-write the setting inside qsubipe:
-setenv IPEQUEUE  "debug" 
-setenv IPETIME  00:30:00
-#
-cd $WORKDIR/run
-pwd
-if ( $compute_tasks == "S" ) then
-  ./qsubipe ${machine} ${compiler} ${parallelism}                  > jid$RUNDATE$i
-else 
-  ./qsubipe ${machine} ${compiler} ${parallelism} ${compute_tasks} > jid$RUNDATE$i
-endif
 

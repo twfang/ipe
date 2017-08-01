@@ -90,8 +90,12 @@ end if
 !     apex_longitude_loop: DO mp = mpstrt,mpstop,mpstep !1,NMP
       apex_longitude_loop: DO mp = 1,mpstop
 !nm20121115        mp_save=mp
-        IF ( sw_neutral_heating_flip==1 )  hrate_mks3d(:,:,mp,:)=zero
-        if ( sw_debug )  WRITE (0,"('sub-p: mp=',I4)")mp
+        IF ( sw_neutral_heating_flip==1 )  then
+          hrate_mks3d(:,:,mp,:)=zero
+        endif
+        if ( sw_debug ) then
+          WRITE (0,"('sub-p: mp=',I4)")mp
+        endif
 !d        n0_2dbg(:)=zero
 
 !dbg20120412: sw_divvpar4t
@@ -133,10 +137,6 @@ end if
 
 !20111025: not sure if these lines work when ut=0 & HPEQ=0.5(initial profiles are prepared within flip) , or maybe it is ok if they are zero?
 !save the values from the previous time step...
-!     print*,'JFM,mp,lp,JMIN_IN,JMAX_IS',mp,lp,JMIN_IN(lp),JMAX_IS(lp)!1,  1,    1, 1115
-                                                                      !1,  2, 1118, 2232
-                                                                      !1,  3, 2235, 3349
-                                                                      !1,170,44430,44438
           DO i=JMIN_IN(lp),JMAX_IS(lp)
              i1d=i-JMIN_IN(lp)+1
              DO jth=1,ISTOT

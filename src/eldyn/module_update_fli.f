@@ -18,7 +18,7 @@
       !---
       subroutine update_fli ( utime )
       use module_precision
-      use module_input_parameters,ONLY:start_time,sw_debug
+      use module_input_parameters,ONLY:start_time,sw_debug,mype
       use dynamo_module,only:zigm11,zigm22,zigmc,zigm2,rim
       use module_plas2dyn_fli_array,only:plas2dyn_fli_array
       implicit none
@@ -63,6 +63,7 @@
 
       else
         write(6,*)'STOP! INVALID input_type_eld_fli=',input_type_eld_fli
+        write(6,*)'mype=',mype
         stop
       endif    !( input_type_eld_fli == 'NETCDF' ) then                                                                           
 
@@ -91,7 +92,7 @@
       print *,'rim',MAXVAL(rim),MINVAL(rim)
 !dbg20151107      if ( MAXVAL(zigm11)<=0.0 ) then
       if ( MINVAL(zigm11)<=0.0 ) then
-        print *,'!STOP! INVALID zigm11 values!'
+        print *,'!STOP! INVALID zigm11 values!',mype
         print *,'alldim',minloc(zigm11)
         print *,'dim=1',minloc(zigm11,1)
         print *,'dim=2',minloc(zigm11,2)

@@ -172,8 +172,6 @@
 !
 !nm20140408--end commented out
       close(iunit,err=100)
-!SMS$SERIAL end
-  
 !   
 ! for testing input: is the same as input file
 !
@@ -235,6 +233,7 @@
 !t        zigm11(:,kmlat+1-lp) = 0.01
 !t        zigm22(:,kmlat+1-lp) = 0.01
 !t      enddo
+!SMS$SERIAL END
       
 ! ouput variables     
       fname = 'zigm11_in'

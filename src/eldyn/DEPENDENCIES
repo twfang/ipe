@@ -23,7 +23,7 @@ module_check_err.o : module_check_err.f module_decomp.o
 module_clearcee.o : module_clearcee.f module_decomp.o 
 module_cnm.o : module_cnm.f dynamo_module.o module_decomp.o 
 module_cnmmod.o : module_cnmmod.f dynamo_module.o module_decomp.o 
-module_colath.o : module_colath.f dynamo_module.o heelis_module.o params.o cons_module.o module_magfield.o module_decomp.o 
+module_colath.o : module_colath.f heelis_module.o params.o cons_module.o dynamo_module.o module_magfield.o module_decomp.o 
 module_constants.o : module_constants.f efield.o module_decomp.o 
 module_divide.o : module_divide.f dynamo_module.o module_decomp.o 
 module_edges.o : module_edges.f dynamo_module.o module_decomp.o 
@@ -36,46 +36,46 @@ module_flwv32.o : module_flwv32.f heelis_module.o cons_module.o module_decomp.o
 module_fun_MLT.o : module_fun_MLT.f module_ADJUST.o module_decomp.o 
 module_fun_MagLong.o : module_fun_MagLong.f module_ADJUST.o module_decomp.o 
 module_get_efield.o : module_get_efield.f module_GlobalElPotential.o module_adj_S_a.o efield.o module_DerivPotential.o module_decomp.o 
-module_highlat.o : module_highlat.f dynamo_module.o module_sub_heelis.o params.o module_colath.o module_decomp.o 
+module_highlat.o : module_highlat.f params.o module_colath.o dynamo_module.o module_sub_heelis.o module_decomp.o 
 module_highlat_adjust.o : module_highlat_adjust.f efield.o module_decomp.o 
 module_highlat_getbnd.o : module_highlat_getbnd.f module_GECMP.o efield.o module_decomp.o 
 module_htrpex.o : module_htrpex.f dynamo_module.o module_decomp.o 
 module_index_quiet.o : module_index_quiet.f efield.o module_decomp.o 
 module_init_cons.o : module_init_cons.f cons_module.o module_decomp.o 
-module_init_eldyn.o : module_init_eldyn.f module_init_cons.o readin.o module_init_heelis.o efield.o module_nc_create.o module_eldyn.o module_efield_init.o module_readin_ascii.o module_decomp.o 
+module_init_eldyn.o : module_init_eldyn.f module_init_cons.o module_nc_create.o module_efield_init.o module_readin_ascii.o readin.o efield.o module_init_heelis.o module_eldyn.o module_decomp.o 
 module_init_heelis.o : module_init_heelis.f heelis_module.o cons_module.o module_decomp.o 
 module_interp_poten.o : module_interp_poten.f efield.o module_decomp.o 
 module_magfield.o : module_magfield.f module_decomp.o 
 module_nc_close.o : module_nc_close.f nc_module.o module_check_err.o module_decomp.o 
 module_nc_create.o : module_nc_create.f params.o cons_module.o nc_module.o module_check_err.o module_decomp.o 
-module_plas2dyn_fli_array.o : module_plas2dyn_fli_array.f dynamo_module.o cons_module.o params.o module_eldyn.o module_decomp.o 
+module_plas2dyn_fli_array.o : module_plas2dyn_fli_array.f cons_module.o params.o dynamo_module.o module_eldyn.o module_decomp.o 
 module_pnm.o : module_pnm.f efield.o module_decomp.o 
 module_pot_latsmo.o : module_pot_latsmo.f efield.o module_decomp.o 
 module_pot_latsmo2.o : module_pot_latsmo2.f efield.o module_decomp.o 
 module_pot_lonsmo.o : module_pot_lonsmo.f efield.o module_decomp.o 
-module_potm.o : module_potm.f dynamo_module.o heelis_module.o params.o cons_module.o module_flwv32.o module_magfield.o module_decomp.o 
+module_potm.o : module_potm.f heelis_module.o params.o cons_module.o module_flwv32.o dynamo_module.o module_magfield.o module_decomp.o 
 module_prep_fk.o : module_prep_fk.f efield.o module_decomp.o 
 module_prep_pnm.o : module_prep_pnm.f efield.o module_decomp.o 
 module_prep_weimer.o : module_prep_weimer.f module_ADJUST.o module_SetModel.o module_GET_TILT.o efield.o module_decomp.o 
 module_read_acoef.o : module_read_acoef.f efield.o module_decomp.o 
 module_readin_ascii.o : module_readin_ascii.f dynamo_module.o readin.o nc_module.o params.o module_decomp.o 
 module_regrid2ipe.o : module_regrid2ipe.f cons_module.o params.o module_decomp.o 
-module_rhspde.o : module_rhspde.f dynamo_module.o cons_module.o module_decomp.o 
+module_rhspde.o : module_rhspde.f cons_module.o dynamo_module.o module_decomp.o 
 module_set_fkflfs.o : module_set_fkflfs.f module_ff.o efield.o module_decomp.o 
-module_stencil.o : module_stencil.f module_htrpex.o module_cnm.o module_decomp.o 
-module_stencmd.o : module_stencmd.f module_cnmmod.o module_htrpex.o module_cnm.o module_decomp.o 
-module_stenmd.o : module_stenmd.f dynamo_module.o cons_module.o module_decomp.o 
-module_stenmod.o : module_stenmod.f dynamo_module.o cons_module.o module_decomp.o 
+module_stencil.o : module_stencil.f module_cnm.o module_htrpex.o module_decomp.o 
+module_stencmd.o : module_stencmd.f module_cnm.o module_cnmmod.o module_htrpex.o module_decomp.o 
+module_stenmd.o : module_stenmd.f cons_module.o dynamo_module.o module_decomp.o 
+module_stenmod.o : module_stenmod.f cons_module.o dynamo_module.o module_decomp.o 
 module_sub_dynamo.o : module_sub_dynamo.f module_divide.o module_transf.o module_clearcee.o module_threed.o nc_module.o cons_module.o params.o module_edges.o dynamo_module.o module_stenmod.o module_stencmd.o module_stencil.o module_rhspde.o module_stenmd.o module_decomp.o 
 module_sub_eldyn.o : module_sub_eldyn.f module_highlat.o module_sunloc.o module_sub_dynamo.o dynamo_module.o module_get_efield.o module_cal_monthday.o efield.o module_eldyn.o module_update_fli.o module_magfield.o module_decomp.o 
-module_sub_heelis.o : module_sub_heelis.f heelis_module.o module_potm.o module_colath.o module_decomp.o 
+module_sub_heelis.o : module_sub_heelis.f heelis_module.o module_colath.o module_potm.o module_decomp.o 
 module_sub_nclplot.o : module_sub_nclplot.f module_check_err.o module_decomp.o 
 module_sub_nclplot1d.o : module_sub_nclplot1d.f module_check_err.o module_decomp.o 
 module_sunloc.o : module_sunloc.f module_magfield.o module_decomp.o 
 module_svbksb.o : module_svbksb.f module_decomp.o 
 module_svdcmp.o : module_svdcmp.f module_decomp.o 
-module_threed.o : module_threed.f dynamo_module.o nc_module.o cons_module.o params.o module_decomp.o 
-module_transf.o : module_transf.f dynamo_module.o cons_module.o module_decomp.o 
+module_threed.o : module_threed.f nc_module.o cons_module.o params.o dynamo_module.o module_decomp.o 
+module_transf.o : module_transf.f cons_module.o dynamo_module.o module_decomp.o 
 module_update_fli.o : module_update_fli.f dynamo_module.o module_plas2dyn_fli_array.o module_decomp.o 
 mud.o : mud.f dynamo_module.o module_ceee.o module_decomp.o 
 mudcom.o : mudcom.f module_decomp.o 

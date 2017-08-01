@@ -128,15 +128,15 @@
 ! Coefficients and RHS terms for PDE on geomagnetic grid:
 ! (formerly in coefm.h)
 !
-      real,dimension(kmlonp1,kmlat) ::                                  &
+      real*8,dimension(kmlonp1,kmlat) ::                                &! JFM: real*8 is a workaround for SMS bug
      &  zigm11,                                                         &! sigma11*cos(theta0)
      &  zigmc,                                                          &! sigmac
      &  zigm2,                                                          &! sigma2
      &  zigm22   ! sigma22/cos(theta0)
 !
 ! rim(1)=id(1), rim(2)=id(2)/cos(theta0)
-      real,dimension(kmlonp1,kmlat,2) :: rim 
-      real,dimension(kmlonp1,kmlath)  :: rhs ! right-hand side 
+      real*8,dimension(kmlonp1,kmlat,2) :: rim ! JFM: real*8 is a workaround for SMS bug
+      real  ,dimension(kmlonp1,kmlath)  :: rhs ! right-hand side 
 !
 ! isolve = 0 -> original mud version 5.
 ! isolve = 1 -> muh hybrid solver (only as direct solver -- slow)

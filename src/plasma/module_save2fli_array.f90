@@ -55,6 +55,16 @@
       print *,mype,'rim2',MAXVAL(plas_fli(:,:,:,6)),MINVAL(plas_fli(:,:,:,6))
 !SMS$IGNORE end
 
+      if( MINVAL(plas_fli(:,:,:,1))<=0.0 ) then
+!SMS$IGNORE begin
+        print *,'!STOP! INVALID zigm11 value in plasma folder in module_save2fli_array.f90'
+        print *,'alldim',minloc(plas_fli(:,:,:,1)),mype
+        print *,'dim=1' ,minloc(plas_fli(:,:,:,1),1)
+        print *,'dim=2' ,minloc(plas_fli(:,:,:,1),2)
+!SMS$IGNORE end
+        STOP
+      endif
+
 !t          IF ( sw_3DJ==1 ) THEN
 !t            DO jth=1,2
 !t              Je_3d(IN:IS,mp,lp_dyn,jth) = Je_1d(1:CTIPDIM,jth)

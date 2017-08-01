@@ -159,8 +159,8 @@
       real :: ft(1:3,0:2)  ! used for f_-k(season,k)
 
       real ::  a_klnm(0:ni)        !  A_klm
-      real ::  a_lf  (0:ni)        ! A_klmn^lf for minimum  
-      real ::  a_hf  (0:ni)        ! A_klmn^hf for maximum
+      real*8 ::  a_lf  (0:ni)        ! A_klmn^lf for minimum  JFM: real*8 is a workaround for SMS bug
+      real*8 ::  a_hf  (0:ni)        ! A_klmn^hf for maximum  JFM: real*8 is a workaround for SMS bug
 
 !---------------------------------------------------------------------- 
 ! high_latitude boundary

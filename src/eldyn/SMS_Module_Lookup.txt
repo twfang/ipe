@@ -36,6 +36,7 @@ cons_module ./cons_sms.f.tmp
 cons_module_tmp ./module_cons_tmp_sms.f.tmp
 heelis_module ./heelis_module_sms.f.tmp
 nc_module ./nc_module_sms.f.tmp
+module_nc_create ./module_nc_create_sms.f.tmp
 module_check_err ./module_check_err_sms.f.tmp
 read_module ./readin_sms.f.tmp
 dynamo_module ./dynamo_module_sms.f.tmp
@@ -95,3 +96,6 @@ module_globalelpotential ./module_GlobalElPotential_sms.f.tmp
 module_regrid2ipe ./module_regrid2ipe_sms.f.tmp
 module_fun_maglong ./module_fun_MagLong_sms.f.tmp
 module_fun_mlt ./module_fun_MLT_sms.f.tmp
+module_colath ./module module_colath_sms.f.tmp
+module_init_cons ./module_init_cons_sms.f.tmp
+module_init_heelis ./module_init_heelis_sms.f.tmp

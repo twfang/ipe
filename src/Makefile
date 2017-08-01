@@ -139,7 +139,7 @@ endif
     OPT_FLAGS = ###-O -fPIC -m64 -mcmodel=small -threads  -openmp  ###4esmf
     SMS       = /contrib/sms/legacy/SMSr825-intel
     ifeq ($(DEBUG),yes)
-      DEBUG_FLAGS = -g -O0 -ftz -traceback -check bounds -fpe0
+      DEBUG_FLAGS = -g -O0 -ftz -traceback -C -fpe0
     endif
     ifeq ($(PARALLELISM),parallel)
       ifeq ($(GPTL_USE_GPTL),yes)

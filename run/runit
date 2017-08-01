@@ -19,26 +19,6 @@ else
 endif
 echo "parallelism" $parallelism
 #
-if ( $sw_compile == 1 ) then
-    cd $WORKDIR/src
-    pwd
-    make clean
-    module load $compiler netcdf
-    set makejobs = 1
-    echo "start compiling..."
-    env MAKEJOBS=${makejobs}  make ${machine}_${compiler}_${parallelism} 
-    if ( $compute_tasks != "S" ) then
-      cp  eldyn/cons_module_sms.f.tmp  eldyn/cons_sms.f.tmp
-      make ${machine}_${compiler}_${parallelism} 
-    endif
-    ###make theia_intel_serial 
-    if ( $? != 0 ) then
-	echo "exit status" $?
-	    echo "error STOP! compiling failed!"
-		exit 1
-    endif
-endif #( $compute_tasks == "S" ) then
-
 ### over-write the setting inside qsubipe:
 setenv IPEQUEUE  "debug" 
 setenv IPETIME  00:30:00

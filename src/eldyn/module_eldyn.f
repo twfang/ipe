@@ -58,10 +58,13 @@
       REAL   (KIND=real_prec),allocatable,public :: coslam_m(:,:)
 !SMS$DISTRIBUTE END
 !SMS$DISTRIBUTE(dh,2,3) BEGIN
-      REAL   (KIND=real_prec),allocatable,public :: Ed1_90  (:,:,:)    !(2,NLP,NMP)
-      REAL   (KIND=real_prec),allocatable,public :: Ed2_90  (:,:,:)    !(2,NLP,NMP)
+!      REAL   (KIND=real_prec),allocatable,public :: Ed1_90  (:,:,:)    !(2,NLP,NMP)
+!      REAL   (KIND=real_prec),allocatable,public :: Ed2_90  (:,:,:)    !(2,NLP,NMP)
+      REAL*8,allocatable,public :: Ed1_90  (:,:,:)    !(2,NLP,NMP) !JFM workaround for SMS bug
+      REAL*8,allocatable,public :: Ed2_90  (:,:,:)    !(2,NLP,NMP) !JFM workaround for SMS bug
 !nm20131025:...ideally, this should be located for sw_eldyn=0, should not be mixed with waccm efield!!!
-      REAL   (KIND=real_prec),allocatable,public :: plas_fli (:,:,:,:) !(2,NLP,NMP,6)
+!      REAL   (KIND=real_prec),allocatable,public :: plas_fli (:,:,:,:) !(2,NLP,NMP,6)
+      REAL*8,allocatable,public :: plas_fli (:,:,:,:) !(2,NLP,NMP,6) !JFM workaround for SMS bug
 !t      REAL   (KIND=real_prec),allocatable,public ::sigma_ped(:,:,:)
 !t      REAL   (KIND=real_prec),allocatable,public ::sigma_hall(:,:,:)
 !SMS$DISTRIBUTE END

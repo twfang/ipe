@@ -28,7 +28,6 @@
       USE module_physical_constants,ONLY:rtd
       USE module_IPE_dimension,ONLY: NPTS2D,NMP,NLP
       USE module_calculate_field_line_integrals,ONLY:calculate_field_line_integrals
-      USE params_module,ONLY:kmlat 
       USE cons_module,ONLY:xlatm,idyn_save 
 !     USE module_PLASMA,ONLY:sigma_ped_3d,sigma_hall_3d,Ue1_3d,Ue2_3d
 
