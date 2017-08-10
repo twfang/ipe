@@ -105,6 +105,8 @@ REAL (KIND=real_prec)    ::  ds(MaxFluxTube)            !ds 1D [???
       mlat_plas  = 90. - plasma_grid_GL(JMAX_IS(lp_plas),lp_plas)*rtd
       imlat_plas = INT(mlat_plas*10.)
 print *,' mp=',mp,' lp_plas=',lp_plas,' mlat_plas=', mlat_plas,' imlat_plas=', imlat_plas
+!         mp=   1   lp_plas=    1       mlat_plas=  -88.12383    imlat_plas=     -881
+!         mp=   1   lp_plas=   27       mlat_plas=  -59.54826    imlat_plas=     -595
 
 !nm20150330      if ( mp==1.AND.lp_plas==1 ) then !utime==start_time???
 !nm20150330         call calculate_ylatm1 ( ) 
@@ -117,6 +119,7 @@ if (mp==1.and.lp_plas==1)   print *,'xlatm[deg]=',xlatm*rtd
          imlat_dyn = INT(mlat_dyn*10.)
 
          print *,'lp_dyn=',lp_dyn,' mlat_dyn=',mlat_dyn,' imlat_dyn=',imlat_dyn
+!                 lp_dyn=    15     mlat_dyn=  -59.54842  imlat_dyn=    -595
          !dbg20151107: make sure fli is calculated at lp_plas=NLP
          IF ( lp_plas < NLP ) THEN
             IF ( imlat_dyn > imlat_plas ) THEN
@@ -129,17 +132,33 @@ if (mp==1.and.lp_plas==1)   print *,'xlatm[deg]=',xlatm*rtd
 
             print *,'(3) start interface calculating FLI: lp_plas=',lp_plas,lp_dyn,' mlat_dyn=',mlat_dyn
             idyn_save(lp_dyn)=lp_plas  !correspondance between lp_plas & lp_dyn
+!SMS$IGNORE BEGIN
+print*,'JFM1 idyn_save',idyn_save(lp_dyn),lp_dyn,mp,mype,lp_plas
+!SMS$IGNORE END
          ELSE if ( lp_plas == nlp ) then 
 
 print *, '!dbg20151107 make sure fli is calculated at lp_plas=170'
            if ( lp_dyn < lp_dyn_eq )  CYCLE lp_dyn_loop
            print *, lp_dyn, lp_plas
            idyn_save(lp_dyn)=lp_plas  !correspondance between lp_plas & lp_dyn
+!SMS$IGNORE BEGIN
+print*,'JFM2 idyn_save',idyn_save(lp_dyn),lp_dyn,mp,mype,lp_plas
+!SMS$IGNORE END
          END IF !( lp_plas < NLP ) THEN
+!SMS$IGNORE BEGIN
+print*,'JFM3 idyn_save',mype,lp_dyn,idyn_save(lp_dyn),mp,lp_plas
+!SMS$IGNORE END
 
          IN = JMIN_IN(lp_plas)
          IS = JMAX_IS(lp_plas)
          midpoint = IN + ( IS - IN )/2
+!!SMS$ignore begin
+!print*,'JFM6',mype,IN,  IS,lp_plas,midpoint
+!!SMS$ignore end
+!       JFM6   0    1 1115    1         558  Preceeded dotprod=-6.0928773E-09
+!       JFM6   1    1 1115    1         558
+!       JFM6   0    1  425   27         213  Preceeded dotprod=-2.6396289E-03
+!       JFM6   1    1  425   27         213
          CTIPDIM = IS - IN + 1
          i_loop: DO i=in,is
             i1d=i-in+1
@@ -174,6 +193,15 @@ print *, '!dbg20151107 make sure fli is calculated at lp_plas=170'
                     &  + apexD(i,lp_plas,mp,north,jth1) * apexD(i,lp_plas,mp,north,jth2)  &
                     &  + apexD(i,lp_plas,mp,up,   jth1) * apexD(i,lp_plas,mp,up   ,jth2)
                
+!!SMS$ignore begin
+!print*,'JFM7a',mype,jth,i1d, dotprod,       lp_plas,mp, i
+!print*,apexD(i,lp_plas,mp,east, jth1),apexD(i,lp_plas,mp,east, jth2), &
+!       apexD(i,lp_plas,mp,north,jth1),apexD(i,lp_plas,mp,north,jth2), &
+!       apexD(i,lp_plas,mp,up,   jth1),apexD(i,lp_plas,mp,up   ,jth2)
+!print*,'JFM7b',east,north,up,jth1,jth2
+!!SMS$ignore end
+!       JFM7    0    3 559 -6.0928773E-09     1     1 559
+!       JFM7    0    3 425 -2.6396289E-03    27     1 425
                IF ( jth==1 ) THEN
                   apex_d1d1(i1d) = dotprod
                ELSE IF ( jth==2 ) THEN 

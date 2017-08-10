@@ -153,7 +153,7 @@ sms_sets=""
 
 # Set up some lists of valid options for error checking.
 
-compilers="cray intel lahey pgi"
+compilers="cray intel/16.1.150 lahey pgi"
 machines="trillian zeus yellowstone theia"
 parallelisms="parallel serial"
 
@@ -255,13 +255,11 @@ case $machine in
   # theia stanza
 
   "theia")
-    compiler_check "intel pgi" $compiler $machine
+    compiler_check "intel/16.1.150 pgi" $compiler $machine
 #    setc IPEDATA  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/IPEdata/data
     setc IPEDATA  /scratch3/NCEPDEV/swpc/save/Tzu-Wei.Fang/IPE/trunk_electrodynamics_44514_feedback/run/ipe_S_onlyEd1_crashed_newtest
-###    setc IPEQUEUE debug
-    setc IPEQUEUE batch
-###    setc IPETIME  00:30:00
-    setc IPETIME  08:00:00
+    setc IPEQUEUE debug
+    setc IPETIME  00:30:00
 #    setc IPEWIND  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/IPEdata/wind
     setc IPEWIND /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/mergeEldyn20170127Stefan/ipe/run
     acct=swpc
@@ -275,7 +273,7 @@ case $machine in
       *) fail "$0: Grid ID '$sw_grid' unknown."                                   ;;
     esac
     case $compiler in
-      intel)
+      intel/16.1.150)
         envvars="MPI_BUFS_PER_HOST=2048 MPI_BUFS_PER_PROC=256"
         ;;
       lahey)
@@ -290,7 +288,7 @@ esac
 ###dbg20170119
 ###pre=ipe_${machine}_${compiler}_${parallelism}
 #pre=ipe_${machine}_${compiler}_${parallelism}.v0  ###TW's 20161220
-pre=ipe_${machine}_${compiler}_${parallelism}
+pre=ipe_${machine}_intel_${parallelism}
 exe=../bin/${pre}.exe
 test -x $exe || fail "$0: Cannot find executable '$exe'."
 test $parallelism == serial && jobname=ipe_${compiler}_s || jobname=ipe_${compiler}_$tasks
@@ -342,5 +340,4 @@ chmod 755 runscript
 jobid=$($queue_cmd runscript || echo FAIL)
 test $jobid == FAIL && fail "$0: Failed to submit job."
 echo "The job $jobid has been submitted."
-qstat -a |grep Naomi
 exit 0

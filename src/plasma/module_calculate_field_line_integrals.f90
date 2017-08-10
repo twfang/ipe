@@ -35,7 +35,7 @@
      &,Je,mp,lp )
 
       USE module_precision
-      USE module_input_parameters,ONLY:sw_3DJ
+      USE module_input_parameters,ONLY:sw_3DJ,mype
       USE module_eldyn,ONLY: Ed1_90, Ed2_90  !nm20130828, lpconj
       USE module_physical_constants,ONLY:electron_charge_Coulombs, zero
       USE module_IONNEUT_PLAS,ONLY:IONNEUT_PLAS
@@ -145,6 +145,8 @@ INTEGER (KIND=int_prec), intent(in)  ::  lp
   INTEGER (KIND=int_prec) ::  lp0
 !---------------------------------------------------------
 
+      sigma_ped=0.0  !JFM this is temporary until Naomi figures our what sigma_ped should be set to
+
       do ipts = in,is
          effective_temp(ipts) = (tn(ipts)+ti_oplus_1d(ipts))/2.
          IF ( effective_temp(ipts)<tn(ipts) ) effective_temp(ipts) = tn(ipts)
@@ -157,9 +159,9 @@ INTEGER (KIND=int_prec), intent(in)  ::  lp
      &               in,is,iout)
 
 ! calculates collision frequencies see TGCM
-  o_cm3  = o*1.e-6   ! convert from #/m3 to #/cm3
-  o2_cm3 = o2*1.e-6
-  n2_cm3 = n2*1.e-6
+  o_cm3 (in:is) = o (in:is)*1.e-6   ! convert from #/m3 to #/cm3
+  o2_cm3(in:is) = o2(in:is)*1.e-6
+  n2_cm3(in:is) = n2(in:is)*1.e-6
 !
   call calc_collfreq(o_cm3,o2_cm3,n2_cm3,effective_temp,tn,apex_Bmag, &
                     rnu_o2p,rnu_op,rnu_nop,rnu_ne,in,is,npts)
@@ -264,6 +266,15 @@ INTEGER (KIND=int_prec), intent(in)  ::  lp
                integral517 = integral517 + sigma_hall(ipts)*abs_ds
 
                integral518 = integral518 + sigma_ped(ipts)*apex_d1d2(ipts)*abs_ds/apex_D(ipts)
+!if(integral518<0.0) then
+!!SMS$ignore begin
+!  print*,'JFM1', integral518,  sigma_ped(ipts),apex_d1d2(ipts),abs_ds,  apex_D(ipts),  ipts,  ihem,mype
+!!SMS$ignore end
+!         JFM1 -2.3854740E-05  3.9203514E-06   -2.6396289E-03  2180.000 0.9456919      425      2    0
+!         JFM1 -2.4191562E-02  4.8058820E-07   -1.0475066E-02  10876.00 0.6538433      365      2    0
+!         JFM1 -2.4609566E-02  0.0000000E+00    1.7838729E-06  4173310. 8.8848356E-05  213      2    0
+!This does not happen for mype=1 !!!!!!!!!!!!
+!endif
 
                integral519 = integral519 + (sigma_ped(ipts)*apex_d1d1(ipts)*Ue(ipts,2)/apex_D(ipts) &
      &               + (sigma_hall(ipts)-sigma_ped(ipts)*apex_d1d2(ipts) &

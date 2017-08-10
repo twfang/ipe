@@ -15,55 +15,65 @@
         PRIVATE
         PUBLIC :: save2fli_array
       contains
-        subroutine save2fli_array (lp_plas,mp, &
-     &                                         sigma_phph_dsi_1d,sigma_lmlm_msi_1d, &
-     &                                         sigma_h_1d,sigma_c_1d, &
-     &                                         Kdmph_dsi_1d,Kdmlm_1d )
+        subroutine save2fli_array (lp_plas,mp,                          &
+     &                             sigma_phph_dsi_1d,sigma_lmlm_msi_1d, &
+     &                             sigma_h_1d,sigma_c_1d,               &
+     &                             Kdmph_dsi_1d,Kdmlm_1d )
           USE module_precision
           USE module_eldyn,ONLY: plas_fli !t,Je_3d
           use module_input_parameters,ONLY:mype 
+          USE module_IPE_dimension,ONLY: NLP,NMP
           IMPLICIT NONE
-          INTEGER (KIND=int_prec), intent(in)  ::  mp
-          INTEGER (KIND=int_prec), intent(in)  ::  lp_plas
-!
-          REAL (KIND=real_prec), intent(in)  ::    sigma_phph_dsi_1d(2)      !(5.13) divided by |sin I_m |
-          REAL (KIND=real_prec), intent(in)  ::    sigma_lmlm_msi_1d(2)      !(5.14) multiplied by | sin I_m |
-          REAL (KIND=real_prec), intent(in)  ::	   sigma_h_1d(2)      !(5.17)
-          REAL (KIND=real_prec), intent(in)  ::	   sigma_c_1d(2)      !(5.18)
-          REAL (KIND=real_prec), intent(in)  ::    Kdmph_dsi_1d(2)      !(5.19) divided by |sin I_m |
-          REAL (KIND=real_prec), intent(in)  ::	   Kdmlm_1d(2)	  !(5.20) plus or minus ????
-!
-          INTEGER (KIND=int_prec) ::  ihem
-!
+          INTEGER (KIND=int_prec),  intent(in)  :: mp
+          INTEGER (KIND=int_prec),  intent(in)  :: lp_plas
+          REAL    (KIND=real_prec), intent(in)  :: sigma_phph_dsi_1d(2) !(5.13) divided by |sin I_m |
+          REAL    (KIND=real_prec), intent(in)  :: sigma_lmlm_msi_1d(2) !(5.14) multiplied by | sin I_m |
+          REAL    (KIND=real_prec), intent(in)  :: sigma_h_1d(2)        !(5.17)
+          REAL    (KIND=real_prec), intent(in)  :: sigma_c_1d(2)        !(5.18)
+          REAL    (KIND=real_prec), intent(in)  :: Kdmph_dsi_1d(2)      !(5.19) divided by |sin I_m |
+          REAL    (KIND=real_prec), intent(in)  :: Kdmlm_1d(2)	        !(5.20) plus or minus ????
+          INTEGER (KIND=int_prec)               :: ihem,lpt,mpt
+
 !SH ihem=2; NH ihem=1
           do ihem=1,2
-                plas_fli(ihem,lp_plas,mp,1) = sigma_phph_dsi_1d(ihem)
-                plas_fli(ihem,lp_plas,mp,2) = sigma_lmlm_msi_1d(ihem)
-                plas_fli(ihem,lp_plas,mp,3) = sigma_h_1d(       ihem)
-                plas_fli(ihem,lp_plas,mp,4) = sigma_c_1d(       ihem)
-                plas_fli(ihem,lp_plas,mp,5) = Kdmph_dsi_1d(     ihem)
-                plas_fli(ihem,lp_plas,mp,6) = Kdmlm_1d(         ihem)
+!            if ( sigma_phph_dsi_1d(ihem) <= 0.0 ) then
+!!SMS$IGNORE begin
+!              print *,mype,'INVALID sigma_phph_dsi_1d=', sigma_phph_dsi_1d(ihem),lp_plas,mp,ihem
+!!SMS$IGNORE end
+!              STOP
+!            end if
+!            if ( sigma_lmlm_msi_1d(ihem) <= 0.0 ) then
+!!SMS$IGNORE begin
+!              print *,mype,'INVALID sigma_lmlm_msi_1d=', sigma_lmlm_msi_1d(ihem),lp_plas,mp,ihem
+!!SMS$IGNORE end
+!              STOP
+!            end if
+!            if ( sigma_h_1d(ihem) <= 0.0 ) then
+!!SMS$IGNORE begin
+!              print *,mype,'INVALID sigma_h_1d=', sigma_h_1d(ihem),lp_plas,mp,ihem
+!!SMS$IGNORE end
+!              STOP
+!            end if
+!            if ( sigma_c_1d(ihem) <= 0.0 ) then
+!!SMS$IGNORE begin
+!              print *,mype,'INVALID sigma_c_1d=', sigma_c_1d(ihem),lp_plas,mp,ihem
+!!SMS$IGNORE end
+!              STOP
+!            end if
+            plas_fli(ihem,lp_plas,mp,1) = sigma_phph_dsi_1d(ihem)
+            plas_fli(ihem,lp_plas,mp,2) = sigma_lmlm_msi_1d(ihem)
+            plas_fli(ihem,lp_plas,mp,3) = sigma_h_1d       (ihem)
+            plas_fli(ihem,lp_plas,mp,4) = sigma_c_1d       (ihem)
+            plas_fli(ihem,lp_plas,mp,5) = Kdmph_dsi_1d     (ihem)
+            plas_fli(ihem,lp_plas,mp,6) = Kdmlm_1d         (ihem)
           end do
-! Tzu-Wei TEST
 !SMS$IGNORE begin
-      print *,mype,ihem,lp_plas,mp,'TEST zigm within plasma folder'
-      print *,mype,'zigm11',MAXVAL(plas_fli(:,:,:,1)),MINVAL(plas_fli(:,:,:,1))
-      print *,mype,'zigm22',MAXVAL(plas_fli(:,:,:,2)),MINVAL(plas_fli(:,:,:,2))
-      print *,mype,'zigm2',MAXVAL(plas_fli(:,:,:,3)),MINVAL(plas_fli(:,:,:,3))
-      print *,mype,'zigmc',MAXVAL(plas_fli(:,:,:,4)),MINVAL(plas_fli(:,:,:,4))
-      print *,mype,'rim1',MAXVAL(plas_fli(:,:,:,5)),MINVAL(plas_fli(:,:,:,5))
-      print *,mype,'rim2',MAXVAL(plas_fli(:,:,:,6)),MINVAL(plas_fli(:,:,:,6))
+      print *,'save2fli_array',mype,lp_plas,mp
+!              save2fli_array    0    1      1
+!              save2fli_array    1    1     41
+!              save2fli_array    0   25      1
+!              save2fli_array    1   27     41
 !SMS$IGNORE end
-
-      if( MINVAL(plas_fli(:,:,:,1))<=0.0 ) then
-!SMS$IGNORE begin
-        print *,'!STOP! INVALID zigm11 value in plasma folder in module_save2fli_array.f90'
-        print *,'alldim',minloc(plas_fli(:,:,:,1)),mype
-        print *,'dim=1' ,minloc(plas_fli(:,:,:,1),1)
-        print *,'dim=2' ,minloc(plas_fli(:,:,:,1),2)
-!SMS$IGNORE end
-        STOP
-      endif
 
 !t          IF ( sw_3DJ==1 ) THEN
 !t            DO jth=1,2

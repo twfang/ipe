@@ -76,7 +76,7 @@ module_svbksb.o : module_svbksb.f module_decomp.o
 module_svdcmp.o : module_svdcmp.f module_decomp.o 
 module_threed.o : module_threed.f nc_module.o cons_module.o params.o dynamo_module.o module_decomp.o 
 module_transf.o : module_transf.f cons_module.o dynamo_module.o module_decomp.o 
-module_update_fli.o : module_update_fli.f dynamo_module.o module_plas2dyn_fli_array.o module_decomp.o 
+module_update_fli.o : module_update_fli.f params.o dynamo_module.o module_plas2dyn_fli_array.o module_decomp.o 
 mud.o : mud.f dynamo_module.o module_ceee.o module_decomp.o 
 mudcom.o : mudcom.f module_decomp.o 
 mudmod.o : mudmod.f dynamo_module.o module_decomp.o 

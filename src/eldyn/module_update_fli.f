@@ -21,6 +21,7 @@
       use module_input_parameters,ONLY:start_time,sw_debug,mype
       use dynamo_module,only:zigm11,zigm22,zigmc,zigm2,rim
       use module_plas2dyn_fli_array,only:plas2dyn_fli_array
+      use params_module,only: kmlat,kmlonp1
       implicit none
       INTEGER (KIND=int_prec),INTENT(IN)   :: utime !universal time [sec]      
 !--local---
@@ -28,6 +29,7 @@
       CHARACTER (len=*), parameter :: input_type_eld_fli = 'IPE'
 !0: WITH wind; 1: WITHOUT wind
       INTEGER (KIND=int_prec) :: sw_windyn=1
+      INTEGER (KIND=int_prec) :: i,j
 !---
 !note: when called at the very first time step, zigm11etc do not have values since IPE has not yet been called, therefore the readin values are used even if input_type_eld_fli='IPE'.
 
@@ -52,14 +54,15 @@
 
 
 !dbg20150608: output FLI for debug
-      print *,'(22-26) output dyn fli at utime=',utime
-!      write(unit=4022,FMT='(I12)')utime
-      write(unit=4022,FMT='(20E12.4)')zigm11
-      write(unit=4023,FMT='(20E12.4)')zigm22
-      write(unit=4024,FMT='(20E12.4)')zigmc
-      write(unit=4025,FMT='(20E12.4)')zigm2
-      write(unit=4026,FMT='(20E12.4)')rim
-
+        print *,'(22-26) output dyn fli at utime=',utime
+!SMS$serial begin
+        write(unit=4022,FMT='(I12)')utime
+        write(unit=4022,FMT='(20E12.4)')zigm11
+        write(unit=4023,FMT='(20E12.4)')zigm22
+        write(unit=4024,FMT='(20E12.4)')zigmc
+        write(unit=4025,FMT='(20E12.4)')zigm2
+        write(unit=4026,FMT='(20E12.4)')rim
+!SMS$serial end
 
       else
         write(6,*)'STOP! INVALID input_type_eld_fli=',input_type_eld_fli
@@ -81,24 +84,28 @@
 !      IF (istat_eldyn /= 0) STOP 'ERROR WRITING FILE_eldyn'
 !      endif                     !( .NOT. sw_output_netcdf_eldyn ) then                                                          
 
-
-
-!      if ( sw_debug ) then
+!SMS$IGNORE BEGIN
       print *,'!dbg! make sure zigm11 have values before calculations'
-      print *,'zigm11',MAXVAL(zigm11),MINVAL(zigm11)
-      print *,'zigm22',MAXVAL(zigm22),MINVAL(zigm22)
-      print *,'zigm2',MAXVAL(zigm2),MINVAL(zigm2)
-      print *,'zigmc',MAXVAL(zigmc),MINVAL(zigmc)
-      print *,'rim',MAXVAL(rim),MINVAL(rim)
-!dbg20151107      if ( MAXVAL(zigm11)<=0.0 ) then
-      if ( MINVAL(zigm11)<=0.0 ) then
-        print *,'!STOP! INVALID zigm11 values!',mype
-        print *,'alldim',minloc(zigm11)
-        print *,'dim=1',minloc(zigm11,1)
-        print *,'dim=2',minloc(zigm11,2)
-        STOP
-      endif
-!      endif 
+      print *,'zigm11',mype,MAXVAL(zigm11),MINVAL(zigm11)
+      print *,'zigm22',mype,MAXVAL(zigm22),MINVAL(zigm22)
+      print *,'zigm2' ,mype,MAXVAL(zigm2 ),MINVAL(zigm2 )
+      print *,'zigmc' ,mype,MAXVAL(zigmc ),MINVAL(zigmc )
+      print *,'rim'   ,mype,MAXVAL(rim   ),MINVAL(rim   )
+!SMS$IGNORE END
+
+!SMS$PARALLEL(dh,i,j) BEGIN
+      do j=1,kmlat
+        do i=1,kmlonp1
+          if( zigm11(i,j) <= 0.0 ) then
+!SMS$IGNORE begin
+            print *,'!STOP! Bad zigm11 value in module_update_fli.f'
+            print *,'VALUE',mype,i,j,zigm11(i,j)
+!SMS$IGNORE end
+            STOP
+          endif
+        enddo
+      enddo
+!SMS$PARALLEL END
 
       end subroutine update_fli
       end module module_update_fli

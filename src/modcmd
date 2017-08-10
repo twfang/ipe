@@ -50,9 +50,9 @@ case $1 in
     init="source /apps/lmod/lmod/init/sh"
     goto="$init && module purge && module load"
     case $2 in
-      "intel")
+      "intel/16.1.150")
 ###        echo "$goto intel impi "
-        echo "$goto intel netcdf impi "
+        echo "$goto intel/16.1.150 netcdf impi "
         ;;
       *) unknown $1 $2
         ;;

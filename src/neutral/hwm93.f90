@@ -68,6 +68,9 @@
 !d      print*,'inside hwm',iyd,sec,alt,glat,glong,stl,f107a,f107,ap
 
 !      put identification data into common/datime/                      
+
+      windf=0.0 !JFM this is temporary until Naomi figures our what windf should be set to.
+
       do 1 i=1,3 
         isdate(i)=isd(i) 
     1 end do 
@@ -235,6 +238,7 @@
 !-----------------------------------------------------------------------
       subroutine glbw5e(yrd,sec,lat,long,stl,f107a,f107,ap,pb,pc,ww) 
       real lat,long 
+      real dayl
       dimension wb(2,15),wc(2,15),pb(200),pc(200),ww(2) 
       dimension ap(2) 
       common/csw/sw(25),isw,swc(25) 
@@ -250,8 +254,12 @@
       data pb14/-1./,pb18/-1./ 
       data sw9/1./,lv/12/,mv/3/,nsv/3/,ngv/2/,pset/3./ 
       g0(a)=(a-4.+(pb(26)-1.)*(a-4.+(exp(-abs(pb(25))*(a-4.))-1.)/      &
-     & abs(pb(25))))                                                    
+     & abs(pb(25))))
+
 !       confirm parameter set                                           
+
+      dayl=0.0 !JFM this is temporary until Naomi figures our what dayl should be set to.
+
       if(pb(100).eq.0) pb(100)=pset 
       if(pb(100).ne.pset) then 
         write(6,900) pb(100),pc(100) 
@@ -757,6 +765,7 @@
 !-----------------------------------------------------------------------
       subroutine glbw5m(yrd,sec,lat,long,stl,f107a,f107,ap,pb,pc,ww) 
       real lat,long 
+      real dayl
       dimension wb(2,15),wc(2,15),pb(150),pc(150),ww(2) 
       dimension ap(2) 
       common/csw/sw(25),isw,swc(25) 
@@ -773,6 +782,9 @@
       data sw9/1./,lv/10/,mv/2/,nsv/2/,pset/4./ 
       g0(a)=(a-4.+(pb(26)-1.)*(a-4.+(exp(-abs(pb(25))*(a-4.))-1.)/      &
      & abs(pb(25))))                                                    
+
+      dayl=0.0 !JFM this is temporary until Naomi figures our what dayl should be set to.
+                                                    
 !       confirm parameter set                                           
       if(pb(100).eq.0) pb(100)=pset 
       if(pb(100).ne.pset) then 
@@ -1043,6 +1055,7 @@
 !-----------------------------------------------------------------------
       subroutine glbw5s(iyd,lat,long,stl,pb,pc,ww) 
       real lat,long 
+      real dayl
       dimension wb(2,15),wc(2,15),pb(100),pc(100),ww(2) 
       common/csw/sw(25),isw,swc(25) 
       common/hwmc/wbt(2),wct(2) 
@@ -1054,6 +1067,9 @@
       data pb14/-1./,pb18/-1./,pc14/-1./,pc18/-1./,pset/5./ 
       data nsw/14/,wb/30*0/,wc/30*0/ 
 !       confirm parameter set                                           
+
+      dayl=0.0 !JFM this is temporary until Naomi figures our what dayl should be set to.
+
       if(pb(100).eq.0) pb(100)=pset 
       if(pb(100).ne.pset) then 
         write(6,900) pset,pb(100),pc(100) 

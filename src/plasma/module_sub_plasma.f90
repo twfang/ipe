@@ -41,6 +41,7 @@
       USE module_interface_field_line_integrals,ONLY:interface_field_line_integrals
       USE module_initialize_fli_array,ONLY:initialize_fli_array
       USE module_IPE_dimension,ONLY: NMP
+      USE module_eldyn,ONLY: plas_fli !t,Je_3d
 !      USE module_output_dyn_fli_array,ONLY:output_dyn_fli_array
       IMPLICIT NONE
 !------------------------
@@ -48,6 +49,7 @@
 !--- local variables ---
       INTEGER (KIND=int_prec) :: mp
       INTEGER (KIND=int_prec) :: lp
+      INTEGER (KIND=int_prec) :: ihem
       INTEGER (KIND=int_prec) :: i,j,midpoint, i1d,k,ret  !dbg20120501
       INTEGER (KIND=int_prec) :: jth  !dbg20120501
       REAL (KIND=real_prec) ::  sigma_ped_3d(MaxFluxTube,47,NMP)  !pedersen conductivity [mho/m]
@@ -259,6 +261,31 @@ endif
       END DO apex_longitude_loop !: DO mp = 
 !SMS$PARALLEL END
       ret = gptlstop ('apex_lon_loop')
+!!SMS$IGNORE begin
+!      print *,mype,'TEST zigm within plasma folder'
+!      print *,mype,'zigm11',MAXVAL(plas_fli(:,:,:,1)),MINVAL(plas_fli(:,:,:,1))
+!      print *,mype,'zigm22',MAXVAL(plas_fli(:,:,:,2)),MINVAL(plas_fli(:,:,:,2))
+!      print *,mype,'zigm2' ,MAXVAL(plas_fli(:,:,:,3)),MINVAL(plas_fli(:,:,:,3))
+!      print *,mype,'zigmc' ,MAXVAL(plas_fli(:,:,:,4)),MINVAL(plas_fli(:,:,:,4))
+!      print *,mype,'rim1'  ,MAXVAL(plas_fli(:,:,:,5)),MINVAL(plas_fli(:,:,:,5))
+!      print *,mype,'rim2'  ,MAXVAL(plas_fli(:,:,:,6)),MINVAL(plas_fli(:,:,:,6))
+!!SMS$IGNORE end
+!!SMS$PARALLEL(dh, lp, mp) BEGIN
+!      do mp=1,NMP
+!        do lp=1,NLP
+!          do ihem=1,2
+!            if( plas_fli(ihem,lp,mp,1) <= 0.0 ) then
+!              print *,'!STOP! INVALID zigm11 value in plasma folder in module_sub_plasma.f90'
+!!SMS$IGNORE begin
+!              print *,'VALUE',mype,ihem,lp,mp,plas_fli(ihem,lp,mp,1)
+!!                      VALUE    0    1   2  1  0.000000000000000E+000
+!!SMS$IGNORE end
+!              STOP
+!            endif
+!          enddo
+!        enddo
+!      enddo
+!!SMS$PARALLEL END
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-4")
 
 

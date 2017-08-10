@@ -75,6 +75,7 @@
 !c     use units,         only : getunit, freeunit
 !c     use abortutils,    only : endrun
 !c     use cam_logfile,   only : iulog
+        use module_input_parameters,ONLY: mype
       implicit none 
 !
 !-------------------------------Commons---------------------------------
@@ -102,7 +103,7 @@
       INTEGER udat,unit,ios
       integer ll,mm,k,m,klimit,kk,nn,ii,i,n,ilimit,mlimit,l
 
-      REAL C(0:3)
+      REAL*8 C(0:3) !JFM The *8 is to work around the SMS r4-r8 problem
       real stpr, step
 
       CHARACTER*15 skip

@@ -10,7 +10,7 @@
           USE params_module,ONLY:kmlat,kmlon,kmlonp1
           USE cons_module,ONLY:idyn_save 
           use dynamo_module,only:zigm11,zigm22,zigmc,zigm2,rim
-          use module_input_parameters,ONLY: stop_time
+          use module_input_parameters,ONLY: stop_time,mype
           IMPLICIT NONE
       INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]
 !20150618: fort.4000 with zigm11etc used for input to other eldyn test 
@@ -20,10 +20,12 @@
       INTEGER (KIND=int_prec) :: ilat_dyn,ilon_dyn,mp,lp
       INTEGER (KIND=int_prec),parameter ::  lp_dyn_eq=47 !the lowest latitude index for FLI
 !
-      print *,'convert plas2dyn fli at utime=',utime,stop_time
+!SMS$IGNORE BEGIN
+      print *,'convert plas2dyn fli at utime=',utime,stop_time,mype
+!SMS$IGNORE end
       if (utime==stop_time) then
-      open(4030,file='output_fli',form='formatted',status='new')
-      write(4030,FMT='(I12)')utime
+        open(4030,file='output_fli',form='formatted',status='new')
+        write(4030,FMT='(I12)')utime
       endif
 
 
@@ -31,7 +33,7 @@
 !(1) NH; (2) SH
 !SMS$SERIAL(<plas_fli,IN>:default=ignore) BEGIN
       jth_loop: do jth=1,6
-         print *, '!dbg20140407: jth=',jth,' mp',mp
+         print *, '!dbg20140407: jth=',jth
 
          lp_dyn_loop: do lp_dyn=2,lp_dyn_eq !from SH toward eq
             lp_plas = idyn_save(lp_dyn)
@@ -51,10 +53,27 @@
                mp_loop: do mp=1,kmlon
 
                   ilon_dyn = mp + (kmlon / 2)
-                  if ( ilon_dyn > kmlon+1 ) ilon_dyn = ilon_dyn - kmlon
-                  if (jth==1) print *, '!dbg20140407: mp',mp            &
-     &,' ilon_dyn',ilon_dyn
-
+                  if ( ilon_dyn > kmlon+1 ) then
+                    ilon_dyn = ilon_dyn - kmlon
+                  endif
+                  if (jth==1) then
+!SMS$IGNORE begin
+                    print *, '!dbg20140407: mp',mp,' ilon_dyn',ilon_dyn
+                              !dbg20140407: mp   1   ilon_dyn          41
+         print*,'JFM8',mype,lp_dyn,idyn_save(lp_dyn),lp_dyn,lp_plas
+!                JFM8      0           0           6
+!SMS$IGNORE end
+                    if(plas_fli(ihem,lp_plas,mp,jth) <= 0.0) then
+!SMS$IGNORE begin
+                      print *,'!STOP!'
+                      print *,'INVALID zigm11 value in plasma folder'
+                      print *,'In module_sub_plasma.f90'
+                      print *,mype,ihem,lp_plas,mp,jth,plas_fli(ihem,   &
+     &                        lp_plas,mp,jth)
+!SMS$IGNORE end
+                      STOP
+                    endif
+                  endif
                   dum(ilon_dyn,ilat_dyn) = plas_fli(ihem,lp_plas,mp,jth)
                end do mp_loop!: do mp=1,kmlon
             end do ihem_loop

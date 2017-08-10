@@ -22,12 +22,12 @@ TARGETS = clean                   \
           zeus_intel_parallel     \
           zeus_intel_serial       \
           zeus_lahey_serial       \
-          theia_intel_parallel    \
-          theia_intel_serial
+          theia_intel/16.1.150_parallel    \
+          theia_intel/16.1.150_serial
 
 # Dynamic / Conditional variables
 
-EXE           = $(CURDIR)/../bin/ipe_$(MACHINE)_$(COMPILER)_$(PARALLELISM).exe
+EXE           = $(CURDIR)/../bin/ipe_$(MACHINE)_intel_$(PARALLELISM).exe
 FFLAGS        = $(strip $(OPT_FLAGS) $(DEBUG_FLAGS) $(GPTL_INCFLAGS) $(GPTL_LDFLAGS))
 INCDIR        = $(CURDIR)/../include
 LIB           = $(CURDIR)/../lib/libipe.a
@@ -40,6 +40,7 @@ SMS_LDFLAGS   = -L$(SMS)/lib -lsms  $(GPTL_LDFLAGS)
 ifndef DEBUG
   DEBUG = no
 endif
+DEBUG = yes
 
 # trillian stanza
 
@@ -131,15 +132,15 @@ ifndef MAKEJOBS
 #tmp20160315 4esmf  MAKEJOBS      = 16
   MAKEJOBS      = 1
 endif
-  ifeq ($(COMPILER),intel)
-    MODCMD    = $(shell ./modcmd theia intel)
+  ifeq ($(COMPILER),intel/16.1.150)
+    MODCMD    = $(shell ./modcmd theia intel/16.1.150)
     FCP       = mpiifort
     FCS       = ifort
 #tmp20160315 4esmf    OPT_FLAGS = -O3 -fp-model precise
     OPT_FLAGS = ###-O -fPIC -m64 -mcmodel=small -threads  -openmp  ###4esmf
     SMS       = /contrib/sms/legacy/SMSr825-intel
     ifeq ($(DEBUG),yes)
-      DEBUG_FLAGS = -g -O0 -ftz -traceback -C -fpe0
+      DEBUG_FLAGS = -g -O0 -ftz -traceback -C -fpe0 -init=snan,array
     endif
     ifeq ($(PARALLELISM),parallel)
       ifeq ($(GPTL_USE_GPTL),yes)
@@ -208,11 +209,11 @@ zeus_intel_serial:
 zeus_lahey_serial:
 	$(MAKE) ipe MACHINE=zeus COMPILER=lahey PARALLELISM=serial
 
-theia_intel_parallel:
-	$(MAKE) ipe MACHINE=theia COMPILER=intel PARALLELISM=parallel
+theia_intel/16.1.150_parallel:
+	$(MAKE) ipe MACHINE=theia COMPILER=intel/16.1.150 PARALLELISM=parallel
 
-theia_intel_serial:
-	$(MAKE) ipe MACHINE=theia COMPILER=intel PARALLELISM=serial
+theia_intel/16.1.150_serial:
+	$(MAKE) ipe MACHINE=theia COMPILER=intel/16.1.150 PARALLELISM=serial
 
 ipe:
 	$(if $(filter 0,$(MAKELEVEL)),$(call USAGE))

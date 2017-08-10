@@ -33,11 +33,10 @@
       integer:: lp,mp,i,is,ie,itotal,j
       integer, parameter :: iunit= 179,ounit=4001
       character :: fname*10,labl*56,units*12
-      real,dimension(kmlonp1,kmlat) ::                                  &
-     &  part1,part2,part3  ! for comparison with k_mlam terms
+      real*8,dimension(kmlonp1,kmlat) :: part1,part2,part3  ! for comparison with k_mlam terms JFM: *8 is to work around SMS bug
       integer,parameter:: sw_part1=0
       integer :: jth,utime
-      real,dimension(kmlonp1,kmlat)::dum
+      real*8,dimension(kmlonp1,kmlat)::dum !JFM: *8 is to work around SMS bug
 !      
 !SMS$SERIAL BEGIN
       open(iunit,file=path_ascii,status='OLD',err=99)
