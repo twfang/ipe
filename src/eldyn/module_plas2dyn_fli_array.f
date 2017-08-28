@@ -31,7 +31,7 @@
 
 !convert from plas_fli to dynamo fli array: dum(kmlon+1,kmlat)
 !(1) NH; (2) SH
-!SMS$SERIAL(<plas_fli,IN>:default=ignore) BEGIN
+!SMS$SERIAL(<plas_fli,IN>,<zigm11,zigm22,zigmc,zigm2,rim,OUT>:default=ignore) BEGIN
       jth_loop: do jth=1,6
          print *, '!dbg20140407: jth=',jth
 
@@ -59,9 +59,6 @@
                   if (jth==1) then
 !SMS$IGNORE begin
                     print *, '!dbg20140407: mp',mp,' ilon_dyn',ilon_dyn
-                              !dbg20140407: mp   1   ilon_dyn          41
-         print*,'JFM8',mype,lp_dyn,idyn_save(lp_dyn),lp_dyn,lp_plas
-!                JFM8      0           0           6
 !SMS$IGNORE end
                     if(plas_fli(ihem,lp_plas,mp,jth) <= 0.0) then
 !SMS$IGNORE begin

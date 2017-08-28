@@ -195,7 +195,12 @@
              ed_dyn(:,:,1)=ed1dy
              ed_dyn(:,:,2)=ed2dy
              call regrid2ipe(ed_dyn,ed_IPE)
-             ed1_90=ed_IPE(:,:,:,1) 
+ !           ed1_90=ed_IPE(:,:,:,1) 
+             do mp=1,NMP
+               do lp=1,NLP 
+                 ed1_90(:,lp,mp)=ed_IPE(:,lp,mp,1) 
+               enddo
+             enddo
              ed2_90=0.
 !            ed2_90=ed_IPE(:,:,:,2);
 !            write(*,*) 'ed1_90',ed1_90

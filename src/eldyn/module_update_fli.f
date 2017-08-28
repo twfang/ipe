@@ -93,7 +93,6 @@
       print *,'rim'   ,mype,MAXVAL(rim   ),MINVAL(rim   )
 !SMS$IGNORE END
 
-!SMS$PARALLEL(dh,i,j) BEGIN
       do j=1,kmlat
         do i=1,kmlonp1
           if( zigm11(i,j) <= 0.0 ) then
@@ -105,7 +104,6 @@
           endif
         enddo
       enddo
-!SMS$PARALLEL END
 
       end subroutine update_fli
       end module module_update_fli

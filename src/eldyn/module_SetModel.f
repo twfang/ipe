@@ -130,11 +130,6 @@
 	          ilimit=1
 	        ENDIF
 		DO i=0,ilimit
-!SMS$IGNORE BEGIN
-      print"('JFM2',6i5,2e12.4)",mype,i,n,k,l,m,Cn(2,i,n,k,l,m),        & 
-     &                                          Cn(3,i,n,k,l,m)
-      call flush(6)
-!SMS$IGNORE END
       FSC(i,n)=Cn(0,i,n,k,l,m)+Bt*Cn(1,i,n,k,l,m)                       &
      &+SinTilt*Cn(2,i,n,k,l,m) + SWVel*Cn(3,i,n,k,l,m)
 		ENDDO

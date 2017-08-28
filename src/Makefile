@@ -129,9 +129,9 @@ endif
 ifeq ($(MACHINE),theia)
   GPTL_USE_GPTL = no
 ifndef MAKEJOBS
-#tmp20160315 4esmf  MAKEJOBS      = 16
-  MAKEJOBS      = 1
+  MAKEJOBS      = 16
 endif
+MAKEJOBS      = 1
   ifeq ($(COMPILER),intel/16.1.150)
     MODCMD    = $(shell ./modcmd theia intel/16.1.150)
     FCP       = mpiifort

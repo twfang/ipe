@@ -16,8 +16,8 @@ endif
 echo "parallelism" $parallelism
 #
 ### over-write the setting inside qsubipe:
-setenv IPEQUEUE  "debug" 
-setenv IPETIME  00:30:00
+setenv IPEQUEUE  "batch" 
+setenv IPETIME  08:00:00
 #
 cd $WORKDIR/run
 pwd

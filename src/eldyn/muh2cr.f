@@ -746,7 +746,7 @@
      &    'klevel = ',8I6)
 !c	STOP
       ENDIF
-      CALL CEEE(CEE(NC(6-KLEVEL-4)),NX,NY,CF)  ! sub ceee is in mud.F
+      CALL CEEE(CEE(NC(6-KLEVEL-4)),NX,NY,CF)  ! sub ceee is in module_ceee.f
 !c
 !     set coefficient for specified boundaries
 !c

@@ -23,7 +23,7 @@
       USE module_IPE_dimension,ONLY: NLP
       USE module_FIELD_LINE_GRID_MKS,ONLY: mlon_rad,plasma_grid_Z,JMIN_IN,JMAX_IS,ht90,plasma_grid_GL,plasma_grid_3d,east,north,up,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,VEXBup,minAltitude,maxAltitude, VEXBe
       USE module_physical_constants,ONLY: earth_radius,rtd,pi
-      USE module_input_parameters,ONLY: time_step,sw_exb_up,sw_debug,start_time,lpmin_perp_trans
+      USE module_input_parameters,ONLY: time_step,sw_exb_up,sw_debug,start_time,lpmin_perp_trans,mype
       IMPLICIT NONE
 ! INPUT
       INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]
@@ -53,7 +53,7 @@ if(sw_debug) print *,'sub-StR:',lp,mp,r,r_apex,plasma_grid_Z(midpoint,lp)
 !note: for the moment, Ed1/B is calculated only in NH, assuming that the flux tube is moving with the same velocity between N/SH.
       which_hemisphere: DO ihem=1,1 !ihem_max
         
-        IF ( sw_exb_up<=1 ) THEN 
+        IF ( sw_exb_up<=1 ) THEN
 !         (1) WACCM E empirical model moved to get_efield90km
 
 !         dbg20120301:temp solution: make sure flux tube does not go beyond the sim region...
@@ -91,14 +91,20 @@ if(sw_debug) print *,'sub-StR:',lp,mp,r,r_apex,plasma_grid_Z(midpoint,lp)
 ! print *,'sub-StR:',ihem,lp,mp,'v_exb_apex[m/s]',VEXBup(lp,mp)  ,utime
 
         r0_apex = r_apex - VEXBup(lp,mp) * time_step
-if(sw_debug)&
-& print *,'sub-StR:',r_apex,' r0 apex[m/s]',r0_apex
-
+if(sw_debug) then
+!SMS$ignore begin
+  print *,'sub-StR:',r_apex,' r0 apex[m/s]',r0_apex
+!SMS$ignore end
+endif
 if ( r0_apex<(minAltitude+earth_radius) ) then
-   print *,'!r0_apex too small!',r0_apex,VEXBup(lp,mp),lp,mp, (minAltitude+earth_radius)
+!SMS$ignore begin
+   print *,'!r0_apex too small!',mype,mp,lp,r0_apex,VEXBup(lp,mp),(minAltitude+earth_radius)
+!SMS$ignore end
    r0_apex = minAltitude+earth_radius
 else if ( r0_apex>(maxAltitude+earth_radius) ) then
-   print *,'!r0_apex too big!',r0_apex, VEXBup(lp,mp),lp,mp, (maxAltitude+earth_radius)
+!SMS$ignore begin
+   print *,'!r0_apex too big!',mype,mp,lp,r0_apex,VEXBup(lp,mp),(maxAltitude+earth_radius)
+!SMS$ignore end
    r0_apex = maxAltitude+earth_radius
 end if
 !dbg20120301:

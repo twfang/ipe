@@ -59,9 +59,11 @@ which_hemisphere: DO ihem=1,1  !ihem_max
 !!!dbg20120125:  mp_t0(ihem,2) = mp_t0(ihem,1)+1
   mpx_loop: DO mpx=0,NMP
     if(mpx+1 > mpHaloSize) then
+!SMS$ignore begin
       print*,'mpx+1 > mpHaloSize in find_neighbor_grid_R',mpx,mpHaloSize,mp
-      print*,'Increase the halo size or take smaller time steps.'
+      print*,'Increase the halo size or take smaller time steps.',mype
       print*,'Stopping in find_neighbor_grid_R'
+!SMS$ignore end
       STOP
     endif
     MaxMpHaloUsed = max(MaxMpHaloUsed,mpx+1)
@@ -97,7 +99,9 @@ IF ( theta_t0(ihem) < minTheta ) THEN
    print *,'sub-Fi_R: mp',mp,' lp',lp,'needs special pole interpolation'
    RETURN
 ELSE IF ( theta_t0(ihem) > maxTheta ) THEN
-   print *,'sub-Fi_R: !STOP! invalid theta_t0',mp,lp,theta_t0(ihem),maxTheta
+!SMS$ignore begin
+   print *,'sub-Fi_R: !STOP! invalid theta_t0',mp,lp,theta_t0(ihem),maxTheta,mype
+!SMS$ignore end
    STOP
 ELSE   !IF ( plasma_grid_GL( JMIN_IN(lp),lp ) <= theta_t0(ihem) ) THEN 
 
@@ -122,9 +126,12 @@ z_t0 = r0_apex - earth_radius
 
 lpx_loop: DO lpx=0,NLP-1  !nearest point-->EQ
   IF(lpx+1 > lpHaloSize) THEN
-    print*,'Searching for inner,outer flux tube: lpx+1 > lpHaloSize',lpx,lpHaloSize,lp
+!SMS$ignore begin
+    print*,'Searching for inner,outer flux tube: lpx+1 > lpHaloSize'
+    print*,'Searching',mype,lp,mp,lpx,lpHaloSize
     print*,'Increase the halo size or take smaller time steps.'
     print*,'Stopping in find_neighbor_grid_R'
+!SMS$ignore end
     STOP
   ENDIF
   MaxLpHaloUsed = max(MaxLpHaloUsed,lpx+1)
@@ -143,9 +150,11 @@ lpx_loop: DO lpx=0,NLP-1  !nearest point-->EQ
     EXIT lpx_loop
   ENDIF
   IF (lpx==NLP-1) THEN
+!SMS$ignore begin
     print*,'Could not find inner,outer flux tube',lpp,lpm,midpnt(lpp),midpnt(lpp+1),midpnt(lpm),midpnt(lpm+1)
     print*,Z_t0,plasma_grid_Z(midpnt(lpp+1),lpp+1),plasma_grid_Z(midpnt(lpp),lpp),plasma_grid_Z(midpnt(lpm+1),lpm+1),plasma_grid_Z(midpnt(lpm),lpm)
-    print*,'Stopping in find_neighbor_grid_R'
+    print*,'Stopping in find_neighbor_grid_R',mype
+!SMS$ignore end
     STOP
   ENDIF
 ENDDO lpx_loop !: DO lpx=0,NLP-1
