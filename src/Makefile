@@ -138,6 +138,7 @@ MAKEJOBS      = 1
     FCS       = ifort
 #tmp20160315 4esmf    OPT_FLAGS = -O3 -fp-model precise
     OPT_FLAGS = ###-O -fPIC -m64 -mcmodel=small -threads  -openmp  ###4esmf
+    OPT_FLAGS = -O3 -fp-model precise -fpe0 -ftz
     SMS       = /contrib/sms/legacy/SMSr825-intel
     ifeq ($(DEBUG),yes)
       DEBUG_FLAGS = -g -O0 -ftz -traceback -C -fpe0 -init=snan,array

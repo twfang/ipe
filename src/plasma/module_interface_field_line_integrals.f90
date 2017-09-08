@@ -104,10 +104,6 @@ REAL (KIND=real_prec)    ::  ds(MaxFluxTube)            !ds 1D [???
 ! if mlat_lp_plas[deg] == mlat_lp_dyn then continue, otherwise, RETURN
       mlat_plas  = 90. - plasma_grid_GL(JMAX_IS(lp_plas),lp_plas)*rtd
       imlat_plas = INT(mlat_plas*10.)
-print *,' mp=',mp,' lp_plas=',lp_plas,' mlat_plas=', mlat_plas,' imlat_plas=', imlat_plas
-!         mp=   1   lp_plas=    1       mlat_plas=  -88.12383    imlat_plas=     -881
-!         mp=   1   lp_plas=   27       mlat_plas=  -59.54826    imlat_plas=     -595
-
 !nm20150330      if ( mp==1.AND.lp_plas==1 ) then !utime==start_time???
 !nm20150330         call calculate_ylatm1 ( ) 
 if (mp==1.and.lp_plas==1)   print *,'xlatm[deg]=',xlatm*rtd
@@ -118,8 +114,9 @@ if (mp==1.and.lp_plas==1)   print *,'xlatm[deg]=',xlatm*rtd
          mlat_dyn  = xlatm(lp_dyn)*rtd  ![deg]
          imlat_dyn = INT(mlat_dyn*10.)
 
+!SMS$ignore begin
          print *,'lp_dyn=',lp_dyn,' mlat_dyn=',mlat_dyn,' imlat_dyn=',imlat_dyn
-!                 lp_dyn=    15     mlat_dyn=  -59.54842  imlat_dyn=    -595
+!SMS$ignore end
          !dbg20151107: make sure fli is calculated at lp_plas=NLP
          IF ( lp_plas < NLP ) THEN
             IF ( imlat_dyn > imlat_plas ) THEN
@@ -135,14 +132,20 @@ if (mp==1.and.lp_plas==1)   print *,'xlatm[deg]=',xlatm*rtd
             END IF !( imlat_dyn > imlat_plas ) THEN  !dbg20151107
 
 !SMS$IGNORE BEGIN
-            print *,'(3) start interface calculating FLI: lp_plas=',lp_plas,lp_dyn,' mlat_dyn=',mlat_dyn
+            print *,'Start interface calculating FLI',mype,mp,lp_dyn,lp_plas,mlat_dyn
 !SMS$IGNORE END
             idyn_save(lp_dyn)=lp_plas  !correspondance between lp_plas & lp_dyn
          ELSE if ( lp_plas == nlp ) then 
 
+!SMS$IGNORE BEGIN
 print *, '!dbg20151107 make sure fli is calculated at lp_plas=170'
+!SMS$IGNORE END
            if ( lp_dyn < lp_dyn_eq )  CYCLE lp_dyn_loop
-           print *, lp_dyn, lp_plas
+!SMS$IGNORE BEGIN
+           print *,'Set idyn_save', mype,mp,lp_dyn,lp_plas
+!                   Set idyn_save    0  1-40  47    170
+!                   Set idyn_save    1  41-80 47    170
+!SMS$IGNORE END
            idyn_save(lp_dyn)=lp_plas  !correspondance between lp_plas & lp_dyn
          END IF !( lp_plas < NLP ) THEN
 

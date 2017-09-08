@@ -159,6 +159,8 @@
 !1: div * V// included in the Te/i solver
 !dbg20120313 
       REAL(KIND=real_prec), PUBLIC :: fac_BM
+      LOGICAL,PUBLIC :: check_halo_on,compare_var_on,exact_parallel_sum,load_balance_on(2),set_process_layout !Read from SMSnamelist
+      INTEGER(KIND=int_prec), PUBLIC :: compare_var_ntasks_1,compare_var_ntasks_2,load_balance_method(2),load_balance_size(2),process_layout(2) !Read from SMSnamelist
 !
 ! MPI communicator to be passed to SMS
       integer, PUBLIC :: my_comm
@@ -236,6 +238,7 @@
            &, duration   &
            &, fac_BM   &
            &, iout
+      NAMELIST/smsnamelist/ check_halo_on,compare_var_ntasks_1,compare_var_ntasks_2,compare_var_on,exact_parallel_sum,load_balance_method,load_balance_on,load_balance_size,process_layout,set_process_layout
 
 !nm20120304           &, PCO_flip       &
 !nm20120304           &, BLON_flip      &
@@ -256,6 +259,7 @@
 !SMS$INSERT      include "mpif.h"
 !---
         INTEGER(KIND=int_prec),PARAMETER :: LUN_nmlt=1
+        INTEGER(KIND=int_prec),PARAMETER :: LUN_SMS_nmlt=88
         CHARACTER(LEN=*),PARAMETER :: INPTNMLT='IPE.inp'
         INTEGER(KIND=int_prec) :: IOST_OP=0
         INTEGER(KIND=int_prec) :: IOST_RD=0
@@ -308,7 +312,17 @@
         WRITE(UNIT=LUN_LOG0,FMT=*)'real_prec=',real_prec,' int_prec=',int_prec
 
         CLOSE(LUN_LOG0)
+        process_layout = 1
+!SMS$INSERT        OPEN  (LUN_SMS_nmlt,FILE='SMSnamelist',ERR=222,IOSTAT=IOST_OP,STATUS='OLD')
+!SMS$INSERT        REWIND LUN_SMS_nmlt
+!SMS$INSERT        READ  (LUN_SMS_nmlt,NML=smsnamelist  ,ERR=222,IOSTAT=IOST_RD)
+!SMS$INSERT        CLOSE (LUN_SMS_nmlt)
+print*,'process_layout',process_layout
 !SMS$SERIAL END
+!SMS$INSERT        if(.not.set_process_layout) then
+!SMS$INSERT          print*,'In SMSnamelist set_process_layout must be true.',set_process_layout
+!SMS$INSERT          stop
+!SMS$INSERT        endif
         CLOSE(LUN_nmlt)
 222     IF ( IOST_OP /= 0 ) THEN
           WRITE(UNIT=LUN_nmlt, FMT=*) "OPEN NAMELIST FAILED!", IOST_OP

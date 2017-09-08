@@ -328,7 +328,8 @@ if [ $parallelism == parallel ]; then
     sms_sets+=" -s smsnamelist:set_process_layout=f"
     jobname+="_cv"
   else
-    sms_sets="-s smsnamelist:process_layout=1,$tasks"
+#   sms_sets="-s smsnamelist:process_layout=1,$tasks"
+    sms_sets=""
   fi
   $(nml) -i $smsnl -o $smsnl $sms_sets || fail "$0: Could not edit $smsnl"
 fi
