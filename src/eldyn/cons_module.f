@@ -52,7 +52,8 @@
      &   jday =97
       real, parameter :: jsecs =150300.! JSECS
 
-      integer, public :: idyn_save(kmlat),idyn_saveG(kmlat) !correspondance between lp_plas & lp_dyn
+      integer, public    :: idyn_save(kmlat) !correspondance between lp_plas & lp_dyn
+      INTEGER, parameter :: lp_dyn_eq=47     !the lowest latitude index for FLI
 
 !-----------------------------------------------------------------------
       end module cons_module

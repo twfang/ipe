@@ -111,10 +111,8 @@
 
       JMIN_IN = 1
       JMAX_IS = JMAX_ISG - JMIN_ING + 1
-      write(88,*) NLP
       DO lp=1,NLP  !longest -->shortest flux tube
         midpnt(lp) = JMIN_IN(lp) + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
-       write(88,*) lp,JMAX_IS(lp)-JMIN_IN(lp)
       END DO
 
 !array initialization

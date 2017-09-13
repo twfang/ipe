@@ -42,7 +42,6 @@
       USE module_initialize_fli_array,ONLY:initialize_fli_array
       USE module_IPE_dimension,ONLY: NMP
       USE module_eldyn,ONLY: plas_fli !t,Je_3d
-      USE cons_module,ONLY:idyn_save 
 !      USE module_output_dyn_fli_array,ONLY:output_dyn_fli_array
       IMPLICIT NONE
 !------------------------
@@ -91,7 +90,6 @@ end if
       ret = gptlstop  ('EXCHANGE')
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-2")
 !     apex_longitude_loop: DO mp = mpstrt,mpstop,mpstep !1,NMP
-      idyn_save=0
       apex_longitude_loop: DO mp = 1,mpstop
 !nm20121115        mp_save=mp
         IF ( sw_neutral_heating_flip==1 )  then

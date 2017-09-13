@@ -3,62 +3,33 @@
         PRIVATE
         PUBLIC :: plas2dyn_fli_array
       contains
-        subroutine plas2dyn_fli_array ( utime )
-          USE module_precision
-          USE module_eldyn,ONLY: plas_fli !t,Je_3d
-!t      USE module_IPE_dimension,ONLY: NMP-->kmlon
-          USE params_module,ONLY:kmlat,kmlon,kmlonp1
-          USE cons_module,ONLY:idyn_save,idyn_saveG
-          use dynamo_module,only:zigm11,zigm22,zigmc,zigm2,rim
-          use module_input_parameters,ONLY: stop_time,mype,lpe,         &
-     &                                      process_layout
-          USE module_IPE_dimension,ONLY: NLP
-          IMPLICIT NONE
-!SMS$INSERT          include "mpif.h"
+      subroutine plas2dyn_fli_array ( utime )
+      USE module_precision
+      USE module_eldyn,ONLY: plas_fli !t,Je_3d
+      USE params_module,ONLY:kmlat,kmlon,kmlonp1
+      USE cons_module,ONLY:idyn_save,lp_dyn_eq
+      use dynamo_module,only:zigm11,zigm22,zigmc,zigm2,rim
+      use module_input_parameters,ONLY: stop_time,mype,lpe
+      IMPLICIT NONE
       INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]
-!20150618: fort.4000 with zigm11etc used for input to other eldyn test 
-!     INTEGER (KIND=int_prec),parameter :: lun=4000
       REAL    (KIND=real_prec) :: dum(kmlon+1,kmlat) !dynamo FLI
       INTEGER (KIND=int_prec ) :: jth,lp_dyn,lp_plas,ihem,i
-      INTEGER (KIND=int_prec ) :: ilat_dyn,ilon_dyn,mp,lp,status,       &
-     &                            SMS_COMM
-      INTEGER (KIND=int_prec ),parameter ::  lp_dyn_eq=47 !the lowest latitude index for FLI
-!
-!SMS$IGNORE BEGIN
+      INTEGER (KIND=int_prec ) :: ilat_dyn,ilon_dyn,mp,lp,status
+
       print *,'convert plas2dyn fli at utime=',utime,stop_time,mype
-!SMS$IGNORE end
       if (utime==stop_time) then
         open(4030,file='output_fli',form='formatted',status='new')
         write(4030,FMT='(I12)')utime
       endif
 
-!SMS$INSERT       call GET_SMS_MPI_COMMUNICATOR(SMS_COMM)
-!SMS$INSERT       do i=2,lp_dyn_eq 
-!SMS$INSERT         call MPI_reduce(idyn_save(i),idyn_saveG(i),1,MPI_INTEGER,       &
-!SMS$INSERT      &                  MPI_SUM,0,SMS_COMM,status)
-!SMS$INSERT         if(status /= 0) then
-!SMS$INSERT!SMS$IGNORE BEGIN
-!SMS$INSERT           print*,'MPI_reduce error in module_plas2dyn_fli_array.f',mype,&
-!SMS$INSERT      &                                                    lp_dyn,status
-!SMS$INSERT!SMS$IGNORE END
-!SMS$INSERT           stop
-!SMS$INSERT         endif
-!SMS$INSERT       enddo
-
 !convert from plas_fli to dynamo fli array: dum(kmlon+1,kmlat)
 !(1) NH; (2) SH
-!SMS$IGNORE BEGIN
-      write(800+mype,*) idyn_save
-!SMS$IGNORE END
-
 !SMS$SERIAL(<plas_fli,IN>,<zigm11,zigm22,zigmc,zigm2,rim,OUT>:default=ignore) BEGIN
-      idyn_saveG = idyn_saveG/process_layout(2)
-      write(888,*) idyn_saveG
       jth_loop: do jth=1,6
 !        print *, '!dbg20140407: jth=',jth
 
          lp_dyn_loop: do lp_dyn=2,lp_dyn_eq !from SH toward eq
-            lp_plas = idyn_saveG(lp_dyn)
+            lp_plas = idyn_save(lp_dyn)
 !            if (jth==1) then
 !              print *, '!dbg20140407:lp_dyn=',lp_dyn,' lp_plas',lp_plas
 !            endif

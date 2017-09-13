@@ -39,6 +39,7 @@
      &, plas_fli !t,Je_3d
       USE module_input_parameters,only: sw_eldyn
       use module_init_cons,only:init_cons 
+      use module_calc_idyn_save,only:calc_idyn_save
       use module_init_heelis,only:init_heelis 
       use module_nc_create,only:nc_create
 !t      use module_readin_netcdf,only:readin_netcdf
@@ -46,6 +47,9 @@
       use read_module,only:input_type
       IMPLICIT NONE
       integer :: status
+      REAL (KIND=real_prec) ::  mlat_dyn, mlat_plas
+      INTEGER (KIND=int_prec) ::  lp_dyn, imlat_dyn, imlat_plas
+      INTEGER (KIND=int_prec),parameter ::  lp_dyn_eq=47 !the lowest latitude index for FLI
 !20120304:      CHARACTER(len=*),PARAMETER :: path='~/sandbox/efield/'
 
       print *,'begin init_eldyn: sw_eldyn=', sw_eldyn
@@ -55,6 +59,8 @@
 
           print *,'sub-init_eldyn: calling init_cons'
           CALL init_cons
+
+          call calc_idyn_save
 
           print *,'sub-init_eldyn: calling init_heelis'
           CALL init_heelis

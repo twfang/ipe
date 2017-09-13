@@ -99,3 +99,4 @@ module_fun_mlt ./module_fun_MLT_sms.f.tmp
 module_colath ./module module_colath_sms.f.tmp
 module_init_cons ./module_init_cons_sms.f.tmp
 module_init_heelis ./module_init_heelis_sms.f.tmp
+module_calc_idyn_save ./calc_idyn_save_sms.f.tmp

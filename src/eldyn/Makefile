@@ -86,7 +86,8 @@ PSRCS = module_cal_monthday.f      \
         mudcom.f \
         mud.f \
         mudmod.f \
-        module_nc_close.f
+        module_nc_close.f \
+        calc_idyn_save.f
 
 SSRCS = apex_sunloc.f              \
         module_efield_sunloc.f     \

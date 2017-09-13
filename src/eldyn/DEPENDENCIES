@@ -1,4 +1,5 @@
 apex_sunloc.o : apex_sunloc.f module_decomp.o 
+calc_idyn_save.o : calc_idyn_save.f cons_module.o module_decomp.o 
 cons_module.o : cons_module.f params.o module_decomp.o 
 dynamo_module.o : dynamo_module.f params.o module_decomp.o 
 efield.o : efield.f module_decomp.o 
@@ -42,7 +43,7 @@ module_highlat_getbnd.o : module_highlat_getbnd.f module_GECMP.o efield.o module
 module_htrpex.o : module_htrpex.f dynamo_module.o module_decomp.o 
 module_index_quiet.o : module_index_quiet.f efield.o module_decomp.o 
 module_init_cons.o : module_init_cons.f cons_module.o module_decomp.o 
-module_init_eldyn.o : module_init_eldyn.f module_init_cons.o module_nc_create.o module_efield_init.o module_readin_ascii.o readin.o efield.o module_init_heelis.o module_eldyn.o module_decomp.o 
+module_init_eldyn.o : module_init_eldyn.f module_init_cons.o module_nc_create.o calc_idyn_save.o module_efield_init.o module_readin_ascii.o readin.o efield.o module_init_heelis.o module_eldyn.o module_decomp.o 
 module_init_heelis.o : module_init_heelis.f heelis_module.o cons_module.o module_decomp.o 
 module_interp_poten.o : module_interp_poten.f efield.o module_decomp.o 
 module_magfield.o : module_magfield.f module_decomp.o 
