@@ -6,10 +6,12 @@
 # Static / Unconditional / Default variables
 
 ###nm20151014 
-DIRS          = main neutral flip eldyn plasma dummygptl driver ###NOgptl
+DIRS          = main neutral flip eldyn plasma driver ###NOgptl
 ###DIRS          = main neutral flip eldyn plasma driver  ###Yesgptl
-GPTL_INCFLAGS = -I../dummygptl -I$(NETCDF)/include
-GPTL_LDFLAGS  = -L../dummygptl -lgptl  -L$(NETCDF)/lib -lnetcdff -lnetcdf
+GPTL_INCFLAGS = -I../dummygptl
+GPTL_LDFLAGS  = -L../dummygptl -lgptl
+NETCDF_INCFLAGS = -I$(NETCDF)/include
+NETCDF_LDFLAGS  = -L$(NETCDF)/lib -lnetcdff -lnetcdf
 PPP_FLAGS     = --Fmodule=module_decomp --Free --comment --HaloSize=10
 
 TARGETS = clean                   \
@@ -28,7 +30,7 @@ TARGETS = clean                   \
 # Dynamic / Conditional variables
 
 EXE           = $(CURDIR)/../bin/ipe_$(MACHINE)_intel_$(PARALLELISM).exe
-FFLAGS        = $(strip $(OPT_FLAGS) $(DEBUG_FLAGS) $(GPTL_INCFLAGS) $(GPTL_LDFLAGS))
+FFLAGS        = $(strip $(OPT_FLAGS) $(DEBUG_FLAGS) $(GPTL_INCFLAGS) $(GPTL_LDFLAGS) $(NETCDF_INCFLAGS) $(NETCDF_LDFLAGS))
 INCDIR        = $(CURDIR)/../include
 LIB           = $(CURDIR)/../lib/libipe.a
 PARALLEL_MAKE = $(MAKE) -j $(MAKEJOBS)
@@ -127,7 +129,7 @@ endif
 # theia stanza
 
 ifeq ($(MACHINE),theia)
-  GPTL_USE_GPTL = no
+  GPTL_USE_GPTL = yes
 ifndef MAKEJOBS
   MAKEJOBS      = 16
 endif

@@ -26,7 +26,7 @@ if(parallelBuild) then
 endif
 
 ! Print timing results to file named timing.mype
-!ret = gptlpr (mype)
+ret = gptlpr (mype)
 
 if(parallelBuild) then
 !SMS$INSERT call GET_SMS_MPI_COMMUNICATOR(COMM)
