@@ -35,7 +35,7 @@
         INTEGER (KIND=int_prec) :: istat
 
 IF (UNIT_dum>=1) THEN
-  print *,'unit number=',UNIT_dum
+!  print *,'unit number=',UNIT_dum
 ELSE
   print *,'!STOP! unit number not provided!!!'
   STOP

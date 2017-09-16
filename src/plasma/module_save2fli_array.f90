@@ -67,14 +67,6 @@
             plas_fli(ihem,lp_plas,mp,5) = Kdmph_dsi_1d     (ihem)
             plas_fli(ihem,lp_plas,mp,6) = Kdmlm_1d         (ihem)
           end do
-!SMS$IGNORE begin
-      print *,'save2fli_array',mype,lp_plas,mp
-!              save2fli_array    0    1      1
-!              save2fli_array    1    1     41
-!              save2fli_array    0   25      1
-!              save2fli_array    1   27     41
-!SMS$IGNORE end
-
 !t          IF ( sw_3DJ==1 ) THEN
 !t            DO jth=1,2
 !t              Je_3d(IN:IS,mp,lp_dyn,jth) = Je_1d(1:CTIPDIM,jth)

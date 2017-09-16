@@ -61,8 +61,8 @@
 
 !sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-1")
 IF ( sw_output_plasma_grid ) THEN
-  ret = gptlstart ('output_plasma_grid')
   print *, 'sub-init_p: output plasma_grid'
+  ret = gptlstart ('output_plasma_grid')
   CALL output_plasma_grid ( )
   ret = gptlstop  ('output_plasma_grid')
 END IF
@@ -70,11 +70,11 @@ END IF
 
 ! initialise the flux tubes from previous runs
       IF ( HPEQ_flip==0.0 ) THEN
-        print *,'before CALL io_plasma_bin finished! READ: start_time=', start_time,stop_time
+!       print *,'before CALL io_plasma_bin finished! READ: start_time=', start_time,stop_time
         ret = gptlstart ('io_plasma_bin')
         CALL io_plasma_bin ( 2, start_time )
         ret = gptlstop  ('io_plasma_bin')
-        print *,'after CALL io_plasma_bin finished! READ: start_time=', start_time,stop_time
+!       print *,'after CALL io_plasma_bin finished! READ: start_time=', start_time,stop_time
 
       END IF
 !sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-3")
@@ -131,7 +131,7 @@ END IF
         CALL output ( utime )
         ret = gptlstop  ('output')
 !sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-9")
-
+        print*,'time_loop done for utime=',utime
       END DO  time_loop !: DO utime = start_time, stop_time, time_step
       ret = gptlstop  ('time_loop')
 

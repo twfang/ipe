@@ -28,6 +28,7 @@
 !c     use date_def
 !c     use physcons, pi => con_pi
       IMPLICIT NONE
+      include "gptl.inc"
 
 !nm20121003:module parameters are separated into module_eldyn.f
 
@@ -46,7 +47,7 @@
       use module_readin_ascii,only:readin_ascii
       use read_module,only:input_type
       IMPLICIT NONE
-      integer :: status
+      integer :: ret,status
       REAL (KIND=real_prec) ::  mlat_dyn, mlat_plas
       INTEGER (KIND=int_prec) ::  lp_dyn, imlat_dyn, imlat_plas
       INTEGER (KIND=int_prec),parameter ::  lp_dyn_eq=47 !the lowest latitude index for FLI
@@ -58,15 +59,23 @@
 !t      IF ( sw_eldyn==0 ) THEN 
 
           print *,'sub-init_eldyn: calling init_cons'
+          ret = gptlstart ('init_cons')
           CALL init_cons
+          ret = gptlstop  ('init_cons')
 
+          ret = gptlstart ('calc_idyn_save')
           call calc_idyn_save
+          ret = gptlstop  ('calc_idyn_save')
 
           print *,'sub-init_eldyn: calling init_heelis'
+          ret = gptlstart ('init_heelis')
           CALL init_heelis
+          ret = gptlstop  ('init_heelis')
 
           print *,'sub-init_eldyn: calling nc_create'
+          ret = gptlstart ('nc_create')
           CALL nc_create
+          ret = gptlstop  ('nc_create')
 
           ! read in integrals                                                             
           if(input_type == 'NETCDF') then
@@ -74,7 +83,9 @@
 !            call readin_netcdf
           elseif(input_type == 'ASCII') then
             print *,'sub-init_eldyn: calling readin_ascii'
+            ret = gptlstart ('readin_ascii')
             call readin_ascii
+            ret = gptlstop  ('readin_ascii')
           else
             write(6,*)'Did not recognize input_type=',input_type
             stop 'couple'
@@ -102,9 +113,11 @@
         print*,'Stopping in module_init_eldyn'
         stop
       endif
+      ret = gptlstart ('efield_init')
       CALL efield_init( 'coeff_lflux.dat',                              &
      &                  'coeff_hflux.dat',                              &
      &                  'wei96.cofcnts'   )
+      ret = gptlstop  ('efield_init')
 
 !t      END IF !( sw_eldyn==0 ) THEN 
 

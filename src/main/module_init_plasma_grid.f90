@@ -59,10 +59,10 @@ apex_longitude_loop: DO mp = 1,NMP
 
 !dbg20120305
 midpoint = IN + ( IS - IN )/2
-print *,'midpoint',midpoint,plasma_grid_Z(midpoint,lp)
 
 !dbg20130814
 IF ( sw_debug) THEN
+print *,'midpoint',midpoint,plasma_grid_Z(midpoint,lp)
 print "('lp=',i6,'  IN=',i6,'  IS=',i6,'  NPTS=',i6)", lp,IN,IS,(IS-IN+1)
 print "('r [m]      =',2E12.4)", r_meter2D(in,lp),r_meter2D(is,lp)
 print "('G-LAT [deg]=',2f10.4)",(90.-plasma_grid_3d(in,lp,mp,IGCOLAT)*180./pi),(90.-plasma_grid_3d(is,lp,mp,IGCOLAT)*180./pi)
@@ -99,7 +99,7 @@ IF ( sw_grid==0 ) THEN  !APEX
 
                if ( i==midpoint ) then
                   ii = i-1  !assign the northward neighboring value
-                  print *,'apexD is corrected!',i,lp,mp
+!                 print *,'apexD is corrected!',i,lp,mp
                else
                   print *,'sub-init_plasma_grid: STOP! INVALID apexD!',i,lp,mp,apexD(i,lp,mp,:,1),apexD(i,lp,mp,:,2)
                   STOP 

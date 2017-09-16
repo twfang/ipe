@@ -34,7 +34,7 @@
 
       INTEGER(KIND=int_prec)           :: utime !universal time [sec]
       INTEGER(KIND=int_prec),parameter :: luntmp=300
-      INTEGER(KIND=int_prec)           :: istat,mp,ret
+      INTEGER(KIND=int_prec)           :: istat,mp,ret,Ncycle=0
 
 
 !nm20151028 (1) obtain mpi communicator
@@ -68,8 +68,8 @@
 
 !sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-1")
 IF ( sw_output_plasma_grid ) THEN
-  ret = gptlstart ('output_plasma_grid')
   print *, 'sub-init_p: output plasma_grid'
+  ret = gptlstart ('output_plasma_grid')
   CALL output_plasma_grid ( )
   ret = gptlstop  ('output_plasma_grid')
 END IF
@@ -77,11 +77,11 @@ END IF
 
 ! initialise the flux tubes from previous runs
       IF ( HPEQ_flip==0.0 ) THEN
-        print *,'before CALL io_plasma_bin finished! READ: start_time=', start_time,stop_time
+!       print *,'before CALL io_plasma_bin finished! READ: start_time=', start_time,stop_time
         ret = gptlstart ('io_plasma_bin')
         CALL io_plasma_bin ( 2, start_time )
         ret = gptlstop  ('io_plasma_bin')
-        print *,'after CALL io_plasma_bin finished! READ: start_time=', start_time,stop_time
+        print *,'CALL io_plasma_bin finished! READ: start_time=', start_time,stop_time
 
       END IF
 !sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-3")
@@ -96,10 +96,9 @@ END IF
       ENDIF
       ret = gptlstop  ('init_eldyn')
 !sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-4")
-
       ret = gptlstart ('time_loop')
       time_loop: DO utime = start_time, stop_time, time_step
-      print*,'utime=',utime
+        Ncycle = Ncycle + 1
 !sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-5")
 ! updates auroral precipitation
 
@@ -139,6 +138,7 @@ END IF
         ret = gptlstop  ('output')
 !sms$compare_var(plasma_3d,"driver_ipe.f90 - plasma_3d-9")
 
+        print"('Finished time_loop for cycle',I5,'  utime=',I7)",Ncycle,utime
       END DO  time_loop !: DO utime = start_time, stop_time, time_step
       ret = gptlstop  ('time_loop')
 

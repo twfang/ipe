@@ -34,10 +34,10 @@ INTEGER (KIND=int_prec )            :: n_read,n_read_min, utime_dum,record_numbe
 INTEGER (KIND=int_prec )            :: n_count
 INTEGER (KIND=int_prec )            :: ipts !dbg20120501
 REAL    (KIND=real_prec)            :: dumm(NPTS2D,NMP)
-!---
-!SMS$ignore begin
-      print*,mype,switch,utime,'sub-io_pl'
-!SMS$ignore end
+
+!!SMS$ignore begin
+!      print*,mype,switch,utime,'sub-io_pl'
+!!SMS$ignore end
 
 IF ( switch<1.or.switch>2 ) THEN
   print *,'sub-io_plasma:!STOP! INVALID switch',switch
@@ -53,9 +53,9 @@ dumm=zero
 
 IF ( switch==1 ) THEN !1:Output the 16 plasma* files
 
-!SMS$ignore begin
-      print*,mype,'0sub-io_pl'
-!SMS$ignore end
+!!SMS$ignore begin
+!      print*,mype,'0sub-io_pl'
+!!SMS$ignore end
 
 
   record_number_plasma = record_number_plasma+1
@@ -69,11 +69,7 @@ IF ( switch==1 ) THEN !1:Output the 16 plasma* files
         dumm(JMIN_ING(lp):JMAX_ISG(lp),mp) = plasma_3d(IN:IS,lp,mp,jth)
       end do lp_loop1!lp
     end do mp_loop1!mp
-
-!SMS$ignore begin
-      print*,mype,'1sub-io_pl'
-!SMS$ignore end
-
+!   print*,mype,'1sub-io_pl'
     LUN = LUN_PLASMA1(jth-1+lun_min1)
     if(sw_debug) print *,'jth=',jth,' LUN=',LUN
     WRITE (UNIT=lun) (dumm(:,mp),mp=1,mpstop)
@@ -81,22 +77,18 @@ IF ( switch==1 ) THEN !1:Output the 16 plasma* files
   END DO j_loop1!jth
 !SMS$SERIAL END
 
-
-!SMS$ignore begin
-      print*,mype,'2sub-io_pl'
-!SMS$ignore end
-
+!!SMS$ignore begin
+!      print*,mype,'2sub-io_pl'
+!!SMS$ignore end
 
   LUN = LUN_PLASMA1(lun_max1)
 !SMS$SERIAL(<VEXBup,IN>:default=ignore) BEGIN
   WRITE (UNIT=LUN) (VEXBup(:,mp),mp=1,mpstop)
   WRITE (UNIT=lun_ut,FMT=*) record_number_plasma, utime
 !SMS$SERIAL END
-
-!SMS$ignore begin
-      print*,mype,'3sub-io_pl'
-!SMS$ignore end
-
+!!SMS$ignore begin
+!      print*,mype,'3sub-io_pl'
+!!SMS$ignore end
 !nm20141001: moved from neutral
       IF ( sw_output_wind ) THEN
 !nm20160711 debug wam field: 
@@ -118,10 +110,9 @@ IF ( switch==1 ) THEN !1:Output the 16 plasma* files
 !SMS$SERIAL END
       END IF !( sw_output_wind ) THEN
 
-!SMS$ignore begin
-      print*,mype,'4sub-io_pl'
-!SMS$ignore end
-
+!!SMS$ignore begin
+!      print*,mype,'4sub-io_pl'
+!!SMS$ignore end
 
   if(sw_debug) then
     print *,'LUN=',lun_ut,'!dbg! output UT  finished: utime=',utime,record_number_plasma
@@ -129,7 +120,7 @@ IF ( switch==1 ) THEN !1:Output the 16 plasma* files
 
 ELSE IF ( switch==2 ) THEN !2:RESTART: Read from the 16 plasma* files
 
-  print *,'sub-io_pl: start_uts=',utime
+! print *,'sub-io_pl: start_uts=',utime
 !SMS$PARALLEL(dh, lp, mp) BEGIN
   ! array initialization
   DO mp=1,NMP

@@ -18,29 +18,19 @@
 !      program ts_efield
       MODULE module_sub_eldyn
       use module_precision
-!----------------------
-!c idea
-!      subroutine idea_geteb(im,ix,dayno,utsec,f107,kp,maglat,maglon,
-!     &essa,ee1,ee2)
       USE efield !,ONLY:iday,imo,iday_m,iyear,ut,kp,by,bz,f107d
       use module_get_efield,ONLY:get_efield
-!c     use date_def
-!c     use physcons, pi => con_pi
       IMPLICIT NONE
-
-!nm20121003:module parameters are separated into module_eldyn.f
-
       PRIVATE
       PUBLIC :: eldyn
       CONTAINS
-!---
+
       SUBROUTINE eldyn ( utime )
       use module_precision
       use module_cal_monthday
       use module_input_parameters,ONLY:NYEAR,NDAY,start_time,mype       &
      &,ip_freq_output,sw_debug,kp_eld,sw_eldyn,F107D_ipe => F107D       !,AP
       use module_physical_constants,ONLY:rtd
-!nm20121003:
       use module_eldyn,ONLY:theta90_rad,j0,Ed1_90,Ed2_90
       use module_sunloc,only: sunloc
       use module_highlat,only: highlat
@@ -48,9 +38,6 @@
       use module_magfield,ONLY:sunlons
       use module_update_fli,ONLY:update_fli
       use dynamo_module,only:zigm11
-!t      use nc_module,only:noid,                                          &! id of output netcdf-file
-!t     &     start1_out,                                                  &! only for put out 3D fields 
-!t     &     dim3,dim1,count1,n_time
 
       IMPLICIT NONE
       INTEGER (KIND=int_prec),INTENT(IN)   :: utime !universal time [sec]
@@ -59,7 +46,7 @@
       integer (KIND=int_prec) :: iyr
       real (KIND=real_prec)   :: utsecs
       character :: fname*10,labl*56,units*12
-!
+
       print *,'begin sub_eldyn: sw_eldyn=', sw_eldyn
 !1: self-consistent electrodynamic solver
 !t      IF ( sw_eldyn==0 ) THEN 
@@ -147,8 +134,8 @@
 !        ed11=ed1
 !        ed22=ed2
       IF ( utime==start_time ) THEN
-          write(unit=2003,FMT='(20f10.4)')ylatm
-          write(unit=2004,FMT='(20f10.4)')ylonm
+        write(unit=2003,FMT='(20f10.4)')ylatm
+        write(unit=2004,FMT='(20f10.4)')ylonm
       END IF
 !      endif !if(utsec.ne.utsec_last) then
 
@@ -175,12 +162,10 @@
         write(unit=2008,FMT='(20E12.4)')ed1_90 *1.0E+03 !V/m-->mV/m
         write(unit=2009,FMT='(20E12.4)')ed2_90 *1.0E+03 !V/m-->mV/m
         write(unit=2010,FMT='(I12)')utime !sec
-!SMS$SERIAL END
-      END IF
-!c
+ !SMS$SERIAL END
+       END IF
+
       return
-!      end
-!      end program ts_efield
-!
+
       END SUBROUTINE eldyn
       END MODULE module_sub_eldyn

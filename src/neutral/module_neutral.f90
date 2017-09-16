@@ -130,7 +130,7 @@ END IF
           glat_deg(1:NPTS) = 90. - plasma_grid_3d(IN:IS,lp,mp,IGCOLAT)*180./pi
           alt_km  (1:NPTS) = plasma_grid_Z(IN:IS,lp) * M_TO_KM  !/ 1000. 
 
-print*,'sub-neutral:kind on_m3',kind(on_m3)
+!print*,'sub-neutral:kind on_m3',kind(on_m3)
 
           call get_thermosphere (npts, &
                          iyear, iday, ut_hour, f107D_dum, f107A_dum, AP_dum, &
@@ -146,7 +146,7 @@ print*,'sub-neutral:kind on_m3',kind(on_m3)
      &              ,Vn_ms1(1:3,1:NPTS   )   )
 
 
-print*,'sub-neutral: on_m3',on_m3(IN:IS,lp,mp) 
+!print*,'sub-neutral: on_m3',on_m3(IN:IS,lp,mp) 
 !nm20151130 include WAM fields options: 
 !sw_neutral
 !0: WAM debug: use which ever ESMF fields are coming across for debugging purpose
@@ -173,7 +173,7 @@ print*,'sub-neutral: on_m3',on_m3(IN:IS,lp,mp)
       else if ( utime>432000 ) then
 
          if ( sw_neutral==3 ) then
-            if(lp==1)print*,mype,mp,'MSIS',sw_neutral,utime
+!           if(lp==1)print*,mype,mp,'MSIS',sw_neutral,utime
          else if ( sw_neutral==0 .or. sw_neutral == 1 ) then
          !Tn
          ! nm20151130: temporarily obtain ihTopN

@@ -43,7 +43,7 @@ opminpc(mp,lp)=( &
 enddo
 enddo
 
-write(5000,fmt=*) utime,MAXVAL(opmaxpc),MINVAL(opminpc)
+!write(5000,fmt=*) utime,MAXVAL(opmaxpc),MINVAL(opminpc)
 
 
 END       subroutine dbg_estimate_trans_error 

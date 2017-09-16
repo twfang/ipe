@@ -240,9 +240,9 @@ endif
 
 ! calculate the field line integrals for the electrodynamic solver
          IF ( sw_eldyn<=1 ) THEN
-         print *, 'calling interface_field_line_integrals'
-            CALL interface_field_line_integrals (lp,mp,utime,  &
-       &    sigma_ped_3d,sigma_hall_3d,Ue1_3d,Ue2_3d,Ne_3d)
+!          print *, 'calling interface_field_line_integrals'
+           CALL interface_field_line_integrals (lp,mp,utime,  &
+       &   sigma_ped_3d,sigma_hall_3d,Ue1_3d,Ue2_3d,Ne_3d)
          END IF
 
 
@@ -297,9 +297,9 @@ endif
 !nm20170214 temporary comment out 
 ! Tzu-Wei: Write out the conductivities and winds
 !t !SMS$SERIAL(<sigma_ped_3d,sigma_hall_3d,ue1_3d,ue2_3d,ne_3d,IN>:default=ignore) BEGIN
-         write(5000,*) sigma_ped_3d,sigma_hall_3d
-         write(5001,*) Ue1_3d,Ue2_3d
-         write(5002,*) Ne_3d
+!         write(5000,*) sigma_ped_3d,sigma_hall_3d
+!         write(5001,*) Ue1_3d,Ue2_3d
+!         write(5002,*) Ne_3d
 !t !SMS$SERIAL END
 
 
@@ -318,9 +318,9 @@ if(sw_debug) print *,'before call to output plasma',utime,start_time,ip_freq_out
 !dbg20110923segmentation fault??? memory allocation run time error???
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-5")
 
-!SMS$ignore begin
-      print*,mype,utime,'before io_plasma_bin'
-!SMS$ignore end
+!!SMS$ignore begin
+!      print*,mype,utime,'before io_plasma_bin'
+!!SMS$ignore end
 
         CALL io_plasma_bin ( 1, utime )
 
@@ -338,9 +338,9 @@ if(sw_debug) print *,'before call to output plasma',utime,start_time,ip_freq_out
       ret = gptlstop ('io_plasma_bin')
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-7")
 
-!SMS$ignore begin
-      print*,mype,utime,'end sub-plasma'
-!SMS$ignore end
+!!SMS$ignore begin
+!      print*,mype,utime,'end sub-plasma'
+!!SMS$ignore end
 
       END SUBROUTINE plasma
       END MODULE module_sub_PLASMA

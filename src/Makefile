@@ -42,7 +42,6 @@ SMS_LDFLAGS   = -L$(SMS)/lib -lsms  $(GPTL_LDFLAGS)
 ifndef DEBUG
   DEBUG = no
 endif
-DEBUG = yes
 
 # trillian stanza
 

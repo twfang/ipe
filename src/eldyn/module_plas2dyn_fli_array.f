@@ -16,7 +16,7 @@
       INTEGER (KIND=int_prec ) :: jth,lp_dyn,lp_plas,ihem,i
       INTEGER (KIND=int_prec ) :: ilat_dyn,ilon_dyn,mp,lp,status
 
-      print *,'convert plas2dyn fli at utime=',utime,stop_time,mype
+!     print *,'convert plas2dyn fli at utime=',utime,stop_time,mype
       if (utime==stop_time) then
         open(4030,file='output_fli',form='formatted',status='new')
         write(4030,FMT='(I12)')utime
@@ -39,9 +39,9 @@
                else if ( ihem==2 ) then !SH
                   ilat_dyn = lp_dyn
                end if
-               if (jth==1) print *, '!dbg20140407:ilat_dyn=',ilat_dyn   &
-     &,ihem,lp_plas               
-
+!              if (jth==1) then
+!                print *, '!dbg20140407:ilat_dyn=',ilat_dyn,ihem,lp_plas               
+!              endif
 !mp4dyn is 180deg shifted from IPE
                mp_loop: do mp=1,kmlon
 
@@ -50,7 +50,7 @@
                     ilon_dyn = ilon_dyn - kmlon
                   endif
                   if (jth==1) then
-                    print *, '!dbg20140407: mp',mp,' ilon_dyn',ilon_dyn
+!                   print *, '!dbg20140407: mp',mp,' ilon_dyn',ilon_dyn
                     if(plas_fli(ihem,lp_plas,mp,jth) <= 0.0) then
                       print *,'!STOP!'
                       print *,'INVALID zigm11 value in plasma folder'

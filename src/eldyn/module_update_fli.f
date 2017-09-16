@@ -84,14 +84,14 @@
 !      IF (istat_eldyn /= 0) STOP 'ERROR WRITING FILE_eldyn'
 !      endif                     !( .NOT. sw_output_netcdf_eldyn ) then                                                          
 
-!SMS$IGNORE BEGIN
-      print *,'!dbg! make sure zigm11 have values before calculations'
-      print *,'zigm11',mype,MAXVAL(zigm11),MINVAL(zigm11)
-      print *,'zigm22',mype,MAXVAL(zigm22),MINVAL(zigm22)
-      print *,'zigm2' ,mype,MAXVAL(zigm2 ),MINVAL(zigm2 )
-      print *,'zigmc' ,mype,MAXVAL(zigmc ),MINVAL(zigmc )
-      print *,'rim'   ,mype,MAXVAL(rim   ),MINVAL(rim   )
-!SMS$IGNORE END
+!!SMS$IGNORE BEGIN
+!      print *,'!dbg! make sure zigm11 have values before calculations'
+!      print *,'zigm11',mype,MAXVAL(zigm11),MINVAL(zigm11)
+!      print *,'zigm22',mype,MAXVAL(zigm22),MINVAL(zigm22)
+!      print *,'zigm2' ,mype,MAXVAL(zigm2 ),MINVAL(zigm2 )
+!      print *,'zigmc' ,mype,MAXVAL(zigmc ),MINVAL(zigmc )
+!      print *,'rim'   ,mype,MAXVAL(rim   ),MINVAL(rim   )
+!!SMS$IGNORE END
 
       do j=1,kmlat
         do i=1,kmlonp1
