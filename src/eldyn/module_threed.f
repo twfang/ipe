@@ -115,9 +115,9 @@
 !
 
 !dbg20140801
-      print *,'(28-29)output dyn'
-      write(unit=4028,FMT='(20E12.4)')ed1dy
-      write(unit=4029,FMT='(20E12.4)')ed2dy
+!      print *,'(28-29)output dyn'
+!      write(unit=4028,FMT='(20E12.4)')ed1dy
+!      write(unit=4029,FMT='(20E12.4)')ed2dy
 
 !nm20140408
       fname = 'ed1'

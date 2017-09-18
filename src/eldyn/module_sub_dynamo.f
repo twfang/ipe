@@ -79,7 +79,7 @@
       character :: fname*10,labl*56,units*12
      
 
-      print *, 'sub-dyn: isolve=' ,isolve 
+!     print *, 'sub-dyn: isolve=' ,isolve 
 !
 
       call transf
@@ -364,9 +364,9 @@
      &  	  phim,5,units,1)
 
 !dbg20140801(27)
-      print *,'(27)output dyn PHIM at utime=',jsecs
+!      print *,'(27)output dyn PHIM at utime=',jsecs
 !      write(unit=4027,FMT='(I12)')INT(jsecs)
-      write(unit=4027,FMT='(20E12.4)')phim
+!      write(unit=4027,FMT='(20E12.4)')phim
 
 !
 ! Call threed to calculate 2-d electric potential array in geomagnetic coordinates

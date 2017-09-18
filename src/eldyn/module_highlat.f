@@ -35,7 +35,7 @@
 !  If Weimer is used, then theta0,phid etc is changed before use in aurora
 !   in dynamics.
 !
-      print *, 'sub-highlat: potential_model=',potential_model
+!     print *, 'sub-highlat: potential_model=',potential_model
       if (potential_model == 'HEELIS') then
         call heelis
       else  !  potential_model='NONE'

@@ -47,22 +47,22 @@
 
       else if ( input_type_eld_fli == 'IPE' ) then
 
-        print *, 'zigm11 from IPE: utime=',utime
+!       print *, 'zigm11 from IPE: utime=',utime
 
 ! update values from IPE every time step                                                                                    
         call plas2dyn_fli_array ( utime )
 
 
 !dbg20150608: output FLI for debug
-        print *,'(22-26) output dyn fli at utime=',utime
-!SMS$serial begin
-        write(unit=4022,FMT='(I12)')utime
-        write(unit=4022,FMT='(20E12.4)')zigm11
-        write(unit=4023,FMT='(20E12.4)')zigm22
-        write(unit=4024,FMT='(20E12.4)')zigmc
-        write(unit=4025,FMT='(20E12.4)')zigm2
-        write(unit=4026,FMT='(20E12.4)')rim
-!SMS$serial end
+!        print *,'(22-26) output dyn fli at utime=',utime
+!!SMS$serial begin
+!        write(unit=4022,FMT='(I12)')utime
+!        write(unit=4022,FMT='(20E12.4)')zigm11
+!        write(unit=4023,FMT='(20E12.4)')zigm22
+!        write(unit=4024,FMT='(20E12.4)')zigmc
+!        write(unit=4025,FMT='(20E12.4)')zigm2
+!        write(unit=4026,FMT='(20E12.4)')rim
+!!SMS$serial end
 
       else
         write(6,*)'STOP! INVALID input_type_eld_fli=',input_type_eld_fli

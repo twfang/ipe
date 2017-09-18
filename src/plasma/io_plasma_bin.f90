@@ -205,5 +205,4 @@ END IF !( switch==1 ) THEN
 
 !SMS$PARALLEL END
 
-print *,'END sub-io_pl: sw=',switch,' uts=' ,utime 
 END SUBROUTINE io_plasma_bin

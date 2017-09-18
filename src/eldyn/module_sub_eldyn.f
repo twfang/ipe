@@ -47,13 +47,6 @@
       real (KIND=real_prec)   :: utsecs
       character :: fname*10,labl*56,units*12
 
-      print *,'begin sub_eldyn: sw_eldyn=', sw_eldyn
-!1: self-consistent electrodynamic solver
-!t      IF ( sw_eldyn==0 ) THEN 
-
-!t      n_time=n_time+1
-      print *, 'self-consistent eldyn started' !t ,n_time
-
       iyr = 1997
       utsecs=REAL(utime, real_prec)
 
@@ -67,7 +60,7 @@
 
 
 
-      print *,'sub-eldyn: sunloc: utsecs=',iyr,NDAY,utsecs
+!     print *,'sub-eldyn: sunloc: utsecs=',iyr,NDAY,utsecs
 !      call sunloc(iyr,NDAY,utsecs)
       call sunloc(iyr,97,utsecs)
 
@@ -83,7 +76,6 @@
 !     &     ,sunlons,7,units,6)
 
 ! output sunlons
-      print *,'(21) output dyn sunlons at utime=',utime
 !      write(unit=4021,FMT='(I12)')utime
       write(unit=4021,FMT='(20E12.4)')sunlons(1)
       if (sw_debug) print *,'sunlons(1)',sunlons(1)
@@ -96,7 +88,6 @@
 
       if (sw_debug) print *,'sub-dynamo: dynamo'
       call dynamo
-      print *,'self-consistent dynamo finished'
 
 !2: WACCM empirical electric field model
 !t      ELSE IF ( sw_eldyn==1 ) THEN 
