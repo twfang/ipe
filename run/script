@@ -1,0 +1,22 @@
+#!/bin/bash
+export sw_compile=1
+export WORKDIR=/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20170802debugNaomiBranch/ipe
+cd $WORKDIR/src
+pwd
+if [ $sw_compile -eq 1 ]; then
+  make clean
+  make theia_intel_parallel
+fi
+#export IPEDATA=/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/20090115_1day_spacewx_80x170
+export IPEDATA=/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/20130316_1hr_spacewx_80x170
+#export IPEQUEUE=batch
+export IPEQUEUE=debug
+#export IPETIME=08:00:000
+export IPETIME=00:30:000
+ls -trl $WORKDIR/bin/
+date
+cd $WORKDIR/run
+pwd
+./qsubipe theia intel parallel 80 > jid201708024
+cat jid201708024
+
