@@ -13,3 +13,6 @@ bin
 run/15*_ipe_theia_intel_parallel_80
 run/jid20*
 src/*/DEPENDENCIES
+*.txt
+listRunDir
+*.dat
