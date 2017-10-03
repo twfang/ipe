@@ -3,8 +3,9 @@ pro plt_r_sza_ne $
   , xionn_m3, te_ti_k $
   , sw_debug,mlat_deg,ut_hr,input_DIR0,plot_DIR
 
-swParam=1L ;0=Ne;1=Te
+
 sw_save=1L
+swParam=getenv('swParam') ;0=Ne;1=Te;2=Ti
 sw_plot_contour=1L
 utHrPlt0=getenv('utHrPlt0')
 jthMax=getenv('jthMax')
@@ -122,9 +123,11 @@ endif
                                 ;alog10Nel = -6.
               CONTINUE          ;goto next ipts
            endelse
-        endif else if swParam eq 1L then begin ;1=Te
-           alog10Nel=te_ti_k[3-1,ipts,mp]
-        endif                   ;swParam eq 0L then begin ;0=Ne;1=Te
+        endif else if swParam eq 1L then $  ;1=Te
+           alog10Nel=te_ti_k[3-1,ipts,mp] $
+              else if swParam eq 2L then $  ;2=Ti
+           alog10Nel=te_ti_k[1-1,ipts,mp] 
+        ;swParam eq 0L then begin ;0=Ne;1=Te
 
                                 ;dbg z_sav [i,j]= alog10Nel
         tmp=z_sav[sw_hem,i,j]
@@ -179,9 +182,9 @@ if sw_debug eq 1 then  print,' y=', y
 if swParam eq 0 then begin
   zmax=5.5
   zmin=0.0
-endif else if swParam eq 1 then begin
-  zmax=12600.
-  zmin=180.0
+endif else if swParam ge 1 then begin
+  zmax=6000.
+  zmin=200.
 endif
  
 n_levels=100
@@ -224,7 +227,9 @@ endif                           ;sw_debug eq 1
 if swParam eq 0 then $
    titleVar = 'Ne [log!D10!N cm!U-3!N]' $
 else if swParam eq 1 then $
-   titleVar = 'Te [K]'
+   titleVar = 'Te [K]' $
+else if swParam eq 2 then $
+   titleVar = 'Ti [K]' 
 
 ;contour plot fig3
 contour,z,x,y $
@@ -251,7 +256,7 @@ title = ' ';colorbar title'
 font = 1  ;True-Type: 1.
 if swParam eq 0 then $
    format = '(f7.2)' $
-else if swParam eq 1 then $
+else if swParam ge 1 then $
    format = '(f7.0)'
 
 

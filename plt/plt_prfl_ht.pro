@@ -16,7 +16,8 @@ HOME_DIR=$
 ;'/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/30s/run'
 ;'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/tmp20151117/trunk/run'
 ;'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/r336.2.2/trunk/run/'
-'/scratch3/NCEPDEV/swpc/save/Tzu-Wei.Fang/IPE/trunk_electrodynamics_44514_feedback/run/'
+;'/scratch3/NCEPDEV/swpc/save/Tzu-Wei.Fang/IPE/trunk_electrodynamics_44514_feedback/run/'
+'/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/mergeEldyn20170127Stefan/ipe/run/'
 ;CHANGE!!!
 TEST2='S'
 TEST1=$
@@ -24,8 +25,9 @@ TEST1=$
 ;14951';112509';28822'
 ;TEST-->rundir
 rundir=$
+'1485810813_ipe_theia_intel_serial'
 ;'ipe_S_sw1_0to4UT'
-'ipe_S_sw0_onlyEd1_0to4UT'
+;'ipe_S_sw0_onlyEd1_0to4UT'
 ;'ipe_'+TEST2+'_'+TEST1
 ;'ipe_80_17352dbg' ;lp=44
 ;'ipe_80_7459dbg' ;lp=48
@@ -33,7 +35,7 @@ rundir=$
 ;'1455925834_ipe_theia_intel_serial2' ;30s
 ;'1449609375_ipe_theia_intel_serial2' ;disconGrid
 ;'ipe_S_68710'
-plot_UT =432000./3600.;2.0
+plot_UT =529200./3600.;2.0
 ;frequency of plotting in hr
 freq_plot_hr=900./3600.;3600./3600.
 ;READ, freq_plot_hr,PROMPT='Enter frequency of plotting in hour:' 
@@ -61,10 +63,10 @@ FLDIM0=LONARR(n_file)
 ;  FLDIM0     =[ 313L ] ;<--read from the 167 file! lp=48
 ;endif
 ;mp=10-1, lp=14-1
-lp_title    =149-1L
-mlat_title  ='5.84';82.4001';76.2';66.13496' ;<--read from 167 file! =GL/!PI*180. lp=48
+lp_title    =1-1L
+mlat_title  ='88.2';5.84';82.4001';76.2';66.13496' ;<--read from 167 file! =GL/!PI*180. lp=48
 ;FLDIM0     =[ 1115L ] ;<--read from the 167 file! lp=48
-FLDIM0     =[ 65L ] ;<--read from the 167 file! lp=48
+FLDIM0     =[ 1115L ] ;<--read from the 167 file! lp=48
 
 sw_debug=0L
 plot_DIR=$

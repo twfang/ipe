@@ -11,15 +11,21 @@ pro ctr_lon_lat_quick $
 ,sw_debug $
 ;20131209: output to ascii file
 ,sw_output2file_ascii,luntmpN,luntmpS,ncount $
-, Vn_ms1,tn_k,on_m3 $
+, Vn_ms1,tn_k,on_m3,n2n_m3,o2n_m3 $
 , n_plt_max,input_DIR0 $
 , ht_plot,rundir $
 , VarType_max, VarType_min, VarType_step $
 , n_plt_min ;=0L
-;print, 'ht_plot', ht_plot
+print, 'ht_plot=', ht_plot
 ;print, 'VarType_max', VarType_max, 'VarType_min', VarType_min
 ;print,  'VarType_step',  VarType_step
 
+
+print,'inside ctr_lon_lat_quick: check on_m3', MAX( on_m3 ), MIN( on_m3 )
+
+
+;nm20161220 profile validation
+sw_debug_prfl=0L
 
  sw_output_nmf2=0 ;NH:1; N&S:2 ; no nmf2 output:0
  sw_output_nmf2noon=0
@@ -29,7 +35,7 @@ pro ctr_lon_lat_quick $
 ; X-axis range
 ;1:0<lon<360
 ;0:-180<lon<+180
-xmax360=0
+xmax360=getenv('xmax360')
 ;note20131209: sw OFF only when sw_output2file_ascii=1 to run faster!!
 sw_plot_contour=1
 dlt=360./80./360.*24.
@@ -46,27 +52,25 @@ fac_wind=1.0;1.0E-2
 ;VarTitle=['Ne','Te','Ti','o+','NO+','O2+','Vpar_o+','NmF2','HmF2']
 VarTitle=['Ne','Te','Ti','o+','TN','UN'$
 ;,'VN'$
-,'[O]'$
+,'On_m3'$  ;[O] [m-3]
 ,'NmF2','HmF2'] ;20140108
 ;VarTitle=['Ne','Te','Ti','N(NO+)','Vpar_o+']
 ;VarTitle=['Ne','Te','Ti','N(O2+)','Vpar_o+']
 ;VarTitle=['Ne','Te','Ti','N(N2+)','Vpar_o+']
 
-unit=['[m-3]','K','K','[m-3]',$
+unit=['[10^11 m-3]','K','K','[m-3]',$
 ;'[m-3]'$
 '[K]'$
 ,'[m/s]'$
 ;,'[m/s]'$
 ,'[log10 m-3]'$
-,'[m-3]','[km]'] ;[nA/m2]'];[nA/m2]' ;20140108
+,'[10^11 m-3]','[km]'] ;[nA/m2]'];[nA/m2]' ;20140108
 
 ;20140203: remember Vartype loop cannot be used for quick plot version!!!
 for VarType=VarType_min, VarType_max, VarType_step do begin
 
 if ( n_read eq n_plt_min ) then  print,'VarType=',VarType
-;ht_plot =410.;[km];130
-;ht_plot =378.;[km];100
-;ht_plot =340.;[km]
+
 
 
 
@@ -121,7 +125,19 @@ for mp=0,NMP-1 do begin
   for i=in,midpoint, istep  do begin
 
    if ( VarType lt 7 ) then begin
-    if ( z_km[i] le ht_plot ) AND ( z_km[i+istep] gt ht_plot ) then begin
+print,in,'!dbg',i,' mp=',mp,' lp=',lp,z_km[i],ht_plot,z_km[i+istep],on_m3[i,mp]
+
+
+if ( z_km[i] le ht_plot ) AND (z_km[i+istep] gt ht_plot ) then begin
+
+
+;lp=68
+if mp eq 64 AND lp ge 58 AND lp le 78 then $
+print,'NH!dbg',i,' mp=',mp,' lp=',lp,XIONN_m3[0:8,i,mp],z_km[i]
+
+
+
+
       if ( VarType eq 0 ) then $ 
         for jth=0,ISPEC-1 do  plot_zz[mp,lp]=plot_zz[mp,lp]+XIONN_m3[jth,i,mp] * factor $
       else if ( VarType eq 1 ) then $
@@ -138,13 +154,15 @@ tn_k[i,mp] $;[k] ;tn
         plot_zz[mp,lp] =$
 Vn_ms1[2-1,i,mp]*fac_wind $;[m/s] ;positive northward ;20140108
 ; XIONN_m3[5,i,mp]*factor  $ ;o2+
-      else if ( VarType eq 6 ) then $
+      else if ( VarType eq 6 ) then begin ;$
         plot_zz[mp,lp] =$
 alog10(on_m3[i,mp]) ;[m-3] ; oxygen density
 ;Vn_ms1[2-1,i,mp]*fac_wind ;[m/s] ;
 ; XIONV_ms1[1-1,i,mp] ;V//o+[m/s]
 
-
+;if sw_debug eq 1 then 
+print, i,mp, z_km[i],mlat_deg[i],on_m3[i,mp], plot_zz[mp,lp]
+endif
 
  
       if ( sw_frame eq 0 ) then begin ;magnetic
@@ -276,8 +294,18 @@ endif ;( lp eq 47 AND mp eq 49 ) then begin
   for i=is,midpoint, istep  do begin
    
     if ( VarType lt 7 ) then begin
-      if ( z_km[i] le ht_plot ) AND ( z_km[i+istep] gt ht_plot )  then begin 
-;       plot_zz[mp,lps] = XIONN_m3[VarType,i,mp] ;[m-3]  je_3d[VarType,i,mp]/nano
+
+
+
+if ( z_km[i] le ht_plot ) AND ( z_km[i+istep] gt ht_plot ) then begin
+
+
+;lps=270
+if mp eq 64  AND lps ge 260 AND lps le 280 then begin
+   print,'SH!dbg',i,' mp=',mp,' lp=',lp,' lps=',lps,XIONN_m3[0:8,i,mp],z_km[i]
+;if mp eq 48 AND lps eq 270 then print,'!dbg',i,mp,lps,XIONN_m3[0:8,i,mp]
+   ;STOP
+endif
       if ( VarType eq 0 ) then $ 
         for jth=0,ISPEC-1 do  plot_zz[mp,lps]=plot_zz[mp,lps]+XIONN_m3[jth,i,mp]*factor $
       else if ( VarType eq 1 ) then $
@@ -300,23 +328,134 @@ alog10(on_m3[i,mp]) ;[m-3] ;oxygen density
 ;Vn_ms1[2-1,i,mp]*fac_wind $;[m/s] ;northward  ;20140108
 ;XIONV_ms1[1-1,i,mp] ;V//o+[m/s]
 
-if mp eq 3 then  print, 'n_read=', n_read,mp,lp
-if $
-;n_read eq 2 AND $
-;   plot_zz[mp,lps] gt 16.  $
-;   AND 
-mp eq 3 AND lp eq 14 $
-then begin
+if sw_debug_prfl eq 1 then begin
+   mpPlot=68L
+lpPlot=35L ;SH -49.79  218.11 NH  40.19  243.17
+;lpPlot=0L; SH -74.69  133.07 NH  80.19  269.80
+; lpPlot=120L                  ; SH -15.12  232.16 NH   6.87  236.12
+   YrangeMax=1000.
+;   YrangeMax=1060.
+   if lpPlot eq 35L then $
+      ;XrangeMin=1.E+4 $;1.E-10 $
+      XrangeMin=1.E-10 $
+   else if lpPlot eq 0L then $
+      XrangeMin=1.E+4 $ ;1.E-15 $
+   else if lpPlot eq 120L then begin
+      XrangeMin=1.E+5
+      YrangeMax=350.
+   endif
+  
+;whichModel='WAM'
+ whichModel='MSIS'
+   if whichModel eq 'MSIS' then $
+      n_plot=0L $               ;MSIS
+   else if whichModel eq 'WAM' then $
+      n_plot=1L                 ;WAM
+   
+   if n_read eq n_plot AND mp eq mpPlot AND lp eq lpPlot then begin
 
-print,'BEFORE CORRECTION'
-  print, i,' mp=',mp,' lp=',lp,lps,mlat_deg[i],mlon_deg[mp],' glat=',glat_deg[i,mp],' glon=',glon_deg[i,mp]
+      ltmp=(ut_hr-120.+glon_deg[in,mp]/15.)
+      print,mp,lp,' LT=',ltmp
+      
+      print, in,' mp=',mp,' lp=',lp,lps,mlat_deg[in],mlon_deg[mp],' glat=',glat_deg[in,mp],' glon=',glon_deg[in,mp],' jmin=', JMIN_IN[lp], JMAX_IS[lp]
 
-  print, JMIN_IN[lp], JMAX_IS[lp]
-
-  for ii=is,is-90,-1  do print,FORMAT='(I6,i6,e12.4,2f8.1,2f8.2)',ii,(is-ii+1),on_m3[ii,mp],tn_k[ii,mp],z_km[ii],glat_deg[ii,mp],glon_deg[ii,mp]
+      iimax=100L
+      if lpPlot eq 120L then iimax=51L
+      xtmp=fltarr(iimax)
+      xtmp1=fltarr(iimax)
+      xtmp2=fltarr(iimax)
+      ytmp=fltarr(iimax)
+;SH
+      for ii=is,is-iimax+1,-1  do begin
+         itmp=is-ii
+         print,FORMAT='(I6,i6,e12.4,2f8.1,2f8.2)',ii,itmp,on_m3[ii,mp],tn_k[ii,mp],z_km[ii],glat_deg[ii,mp],glon_deg[ii,mp]
 ;  plot, on_m3[*,mp],z_km[*]
+         xtmp[itmp]=on_m3[ii,mp] *1.0E-6 ;m-3-->cm-3
+         xtmp1[itmp]=n2n_m3[ii,mp] *1.0E-6 ;m-3-->cm-3
+         xtmp2[itmp]=o2n_m3[ii,mp] *1.0E-6 ;m-3-->cm-3
+         ytmp[itmp]=z_km[ii]
+      endfor                    ;ii    
+      
+      DEVICE, RETAIN=2, DECOMPOSED=0
+      WINDOW,2,XSIZE=1000,YSIZE=800
+      !p.multi=[0,1,1,0]
+      
 
-endif
+;plot vertical profile
+      plot,xtmp,ytmp,/xlog $
+           ,yrange=[90., YrangeMax] , xstyle=1$
+           ,Xrange=[XrangeMin,1.E11], ystyle=1 $
+                   ,charsize=2. $
+                   ,title='20170413: '+whichModel+' O: glat='+STRTRIM( string(glat_deg[is,mp], FORMAT='(f7.0)'), 1)+' glon='+STRTRIM( string(glon_deg[is,mp], FORMAT='(f7.0)'), 1)+' LT='+STRTRIM( string(ltmp, FORMAT='(f6.1)'), 1)
+           
+           xyouts, 0.65, 0.9 $
+                   ,'O'  $
+                   , charsize=2.0, charthick=2.0, /norm, /noclip
+           
+           loadct,39
+;SH [N2]
+           oplot,xtmp1,ytmp $
+                 ,linestyle=0 $
+                 ,color=250     ;red
+;SH [o2]
+           oplot,xtmp2,ytmp $
+                 ,linestyle=0 $
+                 ,color=50      ;blue
+           
+
+;NH
+           for ii=in,in+iimax-1,+1  do begin
+              itmp=ii-in
+              print,FORMAT='(I6,i6,e12.4,2f8.1,2f8.2)',ii,itmp,on_m3[ii,mp],tn_k[ii,mp],z_km[ii],glat_deg[ii,mp],glon_deg[ii,mp]
+;  plot, on_m3[*,mp],z_km[*]
+              xtmp[itmp]=on_m3[ii,mp]*1.0E-6 ;m-3-->cm-3
+              xtmp1[itmp]=n2n_m3[ii,mp]*1.0E-6 ;m-3-->cm-3
+              xtmp2[itmp]=o2n_m3[ii,mp]*1.0E-6 ;m-3-->cm-3
+              ytmp[itmp]=z_km[ii]
+           endfor               ;ii
+;NH plot vertical profile [o]
+           oplot,xtmp,ytmp $
+                 ,linestyle=5
+           
+
+
+           loadct,39
+;NH [N2]
+           print,'min N2',min(xtmp1)
+           oplot,xtmp1,ytmp $
+                 ,linestyle=5 $
+                 ,color=250     ;red
+
+;NH [o2]
+           print,'min o2',min(xtmp2)
+           oplot,xtmp2,ytmp $
+                 ,linestyle=5 $
+                 ,color=50      ;blue
+           
+
+;ref1 alt=120km
+           ytmp1=findgen(iimax)*0.+120.
+           oplot,xtmp2,ytmp1 $
+                 ,linestyle=1
+
+;ref2 alt=470km
+           ytmp1=findgen(iimax)*0.+470.
+           oplot,xtmp2,ytmp1 $
+                 ,linestyle=1
+
+           xyouts, 0.45, 0.85 $
+                   ,'N2'  $
+                   , charsize=2.0, charthick=2.0, color=250, /norm, /noclip
+
+           xyouts, 0.25, 0.7 $
+                   ,'O2'  $
+                   , charsize=2.0, charthick=2.0, color=50, /norm, /noclip
+
+
+           output_png, whichModel+'profiles'+'_mlat'+STRTRIM( string(mlat_deg[in], FORMAT='(f6.0)'), 1)+'.20170413.png'
+           STOP
+endif 
+endif;sw_debug_prfl eq 1 then begin
 
 
        if ( sw_frame eq 0 ) then begin ;magnetic
@@ -478,7 +617,8 @@ if ( sw_range eq 1 ) then begin
         zmin=0.;1.e+10
 ;        zmax=7.5e+11
 ;        zmax=2.5e+1 ;E-region
-        zmax=2.e+12 ;F-region
+;        zmax=2.e+12 ;F-region
+        zmax=22.55 ;F-region
 ;        zmax=9.0E+11 ;dbg200km
 ;        zmax=5.58e+12
 ;92km
@@ -504,8 +644,11 @@ if ( sw_range eq 1 ) then begin
         zmin=-300.;zonal +eastward
         zmax=+300.
       endif else if ( VarType eq 6 ) then begin 
-        zmin=+13.;-50.;-100.;meridional + northward
-        zmax=+14.;+50.;+100.
+;        zmin=+14.0 ;350km
+;        zmax=+14.57;
+
+        zmin=+17.;100km
+        zmax=+18.;
       endif else if ( VarType eq 7 ) then begin 
         zmin=0.  ; 0.0084; 1.0e+10
         zmax= $
@@ -534,7 +677,17 @@ if ( sw_range eq 1 ) then begin
 
 
 ;if ( sw_debug eq 1 ) then $  
-   print,'maxZ=',MAX(plot_zz),' minZ=',MIN(plot_zz)
+      maxZ=MAX(plot_zz)
+      minZ=MIN(plot_zz)
+
+;dbg20170427
+
+j=100L
+jj=170+j
+for i=60,70 do begin
+  print,'NH',i,j,  plot_zz[i,j],plot_xx[i,j],plot_yy[i,j]
+  print,'SH',i,jj, plot_zz[i,jj],plot_xx[i,jj],plot_yy[i,jj]
+endfor
 
 
 	where_result=where ( plot_zz gt zmax, count ) 
@@ -545,10 +698,12 @@ if ( sw_range eq 1 ) then begin
 ;	print, '2. where_result', where_result,'count',count
 
 endif else if ( sw_range eq 0 ) then begin
-zmax = max(plot_zz)
-zmin = min(plot_zz)
+  zmax = max(plot_zz)
+  zmin = min(plot_zz)
+  maxZ=zmax
+  minZ=zmin
 endif
-
+print,'maxZ=',MAXz,' minZ=',MINz
 
 MAX_xymin=zmax ;1.0E+3
 n_levels=100L
@@ -557,15 +712,15 @@ if ( xmax360 eq 1 ) then begin
   X_max=+360.
   X_min=+  0.
 endif else if ( xmax360 eq 0 ) then begin
-  X_max=+180.
-  X_min=-X_max
+  X_max= +180.
+  X_min= -X_max
 endif
 if ( sw_frame eq 2 ) then begin
 x_max=24.
 x_min=0.
 endif
 
-Y_max= 80.0
+Y_max= +80.0
 Y_min= -Y_max
 if ( sw_frame eq 0 ) or ( sw_frame eq 2 ) then $
   MAG_GEO='magnetic' $
@@ -595,8 +750,14 @@ if  ( n_read eq 0 ) then begin
 	DEVICE, RETAIN=2, DECOMPOSED=0
 	WINDOW,iwindow,XSIZE=1100*fac_window,YSIZE=1000*fac_window
 ;                   columns,rows
-;	!p.multi=[0,6,5,0]
-	!p.multi=[0,4,5,0]
+nColumnsMulti = getenv('nColumnsMulti')  ;for quick plot
+nRowsMulti    = getenv('nRowsMulti'   )  ;for quick plot
+	!p.multi=[0,nColumnsMulti,nRowsMulti,0] ;
+;	!p.multi=[0,4,7,0] ;6dy
+;	!p.multi=[0,4,7,0] ;3dy
+;	!p.multi=[0,6,5,0] ;1dy wam-ipe
+;	!p.multi=[0,4,5,0]
+;!	!p.multi=[0,2,2,0] ;1hr
 
 	loadct,n_ldct
 endif  ;( n_read eq 0 ) then begin 
@@ -696,7 +857,7 @@ contour,plot_zz,plot_xx,plot_yy $
 ,yrange=[Y_min,Y_max], /ystyle $
 ,XTITLE=X_TITLE,YTITLE=Y_TITLE $
 ;,TITLE=VarTitle[VarType]+unit[VarType]+'  ht='+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+'km  UT[hr]='+STRTRIM( string(ut_hr, FORMAT='(F6.2)'),1 )+'_'+TEST $
-,TITLE='UT '+STRTRIM( string(ut_hr_disp, FORMAT='(F8.4)'),1 ) $
+,TITLE='UT '+STRTRIM( string(ut_hr_disp, FORMAT='(F8.4)'),1 )+'  MAX='+STRTRIM( string(maxZ, FORMAT='(F8.2)'),1 )+' MIN='+STRTRIM( string(minZ, FORMAT='(F8.2)'),1 ) $
 ;,POSITION=[X0,Y0,X1,Y1] $
 ,COLOR=text_color $
 ,charsize=char_size,charthick=char_thick $
@@ -740,7 +901,13 @@ else $
   format_colorbar='(E9.1)'
 
 font=1 ;true-type 
-position=[0.30, 0.17, 0.70, 0.185] ;for horizontal bar
+
+dX=0.40
+dY=0.010
+X00=0.30
+;y00=0.17;1day run
+y00=0.08 ;3-6dy run
+position=[X00, Y00, (X00+dX), (Y00+dY)] ;for horizontal bar
 COLORBAR, BOTTOM=bottom, CHARSIZE=charsize_colorbar, COLOR=color, DIVISIONS=divisions $
         , FORMAT=format_colorbar, POSITION=position, MAXRANGE=zmax,MINRANGE=zmin $
         , NCOLORS=ncolors,TITLE=title,VERTICAL=vertical,TOP=top,RIGHT=right $

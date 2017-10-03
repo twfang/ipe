@@ -5,8 +5,8 @@
 pro plt_ipep
 
 sw_frame=0
-fac_window=2.0
-sw_output2file=1 ;1'PNG' ;0NONE';
+fac_window=5.0
+sw_output2file=0 ;1'PNG' ;0NONE';
 sw_dif=0L
 mp_plot=1-1L ; longitude sector to plot
 sw_hr=0L
@@ -18,7 +18,7 @@ freq_plot_hr=900./3600.
 plot_type=5L ;0:contour; 1:ht profile; 2:LT-LAT contour; 3:LON-LAT contour; 4:refilling; 5:plasmasphere
 title_res='low';dyn';'low' ; 'high'
 TEST='v57.7';/but118706er'
-sw_save=1L ;0:no save; 1:save; 2:restore
+sw_save=0L ;0:no save; 1:save; 2:restore
 ;sw_save option does not work for plot_type=1
 ;READ, sw_save,PROMPT='Enter switch for saving readin data 0or1:'
 htstrt=400.
@@ -29,9 +29,9 @@ Varstop=0
 
 output_freq=900
 duration=3600*4
-n_read_max=duration/output_freq +1L
-plot_UT=248306.;    152906. ; [sec]
-plot_UT_end=plot_UT+86400*2.;248306.;421106.;230406. ; [sec]
+n_read_max=1L;duration/output_freq +1L
+plot_UT=604800;248306.;    152906. ; [sec]
+plot_UT_end=plot_UT+86400;*2.;248306.;421106.;230406. ; [sec]
 STOP_TIME='230406'
 rundate='20120424'
 TEST0='trans'
@@ -46,35 +46,40 @@ HOME_DIR=$
 '/home/Naomi.Maruyama/ptmp/' ;zeus
 fig_DIR=$
 '/home/Naomi.Maruyama/iper/' ;zeus
-n_file=15L;6L;13L;
-input_flnm=['','','','','','' $
-,'','','','' $
-,'','','','',''] ;,'','']
+n_file=19L
+input_flnm=[$
+ '','','','','','' $
+,'','','','','','' $
+,'','','','','','' $
+,'']
 input_DIR =input_flnm
 ;input_DIR[*]=rundate+'.'+version+'.'+title_test+'/';backup20120223mpall/';But'+STOP_TIME+'error/'
 input_DIR[*]=$
 ;'ipe4gsd/run/'
-TEST+'/';bkupdir/'
+;TEST+'/';bkupdir/'
+'/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/mpi20160330v2/run2/1486642049_ipe_theia_intel_parallel2_93/'
 input_DIR[1]=$
 ;'../plt/' ;mac
 '../ipe/trunk/plt/' ;zeus
 LUN  = INTARR(n_file)
 sw_LUN  = INTARR(n_file)
-sw_lun[0:1]=1
-sw_lun[2]=1 ;o+
-sw_lun[3]=1 ;Te
+sw_lun[2]=1 ;00 o+
+sw_lun[6]=1 ;01 h+
+sw_lun[8]=1 ;02 he+
+sw_lun[9]=1 ;03 n+
+sw_lun[10]=1 ;04 no+
+sw_lun[11]=1 ;05 o2+
+sw_lun[12]=1 ;06 n2+
+sw_lun[13]=1 ;07 o+(2D)
+sw_lun[14]=1 ;08 o+(2P)
+sw_lun[3]=0 ;Te
+sw_lun[7]=0 ;Ti
 sw_lun[4]=0 ;vo+
-sw_lun[5]=0 ;vexb
-sw_lun[6]=1 ;h+
-sw_lun[7]=1 ;ti
-sw_lun[8]=1 ;he+
-sw_lun[9]=1 ;n+
-sw_lun[10]=1 ;no+
-sw_lun[11]=1 ;o2+
-sw_lun[12]=1 ;n2+
-sw_lun[13]=1 ;o+(2D)
-sw_lun[14]=1 ;o+(2P)
-
+sw_lun[5]=0 ;vexbup
+sw_lun[15]=0 ;vexbe
+sw_lun[16]=0 ;vexbth
+sw_lun[17]=0 ;sunlon
+sw_lun[18]=0 ;sza, plasma17
 if ( sw_dif eq 1 ) then begin
 LUNq  = INTARR(n_file)
    input_flnmq =input_flnm
@@ -206,8 +211,9 @@ endif
 
 ;opening files
 if ( sw_save le 1 ) then $
-open_file, HOME_DIR, input_DIR, LUN,version,input_flnm $
-,sw_3DJ,sw_hr, sw_lun,title_res
+open_file, input_DIR, LUN,version,input_flnm $
+,sw_3DJ,sw_hr, sw_lun,title_res  $
+,sw_debug
 
 if ( sw_dif eq 1 ) then $
    open_file, HOME_DIR, input_DIRq, LUNq,version,input_flnmq $

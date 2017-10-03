@@ -84,12 +84,16 @@ if sw_debug eq 1 then print,'mlon[deg]',dum[mp]*180./!PI
     Z_km     = dum * 1.0E-3
     if sw_debug eq 1 then print,lpj,ipts,' z_km',z_km[ipts]
 
+;dbg20170926
+;for k=0,100 do  print,(k+1),z_km[k]
+;stop
+
 
 if plot_type eq 5 then begin
    Re_km=6.3712E+03             ;km
    for i=0,203 do begin
       r=((z_km[i]+re_km)/re_km )
-      print,'i=', i,' z_km=',z_km[i],' r=', r
+      print,'i=', (i+1),' z_km=',z_km[i],' L=', r
 ;if r gt 2.5 then stop
    endfor ;i
 ;stop
@@ -100,6 +104,7 @@ endif ;projName
     readu, LUN[1], dum ;(    1:NPTS2D_dum) !rad
     mlat_deg = ( !PI*0.50 - dum ) * 180.0 / !PI
     if sw_debug eq 1 then print,'mlat_deg',mlat_deg[ipts]
+
 
     dum=fltarr(NPTS2D_dum, NMP_all)
     readu, LUN[1], dum
@@ -113,7 +118,7 @@ endif ;projName
     if sw_debug eq 1 then print,'GLON_rad-deg',dum[ipts, mp]*180./!PI  
 
 
-;if sw_debug eq 1 then begin
+if sw_debug eq 1 then begin
    glatx= 42.8975
    glonx= 294.9765
    print, 'finding glatx=', glatx,'glonx=',glonx
@@ -150,7 +155,8 @@ print,mp1,lp, glat_deg[i,mp1],glon_deg[i,mp1]
    Re=6.3712E+03                ;km
    r_ref=Re+90.                 ;km for reference ht for rcm
 
-   for lp=30,33 do begin
+;   for lp=30,33 do begin
+   for lp=90,106 do begin
       i=jmin_in[lp]-1L
 
 ;assuming that latitude grid is identical for all LT sectors
@@ -160,13 +166,17 @@ print,mp1,lp, glat_deg[i,mp1],glon_deg[i,mp1]
       sinthet = SIN( theta ) 
       lval    = r_ref / ( Re * sinthet * sinthet )
 
-print,i,' lp=',lp,' mlat=',mlat_deg[i],' L-value=',lval;,(jmin_in(lp)-1),(jmax_is(lp)-1)
+print,i,' lp=',(lp+1),' mlat=',mlat_deg[i],z_km[midpoint],' L-value=',lval;,(jmin_in(lp)-1),(jmax_is(lp)-1)
 ;print,midpoint,mlat_deg[midpoint]
    endfor
-   ;stop
+   stop
 
-;endif ;if sw_debug eq 1 then begin
+endif ;if sw_debug eq 1 then begin
 
+lp=138
+midpoint = JMIN_IN[lp]-1 + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
+print, lp,midpoint,' apex ht=', z_km[midpoint]
+;stop 
 
 if ( sw_save_grid eq 1 ) then  begin
   print,'saving grid to a file=',filename_grid_sav

@@ -8,9 +8,11 @@ pro read_plasma_bin,LUN,UT_hr, XIONN_m3,XIONV_ms1,TE_TI_k,VEXB,sw_debug $
 UT_sec=0L
 record_number=0L
 ; read plasma1
+if ( sw_lun[0] eq 1 ) then begin
      readf, LUN[0], record_number, UT_sec
  UT_hr = UT_sec /3600.
 print,' rec#',record_number,' UThr=',UT_hr,' UTs=', UT_sec
+endif ;( sw_lun[0] eq 1 ) then begin
 
 size_result=size(XIONN_m3)
 if ( sw_debug eq 1 ) then  $
@@ -29,9 +31,14 @@ NLP=size_result[2]
 if ( sw_debug eq 1 ) then  $
   print, 'read_plasma:NLP=',NLP
 
-if ( sw_lun[2] eq 1 ) then begin
+if ( sw_lun[2] eq 1 ) or (sw_lun[20] eq 1)  then begin
    jth=0                        ;o+
-   readu, LUN[2], dum
+
+   if ( sw_lun[2] eq 1 ) then $
+      readu, LUN[2], dum $
+   else if ( sw_lun[20] eq 1 ) then $ 
+      readu, LUN[20], dum
+ 
 
 
 
@@ -53,9 +60,14 @@ if sw_debug eq 1 then  begin
 endif ;sw_debug eq 1 then  begin
 endif ;( sw_lun
 
-if ( sw_lun[6] eq 1 ) then begin
+if ( sw_lun[6] eq 1 ) or (sw_lun[20] eq 1) then begin
    jth=1                        ;h+
-   readu, LUN[6], dum
+
+  if ( sw_lun[6] eq 1 ) then $
+     readu, LUN[6], dum $
+  else if ( sw_lun[20] eq 1 ) then $
+     readu, LUN[20], dum
+
    XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
    if sw_debug eq 1 then begin
       print, 'H+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
@@ -75,9 +87,14 @@ if ( sw_lun[6] eq 1 ) then begin
 endif                           ;( sw_lun
 
 if ( sw_dif eq 0 ) then begin
-   if ( sw_lun[8] eq 1 ) then begin
+   if ( sw_lun[8] eq 1 ) or (sw_lun[20] eq 1) then begin
       jth=2                     ;he+
-      readu, LUN[8], dum
+
+      if ( sw_lun[8] eq 1 ) then $
+         readu, LUN[8], dum $
+      else if ( sw_lun[20] eq 1 ) then $
+         readu, LUN[20], dum
+
       XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
       if sw_debug eq 1 then  begin
          print, 'He+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
@@ -98,9 +115,15 @@ endif                           ;   if ( sw_lun[8] eq 1 ) then begin
 
 
 
-   if ( sw_lun[9] eq 1 ) then begin
+   if ( sw_lun[9] eq 1 ) or (sw_lun[20] eq 1) then begin
      jth=3                        ;n+
-     readu, LUN[9], dum
+
+
+     if ( sw_lun[9] eq 1 ) then $
+        readu, LUN[9], dum $
+     else if ( sw_lun[20] eq 1 ) then $
+        readu, LUN[20], dum
+
      XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
      if sw_debug eq 1 then  begin
         print, 'n+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
@@ -119,9 +142,14 @@ endif                           ;   if ( sw_lun[8] eq 1 ) then begin
      endif                      ;sw_debug eq 1 then  begin
   endif                         ;( sw_lun
 
-   if ( sw_lun[10] eq 1 ) then begin
+   if ( sw_lun[10] eq 1 ) or (sw_lun[20] eq 1) then begin
      jth=4                        ;no+
-     readu, LUN[10], dum
+
+     if ( sw_lun[10] eq 1 ) then $
+        readu, LUN[10], dum $
+     else if ( sw_lun[20] eq 1 ) then $
+        readu, LUN[20], dum
+
 ;dbg print, 'debug dum =',dum[60,0]
      XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
      if sw_debug eq 1 then  begin
@@ -143,9 +171,14 @@ endif                           ;   if ( sw_lun[8] eq 1 ) then begin
      endif                      ;sw_debug eq 1 then  begin
    endif ;( sw_lun
 
-   if ( sw_lun[11] eq 1 ) then begin
+   if ( sw_lun[11] eq 1 ) or (sw_lun[20] eq 1) then begin
      jth=5                        ;o2+
-     readu, LUN[11], dum
+
+     if ( sw_lun[11] eq 1 ) then $
+        readu, LUN[11], dum $
+     else if ( sw_lun[20] eq 1 ) then $
+        readu, LUN[20], dum
+
      XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
      if sw_debug eq 1 then  begin
         print, 'O2+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
@@ -164,9 +197,14 @@ endif                           ;   if ( sw_lun[8] eq 1 ) then begin
      endif                      ;sw_debug eq 1 then  begin
   endif                         ;( sw_lun
 
-   if ( sw_lun[12] eq 1 ) then begin
+   if ( sw_lun[12] eq 1 )  or (sw_lun[20] eq 1) then begin
      jth=6                        ;n2+
-     readu, LUN[12], dum
+
+     if ( sw_lun[12] eq 1 ) then $
+        readu, LUN[12], dum $
+     else if ( sw_lun[20] eq 1 ) then $
+        readu, LUN[20], dum
+
      XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
      if sw_debug eq 1 then  begin
         print, 'n2+ XIONN_m3=',jth,XIONN_m3[jth,60,0]
@@ -185,9 +223,14 @@ endif                           ;   if ( sw_lun[8] eq 1 ) then begin
      endif                      ;sw_debug eq 1 then  begin
   endif                         ;( sw_lun
 
-   if ( sw_lun[13] eq 1 ) then begin
+   if ( sw_lun[13] eq 1 ) or (sw_lun[20] eq 1) then begin
      jth=7                        ;o+(2D)
-     readu, LUN[13], dum
+
+     if ( sw_lun[13] eq 1 ) then $
+        readu, LUN[13], dum $
+     else if ( sw_lun[20] eq 1 ) then $
+        readu, LUN[20], dum
+
      XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
      if sw_debug eq 1 then  begin
         print, 'o+(2D) XIONN_m3=',jth,XIONN_m3[jth,60,0]
@@ -206,9 +249,14 @@ endif                           ;   if ( sw_lun[8] eq 1 ) then begin
      endif                      ;sw_debug eq 1 then  begin
   endif                         ;( sw_lun
 
-   if ( sw_lun[14] eq 1 ) then begin
+   if ( sw_lun[14] eq 1 )  or (sw_lun[20] eq 1)  then begin
      jth=8                        ;o+(2P)
-     readu, LUN[14], dum
+
+     if ( sw_lun[14] eq 1 )  then $
+        readu, LUN[14], dum $
+     else if ( sw_lun[20] eq 1 ) then $
+        readu, LUN[20], dum
+
      XIONN_m3[jth,0:NPTS2D-1,0:NMP-1]=dum[0:NPTS2D-1,0:NMP-1]
      if sw_debug eq 1 then  begin
         print, 'o+(2P) XIONN_m3=',jth,XIONN_m3[jth,60,0]

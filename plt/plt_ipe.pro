@@ -15,12 +15,14 @@
 pro plt_ipe
 
 n_plt_min=0
-n_plt_max=1
-n_read_max=1L
+n_plt_max=2L
+n_read_max=3L
 runDuration= $
-;'0to4UT';
-'1day';hr';1day';
-sw_output2file=1 ;1:PNG' ;0:NONE';
+;'1hr';
+'1day';;
+;'6day';;
+runDate='20130316' ;20090115';
+sw_output2file=0 ;1:PNG' ;0:NONE';
 TEST = $
 ;'4to8';
 ;'swNeutral1O'
@@ -30,10 +32,36 @@ UserName = $
 'Naomi.Maruyama';Peggy.Li';Gerhard.Theurich';
 ;'Tzu-Wei.Fang';
 ;'Robert.Oehmke'
+;'Weiyu.Yang'
 
 rtNumber = $
+'63815';after NaN corrected
+;'110226';merging WAM density
+;'43381'
+;'138014';20170412 after bob newly commited the mediator
+;'94095_noZchange_output18h' ;before weiyu commit
+;'15669_Zchange_output18h' ;after weiyu commit
+;'74190';6dy bob's new compset
+;'44867';after peggy's correction 1dy
+;'79720';after peggy's correction 1hr
+;'77590';after Bob's correction with ori-startup with WAM den 1hr 20090115
+;'114127';Valery's startup withOUT WAM density 6dy 20090115
+;'119670';Valery's startup withOUT WAM density 6dy 20130316
+;'78053';Valery's startup withOUT WAM density 3dy 20130316
+;'80907';Valery's startup with WAM density 3dy 20130316
+;'89361';Valery's startup with WAM density 3dy 20090115
+;'75225';Valery's startup without WAM density 3dy
+;'78663';3dy run
+;'9733' ;20170111 after bob new revision
+;'115955' ;time step=1m
+;'94125' ;1dy all fields 80prcs
+;'84272' ;1dy no density 40p
+;'128509';1dy all fields 40p
+;'114035';12/22 after bug is removed
+;'10700' ;12/21 after extrapolation corrected in mediator(with bug!!!)
+;'98264' ;12/20 after extrapolation correction in IPE
 ;'118422';9/14 after peggy correction 
-'13204';9/12 before peggy correction 
+;'13204';9/12 before peggy correction 
 ;'44826'
 ;'135940'
 
@@ -43,13 +71,15 @@ rtNumber = $
 
 rundir=$
 ;UserName+'/ipe/runs/r336.2.2/trunk/run/ipe_S_'+rtNumber
- UserName+'/rt_'+rtNumber+'/swpc%20090115_'+runDuration+'_spacewx_gsm%wam%T62_ipe%80x170'
+ UserName+'/rt_'+rtNumber+'/swpc%'+runDate+'_'+runDuration+'_spacewx_gsm%wam%T62_ipe%80x170'
+; UserName+'/rt_'+rtNumber+'/swpc%'+runDate+'_nodensities_'+runDuration+'_spacewx_gsm%wam%T62_ipe%80x170'
 print, 'rundir=', rundir
 
 
 input_DIR0=$
+'/scratch3/NCEPDEV/swpc/save/Tzu-Wei.Fang/IPE/trunk_electrodynamics_44514_PPEF/run/ipe_S_05time_60degree/'
 ;'/scratch3/NCEPDEV/swpc/noscrub/'+rundir+'/'
-'/scratch3/NCEPDEV/swpc/scrub/'+rundir+'/'
+;'/scratch3/NCEPDEV/swpc/scrub/'+rundir+'/'
 ;'/scratch3/NCEPDEV/swpc/save/Tzu-Wei.Fang/IPE/trunk_electrodynamics_44514_6/run/ipe_S6_137521/'
 ;'/scratch3/NCEPDEV/swpc/save/Tzu-Wei.Fang/IPE/trunk_electrodynamics_44514_6/run/ipe_tgcm_4to8UT/'
 ;'/scratch3/NCEPDEV/swpc/save/Tzu-Wei.Fang/IPE/trunk_electrodynamics_44514_6/run/ipe_tgcm_0to4UT/'
@@ -59,7 +89,7 @@ input_DIR0=$
 ;'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/reu/tmp20130703reu/trunk/run/ipe_640_18702/';old reu
 ;'/scratch3/NCEPDEV/swpc/scrub/Gerhard.Theurich/rt_122363/swpc%20090115_1day_spacewx_gsm%wam%T62_ipe%80x170/'
 
-alt=350.
+alt=91.
 f107=130;165;100;72
 
 
@@ -83,11 +113,11 @@ endif ;( sw_output2file_ascii eq 1 ) then begin
 ;n_plt_max=97L ;for quick plot
 ;n_read_max=1L;97L
 print,' n_read_max', n_read_max
-plot_UT      =432000;691200;
-plot_UT_end=plot_UT+3600.*24.
+plot_UT    =559800 ;432000;691200;
+plot_UT_end=560400;plot_UT+3600.*24.*1.
 sw_quickplot=1L
 ;20140117; plot every X hour
-sw_hourly_plot=1
+sw_hourly_plot=0L
 plotXhr=1.0 
 if ( sw_hourly_plot eq 1 ) then begin
    print, 'plot every',plotXhr,' hour'
@@ -97,46 +127,52 @@ print,'n_read_freq=',n_read_freq
 
 title_res= $
 'low20120709';
-;'td20120709';
 ;'2xdyn';
+;'td20120709';
 ;'low'; 'high'
 
-sw_read_wind=1
+sw_read_wind=0
 ;endif ;( sw_output2file_ascii eq 1 ) then begin
 if ( sw_read_wind eq 1 ) then begin
    luntmp7=201
-   luntmp3=202
-   luntmp8=203
-   luntmp9=204
-   dirtmp7= $
-;'/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/reu/tmp20130717reu/';!input to IPE
-;      '/scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/'+TEST+'/trunk/run/ipe_'+UserName+'_'+rtNumber+'/' ;output from IPE
-;      '/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/'+TEST+'/run/'+rtNumber+'_ipe_theia_intel_'+UserName+'2_'+runDuration+'/'
-input_DIR0
-print,dirtmp7
-;input to IPE
-;   flnmtmp7=dirtmp7+'ut_input'
-;   flnmtmp3=dirtmp7+'wind_input'
-  flnmtmp7=dirtmp7+'ut_out4wind'
-  flnmtmp3=dirtmp7+'wind_out'
-;   flnmtmp8=dirtmp7+'tm_out' ;tn
-  flnmtmp9=dirtmp7+'on_out' ;on
+   ;luntmp3=202
+   luntmp8=203                  ;tn
+   luntmp9=204                  ;on
+   luntmp10=205                 ;n2
+   luntmp11=206                 ;o2
+   dirtmp7=input_DIR0
+   print,dirtmp7
+;
+   flnmtmp7=dirtmp7+'ut_out4wind' ;wam-ipe
+   ;flnmtmp3=dirtmp7+'wind_out'    ;wam-ipe
+   flnmtmp8=dirtmp7+'tn_out'      ;tn
+   flnmtmp9=dirtmp7+'on_out'      ;on
+   flnmtmp10=dirtmp7+'n2n_out'    ;n2
+   flnmtmp11=dirtmp7+'o2n_out'    ;o2
 
 ;ut
    openr, luntmp7, flnmtmp7, /GET_LUN
    print,'opening ',flnmtmp7
 ;wind
-   openr, luntmp3, flnmtmp3, /GET_LUN $
-          , /F77_UNFORMATTED
-   print,'opening ',flnmtmp3
+   ;openr, luntmp3, flnmtmp3, /GET_LUN $
+   ;       , /F77_UNFORMATTED
+   ;print,'opening ',flnmtmp3
 ;Tn
-;   openr, luntmp8, flnmtmp8, /GET_LUN $
-;          , /F77_UNFORMATTED
-;   print,'opening ',flnmtmp8
+   openr, luntmp8, flnmtmp8, /GET_LUN $
+         , /F77_UNFORMATTED
+   print,'opening ',flnmtmp8
 ;on
    openr, luntmp9, flnmtmp9, /GET_LUN $
           , /F77_UNFORMATTED
    print,'opening ',flnmtmp9
+;n2
+   openr, luntmp10, flnmtmp10, /GET_LUN $
+          , /F77_UNFORMATTED
+   print,'opening ',flnmtmp10
+;o2
+   openr, luntmp11, flnmtmp11, /GET_LUN $
+          , /F77_UNFORMATTED
+   print,'opening ',flnmtmp11
 endif                           ;( sw_read_wind eq 1 ) then begin
 
 fac_window=10.0
@@ -148,20 +184,20 @@ fac_window=10.0
 
 
 
-plot_type=3L ;0:contour; 1:ht profile; 2:LT-LAT contour; 3:LON-LAT contour; 4:refilling: 5:psphere, 6:tec
+plot_type=0L ;0:contour; 1:ht profile; 2:LT-LAT contour; 3:LON-LAT contour; 4:refilling: 5:psphere, 6:tec
 ;if plot_type eq 0 then begin
-  mp_plot=6-1L;1-1L;80-1L ; longitude sector to plot
+  mp_plot=64-1+1;1-1L;80-1L ; longitude sector to plot
 mpstart=mp_plot
 mpstop=mpstart
 mpstep=1
 
-  VarType_min=6
-  VarType_max=6;11
+  VarType_min=0
+  VarType_max=0;11
   VarType_step=1
 ;endif ;plot_type eq 0 then begin
 
 
-sw_debug=1L
+sw_debug=0L
 ;0:mag; 1:geo; 2:LT-maglat
 sw_frame=0L
 sw_dif=0L
@@ -192,10 +228,10 @@ version='3d'
 
 ;20161021: merging project
 fig_DIR ='/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/' ;theia
-n_file = 18L
+n_file = 19L
 input_flnm = ['','','','','','' $
 ,'','','','' $
-,'','','','','','','']
+,'','','','','','','','']
 input_DIR = input_flnm
 input_DIR[*]=input_DIR0
 input_DIR[1]='/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/grid/plt/';theia
@@ -203,7 +239,6 @@ LUN  = INTARR(n_file)
 sw_LUN  = INTARR(n_file)
 sw_lun[0:1]=1
 sw_lun[2]=1 ;00 o+
-sw_lun[4]=0 ;vo+
 sw_lun[6]=1 ;01 h+
 sw_lun[8]=1 ;02 he+
 sw_lun[9]=1 ;03 n+
@@ -214,10 +249,12 @@ sw_lun[13]=1 ;07 o+(2D)
 sw_lun[14]=1 ;08 o+(2P)
 sw_lun[3]=0 ;Te
 sw_lun[7]=0 ;Ti
+sw_lun[4]=0 ;vo+
 sw_lun[5]=0 ;vexbup
 sw_lun[15]=0 ;vexbe
 sw_lun[16]=0 ;vexbth
 sw_lun[17]=0 ;sunlon
+sw_lun[18]=0 ;sza, plasma17
 if ( sw_dif eq 1 ) then begin
 LUNq  = INTARR(n_file)
    input_flnmq =input_flnm
@@ -236,8 +273,9 @@ endif
 
 
 plot_DIR= $
-fig_DIR
+;fig_DIR
 ;fig_DIR+'rt_'+rtNumber+'/'
+fig_DIR+'fig/wam_ipe/'
 ;fig_DIR+'fig/'+TEST+'/'+rtNumber+'/'
 ;fig_DIR+'fig/'+rundir+'/'
 ;if ( sw_dif eq 1 ) then $
@@ -298,9 +336,11 @@ if ( sw_hr eq 1 ) then $
 
 ;if ( sw_read_wind eq 1 ) then $
 ;nm20141015: 1:positive northward
-   Vn_ms1=fltarr(3,NPTS2D,NMP)
-   on_m3=fltarr(   NPTS2D,NMP)
-   tn_k =fltarr(  NPTS2D,NMP)
+ Vn_ms1=fltarr(3,NPTS2D,NMP)
+ on_m3=fltarr(   NPTS2D,NMP)
+ n2n_m3=fltarr(   NPTS2D,NMP)
+ o2n_m3=fltarr(   NPTS2D,NMP)
+ tn_k =fltarr(  NPTS2D,NMP)
 ; Un_ms1=fltarr(MaxFluxTube,NLP,NMP)
 XIONN_m3 =fltarr(ISPEC,NPTS2D,NMP)
 XIONV_ms1=fltarr(2,NPTS2D,NMP) ;fltarr(ISPEV,NPTS2D,NMP)
@@ -432,9 +472,9 @@ n_plt=-1L
 ;d print,'call read_wind: JMIN_IN',JMIN_IN
   if ( sw_read_wind eq 1 ) then $
      read_wind, UT_hr $
-                ,Vn_ms1,tn_k,on_m3 $       ;input to IPE
+                ,Vn_ms1,tn_k,on_m3,n2n_m3,o2n_m3 $       ;input to IPE
 ;,Un_ms1 $ ;output to IPE
-                , luntmp7, luntmp3, luntmp8, luntmp9 $
+                , luntmp7, luntmp3, luntmp8, luntmp9, luntmp10, luntmp11 $
                 , MaxFluxTube, nlp, nmp, JMIN_IN,JMAX_IS ,sw_debug
 
 
@@ -473,15 +513,41 @@ if ( plot_type eq 0 ) or ( plot_type eq 2 ) or ( plot_type eq 4 )  then begin
    ipts=0L
    if ( sw_save le 1 ) then begin
 
+;dbg20170503
+flnmtmp100='NaNOnm3.dat'
+openw,luntmp100,flnmtmp100,/GET_LUN
+print,'!dbg20170503! opening file',flnmtmp100
+for mp=0,nmp-1 do begin
+for lp=0,nlp-1 do begin
+
+ipts=jmin_in[lp]-1
+printf,luntmp100, n_read,mp,lp,ipts,(ipts-JMIN_IN[lp]),xionn_m3[4,ipts,mp],z_km[ipts],on_m3[ipts:ipts+4,mp],glon_deg[ipts,mp],glat_deg[ipts,mp],tn_k[ipts,mp],n2n_m3[ipts,mp],o2n_m3[ipts,mp],FORMAT='("NH",i2,i3,i4,i7,i6,e12.4,f6.0,5e12.4,2f7.0,f6.0,2e12.4)'
+
+ipts=jmax_is[lp]-1
+printf,luntmp100, n_read,mp,lp,ipts,(ipts-JMIN_IN[lp]),xionn_m3[4,ipts,mp],z_km[ipts],on_m3[ipts-4:ipts,mp],glon_deg[ipts,mp],glat_deg[ipts,mp],tn_k[ipts,mp],n2n_m3[ipts,mp],o2n_m3[ipts,mp],FORMAT='("SH",i2,i3,i4,i7,i6,e12.4,f6.0,5e12.4,2f7.1,f6.0,2e12.4)'
+
+endfor ;lp
+endfor
+ ;mp
+free_lun,luntmp100
+
+
 
     for mp=mpstart,mpstop do begin ;NMP-1 do begin
-;for mp=72,78 do begin ;NMP-1 do begin
+
+
 
 ;0: Ne electron density[m-3]
       k=0L
       if ( sw_lun[2] eq 1 ) then begin
         for ipts=0L,NPTS2D-1L do begin 
+
+
           for jth=0,ISPEC-1L do begin
+
+
+
+
             plot_z[n_read,k,0,ipts] = plot_z[n_read,k,0,ipts] + XIONN_m3[jth,ipts,mp] 
           endfor;jth
         endfor ;ipts
@@ -520,7 +586,8 @@ k=4L
 jth=2-1
       for ipts=0L,NPTS2D-1L do $ 
 ;need to convert north-->southward as vo+ is positive southwrd
-       plot_z[n_read,k,0,ipts] = (-1.)*Vn_ms1[jth,ipts,mp] 
+;       plot_z[n_read,k,0,ipts] = (-1.)*Vn_ms1[jth,ipts,mp] 
+       plot_z[n_read,2,0,ipts] = (-1.)*Vn_ms1[jth,ipts,mp] ;north-->southward ;20170222
 endif ;( sw_read_wind eq 1 ) then begin
 ;tmp20121128 temporary o+ is assigned to 6(n+) instead of 3 for faster debug molecular ions
 ;      for ipts=0L,NPTS2D-1L do $ 
@@ -610,7 +677,7 @@ else if ( sw_quickplot eq 1 ) then $
   , sw_debug $
 ;20131209: output to ascii file
 , sw_output2file_ascii,luntmp,luntmp1,ncount $
-, Vn_ms1,tn_k,on_m3 $
+, Vn_ms1,tn_k,on_m3,n2n_m3,o2n_m3 $
 , n_plt_max,input_DIR0 $
 , alt,rundir $
 , VarType_max, VarType_min, VarType_step $
@@ -733,31 +800,32 @@ if  (sw_hourly_plot eq 1) AND ( (n_read MOD 30) ne 0 ) then continue
 n_plt = n_plt+1
 if ( sw_quickplot eq 0 ) then $
      contour_plot_2d    $ 
-  , JMIN_IN,JMAX_IS,Z_km,mlat_deg  $ 
-  , plot_z,plot_VEXB,n_plt   $
-  , UT_hr, plot_DIR, title_res $
-;,rundate,title_test $
-,sw_debug, title_hemi,sw_anim,mpstart,mpstop,mpstep, lt_hr2D, fac_window $
-  , sw_output2file, TEST $
-,VarType_min $
-,VarType_max $
-,VarType_step $
-;, input_DIR0,TEST,  rtNumber, UserName $
-else if ( sw_quickplot eq 1 ) then begin;$
-rundir = 'ipe_'+UserName+'_'+rtNumber
-print,'rundir=',rundir
+   , JMIN_IN,JMAX_IS,Z_km,mlat_deg  $ 
+   , plot_z,plot_VEXB,n_plt   $
+   , UT_hr, plot_DIR, title_res $
+   ;,rundate,title_test $
+   ,sw_debug, title_hemi,sw_anim,mpstart,mpstop,mpstep, lt_hr2D, fac_window $
+   , sw_output2file, TEST $
+   ,VarType_min $
+   ,VarType_max $
+   ,VarType_step $
+   ;, input_DIR0,TEST,  rtNumber, UserName $
+else if ( sw_quickplot eq 1 ) then begin ;$
+  rundir = 'ipe_'+UserName+'_'+rtNumber
+  print,'rundir=',rundir
      ctr_lat_ht_quick    $ 
-  , JMIN_IN,JMAX_IS,Z_km,mlat_deg  $ 
-  , plot_z,plot_VEXB,n_read   $
-  , UT_hr, plot_DIR, title_res $
-;,rundate,title_test $
-,sw_debug, title_hemi,sw_anim,mpstart,mpstop,mpstep, lt_hr2D, fac_window $
-  , sw_output2file $
-,VarType_min $
-,VarType_max $
-,VarType_step $
-,n_read_max $
-, input_DIR0,TEST,  rtNumber, UserName, glon_deg2D, rundir ;$
+        , JMIN_IN,JMAX_IS,Z_km,mlat_deg  $ 
+        , plot_z,plot_VEXB,n_read   $
+        , UT_hr, plot_DIR, title_res $
+        ;,rundate,title_test $
+        ,sw_debug, title_hemi,sw_anim,mpstart,mpstop,mpstep, lt_hr2D, fac_window $
+        , sw_output2file $
+        ,VarType_min $
+        ,VarType_max $
+        ,VarType_step $
+        ,n_read_max $
+        , input_DIR0,TEST,  rtNumber, UserName, glon_deg2D, rundir $
+,n_plt_min, on_m3
 endif
 
 
@@ -943,6 +1011,14 @@ endfor   ;mp_plot0=1-1,nmp-1,10  do begin
 print, 'saving old Te and Ti'
 te_ti_k_save = te_ti_k
 
+
+;nm20170208 plot plasmasphere for akebono comparison
+  endif else if ( plot_type eq 5 ) then begin 
+       ctr_plt_psphere    $ 
+          , JMIN_IN,JMAX_IS,Z_km,mlat_deg  $ 
+          , plot_z,plot_VEXB,n_read   $
+          , UT_hr, plot_DIR, title_res,rundate,title_test,sw_debug, title_hemi,sw_anim,mp_plot, lt_hr, fac_window $
+          , sw_output2file
 
 
   endif ;else if ( plot_type eq 1 ) then begin 

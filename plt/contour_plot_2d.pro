@@ -40,7 +40,7 @@ lpmax_perp_trans=149
 for i=mpstart, mpstop  do print,' mp', (i+1),' LT',lt_hr[i]
 
 HTmin=90.  ;min(yy)   ;75.   ;400. ;
-HTmax=2000. ;1.000000E+03;700.; 
+HTmax=600.;2000. ;1.000000E+03;700.; 
 ; plot range
 if ( title_hemi eq 'NH' ) then begin
   gLATmax=+90.;+90.;-10.;
@@ -49,7 +49,7 @@ endif else if ( title_hemi eq 'SH' ) then begin
   gLATmax=-20.;+90.;-10.;
   gLATmin=-35.;+50.;-gLATmax;-27.; 
 endif else if ( title_hemi eq 'glb' ) then begin
-  gLATmax=+90.
+  gLATmax=+50.;90.
   gLATmin=-gLATmax 
 endif else if ( title_hemi eq 'eq' ) then begin
   gLATmax=-15.;+90.;-10.;
@@ -77,7 +77,7 @@ NPAR = size_result[2]
 
 
 
-N_LDCT=39;70;39;33
+N_LDCT=70;39;70;39;33
 
 ;lp_strt=1;28-1;  0+1 ;58;0;63 ;1-1L
 lp_strt=0+1 ;58;0;63 ;1-1L
@@ -107,7 +107,8 @@ VarTitle=[ $
 'Ne',$
 'Te',$ 
 ;'Ti',$ 
-'Vo+',$ 
+;'Vo+',$ 
+'VN',$ 
 'O+','H+','He+','N+','NO+','O2+','N2+','O+2D','O+2P' $
 ,'Vo+' $
 ;'o+flux'$
@@ -118,7 +119,7 @@ VarUnit=[ $
 '[log!D10!N cm-3]',$
 '[K]', $ ;Te
 ;'[K]', $ ;Ti
-'[m/s]', $ ;vo+ ;20141015
+'[m/s]', $ ;northward wind, ;vo+ ;20141015
 '[log!D10!N cm-3]' $ ;3
 ,'[log!D10!N cm-3]' $ ;4
 ,'[log!D10!N cm-3]' $ ;5 he+
@@ -149,7 +150,7 @@ if ( sw_dif eq 0 ) then begin
 0.,$;3.2,$
 170.,$
 ;170., $
--400., $
+-50.,$;-400., $
 0., $ ;3o+
 0., $ ;4h+
 0., $ ;5he+
@@ -168,7 +169,7 @@ ARY_max0=[ $
 ;800. ,$
 1400. ,$
 ;1400. ,$
-+400. ,$
++50.,$;+400. ,$
 1.28, $ ;3o+
 1.9E-3, $ ;4h+
 4., $ ;5he+; 5.7E-4, $ ;5he+
@@ -390,7 +391,7 @@ if ( VarType eq 0 ) OR ( VarType ge 3 ) then begin
   else $ 
      Value= ALOG10( 0.1 )
 ;20131204
-;Value=plot_z[n_read,VarType, 0,ipts]*1.0E-12
+Value=plot_z[n_read,VarType, 0,ipts] ;*1.0E-12  
 
 endif else if ( VarType eq 1 ) or ( VarType eq 2 ) then $ ;Te/i
   Value = plot_z[n_read,VarType,0,ipts] ;

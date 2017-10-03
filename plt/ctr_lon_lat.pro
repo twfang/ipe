@@ -18,12 +18,14 @@ pro ctr_lon_lat $
 
 utHrPlt0=getenv('utHrPlt0')
 
+sw_followSed=0
+;if sw_followSed eq 1 then begin 
 ;following a SED flux tube
-mpSed=20;imin
-lpSed=35;jmin
+   mpSed=20                     ;imin
+   lpSed=35;jmin
+;endif
 
-
-; print ,'sw_output2file',sw_output2file
+if ( sw_debug eq 1 ) then  print ,'sw_output2file',sw_output2file
 imageFmt='png' ;(default) or 'jp2' ;jpeg2000 (although viewer is not available on theia...)
 
 ;read flux
@@ -33,12 +35,13 @@ lmfl=fltarr(80,nlp1)
 rd_fl, 80,nlp1,lmfl,sw_debug
 endif 
 
-print, 'ht_plot=', ht_plot
+if ( sw_debug eq 1 ) then print, 'ht_plot=', ht_plot
 
-which_hem='NH';SH';
+which_hem=getenv('which_hem') ;'NH';SH';
 
 ;1:exb; 2:phi the
 sw_arrow=getenv('sw_arrow')
+print,'sw_arrow',sw_arrow
 ;sw_read_sunlon=getenv('sw_read_sunlon')
 sw_polar_contour=getenv('sw_polar_contour')
 sw_polar_contour_output=0
@@ -54,7 +57,7 @@ ltimemax=15.
 mlatmax=45.
 ;factor=1.0E-11;for E-region plot
 factor=getenv('factor_density') ;for density
-print,' factor=', factor
+print,' factor_density=', factor
 ; remember to modify zmin/max
 
 ;debug20140108
@@ -74,18 +77,20 @@ print,'VarType=',VarType
 
 sw_range=1L
 nano=1.0E-9
-unit=['[*10^-11 m-3]',' [K]',' [K]',$
-      '[*10^-5 cm-3]',$ ;o+
-      '[*10^-5 cm-3]',$ ;no+
-;      '[*10^-5 cm-3]',$ ;o2+
-;'[m-3]',$
-;'[m/s]',$  ;viup
+unit=['[10^-12 m-3]',$
+' [K]',$
+' [K]',$
+'[*10^-5 cm-3]',$ ;o+
+'[*10^-5 cm-3]',$ ;no+
+       ;'[*10^-5 cm-3]',$ ;o2+
+       ;'[m-3]',$
+'[m/s]',$  ;viup
 ;'[m/s]',$
-'[X10^8 cm^2 s^-1 ]',$ ;o+ flux
+;'[X10^8 cm^2 s^-1 ]',$ ;o+ flux
 ;'[X10^8 cm^2 s^-1 ]',$ ;h+ flux
-;'[m/s]',$
-;'[*10^-11 m-3]',$
-'[log10 cm-3]',$ ;nmf2
+'[m/s]',$
+'[*10^-11 m-3]',$
+;'[log10 cm-3]',$ ;nmf2
 ;'[km]'] ;[nA/m2]'];[nA/m2]' ;20140108
 '[X10^8 cm^2 s^-1 ]',$ ;]
 '[TECU]' ];tec
@@ -125,15 +130,17 @@ if ( sw_arrow ge 1 ) then begin
 endif
 
 ;VarTitle=['Ne','Te','Ti','o+','NO+','O2+','Vpar_o+','NmF2','HmF2']
-VarTitle=['Ne','Te','Ti',$
+VarTitle=['Ne',$
+'Te',$
+'Ti',$
 'No+',$
 'Nno+',$
 ;'No2+',$
 ;'Vi!DUP!N',$
-;'UN',$
+'UN',$
 ;'Vi!DE!N',$
-;'VN',$
-'OpFlux',$
+'VN',$
+;'OpFlux',$
 ;'h+ flux',$
 ;'Vi!DEQ!N',$
 'NmF2',$
@@ -176,13 +183,14 @@ for lp=0,NLP-1 do begin
       else if ( VarType eq 5 ) then $
         plot_zz[mp,lp] =$
 ;VEXB[mp,lp,0] $;[m/s] ;eastward  ;20141104
-;Vn_ms1[1-1,i,mp]*fac_wind $;[m/s] ;eastward  ;20140108
+Vn_ms1[1-1,i,mp]*fac_wind $;[m/s] ;eastward  ;20140108
 ;                         XIONN_m3[5,i,mp]*factor  $ ;o2+
-XIONN_m3[0,i,mp]*1.E-6 * XIONV_ms1[0,i,mp]*1.E+2 *1.E-8 $;o+ flux: o+ * V//o+[m/s]--> X10^8 cm^2 s^-1
+;XIONN_m3[0,i,mp]*1.E-6 * XIONV_ms1[0,i,mp]*1.E+2 *1.E-8 $;o+ flux: o+ * V//o+[m/s]--> X10^8 cm^2 s^-1
       else if ( VarType eq 6 ) then $
         plot_zz[mp,lp] =$
 ;VEXB[mp,lp,1] ;[m/s] ;southward,equatorward  ;20141104
-Vn_ms1[2-1,i,mp]*(-1.)*fac_wind ;[m/s] ;north-->southward
+;Vn_ms1[2-1,i,mp]*(-1.)*fac_wind ;[m/s] ;north-->southward
+Vn_ms1[2-1,i,mp] ;[m/s] ;northward
 ;XIONN_m3[1,i,mp]*1.E-6 * XIONV_ms1[1,i,mp]*1.E+2 *1.E-8 ;h+ flux: o+ * V//o+[m/s]--> X10^8 cm^2 s^-1
  
       if ( sw_frame eq 0 ) then begin ;magnetic
@@ -241,11 +249,10 @@ tec=0.000
        endif    
        
 
-;dbg20151214
-;if MAX does not work in auroral region
+;dbg20151214 if MAX does not work in auroral region
    if ( VarType eq 7 and Z_km[Max_Subscript] le 200. and lp le 30) then begin
       max_subscript_save = max_subscript
-      print, ut_hr,' invalid hmf2!',Z_km[Max_Subscript_save],' mp=',mp,lp,mlat_deg[i]
+if (sw_debug eq 1) then      print, ut_hr,'NH invalid hmf2!',Z_km[Max_Subscript_save],' mp=',mp,lp,mlat_deg[Max_Subscript_save]
 
 maxnel=0.00
       for ii=(max_subscript_save+70),in, -1 do begin
@@ -261,11 +268,11 @@ maxnel=0.00
             
       endfor
 ;d  plot, nel[in:max_subscript_save+50], z_km[in:max_subscript_save+50]
-;d  output_png, 'dbg20151214strangePatchProfile0_87.png'
-print,'corrected nmf2', maxnel, ' hmf2=',z_km[max_subscript]
+;d  output_png, 'dbg20151214strangePatchProfile0_87NH.png'
+if (sw_debug eq 1) then print,'NH corrected nmf2', maxnel, ' hmf2=',z_km[max_subscript]
 ;d then stop
    endif
-;endif ; _ ut_hr ge 150.50 then begin
+
 
 
 ;dbg20160505: follow SED flux tube
@@ -273,11 +280,10 @@ if ( sw_output2file_ascii eq 2 ) AND ( mp eq mpSed ) AND ( lp eq lpSed ) then $
 printf,luntmp,UT_hr,glat_deg[Max_Subscript,mp],glon_deg[Max_Subscript,mp],nel[Max_Subscript],Z_km[Max_Subscript]
 
 
-;       print,'NH: NmF2', result,Max_Subscript, nel[Max_Subscript],Z_km[Max_Subscript],mp,lp
        if ( VarType eq 7 ) then $
          plot_zz[mp,lp] = $
-; nel[Max_Subscript] * factor $ ;NmF2
- ALOG10( nel[Max_Subscript]*1.0E-6 ) $ ;NmF2 m-3-->cm-3
+ nel[Max_Subscript] * factor $ ;NmF2
+; ALOG10( nel[Max_Subscript]*1.0E-6 ) $ ;NmF2 m-3-->cm-3
  ; nel[Max_Subscript] * 1.0E-11  $ ;NmF2 m-3-->cm-3-->X10^5
 
 
@@ -310,16 +316,16 @@ Z_km[Max_Subscript] $   ;hmF2
   endelse ;( VarType lt 7 ) then begin
 
 ;nm20140701 NH
-if ( sw_arrow ge 1 ) then begin
-   plot_u[mp,lp]=VEXB[mp,lp,0] ;+east
-   plot_v[mp,lp]=VEXB[mp,lp,1] ;+southward, equatorward
+  if ( sw_arrow ge 1 ) then begin
+     plot_u[mp,lp]=VEXB[mp,lp,0] ;+east
+     plot_v[mp,lp]=VEXB[mp,lp,1] ;+southward, equatorward
 
-if ( sw_debug eq 1 ) then  print,mp,lp,' NH U=',  plot_u[mp,lp],'V=',  plot_v[mp,lp]
-endif
+     if ( sw_debug eq 1 ) then  print,mp,lp,' NH U=',  plot_u[mp,lp],'V=',  plot_v[mp,lp]
+  endif ;if ( sw_arrow ge 1 ) then begin
 
 
 
-  endfor ;i=in,midpoint, istep  do begin
+endfor                          ;i=in,midpoint, istep  do begin
 
 ;SH  
   lps = NLP-1 + (NLP-1-lp)
@@ -347,13 +353,14 @@ endif
       else if ( VarType eq 5 ) then $
         plot_zz[mp,lps] =$
 ;VEXB[mp,lp,0] $;[m/s] ;eastward  ;20141104
-;Vn_ms1[1-1,i,mp]*fac_wind $;[m/s] ;eastward  ;20140108
-                          XIONN_m3[5,i,mp]*factor $
+Vn_ms1[1-1,i,mp]*fac_wind $;[m/s] ;eastward  ;20140108
+;                          XIONN_m3[5,i,mp]*factor $
 ;XIONN_m3[0,i,mp]*1.E-6 * XIONV_ms1[0,i,mp]*1.E+2 *1.E-8 $ ;o+ flux: o+ * V//o+[m/s]--> X10^8 cm^2 s^-1
       else if ( VarType eq 6 ) then $
         plot_zz[mp,lps] = $
 ;VEXB[mp,lp,1]*(-1.) ;[m/s] ;converted to northward,equatorward  ;20141104
-Vn_ms1[2-1,i,mp]*(-1.)*fac_wind ;[m/s] ;north-->southward
+;Vn_ms1[2-1,i,mp]*(-1.)*fac_wind ;[m/s] ;north-->southward
+Vn_ms1[2-1,i,mp] ;[m/s] ;northward
 ;XIONN_m3[1,i,mp]*1.E-6 * XIONV_ms1[1,i,mp]*1.E+2 *1.E-8 ;h+ flux: h+ * V//h+[m/s]--> X10^8 cm^2 s^-1
 
        if ( sw_frame eq 0 ) then begin ;magnetic
@@ -385,9 +392,6 @@ Vn_ms1[2-1,i,mp]*(-1.)*fac_wind ;[m/s] ;north-->southward
    endif else begin ; ( VarType ge 7 ) then begin
      for jth=0,ISPEC-1 do  nel[i]=nel[i]+XIONN_m3[jth,i,mp]
 
-;dbg20151116
-;d print,'dbg20151116 SH', i,nel[i],mp,lp
-
      if ( i eq midpoint ) then  begin
 
 
@@ -399,14 +403,52 @@ if count ne 0 then begin
   STOP
 endif
 
-
-
        result = MAX( nel,Max_Subscript ) ;find NmF2
-;d print,'SH: NmF2', result,Max_Subscript, nel[Max_Subscript],Z_km[Max_Subscript],mp,lp
+
+; calculate tec [m-2] 
+       if ( VarType eq 9 ) then begin
+tec=0.000
+          for ii=in,midpoint-1 do begin
+             tec = tec + nel[ii] * ( z_km[ii+1] - z_km[ii] )*1.e+3
+          endfor            ;ii 
+       endif 
+
+
+;SH dbg20151214 if MAX does not work in auroral region
+;   if ( VarType eq 7 and Z_km[Max_Subscript] le 200. and lps ge ny_max-30) then begin
+;tmp20170913 temporary lower the boundary
+   if ( VarType eq 7 and Z_km[Max_Subscript] le 190. and lps ge ny_max-30) then begin
+      max_subscript_save = max_subscript
+      print, ut_hr,'SH  invalid hmf2!',Z_km[Max_Subscript_save],' mp=',mp,lp,lps,mlat_deg[Max_Subscript_save]
+
+maxnel=0.00
+      for ii=(max_subscript_save-70),is, +1 do begin
+         print, ii, nel[ii],z_km[ii],mlat_deg[ii]
+         if nel[ii] gt maxnel then begin
+            maxnel=nel[ii]
+            max_subscript = ii
+            continue ;continue the next ii loop
+         endif else begin 
+            break ;exit from for ii loop
+
+         endelse
+            
+      endfor
+  plot, nel[max_subscript_save-50:is], z_km[max_subscript_save-50:is]
+  output_png, 'dbg20151214strangePatchProfile0_87SH.png'
+print,'SH corrected nmf2', maxnel, ' hmf2=',z_km[max_subscript]
+stop
+endif
+
+;dbg20160505: follow SED flux tube
+if ( sw_output2file_ascii eq 2 ) AND ( mp eq mpSed ) AND ( lp eq lpSed ) then $
+printf,luntmp,UT_hr,glat_deg[Max_Subscript,mp],glon_deg[Max_Subscript,mp],nel[Max_Subscript],Z_km[Max_Subscript]
+
+
        if ( VarType eq 7 ) then $
          plot_zz[mp,lps] = $
-;nel[Max_Subscript] * factor  $ ;NmF2
-ALOG10(nel[Max_Subscript] * 1.0E-6 ) $ ;NmF2 m-3-->cm-3
+nel[Max_Subscript] * factor  $ ;NmF2
+;ALOG10(nel[Max_Subscript] * 1.0E-6 ) $ ;NmF2 m-3-->cm-3
 ; nel[Max_Subscript] * 1.0E-11  $ ;NmF2 m-3-->cm-3-->X10^5
        else if ( VarType eq 8 ) then $
 ;dbg20150323: flux data not available for now..for SH
@@ -436,11 +478,11 @@ Z_km[Max_Subscript]    ;hmF2
 
 ;nm20140701
 ; is lp  or lps???: VEXB does not have dimension as big as lps 
-if ( sw_arrow ge 1 ) then begin
-   plot_u[mp,lps]=VEXB[mp,lp,0] ;+east
-   plot_v[mp,lps]=VEXB[mp,lp,1]*(-1.) ;converted to +NORTHward, equatorward
+   if ( sw_arrow ge 1 ) then begin
+      plot_u[mp,lps]=VEXB[mp,lp,0]    ;+east
+      plot_v[mp,lps]=VEXB[mp,lp,1]*(-1.) ;converted to +NORTHward from equatorward
 ;print,'SH U=',  plot_u[mp,lps],'V=',  plot_v[mp,lps]
-endif
+   endif ;   if ( sw_arrow ge 1 ) then begin
 
 
 
@@ -460,7 +502,8 @@ if ( sw_range eq 1 ) then begin
 ;        zmax=7.5e+11
 ;        zmax=2.5e+1 ;E-region
 ;        zmax=0.00367342 ;E-region120km to validate aurora
-        zmax=2. ;F-region to check global Ne 
+        zmax=0.10 ;E-region120km to validate aurora
+;        zmax=2. ;F-region to check global Ne 
 ;        zmax=9.0E+11 ;dbg200km
 ;        zmax=5.58e+12
 ;92km
@@ -470,8 +513,8 @@ if ( sw_range eq 1 ) then begin
 ;        zmin=1.e+10
 ;        zmax=1.77e+12
       endif else if ( VarType ge 1 ) AND (VarType le 2 ) then begin 
-        zmin=810.;700.
-        zmax=1002.;2500.
+        zmin=820.;700.
+        zmax=1000.;2500.
       endif else if ( VarType eq 3 ) then begin
         zmin=0.
         zmax=0.0701983
@@ -483,10 +526,10 @@ if ( sw_range eq 1 ) then begin
         zmin=0.
         zmax=1.67968
       endif else if ( VarType eq 5 ) then begin 
-;        zmin=-300.;zonal
-;        zmax=+300.
-        zmin=-1.;o+ flux
-        zmax=+1.
+        zmin=-300.;zonal
+        zmax=+300.
+;        zmin=-1.;o+ flux
+;        zmax=+1.
 ;        zmin=0. ;o2+
 ;        zmax=0.652042
       endif else if ( VarType eq 6 ) then begin 
@@ -495,8 +538,8 @@ if ( sw_range eq 1 ) then begin
 ;        zmin=-1.;h+ flux
 ;        zmax=+1.
       endif else if ( VarType eq 7 ) then begin 
-        zmin=5.5  ;X10^5  el cm-3
-        zmax=6.1
+        zmin=0.1
+        zmax=10.0
       endif else if ( VarType eq 8 ) then begin 
 ;hmf2
 ;        zmin=100.
@@ -632,7 +675,7 @@ else if ( which_hem eq 'SH' ) then $
 
    rim_lat = plot_yy[mp,jj]
 ;dbg   rim_lat = plot_yy[mp,krmax]
-print,krmax,' rim_lat[deg]=', rim_lat
+print,'krmax=',krmax,' rim_lat[deg]=', rim_lat
 
 ;dbg20141203
 ;dbg for i=1-1,krmax-1 do print, i, plot_yy[0,i]
@@ -681,8 +724,11 @@ for i=0,nx_max-1   do begin
   if ( mlt[i] ge 24. ) then  mlt[i] = mlt[i] - 24.
 
 ;if ( i eq mp ) then 
-; print,i,' mlt', mlt[i]
+;if (sw_debug eq 1) then  print,'mp=',(i+1),' mlt[hr]=', mlt[i]
 endfor
+;STOP
+if (sw_debug eq 1) then  print, 'sunlons1=', sunlons1
+;stop ;debug
 
 mlt = mlt*!PI/12.0D0   ;MLT_hr --> THETA[rad]
 
@@ -690,9 +736,10 @@ mlt = mlt*!PI/12.0D0   ;MLT_hr --> THETA[rad]
 ;shift the MLT so that 00MLT comes at the bottom of the plot!
 ;clockwise 90deg rotation
 mlt = mlt - !PI*0.50D0       ;(radian)
-print,mp,' mlt(mp)', mlt[mp]
-print,mp,lp,' plot_zz', plot_zz[mp,lp]
-
+if (sw_debug eq 1) then begin
+  print,mp,' mlt(mp)', mlt[mp]
+  print,mp,lp,' plot_zz', plot_zz[mp,lp]
+endif
 ;
 plot_zz_plr = fltarr(nx_max,krmax)
 zzmax=-10000.
@@ -737,8 +784,8 @@ for i=0,nx_max-1  do begin
 
    endfor
 endfor
-print, 'ZZMAX',zzmax,imax,jmax
-print, 'ZZMIN',zzmin,imin,jmin
+print, 'ZZMAX',zzmax,' imax=',imax,' jmax=',jmax
+print, 'ZZMIN',zzmin,' imin=',imin,' jmin=',jmin
 
 col_min = 0.00
 col_max = 255.999
@@ -758,32 +805,36 @@ POLAR_CONTOUR_qhull  $
 
 ;20141112 test velovect
 if  sw_arrow ge 1 then begin 
-loadct, 0
+   loadct, 0
 ;ArrowCol=255
-u=fltarr(nx_max,krmax)
-v=fltarr(nx_max,krmax)
-for j=0,krmax-1 do begin
-  for i=0,nx_max-1 do begin
-    u[i,j]= plot_u[i,j]
+   u=fltarr(nx_max,krmax)
+   v=fltarr(nx_max,krmax)
+   for j=0,krmax-1 do begin
+      for i=0,nx_max-1 do begin
+         u[i,j]= plot_u[i,j]
 ;print, 'check u=',u[i,j],i,j
-    v[i,j]= plot_v[i,j]
-  endfor ;i
-endfor ;j
+         v[i,j]= plot_v[i,j]
+      endfor                    ;i
+   endfor                       ;j
 
-if  sw_arrow eq 1 then $ 
+;arrow ref location
+   X0_arrow=(90.-rim_lat) * 0.563       ;+28.
+   Y0_arrow=(90.-rim_lat) * 0.9451 * (-1.) ;-47.
+   if  sw_arrow eq 1 then $ 
 ;plot VEXB
-  draw_arrow_test, u, v, mlt, comlat, rim_lat, sw_debug $
-else if  sw_arrow eq 2 then $ 
+      draw_arrow_test, u, v, mlt, comlat, rim_lat, sw_debug $
+      ;,x0_arrow,y0_arrow $
+   else if  sw_arrow eq 2 then $ 
 ;plot phi and theta for validation
-  draw_arrow_test1, u, v, mlt, comlat $
-,rim_lat,sunlons1,nmp,nlp,sw_debug $
-,TEST,rundir,LUN9001,n_read
+      draw_arrow_test1, u, v, mlt, comlat $
+      ,rim_lat,sunlons1,nmp,nlp,sw_debug $
+      ,TEST,rundir,LUN9001,n_read
 
 
 
 ;redblue
-loadct,n_ldct
-endif ; sw_arrow eq 1 then begin 
+   loadct,n_ldct
+endif                           ; sw_arrow eq 1 then begin 
 
 ;debug20140703: find the MIN Nmf2, MAX Te?
 print, 'MAX ZZ=', MAX (plot_zz_plr, I)
@@ -803,13 +854,14 @@ if sw_debug eq 1 then print, 'the minimum value of ZZ is at location ('+STRTRIM(
 
 ;following a SED flux tube
 ;debug20150513: identify where is (mp,lp) flux tube is located?
+if sw_followSed eq 1 then begin 
 oplot, /POLAR,  comlat[lpSed-1:lpSed], mlt[mpSed-1:mpSed] $
 , THICK=8.0, LINESTYLE = 0  $
 , COLOR = 245. ;SED flux tube
 ;, COLOR = 150. ;MIN
 ;, COLOR = 40. ;MAX
 print, '20150513SEDB: mp=',mpSed,' lp=',lpSed,'  mlat=',plot_yy[mpSed,lpSed],' MLT=',mlt[mpSed]
-
+endif ;sw_followSed eq 1 then begin 
 
 print,'TEST=',TEST, ' rundir=', rundir
 xyouts, 0.70, 0.05, TEST+' '+rundir $
@@ -841,21 +893,21 @@ contour,plot_zz,plot_xx,plot_yy $
 
 
 if ( sw_arrow eq 1 ) then begin
-loadct, 0
-ArrowMax=300.
-velovect, plot_u, plot_v, plot_xx, plot_yy $
-,/irregular $
+   loadct, 0
+   ArrowMax=300.
+   velovect, plot_u, plot_v, plot_xx, plot_yy $
+             ,/irregular $
 ;, min_value=-WINDMX, max_value=WINDMX $
 ;, xmargin=9, ymargin=5  $
 ;, pos=[X0/X_SIZE, Y0/Y_SIZE, (X0+dX)/X_SIZE, (Y0+dY)/Y_SIZE] $
-, xstyle=5, ystyle=5 $
+             , xstyle=5, ystyle=5 $
 ;, MISSING=WINDMX $
-, length=15. $ ;factor ArrowLength $
-, /overplot $
-, color=0 $ ;ArrowCol $
-,        CLIP=clip $
-, MAXMAG=ArrowMax, ArrowMax_saved ;110904: added by naomi
-endif
+             , length=15. $     ;factor ArrowLength $
+             , /overplot $
+             , color=0 $        ;ArrowCol $
+             ,        CLIP=clip $
+             , MAXMAG=ArrowMax, ArrowMax_saved ;110904: added by naomi
+endif ;if ( sw_arrow eq 1 ) then begin
 
 
 if ( sw_debug eq 1 ) then  print,'MAX=',MAX(plot_zz),' MIN=',MIN(plot_zz)
@@ -890,10 +942,11 @@ if ( sw_output2file eq 1 ) then begin
       title_plr='plr'+which_hem
 
 utDisp=ut_hr-utHrPlt0
+print,'utDisp=',utDisp,' ut_hr=',ut_hr,' utHrPlt0=',utHrPlt0
 if utDisp lt 10. then $
-   stringUt='_ut0'+STRTRIM( string(utDisp, FORMAT='(F6.2)'),1 ) $
+   stringUt='_ut0'+STRTRIM( string(utDisp, FORMAT='(F8.4)'),1 ) $
 else $; if utDisp ge 10.
-   stringUt='_ut'+STRTRIM( string(utDisp, FORMAT='(F6.2)'),1 )
+   stringUt='_ut'+STRTRIM( string(utDisp, FORMAT='(F8.4)'),1 )
 filename_image=plot_DIR+VarTitle[VarType]+'_ht'+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+stringUt+title_frame+'.'+title_plr+'.'+rundir+'.'+imageFmt
 
 print,'n_read',n_read,filename_image

@@ -6,16 +6,17 @@
 pro plt_efv2
 sw_debug=0L
 sw_output2file=1L ;1'PNG' ;0NONE';
-sw_plt_cntr=1L
+sw_output2save=1L ;1save ;0NONE';
+sw_plt_cntr=1L ;1:rectangular; 2:polar
 sw_plt_exb=0L ;1
 version=3  ;2: 20120530; 3:20121120
 sw_180=0L ;1:-180<+180; 0:0~360
 title_res=$
-;'low20120709'
-'2xdyn';'
+'low20120709'
+;'2xdyn';'
 ;low';dyn';'low' ; 'high'
-utime_min=550800.;547200.;###CHANGE
-utime_max=utime_min+3600.;to plot ExB time variation on the 6th panel 
+utime_min=0;864000;550800.;547200.;###CHANGE
+utime_max=utime_min;+600.;to plot ExB time variation on the 6th panel 
 ;t if sw_plt_exb eq 0 then begin 
   iplot_max=6-1L 
 ;t  freq_plot_sec=900
@@ -23,34 +24,38 @@ utime_max=utime_min+3600.;to plot ExB time variation on the 6th panel
 ;t  iplot_max=6-2L
   freq_plot_sec=utime_max-utime_min
 ;t endif
-runDIR='/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/';before
+;runDIR='/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/';before
 ;runDIR='/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/' ;after
+runDIR='/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/' ;20170916
 figDIR=runDIR
 TEST0='3d'
-TEST1='trans'
-;TEST2='tmp20151117/trunk/run/1449700999_ipe_theia_intel_serial2' ;before
+;TEST1='JQIPEr420' ;ref20170727
+;TEST1='IPEOptimization' ;testing20170917
+TEST1='ed1130Issue' ;testing20170918
+;
 ;TEST2='debugE20160401/run/1459548926_ipe_theia_intel_serial2' ;after
-TEST2='tmp20151117/trunk/run4/1459553660_ipe_theia_intel_serial2' ;before
+;TEST2='tmp20151117/trunk/run4/1459553660_ipe_theia_intel_serial2' ;before
 ;TEST2='tmp20151117/trunk/run4/1459554325_ipe_theia_intel_serial2' ;after
-runDATE='20160401'
-
-input_DIR=$
-runDIR+TEST2+'/'
+;TEST2='20170726mergeIPEOptimization2SwpcIpeTest/JQIPEr420/IPEr420/run/1501180820_ipe_theia_intel_parallel_464' ;20170727
+;TEST2='20170811testDevelopmentV3/ipe/run/1505642824_ipe_theia_intel_parallel_464' ;20170916
+;TEST2='20170811testDevelopmentV3/ipe/run/1505719032_ipe_theia_intel_serial' ;20170918
+TEST2='20170811testDevelopmentV3/ipe/run/1505733014_ipe_theia_intel_parallel_464' ;20170918;module_interp_poten.f
+;runDATE='20170727'
+;runDATE='20170917'
+runDATE='20170918'
 
 plot_DIR=$
 ;'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/fig/ef/20150317/after20160401/'
-'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/fig/ef/20150317/before20151210/'
-;input_DIR
-;runDIR+'ipe4gsd/fig/' ;gsd
-;figDIR+'fig/'+TEST2+'/'
+;'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/fig/ef/20150317/before20151210/'
+'/scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/fig/20170916/'+TEST1+'/' ;20170916
 ;runDIR+'fig/efield/'+TEST2+'/'
-
-print,' plot_DIR', plot_DIR
+print,' plot_DIR=', plot_DIR
+input_DIR=runDIR+TEST2+'/'
 
 
 utime=0L
 freq_output=5 ;min
-n_read_max=97L; ###CHANGE
+n_read_max=1L; ###CHANGE
 utsec_save=fltarr(n_read_max)
 utsec_save[*]=-9999L
 
@@ -226,7 +231,7 @@ if ( utime gt utime_max ) then BREAK ;exit from while read loop
 ;20140225 separated out from plt_efv2.pro
 if ( sw_plt_cntr eq 1 ) then $
    plt_cntr_fill $
- , iplot_max,mlon90_2d,mlat90_2d, sw_180,mlat130,poten,ed1130,ed2130,ed190,ed290,sw_debug,mlon130,mlat90_0,utime,runDATE,TEST2,plot_DIR,mp,lp, sw_output2file $
+ , iplot_max,mlon90_2d,mlat90_2d, sw_180,mlat130,poten,ed1130,ed2130,ed190,ed290,sw_debug,mlon130,mlat90_0,utime,runDATE,TEST2,plot_DIR,mp,lp, sw_output2file,sw_output2save $
 
 else if ( sw_plt_cntr eq 2 ) then $
    plt_cntr_fill_plr $

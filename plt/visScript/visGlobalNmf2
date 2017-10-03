@@ -1,0 +1,326 @@
+#!/bin/csh
+### ./visGlobalNmf2  <1:jid#min> <2:jid#max> <3:sw_qsubidl>
+###NOTE! this must be executed in in qsub
+###(1) run it on computer node as an interactive job: 
+### $ ~/qsubinteractive 00:30:00 debug
+### $ then execute this script, or
+###(2) submit a job (of this script) with qsub command 
+###purpose: validate Jacques' runs for with/without he+ & n+ dynamics
+###v5: read jidX(X=20~27) of output runs, extract runDIR, f107, nday for passing them onto IDL program, plt_ipe_sh,
+### to plot o+, vo+, wind
+###copied from r336tmp/trunk/run/script_td
+###status: completed
+###date: 20170313
+###
+###nm20170815: 0:original IO(runs before20170808); 1:george's new restart IO
+setenv sw_version_io 0
+#setenv HPATH     /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe
+setenv HPATH     /scratch3/NCEPDEV/swpc/scrub/
+#setenv TEST      IPEr405
+#setenv TEST      IPEr420
+#setenv TEST      20170314Init4Jacques
+#setenv TEST      mpi20160330v4
+#setenv TEST  IPEr420  ##20170727 JQ reproduction
+#setenv TEST  testing ##20170727 after merged
+#setenv TEST  20170802debugNaomiBranch ##20170802
+#setenv TEST  20170803testDevelopment ##20170803
+#setenv TEST  20170808testDevelopmentV2 ##20170809
+setenv TEST  20170811testDevelopmentV3 ##20170811
+#setenv TEST      neutralIo20170315
+#setenv TEST      tmp20150730
+
+#setenv UserName  Jacques.Middlecoff 
+setenv UserName  Naomi.Maruyama
+
+#setenv RPATH  ${HPATH}/runs/$TEST/trunk/run
+#setenv RPATH  /scratch3/BMC/gsd-hpcs/$UserName/$TEST/run/
+#setenv RPATH  /scratch3/NCEPDEV/stmp2/$UserName/$TEST/run/
+#setenv RPATH /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20170726mergeIPEOptimization2SwpcIpeTest/JQIPEr420/IPEr420/run/ ##20170727 JQ reproduction
+#setenv RPATH /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20170726mergeIPEOptimization2SwpcIpeTest/20170726test/testing/run/ ##20170727 after merged with Master
+#setenv RPATH /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20170802debugNaomiBranch/ipe/run/ ##20170803
+setenv RPATH /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/$TEST/ipe/run/  ##20170809
+#setenv RPATH  /scratch3/NCEPDEV/stmp2/$UserName/$TEST/IPE/run
+
+#0: idl on interactive queue; 1: submit a job on computer node queue
+set sw_qsubidl = $3
+setenv sw_output2file    1
+setenv sw_debug    0
+setenv alt       250.
+setenv factor_density  1.0E-12
+#setenv ArrowCol  0.  #black
+setenv ArrowCol  255. #white
+setenv TimeStep 300
+
+#(7)mp_plot
+#if ( $#argv == 7 ) then 
+#    setenv mp_plot $6
+#else if ( $#argv < 7 ) then 
+    setenv mp_plot 2 #default
+
+    #(6)sw-frame
+    #setenv sw_frame $6
+    setenv sw_frame 0
+
+    # X-axis range
+    #1:0<lon<360
+    #0:-180<lon<+180
+    setenv xmax360 0
+
+    #(5)plot_type
+    setenv plot_type 3
+
+    #(3-4)VarType min max
+    ###VarType: 2:vo+(+southward),3:o+,4:un
+    #set j = $3
+    #set jmax = $4
+    set j = 7
+    set jmax = 7
+
+#    if ( $#argv < 6 ) then 
+#      setenv sw_frame 1  #default geographic 
+
+#      if ( $#argv < 5 ) then 
+#	setenv plot_type 3 #default lon-lat
+
+#        if ( $#argv < 4 ) then 
+#           if ( $#argv < 3 ) then 
+#             set j = 7  #default NmF2
+#
+           if ( $#argv < 2 ) then
+            echo "$ ./visGlobalNmf2  1:jidXmin  2:jidXmax"
+            exit 1
+           endif
+ 
+ #          endif  #<3         
+ #          set jmax = $j
+ #       endif #<4
+ #     endif #<5
+ #   endif #<6
+
+
+    
+
+
+
+
+
+
+
+
+else  #if ( $#argv > 7 ) then 
+    echo "INVALID mp_plot"
+    exit 1
+endif  # if ( $#argv == 7 ) then 
+echo "varTypeMin="  $j
+echo "varTypemMax=" $jmax
+echo "plot_type="   $plot_type
+echo "sw_frame="    $sw_frame
+echo "mp_plot="     $mp_plot
+
+
+while ( $j <= $jmax )
+setenv VarType $j
+    echo "(1) VarType=" $VarType
+
+###i could create another loop for i for REFDIR depending on f107
+#i corresponds to ???
+###dbg20170313
+set i = $1
+set imax = $2
+while ( $i <= $imax )
+    echo "(1) i=" $i
+#
+set jid_output = jid"$i"
+echo "jid_output="  $jid_output
+###previous run directory, i.e., path to the startup files
+#    set rundir = `cat $RPATH/$jid_output | awk -F "Created " '{print $2}'`
+###modified for Pauls latest version after r378(after merging)
+#t    setenv rundir  `cat $RPATH/$jid_output | awk -F "Created run directory: " '{print $2}'`
+###dbg20170313
+#setenv rundir "1488422272_ipe_theia_intel_parallel_210_70x3" #20170303 best layout 70X3 with sw_ihepls=sw_inpls=0 2015storm
+#setenv rundir "1487790372_ipe_theia_intel_parallel_170_170x1_barriers" #20170224run just before sw_ihepls=sw_inpls=0
+#setenv rundir "1486669566_ipe_theia_intel_parallel_160_40x4" #20170210 
+#setenv rundir "1461417243_ipe_theia_intel_parallel2_93" #20160423 my original run
+#set rundir1 = "1461056359" #20160419 v0
+#set rundir1 = "1489615288" #20170315 v1
+#set rundir1 = "1490799959" #20170328 v11
+#set rundir1 = "1490800175" #20170328 v5
+#set rundir1 = "1491413416" #20170405 v11
+#set rundir1 = "1494453423" #20170510 for TW, startup for 20031120
+#set rundir1 = "1494355997" #20170511 frictional heating
+#set rundir1 = "1501180820" #20170727 JQ reproduction
+#set rundir1 = "1501183622" #20170727 JQ reproduction v2
+#set rundir1 = "1501180822" #20170727 after merged with Master
+#set rundir1 = "1501703319" #20170802 test naomi branch standalone:20090115
+#set rundir1 = "1501707091" #20170802 test naomi branch standalone:201303116
+#set rundir1 = "1502797317" #20170802 test naomi branch standalone:201303116
+#set rundir1 = "1502308199" #20170809 test development branch standalone:20130316
+#set rundir1 = "1502486157" #20170811 test development branchV3 standalone:20130316
+#set rundir1 = "1502826446" #20170815 test development branchV3 standalone:20130316
+#set rundir1 = "1504298928" #20170901 IPEOptimization/testing standalone:20130316
+set rundir1 = "1504821638" #20170907 IPEOptimization/testing standalone:20130316
+#set rundir1 = "1505642824" #20170908 IPEOptimization/testing standalone:20130316
+set NPRCS = "464";80" ;464" ;93" #80"
+#set rundir0 = "_ipe_theia_intel_parallel1_" #20160419 v0
+#set rundir0 = "_ipe_theia_intel_parallel2_" #20160511 frictional heating
+set rundir0 = "_ipe_theia_intel_parallel_" #20170727 JQ reproduction
+#set rundir0 = "_ipe_theia_intel_parallel_" #20170315 v1
+setenv rundir ${rundir1}${rundir0}${NPRCS} 
+#setenv rundir "1487790372_ipe_theia_intel_parallel_170_170x1_barriers" #20170222 before sw_ihepls=0
+#setenv rundir "1489772848_ipe_theia_intel_parallel_170" #20170404 after phils changes
+#setenv rundir "1487966292_ipe_theia_intel_parallel_170_170x1_barriers_sw_ihepls=0" #20170224 after sw_ihepls=0
+#setenv rundir "1492109759_ipe_theia_intel_parallel_170" #20170414 after new change to the code sw_ihepls=1
+echo "rundir="  ${rundir}
+echo "i="  ${i} >> listRunDir
+echo "rundir="  ${rundir} >> listRunDir
+#
+###prepare input files
+###reference directory: contains the input files to get input parameters.
+set REFDIR = ${RPATH}/${rundir}
+cd ${REFDIR}
+echo PWD= $PWD
+
+###idealy i should extract grid info from output run and pass it on to idl
+###choose grid
+###20151028: sw_grid is not included in jid output
+###setenv sw_grid  `cat $RPATH/$jid_output | awk -F "sw_grid: " '{print $2}'`
+#setenv sw_grid 1
+setenv sw_grid 1
+echo sw_grid= ${sw_grid}
+
+###extracting input paramters
+set FN0 = IPE.inp${sw_grid}_1
+##(1) f107
+##set txt1 = 'F107D='
+##set f107 = `cat ${REFDIR}/$FN0 | awk -F "F107D=" '{print $2}'
+setenv f107  `cat ${REFDIR}/$FN0 | awk -F "F107D=" '{print $2}' | awk -F "," '{print $1}'`
+echo "extracting (1) f107 finished:" $f107
+#(2) nday
+#set txt1 = 'NDAY='
+##set nday = `cat ${REFDIR}/$FN0 | awk -F "NDAY=" '{print $2}'`
+setenv nday  `cat ${REFDIR}/$FN0 | awk -F "NDAY=" '{print $2}' | awk -F "," '{print $1}'`
+echo "extracting (2) nday finished:" $nday
+##(3) F107AV
+##set txt1 = 'NDAY='
+#set f107av = `cat ${REFDIR}/$FN0 | awk -F "F107AV=" '{print $2}'`
+#echo "extracting (3) f107av finished:" $f107av
+###
+### set to defaul values
+setenv n_read_max 3 #1021 #2
+setenv n_plt_max  2 #1020 #1
+setenv n_plt_min  0
+setenv plt_ut     864000 #432000
+setenv plt_ut_end 864600 #435600
+###george's new restart IO
+#if ( $sw_version_io == 0 ) then
+  set FN0 = ut_rec
+#else if ( $sw_version_io == 1 ) then
+#    setenv flnmExt 4plt
+    setenv flnmExt 
+    echo "flnmExt=" $flnmExt
+#    cat ${REFDIR}/output |grep utime.driver > ut_rec$flnmExt.tmp
+#    cat ut_rec$flnmExt.tmp
+#    cat -n ut_rec$flnmExt.tmp | sed -e s/"utime_driver="/" "/g > ut_rec$flnmExt
+#    cat ut_rec4plt
+#    set FN0 = ut_rec$flnmExt
+#endif
+cat -n   ${REFDIR}/$FN0
+#setenv plt_ut      `head -n 1  ${REFDIR}/$FN0 | awk -F "      " '{print $2}' `
+#setenv plt_ut_end  `tail -n 1  ${REFDIR}/$FN0 | awk -F "      " '{print $2}' `
+#setenv n_read_max  `tail -n 1  ${REFDIR}/$FN0 | awk -F "      " '{print $1}' `
+echo "extracting (3) plt_UT from ut_rec=" $plt_ut
+echo "extracting (4) plt_UT_end from ut_rec=" $plt_ut_end
+echo "extracting (5) n_read_max from ut_rec=" $n_read_max
+ 
+
+setenv sw_quickPlot 1
+if ( $sw_quickPlot == 1 ) then 
+  setenv nColumnsMulti  3 #6 #
+  setenv nRowsMulti     2 #5 #
+endif
+setenv sw_hourly_plot 0
+if ( $sw_hourly_plot == 1 ) then 
+  setenv plotXhr .0
+endif
+setenv fac_window 5.0
+#
+setenv sw_lun6  1  #plasma1 h+
+setenv sw_lun8  1  #plasma2 he+
+setenv sw_lun9  1  #plasma3 n+
+setenv sw_lun10  1  #plasma4 no+
+setenv sw_lun11  1  #plasma5 o2+
+setenv sw_lun12  1  #plasma6 n2+
+setenv sw_lun13  1  #plasma7 o+(2D)
+setenv sw_lun14  1  #plasma8 o+(2P)
+setenv sw_lun3  0 #1  #plasmaX Te
+setenv sw_lun7  0 #1  #plasmaX Ti
+setenv sw_lun4  0 #1  #plasmaX Vo+
+setenv sw_lun5  0 #1  #plasma16 VEXB up
+setenv sw_lun15 0 #1  #plasma17 VEXBe
+setenv sw_lun16 0 #1  #plasma18 VEXBth
+###george's new restart IO
+if ( $sw_version_io == 1 ) then
+    setenv sw_lun20 1 #ipe_grid_plasma_params.dummytimestam
+    setenv sw_lun6 0  #plasma1 h+
+    setenv sw_lun8 0  #plasma2 he+
+    setenv sw_lun9 0  #plasma3 n+
+    setenv sw_lun10 0  #plasma4 no+
+    setenv sw_lun11 0  #plasma5 o2+
+    setenv sw_lun12 0  #plasma6 n2+
+    setenv sw_lun13 0  #plasma7 o+(2D)
+    setenv sw_lun14 0  #plasma8 o+(2P)
+    setenv sw_lun3  0  #plasmaX Te
+    setenv sw_lun7  0  #plasmaX Ti
+    setenv sw_lun4  0  #plasmaX Vo+
+    setenv sw_lun5  0 #1  #plasma16 VEXB up
+    setenv sw_lun15 0 #1  #plasma17 VEXBe
+    setenv sw_lun16 0 #1  #plasma18 VEXBth
+endif
+setenv sw_polar_contour 0
+setenv sw_arrow 0
+setenv sw_read_sunlon 0
+
+###run IDL
+#setenv PPATH ${HPATH}/fig/${TEST}/${rundir}
+#t setenv PPATH ${HPATH}/fig/${TEST}/${rundir}/quick
+#setenv PPATH ${HPATH}/fig/20170311jacques/${rundir}
+#setenv PPATH ${HPATH}/fig/${TEST}/${rundir}
+setenv PPATH ${HPATH}/Naomi.Maruyama/fig/${UserName}
+mkdir ${PPATH}
+mkdir ${PPATH}/${UserName}/${rundir}
+#
+if ( $sw_qsubidl == 1 ) then
+  qsub  $RPATH/qsubpltipe
+else  ###if ( $sw_qsubidl == 0 ) then
+    set PLTDIR = /home/Naomi.Maruyama/sandbox/ipe/trunk/plt
+    echo PLTDIR= $PLTDIR
+    cd $PLTDIR
+    echo PWD= $PWD
+###it does not make sense to start interactive jobs from a script???
+###    qsub -I -l procs=24, walltime=00:30:00 -A swpc
+    module load idl
+    idl -e "plt_ipe_sh"
+
+endif  ###if ( $sw_qsubidl == 1 ) then
+#
+###the following does not work with IDL error!!!
+#    if ( $status != 0 ) then
+#     echo "IDL failed"
+#     exit 1
+#    endif
+
+###i loop
+@ i++   
+    echo "(2) i=" $i
+
+end  ###while for i
+
+
+###VarType loop
+@ j++   
+    echo "(2) j=" $j
+
+end  ###while for j
+
+echo "script visGlobalNmf2 finished!"
+                        

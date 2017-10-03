@@ -1,0 +1,339 @@
+#!/bin/csh
+### ./visGlobalNmf2WAM_IPE <1:UserName> <2:rtNumber> <3:runDate> <4:runDuration> <5:VarType>  <6:WAMDensity:0 NO; 1:yes> <7:layout>
+###NOTE! this must be executed in in qsub
+###(1) run it on computer node as an interactive job: 
+### $ ~/qsubinteractive 00:30:00 debug
+### $ then execute this script, or
+###(2) submit a job (of this script) with qsub command 
+###purpose: validate Jacques' runs for with/without he+ & n+ dynamics
+###v5: read jidX(X=20~27) of output runs, extract runDIR, f107, nday for passing them onto IDL program, plt_ipe_sh,
+### to plot o+, vo+, wind
+###copied from r336tmp/trunk/run/script_td
+###status: completed
+###date: 20170313
+###CHANG
+###nm20170815: 0:original IO(runs before20170808); 1:george's new restart IO
+setenv sw_version_io 1
+setenv TimeStep 30
+#setenv TimeStep 15  #30
+setenv UserName     $1
+#setenv UserName     Robert.Oehmke   ###CHANGE
+setenv rtNumber     $2
+#setenv rtNumber     124742            ###CHANGE
+#setenv runDate      20130316/20090115         ###CHANGE
+setenv runDate      $3
+#setenv runDuration  1hr/1day              ###CHANGE
+setenv runDuration  $4
+set WAMDensity = $6
+if ( $WAMDensity == 1 ) then
+ set titleWamDensity = ''
+else if ( $WAMDensity == 0 ) then
+ set titleWamDensity = '_nodensities'
+else if ( $WAMDensity == 2 ) then
+ set titleWamDensity = '_dumprs_nodensities'
+else if ( $WAMDensity == 3 ) then
+ set titleWamDensity = 'coldrestart'
+endif
+
+setenv HPATH        /scratch3/NCEPDEV/swpc/scrub
+###CHANGE!
+#setenv compsetTitle  spacewx_gsm%wam%T62_ipe%80x170 #old
+#setenv compsetTitle  newspacewx_gsm%wam%T62_ipe%80x170  ###raffaele's new version
+setenv compsetTitle  spacewx_gsm%wam%T62_ipe%80x170_$7  ###raffaele's new version with new layout
+#setenv compsetTitle  spacewx_gsm%wam%T62_ipe%80x170_new #new20170819 for Bob milestone0.6
+#setenv compsetTitle  spacewx_gsm%wam%T62_ipe%80x170_restart #new20170825 for Bob milestone0.6
+#setenv compsetTitle  spacewx_gsm%wam%T62_ipe%80x170 #20170919 debug TW's
+#setenv compsetTitle  wam_gsm%wam%T62_ipe%80x170 #20170829 debug adam's input
+
+setenv compset      swpc%${runDate}${titleWamDensity}_${runDuration}_${compsetTitle}
+if ( $WAMDensity == 3 ) then
+  setenv compset      ${titleWamDensity}_${runDuration}_${compsetTitle}
+endif
+setenv RPATH        ${HPATH}/${UserName}
+
+#0: idl on interactive queue; 1: submit a job on computer node queue
+#set sw_qsubidl = $3
+set sw_qsubidl = 0
+setenv sw_wam_ipe        1  #0:standalone IPE; 1:wam_ipe
+setenv sw_output2file    1
+setenv sw_debug          0
+setenv alt               180. ###91. ###350.
+setenv factor_density    1.0E-12
+#setenv ArrowCol  0.  #black
+setenv ArrowCol  255. #white
+setenv mp_plot 0 #default
+
+#(6)sw-frame: default magnetic frame
+setenv sw_frame 0 
+
+#(5)plot_type
+setenv plot_type 3
+
+#(3-4)VarType min max
+###VarType: 2:vo+(+southward),3:o+,4:un
+set j    = $5
+set jmax = $j
+
+
+if ( $#argv < 5 ) then
+  echo "USAGE  $ ./visGlobalNmf2WAM_IPE  <1:rUserName> <2:rtNumber> <3:runDate> <4:runDuration> <5:VarType>"
+            exit 1
+endif
+ 
+
+
+if ( $j < 7 ) then
+  setenv sw_read_wind 1
+else 
+  setenv sw_read_wind 0
+endif
+echo "sw_read_wind=" $sw_read_wind
+echo "varTypeMin="  $j
+echo "varTypemMax=" $jmax
+echo "plot_type="   $plot_type
+echo "sw_frame="    $sw_frame
+echo "mp_plot="     $mp_plot
+
+
+setenv sw_quickPlot 1
+if ( $sw_quickPlot == 1 ) then 
+  if ( $runDuration == 1hr ) then 
+    setenv nColumnsMulti  2
+    setenv nRowsMulti     2
+###nm20170712: added to debug houjun's output
+  else if ( $runDuration == 13hr ) then   
+    setenv nColumnsMulti  6
+    setenv nRowsMulti     5
+  else if ( $runDuration == 1day ) then   
+    setenv nColumnsMulti  4 #6
+    setenv nRowsMulti     4 #5
+  else if ( $runDuration == 2day ) then   
+    setenv nColumnsMulti  6
+    setenv nRowsMulti     5
+  else if ( $runDuration == 3day ) then   
+    setenv nColumnsMulti  4
+    setenv nRowsMulti     4
+  else if ( $runDuration == 6day ) then   
+    setenv nColumnsMulti  4
+    setenv nRowsMulti     7
+  else if ( $runDuration == 5day ) then   
+    setenv nColumnsMulti  10
+    setenv nRowsMulti     6
+  endif
+endif
+
+#dbg20170922 debug commented out
+# if ( $runDuration == 1hr ) then 
+#  setenv sw_hourly_plot 0
+#else
+#  setenv sw_hourly_plot 1
+  setenv sw_hourly_plot 0
+#endif
+
+if ( $sw_hourly_plot == 1 ) then 
+  setenv plotXhr 1.0  ###default: plot every 1hr
+  if ( $runDuration == 6day ) then  
+    setenv plotXhr 6.0  ###plot every 6hrs
+  else if ( $runDuration == 5day ) then  
+    setenv plotXhr 6.0  ###plot every 6hrs
+  else if ( $runDuration == 3day ) then  
+    setenv plotXhr 6.0  ###plot every 6hrs
+  else if ( $runDuration == 2day ) then  
+    setenv plotXhr 2.0  ###plot every 2hr
+  else if ( $runDuration == 1day ) then  
+    setenv plotXhr 0.25  ###plot every 2hrs
+  endif #$runDuration
+endif #$sw_hourly
+
+
+while ( $j <= $jmax )
+setenv VarType $j
+    echo "(1) VarType=" $VarType
+
+###i could create another loop for i for REFDIR depending on f107
+#i corresponds to ???
+###dbg20170313
+set i = 0 #$1
+set imax = 0 #$2
+while ( $i <= $imax )
+#    echo "(1) i=" $i
+#
+#set jid_output = jid"$i"
+#echo "jid_output="  $jid_output
+###previous run directory, i.e., path to the startup files
+#    set rundir = `cat $RPATH/$jid_output | awk -F "Created " '{print $2}'`
+###modified for Pauls latest version after r378(after merging)
+#t    setenv rundir  `cat $RPATH/$jid_output | awk -F "Created run directory: " '{print $2}'`
+#setenv rundir   rt_${rtNumber}/${compset}  
+setenv rundir   rt_${rtNumber}/oldcompsets/${compset} ###tmp20171002 temporary for debugging Raffaele
+echo "rundir="  ${rundir}
+echo "i="  ${i} >> listRunDir
+echo "rundir="  ${rundir} >> listRunDir
+#
+###prepare input files
+###reference directory: contains the input files to get input parameters.
+set REFDIR = ${RPATH}/${rundir}
+###dbg20170926
+#set REFDIR = /scratch3/NCEPDEV/swpc/noscrub/Joseph.Schoonover/debug/after_ipe_nuopc_2d_petlayout
+#set REFDIR = /scratch4/NCEPDEV/stmp3/Adam.Kubaryk/2c146c8_naom
+#set REFDIR = /scratch4/NCEPDEV/stmp4/Adam.Kubaryk/2c146c8_fort167
+cd ${REFDIR}
+echo PWD= $PWD
+
+###idealy i should extract grid info from output run and pass it on to idl
+###choose grid
+###20151028: sw_grid is not included in jid output
+###setenv sw_grid  `cat $RPATH/$jid_output | awk -F "sw_grid: " '{print $2}'`
+setenv sw_grid 1
+#t setenv sw_grid 2
+echo sw_grid= ${sw_grid}
+
+###extracting input paramters
+#set FN0 = IPE.inp${sw_grid}_1
+set FN0 = IPE.inp
+##(1) f107
+##set txt1 = 'F107D='
+##set f107 = `cat ${REFDIR}/$FN0 | awk -F "F107D=" '{print $2}'
+setenv f107  `cat ${REFDIR}/$FN0 | awk -F "F107D=" '{print $2}' | awk -F "," '{print $1}'`
+echo "extracting (1) f107 finished:" $f107
+#(2) nday
+#set txt1 = 'NDAY='
+##set nday = `cat ${REFDIR}/$FN0 | awk -F "NDAY=" '{print $2}'`
+setenv nday  `cat ${REFDIR}/$FN0 | awk -F "NDAY=" '{print $2}' | awk -F "," '{print $1}'`
+echo "extracting (2) nday finished:" $nday
+##(3) F107AV
+##set txt1 = 'NDAY='
+#set f107av = `cat ${REFDIR}/$FN0 | awk -F "F107AV=" '{print $2}'`
+#echo "extracting (3) f107av finished:" $f107av
+###
+
+
+if ( $runDuration == 1hr ) then 
+  setenv n_read_max  4 #2
+  setenv n_plt_max   1 #1
+###nm20170712: added to debug houjun's output
+else if ( $runDuration == 13hr ) then 
+  setenv n_read_max 12
+  setenv n_plt_max  11
+else if ( $runDuration == 1day ) then 
+  setenv n_read_max 10 #480  #48
+  setenv n_plt_max  9 #462  #23
+else if ( $runDuration == 2day ) then 
+  setenv n_read_max 96
+  setenv n_plt_max  23
+else if ( $runDuration == 3day ) then 
+  setenv n_read_max 144
+  setenv n_plt_max  11
+else if ( $runDuration == 6day ) then 
+  setenv n_read_max 288
+  setenv n_plt_max  23
+else if ( $runDuration == 5day ) then 
+  setenv n_read_max 3 #47 #240
+  setenv n_plt_max  2 #46 #23
+endif
+#
+
+setenv n_plt_min  0
+setenv plt_ut     360 #432000
+setenv plt_ut_end 9000 #433800
+###george's new restart IO
+#if ( $sw_version_io == 0 ) then
+  set FN0 = ut_rec
+#else if ( $sw_version_io == 1 ) then
+    setenv flnmExt 4plt
+#    echo "flnmExt=" $flnmExt
+#    cat ${REFDIR}/out |grep Utime= > ut_rec$flnmExt.tmp
+#    cat ut_rec$flnmExt.tmp
+#    cat -n ut_rec$flnmExt.tmp | sed -e s/"Utime="/" "/g > ut_rec$flnmExt
+#    cat ut_rec$flnmExt
+    set FN0 = ut_rec$flnmExt
+#endif
+#cat -n   ${REFDIR}/$FN0
+#setenv plt_ut_end  `tail -n 1  ${REFDIR}/$FN0 | awk '{print $2}' `
+echo "extracting (4) plt_UT_end from ut_rec=" $plt_ut_end
+#setenv plt_ut      `head -n 1  ${REFDIR}/$FN0 | awk -F "      " '{print $2}' `
+echo "extracting (3) plt_UT from ut_rec=" $plt_ut
+#setenv n_read_max  `tail -n 1  ${REFDIR}/$FN0 | awk -F "      " '{print $1}' `
+#setenv n_read_max `wc -l ${REFDIR}/$FN0 | awk '{print $1}'`
+echo "extracting (5) n_read_max from ut_rec=" $n_read_max "n_plt_max=" $n_plt_max 
+#
+setenv fac_window 5.0
+#
+setenv sw_lun6  0  #plasma1 h+
+setenv sw_lun8  0  #plasma2 he+
+setenv sw_lun9  0  #plasma3 n+
+setenv sw_lun10  0  #plasma4 no+
+setenv sw_lun11  0  #plasma5 o2+
+setenv sw_lun12  0  #plasma6 n2+
+setenv sw_lun13  0  #plasma7 o+(2D)
+setenv sw_lun14  0  #plasma8 o+(2P)
+setenv sw_lun3  0 #1  #plasmaX Te
+setenv sw_lun7  0 #1  #plasmaX Ti
+setenv sw_lun4  0 #1  #plasmaX Vo+
+setenv sw_lun5  0 #1  #plasma16 VEXB up
+setenv sw_lun15 0 #1  #plasma17 VEXBe
+setenv sw_lun16 0 #1  #plasma18 VEXBth
+###george's new restart IO
+if ( $sw_version_io == 1 ) then
+    setenv sw_lun20 1 #ipe_grid_plasma_params.dummytimestam
+    setenv sw_lun0 0 #ut_rec
+    setenv sw_lun6 0  #plasma1 h+
+    setenv sw_lun8 0  #plasma2 he+
+    setenv sw_lun9 0  #plasma3 n+
+    setenv sw_lun10 0  #plasma4 no+
+    setenv sw_lun11 0  #plasma5 o2+
+    setenv sw_lun12 0  #plasma6 n2+
+    setenv sw_lun13 0  #plasma7 o+(2D)
+    setenv sw_lun14 0  #plasma8 o+(2P)
+    setenv sw_lun3  0  #plasmaX Te
+    setenv sw_lun7  0  #plasmaX Ti
+    setenv sw_lun4  0  #plasmaX Vo+
+    setenv sw_lun5  0 #1  #plasma16 VEXB up
+    setenv sw_lun15 0 #1  #plasma17 VEXBe
+    setenv sw_lun16 0 #1  #plasma18 VEXBth
+endif #sw_version_io
+setenv sw_polar_contour 0
+setenv sw_arrow 0
+setenv sw_read_sunlon 0
+
+###run IDL ###CHANGE
+setenv PPATH ${HPATH}/Naomi.Maruyama/fig/${UserName}
+echo "mkdir PPATH=" ${PPATH}
+mkdir ${PPATH}
+echo "mkdir PPATH1=" ${PPATH}/rt_${rtNumber}
+mkdir ${PPATH}/rt_${rtNumber}
+#
+if ( $sw_qsubidl == 1 ) then
+  qsub  ${RPATH}/qsubpltipe
+else  ###if ( $sw_qsubidl == 0 ) then
+    set PLTDIR = /home/Naomi.Maruyama/sandbox/ipe/trunk/plt
+    echo PLTDIR= $PLTDIR
+    cd $PLTDIR
+    echo PWD= $PWD
+###it does not make sense to start interactive jobs from a script???
+###    qsub -I -l procs=24, walltime=00:30:00 -A swpc
+    module load idl
+    idl -e "plt_ipe_sh"
+endif
+#
+###the following does not work with IDL error!!!
+#    if ( $status != 0 ) then
+#     echo "IDL failed"
+#     exit 1
+#    endif
+
+###i loop
+@ i++   
+#    echo "(2) i=" $i
+
+end  ###while for i
+
+
+###VarType loop
+@ j++   
+#    echo "(2) j=" $j
+
+end  ###while for j
+
+echo "script visGlobalNmf2WAM_IPE finished!"
+                        

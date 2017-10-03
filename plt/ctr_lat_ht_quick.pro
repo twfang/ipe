@@ -15,7 +15,7 @@
 , VarType_step $;=4L
 ,n_plt_max $;
 , input_DIR0, TEST, TEST1, TEST2, glon_deg2D, rundir  $
-,n_plt_min
+,n_plt_min,on_m3
 
 
 ;n_readInit=0L;default
@@ -40,7 +40,7 @@ lpmax_perp_trans=149
 for i=mpstart, mpstop  do print,' mp', (i+1),' LT',lt_hr[i]
 
 HTmin=90.  ;min(yy)   ;75.   ;400. ;
-HTmax=600.;2000. 
+HTmax=200.;2000. 
 ; plot range
 if ( title_hemi eq 'NH' ) then begin
   gLATmax=+83.;+90.;-10.;
@@ -49,7 +49,7 @@ endif else if ( title_hemi eq 'SH' ) then begin
   gLATmax=-55.;+90.;-10.;
   gLATmin=-85.;+50.;-gLATmax;-27.; 
 endif else if ( title_hemi eq 'glb' ) then begin
-  gLATmax=+60.;+90.
+  gLATmax=+8.;+60.;+90.
   gLATmin=-gLATmax;
 endif else if ( title_hemi eq 'eq' ) then begin
   gLATmax=-15.;+90.;-10.;
@@ -171,7 +171,7 @@ if ( sw_dif eq 0 ) then begin
          ] 
 
 ARY_max0=[ $
-6.5,$;4.5,$;6.1,$ ;7.,$
+4.5,$;6.5,$;4.5,$;6.1,$ ;7.,$
 ;4.,$
 ;800. ,$
 6083. ,$
@@ -301,9 +301,9 @@ if ( sw_debug eq 1 ) then  print, 'after',!P.BACKGROUND
 ;!Y.MARGIN=[4,10] ;bottom,top
 
 ;  !P.MULTI=[0,4,4,0,1] ;plot goes vertically downward 
-  !P.MULTI=[0,4,5,0,0] ;plot goes vertically downward 
+;  !P.MULTI=[0,4,5,0,0] ;plot goes vertically downward 
 ;  !P.MULTI=[0,6,6,0,0] ;plot goes vertically downward 
-;  !P.MULTI=[0,2,2,0] ;plot goes horizontally from left to right
+  !P.MULTI=[0,2,3,0] ;plot goes horizontally from left to right
 ;  ;1:# of plot columns
 ;  ;2:# of rows
 
@@ -353,16 +353,11 @@ ARY_maxZ=ARY_min0(VarType)
 
 for lp=lp_strt , lp_stop do begin
 
-;d if ( sw_debug ) then $
-;if ( (lp+1) ge 148 ) AND ( (lp+1) le 155 ) then $
-;d  print,'lp=', lp, in2d[lp], mlat_deg[ in2d[lp] ]
 
-; midpoint = JMIN_IN(lp) + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
+
   midpoint =      IN2D[lp]+ (     IS2D[lp] -    IN2D[lp]    )/2  -1 
 
-;d if ( sw_debug ) then $
-;if ( (lp+1) ge 148 ) AND ( (lp+1) le 155 ) then $
-;d print,(lp+1),midpoint,'mlat',mlat_deg[ midpoint ]  ,'midpoint z', z_km[ midpoint ],' max z',MAX( z_km[ IN2D[lp]:IS2D[lp] ] )
+
 
 
   for ihem=0,1   do begin
@@ -379,10 +374,7 @@ for lp=lp_strt , lp_stop do begin
     endif
 
 
-;if ( mlat_deg[ is2d[lp]-1 ] ge -66. ) AND ( mlat_deg[ is2d[lp]-1 ] lt -62. ) THEN  begin
-;print,'check mlat!', is2d[lp], lp ,  mlat_deg[ is2d[lp]-1 ]
-;stop
-;endif
+
 
 
 ;if ( lp ge 50 ) then $
@@ -395,8 +387,7 @@ for lp=lp_strt , lp_stop do begin
     for ipts=istrt,istop,istep   do begin
 
 
-;d if (lp eq 56) AND (z_km[ipts] ge 100.) AND (z_km[ipts] le 250.) then $
-;d print,ipts,(ipts-(in2d[lp]-1)+1),mlat_deg[ipts],z_km[ipts],plot_z[n_read,VarType, 0,ipts]
+
 
 
 ;dYY=(z_km[ipts+1]-z_km[ipts] )*1.0 ;

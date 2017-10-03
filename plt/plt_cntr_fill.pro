@@ -1,7 +1,7 @@
 ;20140225 separated out from plt_efv2.pro
 ;purpose: plot filled color contour
 pro plt_cntr_fill $
-, iplot_max,mlon90_2d,mlat90_2d, sw_180,mlat130,poten,ed1130,ed2130,ed190,ed290,sw_debug,mlon130,mlat90_0,utime,runDATE,TEST2,plot_DIR,mp,lp, sw_output2file 
+, iplot_max,mlon90_2d,mlat90_2d, sw_180,mlat130,poten,ed1130,ed2130,ed190,ed290,sw_debug,mlon130,mlat90_0,utime,runDATE,TEST2,plot_DIR,mp,lp, sw_output2file,sw_output2save 
 ;
   var_title=['pot130[kV]','ed1130[mV/m]','ed2130[mV/m]','pot130-mlat90[kV]','ed190[mV/m]','ed290'] 
 SW_range=1L
@@ -10,8 +10,10 @@ if( SW_range eq 1 ) then  begin
 ;  value_min_fix=[  -30.,     -20.,    -25. ,-30.,-20.]
 ;  value_max_fix=[  +30.,     +20.,    +25. ,+30.,+20.]
   if (plot_NH eq 1) then begin
-    value_min_fix=[  -8.,     -2.,    -5. ,-8.,-2.,-5.]
-    value_max_fix=[  +8.,     +2.,    +5. ,+8.,+2.,+5.]
+;    value_min_fix=[  -8.,     -2.,    -5. ,-8.,-2.,-5.]
+    value_min_fix=[  -5.2,     -29.,    -15. ,-19.,-29.,-15.]
+    value_max_fix=[  +5.2,     +29.,    +15. ,+19.,+29.,+15.]
+;    value_max_fix=[  +8.,     +2.,    +5. ,+8.,+2.,+5.]
 ;     val0=1.3
 ;     value_min_fix=[  -8.,     -val0,    -val0 ,-8., -val0, -val0]
 ;     value_max_fix=[  +8.,     +val0,    +val0 ,+8., +val0, +val0]
@@ -20,11 +22,12 @@ endif
 
 iwindow=0L
 DEVICE, RETAIN=2, DECOMPOSED=0
-WINDOW,iwindow,XSIZE=1000,YSIZE=700
+WINDOW,iwindow,XSIZE=1200,YSIZE=1000
 !p.multi=[0,3,2,0]
 ;!p.multi=[0,1,1,0]
 n_ldct=39  ;rainbow+black
-loadct,n_ldct
+;loadct,n_ldct
+redblue
 text_color=160  ;within rainbow+black color table
 char_size =2.0
 char_thick=1.5
@@ -46,7 +49,7 @@ Y_min=-Y_max;MIN(mlat130)
 if ( plot_NH eq 1 ) then begin
 ;  Y_max=+60.
   Y_max=+90.
-  Y_min=+0.
+  Y_min=80.;+0.
 endif
 
 charsize_colorbar=3.4
@@ -144,10 +147,10 @@ xyouts, x0, (y1+0.01) $
 endfor ;iplot=0,2 do begin
 
 
-loadct,0
+loadct,0 ;20170918
 xyouts, 0.03, 0.96  $
-,'UT [sec]='+STRTRIM( string(utime, FORMAT='(i7)'),1 )+' '+runDATE+TEST2 $
-, charsize =1.5, charthick=char_thick $
+,'UT [sec]='+STRTRIM( string(utime, FORMAT='(i7)'),1 )+' '+runDATE+' '+TEST2 $
+, charsize =1.0, charthick=1.0 $
 , /norm, /noclip
 
 filename=plot_DIR+'ts_efield.'+'UTsec'+STRTRIM( string(utime, FORMAT='(i6)'),1 )+runDATE+'.png'
@@ -156,6 +159,7 @@ if ( plot_NH eq 1 ) then $
 filename=plot_DIR+'ts_efield.'+'UTsec'+STRTRIM( string(utime, FORMAT='(i6)'),1 )+runDATE+'NH'+STRTRIM( string(mlat90_2d[mp,lp], FORMAT='(F6.2)'),1 )+'mp'+STRTRIM( string(mp, FORMAT='(i2)'),1 )+'ed2.v2.png'
 
 if ( sw_output2file eq 1 ) THEN  output_png, filename
+if ( sw_output2save eq 1 ) THEN  save,utime,poten,ed1130,ed2130,ed190,ed290,mlon130,mlat130,mlon90_0,mlon90_2d,mlat90_2d,/VARIABLES,filename=plot_DIR+'eldyn'+'UTsec'+STRTRIM( string(utime, FORMAT='(i6)'),1 )+'.sav'
 
 end ;plt_cntr_fill $
 

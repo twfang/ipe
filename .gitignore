@@ -1,3 +1,5 @@
+*.pro~
+*.pro.bk20*
 *.o
 *.mod
 *.tmp
@@ -6,3 +8,8 @@ lib
 include
 bin
 *.a
+*.sav
+*.png
+run/15*_ipe_theia_intel_parallel_80
+run/jid20*
+src/*/DEPENDENCIES

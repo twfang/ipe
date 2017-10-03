@@ -2,7 +2,7 @@
 ;20140225 separated out from plt_efv2.pro
 ;purpose: plot filled color contour
 pro plt_cntr_fill_plr $
-, iplot_max,mlon90_2d,mlat90_2d, sw_180,mlat130,poten,ed1130,ed2130,ed190,ed290,sw_debug,mlon130,mlat90_0,utime,runDATE,TEST2,plot_DIR,mp,lp, sw_output2file 
+, iplot_max,mlon90_2d,mlat90_2d, sw_180,mlat130,poten,ed1130,ed2130,ed190,ed290,sw_debug,mlon130,mlat90_0,utime,runDATE,TEST2,plot_DIR,mp,lp, sw_output2file
 ;
 fac_window=10.
 sw_arrow=1
@@ -13,8 +13,11 @@ if( SW_range eq 1 ) then  begin
 ;  value_min_fix=[  -30.,     -20.,    -25. ,-30.,-20.]
 ;  value_max_fix=[  +30.,     +20.,    +25. ,+30.,+20.]
   if (plot_NH eq 1) then begin
-    value_min_fix=[  -43.,     -33.,    -33. ,-43.,-33.,-33.]
-    value_max_fix=[  +43.,     +33.,    +33. ,+43.,+33.,+33.]
+;    value_min_fix=[  -43.,     -33.,    -33. ,-43.,-33.,-33.]
+    value_min_fix=[  -19.,     -29.,    -15. ,-19.,-29.,-15.]
+    value_max_fix=[  +19.,     +29.,    +15. ,+19.,+29.,+15.]
+;    value_max_fix=[  +43.,     +33.,    +33. ,+43.,+33.,+33.]
+
 ;     val0=1.3
 ;     value_min_fix=[  -8.,     -val0,    -val0 ,-8., -val0, -val0]
 ;     value_max_fix=[  +8.,     +val0,    +val0 ,+8., +val0, +val0]
@@ -313,7 +316,7 @@ xyouts, 0.03, 0.96  $
 filename=plot_DIR+'ts_efield.'+'UTsec'+STRTRIM( string(utime, FORMAT='(i6)'),1 )+runDATE+'.png'
 if ( plot_NH eq 1 ) then $
 ; filename='ts_efield.'+runDATE+'NH.png'
-filename=plot_DIR+'ts_efield.'+'UTsec'+STRTRIM( string(utime, FORMAT='(i6)'),1 )+runDATE+'NH'+STRTRIM( string(mlat90_2d[mp,lp], FORMAT='(F6.2)'),1 )+'mp'+STRTRIM( string(mp, FORMAT='(i2)'),1 )+'ed2.v2.png'
+filename=plot_DIR+'ts_efield.'+'UTsec'+STRTRIM( string(utime, FORMAT='(i6)'),1 )+runDATE+'NH'+STRTRIM( string(mlat90_2d[mp,lp], FORMAT='(F6.2)'),1 )+'mp'+STRTRIM( string(mp, FORMAT='(i2)'),1 )+'ed2.v2.plr.png'
 
 if ( sw_output2file eq 1 ) THEN  output_png, filename
 

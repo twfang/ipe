@@ -1,0 +1,187 @@
+#!/bin/csh
+### ./vis336.2sed  <1:jid#min> <2:jid#max> <3:sw_qsubidl>
+###NOTE! this must be executed in in qsub
+###(1) run it on computer node as an interactive job: 
+### $ ~/qsubinteractive 00:30:00 debug
+### $ then execute this script, or
+###(2) submit a job (of this script) with qsub command 
+###purpose: process output runs for champ Te comparison
+###v5: read jidX(X=20~27) of output runs, extract runDIR, f107, nday for passing them onto IDL program, plt_ipe_sh,
+### to plot o+, vo+, wind
+###copied from r336tmp/trunk/run/script_td
+###status: completed
+###date: 20140813
+###
+###main directory where the new job will be submitted
+#set RPATH = /scratch1/portfolios/NCEPDEV/swpc/noscrub/Naomi.Maruyama/r319/trunk/run
+setenv TEST r336.2
+setenv HPATH  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe
+setenv RPATH  ${HPATH}/runs/$TEST/trunk/run
+#0: idl on interactive queue; 1: submit a job on computer node queue
+set sw_qsubidl = $3
+setenv alt       120.
+setenv ArrowCol  255.
+
+#(7)mp_plot
+#if ( $#argv == 7 ) then 
+#    setenv mp_plot $6
+#else if ( $#argv < 7 ) then 
+    setenv mp_plot 0 #default
+
+    #(6)sw-frame
+    #setenv sw_frame $6
+    setenv sw_frame 0
+
+    #(5)plot_type
+    #setenv plot_type $5
+    setenv plot_type 3
+
+      #(3-4)VarType min max
+###VarType: 2:vo+(+southward),3:o+,4:un
+    #set j = $3
+    #set jmax = $4
+    set j = 0
+    set jmax = 0
+
+#    if ( $#argv < 6 ) then 
+#      setenv sw_frame 1  #default geographic 
+
+#      if ( $#argv < 5 ) then 
+#	setenv plot_type 3 #default lon-lat
+
+#        if ( $#argv < 4 ) then 
+#           if ( $#argv < 3 ) then 
+#             set j = 7  #default NmF2
+#
+           if ( $#argv < 2 ) then
+            echo "$ ./vis336.2  1:jidXmin  2:jidXmax"
+            exit 1
+           endif
+ 
+ #          endif  #<3         
+ #          set jmax = $j
+ #       endif #<4
+ #     endif #<5
+ #   endif #<6
+
+
+    
+
+
+
+
+
+
+
+
+else  #if ( $#argv > 7 ) then 
+    echo "INVALID mp_plot"
+    exit 1
+endif  # if ( $#argv == 7 ) then 
+echo "varTypeMin="  $j
+echo "varTypemMax=" $jmax
+echo "plot_type="   $plot_type
+echo "sw_frame="    $sw_frame
+echo "mp_plot="     $mp_plot
+
+
+while ( $j <= $jmax )
+setenv VarType $j
+    echo "(1) VarType=" $VarType
+
+###i could create another loop for i for REFDIR depending on f107
+#i corresponds to ???
+set i = $1
+set imax = $2
+while ( $i <= $imax )
+    echo "(1) i=" $i
+#
+set jid_output = jid"$i"
+echo "jid_output="  $jid_output
+###previous run directory, i.e., path to the startup files
+#    set rundir = `cat $RPATH/$jid_output | awk -F "Created " '{print $2}'`
+    setenv rundir  `cat $RPATH/$jid_output | awk -F "Created " '{print $2}'`
+echo rundir=  ${rundir}
+#
+###prepare input files
+###reference directory: contains the input files to get input parameters.
+set REFDIR = ${RPATH}/${rundir}
+cd ${REFDIR}
+echo PWD= $PWD
+
+###idealy i should extract grid info from output run and pass it on to idl
+###choose grid
+###20151028: sw_grid is not included in jid output
+###setenv sw_grid  `cat $RPATH/$jid_output | awk -F "sw_grid: " '{print $2}'`
+setenv sw_grid 2
+echo sw_grid= ${sw_grid}
+
+###extracting input paramters
+set FN0 = IPE.inp
+##(1) f107
+##set txt1 = 'F107D='
+##set f107 = `cat ${REFDIR}/$FN0 | awk -F "F107D=" '{print $2}'
+setenv f107  `cat ${REFDIR}/$FN0 | awk -F "F107D=" '{print $2}' | awk -F "," '{print $1}'`
+echo "extracting (1) f107 finished:" $f107
+#(2) nday
+#set txt1 = 'NDAY='
+##set nday = `cat ${REFDIR}/$FN0 | awk -F "NDAY=" '{print $2}'`
+setenv nday  `cat ${REFDIR}/$FN0 | awk -F "NDAY=" '{print $2}' | awk -F "," '{print $1}'`
+echo "extracting (2) nday finished:" $nday
+##(3) F107AV
+##set txt1 = 'NDAY='
+#set f107av = `cat ${REFDIR}/$FN0 | awk -F "F107AV=" '{print $2}'`
+#echo "extracting (3) f107av finished:" $f107av
+###
+setenv plt_ut 432000
+setenv plt_ut_end 432030
+set FN0 = ut_rec
+cat -n   ${REFDIR}/ut_rec
+#setenv plt_ut_end  `tail -n 1  ${REFDIR}/$FN0 | awk -F "       " '{print $1}' `
+echo "extracting (3) plt_UT from ut_rec:" $plt_ut
+echo "extracting (4) plt_UT_end from ut_rec:" $plt_ut_end
+
+setenv sw_quickplot 0
+setenv sw_hourly_plot 0
+setenv fac_window 5.0
+setenv sw_lun15 1
+setenv sw_lun16 1
+setenv sw_polar_contour 1
+setenv sw_arrow 1
+
+###run IDL
+setenv PPATH ${HPATH}/fig/${TEST}/${rundir}
+mkdir ${PPATH}
+if ( $sw_qsubidl == 1 ) then
+  qsub  $RPATH/qsubpltipe
+else  ###if ( $sw_qsubidl == 0 ) then
+    set PLTDIR = /home/Naomi.Maruyama/sandbox/ipe/trunk/plt
+    echo PLTDIR= $PLTDIR
+    cd $PLTDIR
+    echo PWD= $PWD
+    qsub -I -l procs=24, walltime=00:30:00 -A swpc
+    module load idl
+    idl -e "plt_ipe_sh"
+endif
+#
+###the following does not work with IDL error!!!
+#    if ( $status != 0 ) then
+#     echo "IDL failed"
+#     exit 1
+#    endif
+
+###i loop
+@ i++   
+    echo "(2) i=" $i
+
+end  ###while for i
+
+
+###VarType loop
+@ j++   
+    echo "(2) j=" $j
+
+end  ###while for j
+
+echo "script vis finished!"
+                        

@@ -10,7 +10,7 @@ PRO  prfl_ht $
 print,'prfl_ht',sw_output2file ;debug
 
 y_min =90.;1.0E+2; 90.
-y_max =160.;1600.;1300.;2.E+4;800.
+y_max =2000.;1300.;2.E+4;800.
 if ( sw_debug eq 1 ) then  print, "y_max=", y_max
 
 if ( sw_fort eq 168L ) then begin

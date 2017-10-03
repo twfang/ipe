@@ -1,8 +1,11 @@
 pro      ctr_plt_psphere    $ 
   , IN2d,IS2d,Z_km,mlat_deg  $ 
   , plot_z,plot_VEXB,n_read   $
-  , UThr, plot_DIR, title_res,rundate,title_test,sw_debug, title_hemi,sw_anim,mp_plot, lt_hr, fac_window $
+  , UThr, plot_DIR, title_res,rundate,title_test,sw_debug, title_hemi,sw_anim,mp_plot,  fac_window $
   , sw_output2file
+
+
+lt_hr=21.
 
 size_result = SIZE(in2d)
 NLP=size_result[1]
@@ -18,39 +21,60 @@ Re_m=6.3712E+06 ;.. Earth radius [meter]
 nmax=npts2D *2
 xx=dblarr(nmax)
 yy=dblarr(nmax)
-n_count=-1L
-for mp=mp_plot,mp_plot+40,40 do begin
-;; plot GLAT v.s. ALT Flux-Tube Distribution
-for lp=0,NLP-1 do begin   ;ifl-->lp
 
-  in = IN2D[lp]-1L
-  is = IS2D[lp]-1L 
-  for i=in,is do begin
-     n_count=n_count+1
-if (sw_debug eq 1) then     print, 'mp',mp,' lp',lp,' i',i,' n_count',n_count
+xx1=dblarr(nmax)
+yy1=dblarr(nmax)
+n_count=-1L
+n_count1=-1L
+mpstep=40
+
+for mp=mp_plot,mp_plot+mpstep,mpstep do begin
+;; plot GLAT v.s. ALT Flux-Tube Distribution
+   for lp=0,NLP-1 do begin      ;ifl-->lp
+
+      in = IN2D[lp]-1L
+      is = IS2D[lp]-1L 
+      for i=in,is do begin
+         n_count=n_count+1
+         if (sw_debug eq 1) then     print, 'mp',mp,' lp',lp,' i',i,' n_count',n_count
 
 ;  istrt=istop +1
 ;  istop=istrt+(is-in) ;istrt +(iseb(ifl)-ineb(ifl))
 
-     theta_rad = +!PI*0.50 - mlat_deg[i]*!PI/180.0  
-     r_meter = Z_km[i] * 1.0E+3  + Re_m
-     if ( mp eq mp_plot ) then $
-        factor=1.0 $
-     else if ( mp eq (mp_plot+40) ) then $
-        factor=-1.0
+         theta_rad = +!PI*0.50 - mlat_deg[i]*!PI/180.0  
+         r_meter = Z_km[i] * 1.0E+3  + Re_m
+         if ( mp eq mp_plot ) then $
+            factor=1.0 $
+         else if ( mp eq (mp_plot+40) ) then $
+            factor=-1.0
 
-     xx[n_count] = r_meter*SIN(theta_rad)*factor /  Re_m
-     yy[n_count] = r_meter*COS(theta_rad) /  Re_m
- endfor ;i=in,is do begin
-endfor  ;lp=lp_strt,lp_stop do begin
-endfor ;mp
+         xx[n_count] = r_meter*SIN(theta_rad)*factor /  Re_m
+         yy[n_count] = r_meter*COS(theta_rad) /  Re_m
+
+;where is z_km[98]=4002km???
+zkmmax=4010.
+zkmmin=4000.
+mlatmax=-10.
+mlatmin=-20.
+         if mp eq mp_plot AND z_km[i] ge zkmmin AND z_km[i] lt zkmmax AND mlat_deg[i] ge mlatmin AND mlat_deg[i] lt mlatmax then   begin      
+            print,mp,'lp=',lp,' i4000=',i,' z_km=',z_km[i],' mlat=',mlat_deg[i],' Ne[cm-3]=',plot_z[n_read,0,mp,i]*1.0E-6
+            n_count1=n_count1+1
+            xx1[n_count1] = r_meter*SIN(theta_rad)*factor /  Re_m
+            yy1[n_count1] = r_meter*COS(theta_rad) /  Re_m
+         endif ;i4000 le is then begin
+      
+      endfor                    ;i=in,is do begin
+   endfor                       ;lp=lp_strt,lp_stop do begin
+endfor                          ;mp
 nmax=n_count
+nmax1=n_count1
 
 
-X_min=-6.0
-X_max=6.0
-Y_min=-6.0
-Y_max=6.0
+
+X_max=2.0
+X_min=-x_max;6.0
+Y_min=-x_max;6.0
+Y_max=x_max;6.0
 
 
 
@@ -69,12 +93,12 @@ mpstop=mp_plot+40;0
 mpstep=40;1
 
 
-HTmin=-6.;   90.  ;min(yy)   ;75.   ;400. ;
-HTmax=+6.;1.500000E+03;700.; 
+HTmax=+x_max;6.;1.500000E+03;700.; 
+HTmin=-x_max;6.;   90.  ;min(yy)   ;75.   ;400. ;
 ; plot range
 ;if ( title_hemi eq 'NH' ) then begin
-  gLATmax=+6.;+65.;+90.;-10.;
-  gLATmin=-6.;+50.;-gLATmax;-27.; 
+  gLATmax=+x_max;6.;+65.;+90.;-10.;
+  gLATmin=-x_max;6.;+50.;-gLATmax;-27.; 
 ;endif else if ( title_hemi eq 'SH' ) then begin
 ;  gLATmax=-5.;+90.;-10.;
 ;  gLATmin=-65.;+50.;-gLATmax;-27.; 
@@ -97,7 +121,7 @@ device_type='png' ;ps';'
 
 
 N_LDCT=39;33
-lp_strt=1;28-1;  0+1 ;58;0;63 ;1-1L
+lp_strt=0;28-1;  0+1 ;58;0;63 ;1-1L
 lp_stop=NLP-1-1 ;138L;
 VarType_min=0L
 VarType_max=0L ;PAR-1
@@ -131,6 +155,7 @@ VarTitle=[ $
 
 VarUnit= $
 [ $
+'[log!D10!N cm-3]',$
 '[K]', $ ;Te
 '[log!D10!N cm-3]',$
 '[J/kg/s]', $;hrate
@@ -139,8 +164,8 @@ VarUnit= $
 ,'[cm2 s-1]' $
 ,'[m/s]']
 
-X_Title='MAGNETIC LATITUDE [deg.]'
-Y_Title='ALTITUDE [km]'
+X_Title=' ';MAGNETIC LATITUDE [deg.]'
+Y_Title=' ';ALTITUDE [km]'
 
 ;RE=6.3712E+03  ;[km]
 
@@ -165,7 +190,7 @@ ARY_min0=[ $
          ] 
 
 ARY_max0=[ $
-           4.,$;7.,$
+           4.5,$;7.,$
 4657. ,$
 77.,$ ;hrate
  7., 7., 7.  $ ;densities
@@ -174,14 +199,14 @@ ARY_max0=[ $
         ,  +3500.     $  ;vel [m s-1]
         ]
 endif else if ( sw_dif eq 1 ) then begin
-ARY_min0=[ $
+   ARY_min0=[ $
            3., 3., 3., 3. $  ;densities
         ,  -1.940E+2        ,  -1.940E+2  $      ;To+;Te
         ,  -1.0E+13  $;flux [cm2 s-1]
         ,  -3500.  $   
          ] 
 
-ARY_max0=[ $
+   ARY_max0=[ $
            7., 7., 7., 7.  $ ;densities
         ,  +1.253E+03,  +1.253E+03  $    ;To+,Te
         ,  +1.0E+13  $
@@ -199,11 +224,11 @@ LOADCT, N_LDCT
 
 ; window size
 X_SIZE=27. ;9.7
-Y_SIZE=21.
+Y_SIZE=27.
 X0= 3.0 ;[cm]
 Y0= 3.0 ;
-dX= 23.0
-dY= 15.0
+dX= 20.;23.0
+dY= 20.;15.0
 
 ;color bar
 dX1=  7.5
@@ -221,8 +246,11 @@ Y1=Y0+dY+1.3 ;-0.5     ;+ 1.6   ;1.3   ;18.8
 for VarType=VarType_min , VarType_max,  VarType_step   do begin
 if ( sw_debug eq 1 ) then  print,'plotting ',VarTitle(VarType)
 MainTitle=VarTitle(VarType)+' '+VarUnit(VarType)
-FILE_DISP=plot_DIR+device_type+'/'+title_hemi+'/'+FileID+'_'+VarTitle(VarType)+'_'+title_res+'.'+STRTRIM( string(rundate, FORMAT='(i8)'), 1)+title_test+'.'+title_hemi+'.psphere.'+device_type
-if ( sw_debug eq 1 ) then  print, file_disp
+FILE_DISP=$
+;plot_DIR+device_type+'/'+title_hemi+'/'+FileID+'_'+VarTitle(VarType)+'_'+title_res+'.'+STRTRIM(string(rundate, FORMAT='(i8)'),1)+title_test+'.'+title_hemi+'.psphere.'+device_type
+plot_DIR+'/psphere/psphere.'+FileID+'_'+VarTitle(VarType)+'.'+device_type
+;if ( sw_debug eq 1 ) then  $
+print, file_disp
 if ( device_type eq 'ps' ) then begin
 
 
@@ -260,18 +288,27 @@ LOADCT, N_LDCT
 ;if ( sw_plot_grid eq 1 ) then begin ;20120328
 ;LOADCT, 0
 if ( mp eq mpstart ) then $
-Plot, xx(0:nmax), yy(0:nmax)     $
-, Xstyle = 1, Xrange = [ X_min, X_max]  $
-, Ystyle = 1, Yrange = [ Y_min, Y_max]      $
-, TITLE = MainTitle+'   '+FileID, SUBTitle =' ' $   ;FileID $
-, XTITLE = X_Title,    YTITLE = Y_Title  $
-, PSYM =  3,  SYMSIZE=1.0  $
+    Plot, xx(0:nmax), yy(0:nmax)     $
+          , Xstyle = 1, Xrange = [ X_min, X_max]  $
+          , Ystyle = 1, Yrange = [ Y_min, Y_max]      $
+          , TITLE =' ' $ ; MainTitle+'   '+FileID, SUBTitle =' ' $ ;FileID $
+          , XTITLE = X_Title,    YTITLE = Y_Title  $
+          , PSYM =  3,  SYMSIZE=1.0  $
 ;, Color = col_min  $
 ;, CharSize = 1.5 $
 ;, THICK    = 1.0 $
-, Pos = [X0/X_SIZE, Y0/Y_SIZE, (X0+dX)/X_SIZE, (Y0+dY)/Y_SIZE]  ;$
+          , Pos = [X0/X_SIZE, Y0/Y_SIZE, (X0+dX)/X_SIZE, (Y0+dY)/Y_SIZE] ;$
 ;,/NODATA
 ;,/NO_ERASE
+
+
+;where is alt=4407km?
+;where is 4000km?
+for i=0,nmax1 do print,'i=', i,' xx1=',xx1(i),' yy1=',yy1(i)
+loadct,0
+    oPlot, xx1(0:nmax1), yy1(0:nmax1),color=254, PSYM =4,  SYMSIZE=4.0      
+
+loadct,N_LDCT
 
 
 ;if ( sw_output2file eq 1 ) then begin
@@ -297,14 +334,14 @@ for lp=lp_strt , lp_stop do begin
 
 if ( sw_debug ) then $
 ;if ( (lp+1) ge 148 ) AND ( (lp+1) le 155 ) then $
- print,'lp=', lp, in2d[lp], mlat_deg[ in2d[lp] ]
+if sw_debug eq 1 then  print,'lp=', lp, in2d[lp], mlat_deg[ in2d[lp] ]
 
 ; midpoint = JMIN_IN(lp) + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
   midpoint =      IN2D[lp]+ (     IS2D[lp] -    IN2D[lp]    )/2  -1 
 
 if ( sw_debug ) then $
 ;if ( (lp+1) ge 148 ) AND ( (lp+1) le 155 ) then $
- print,(lp+1),midpoint,'mlat',mlat_deg[ midpoint ]  ,'midpoint z', z_km[ midpoint ],' max z',MAX( z_km[ IN2D[lp]:IS2D[lp] ] )
+;d print,(lp+1),midpoint,'mlat',mlat_deg[ midpoint ]  ,'midpoint z', z_km[ midpoint ],' max z',MAX( z_km[ IN2D[lp]:IS2D[lp] ] )
 
 
   for ihem=0,1   do begin
@@ -334,7 +371,7 @@ if ( sw_debug ) then $
 
      if ( mp eq mp_plot ) then $
         factor=1.0 $
-     else if ( mp eq (mp_plot+40) ) then $
+     else if ( mp eq (mp_plot+mpstep) ) then $
         factor=-1.0
 
      xx = r_meter*SIN(theta_rad)*factor /  Re_m
@@ -343,31 +380,32 @@ if ( sw_debug ) then $
 ;if ( lp eq 80 ) then print,mp,lp,ipts,theta_rad,r_meter,xx,yy
 
 ;dYY=(z_km[ipts+1]-z_km[ipts] )*1.0 ;
-     dXX = 0.05
+     dXX = 0.07;0.05
      dYY = dXX
 
-;if ( yy gt HTmin ) and ( yy lt (HTmax-dYY) ) then begin
-;if ( xx gt gLATmin ) and ( xx lt gLATmax ) then begin
+if ( yy gt HTmin   ) and ( yy lt HTmax   ) then begin
+  if ( xx gt gLATmin ) and ( xx lt gLATmax ) then begin
 
 ;if ( mlat_deg[ipts] gt -37. ) AND (z_km[ipts] lt 300. ) then $
 ;print, lp,mlat_deg[ipts],z_km[ipts]
 
-Xa=xx
-Xb=xx   ;glatd(ipts  ,ifl)+dLAT  ;
-Xc=xx+dXX  ;Xb  ;
-Xd=xx+dXX  ;Xa  ;
-Ya=yy
-Yb=yy+dYY ;Ya ;
-Yc=yy+dYY ;Ya+dHT ;
-Yd=yy    ;Yc     ;
+   Xa=xx
+   Xb=xx                        ;glatd(ipts  ,ifl)+dLAT  ;
+   Xc=xx+dXX                    ;Xb  ;
+   Xd=xx+dXX                    ;Xa  ;
+   Ya=yy
+   Yb=yy+dYY                    ;Ya ;
+   Yc=yy+dYY                    ;Ya+dHT ;
+   Yd=yy                        ;Yc     ;
 
 
 
- X=[Xa, Xb, Xc, Xd]  ;glat [deg]
- Y=[Ya, Yb, Yc, Yd]  ;altitude [km]
+   X=[Xa, Xb, Xc, Xd]           ;glat [deg]
+   Y=[Ya, Yb, Yc, Yd]           ;altitude [km]
 
-if ( VarType ge 0 ) AND ( VarType le 3 ) then begin
+   if ( VarType ge 0 ) AND ( VarType le 3 ) then begin
 
+;d print,vartype,mp,'MAX=', max(plot_z[n_read,VarType, mp,*]), min(plot_z[n_read,VarType, mp,*])
 ;;temporary 0Te, 
 ;if ( VarType eq 0 ) or ( VarType eq 2 ) then $
 ;  Value = plot_z[n_read,VarType,mp,ipts] $
@@ -413,8 +451,8 @@ if ( ColorData gt col_max ) then  ColorData=col_max
 ;091604: debug
 ;091604: if ( (ipts MOD 2)  eq 0 ) then $
 POLYFILL, X , Y       $      ;[, Z]]
-, FILL_PATTERN=0      $      ; solid fill
-, COLOR=ColorData    ;$
+   , FILL_PATTERN=0      $      ; solid fill
+   , COLOR=ColorData    ;$
 ;[, IMAGE_COORD=array]
 ;[, /IMAGE_INTERP] 
 ;[, /LINE_FILL] 
@@ -430,10 +468,11 @@ POLYFILL, X , Y       $      ;[, Z]]
 ;[, THICK=value] 
 ;[, Z=value]
 
-;endif ;( glatd(ipts  ,ifl-1) gt gLATmin ) and ( glatd(ipts  ,ifl-1) lt gLATmax) thenbegin
-;endif  ;( gpz(ipts  ,ifl-1) gt HTmin ) then begin
-endfor  ;ipts=istrt,istop,istep   do begin
+      endif ;yy   ( glatd(ipts  ,ifl-1) gt gLATmin ) and ( glatd(ipts  ,ifl-1) lt gLATmax) thenbegin
+    endif  ;xx   ( gpz(ipts  ,ifl-1) gt HTmin ) then begin
+  endfor  ;ipts=istrt,istop,istep   do begin
 endfor  ;ihem=1,1   do begin
+
 
 
 
@@ -510,7 +549,12 @@ Draw_Colorbar, ARY_min0(VarType), ARY_max0(VarType), N_LVLs $
 
 ; add MIN & MAX values
 if ( mp eq mpstop ) then $
-xyouts, (X0-0.8)/X_SIZE, (Y0+dY+0.6)/Y_SIZE, 'MIN='+STRTRIM(STRING( ARY_minZ, FORMAT='(E11.3)'),1)+' MAX='+STRTRIM(STRING( ARY_maxZ, FORMAT='(E11.3)'),1)  $
+xyouts $
+;, (X0-0.8)/X_SIZE $
+, (X0+dX*0.65)/X_SIZE $
+;, (Y0+dY+0.6)/Y_SIZE $
+, (Y0-1.)/Y_SIZE $
+, MainTitle+' '+FileID+' MIN='+STRTRIM(STRING( ARY_minZ, FORMAT='(E11.3)'),1)+' MAX='+STRTRIM(STRING( ARY_maxZ, FORMAT='(E11.3)'),1)  $
 , charsize=1.0, charthick=1.0, /norm, /noclip
 
 
