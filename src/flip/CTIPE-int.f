@@ -332,8 +332,7 @@ C.... Written by P. Richards June-September 2010.
 
       USE module_input_parameters,ONLY: sw_TEI,sw_OHPLS
      &, sw_DEBUG_flip,sw_debug,sw_output_fort167
-     &,mpfort167,lpfort167,mype,peFort167
-     &,sw_optw_flip
+     &,mpfort167,lpfort167,mype,peFort167,sw_optw_flip,barriersOn
       USE module_IO,ONLY: LUN_FLIP1,LUN_FLIP2,LUN_FLIP3,LUN_FLIP4
         USE module_physical_constants,ONLY: zero
       IMPLICIT NONE
@@ -385,7 +384,7 @@ C.... Written by P. Richards June-September 2010.
       DATA M_TO_CM,M3_TO_CM3/1.0E+2,1.0E-6/    !.. Unit conversion factors
 !dbg20110120:      DATA DEBUG/1/  !.. turn on debug writes if DEBUG=1
       INTEGER :: midpoint !nm20110312
-      integer :: ret
+      integer :: ret,status
 
       ret = gptlstart ('CTIPINT init_params')
       CALL initialize_module_parameters ( )
@@ -490,10 +489,20 @@ C.... Written by P. Richards June-September 2010.
 
       !.. 2-stream photoelectron routine to get electron heating 
       !.. rate and secondary ion production
+      ret = gptlstart ('before_CTIPINT PE2S_barrier')
+      if(barriersOn) then
+!sms$insert       call ppp_barrier(status)
+      endif
+      ret = gptlstop  ('before_CTIPINT PE2S_barrier')
       ret = gptlstart ('CTIPINT PE2S')
       CALL PE2S(F107,F107A,N,TI,FPAS,-1.0E22,EDEN,UVFAC,COLUM,
      > IHEPLS,INPLS,INNO)
       ret = gptlstop  ('CTIPINT PE2S')
+      ret = gptlstart ('after_CTIPINT PE2S_barrier')
+      if(barriersOn) then
+!sms$insert       call ppp_barrier(status)
+      endif
+      ret = gptlstop  ('after_CTIPINT PE2S_barrier')
 
       !-- Sum the EUV, photoelectron, and auroral production rate
       ret = gptlstart ('CTIPINT SUMPRD')
@@ -633,18 +642,38 @@ c      ENDIF
       endif !( sw_optw_flip ) then
 !----------------------
       !.. He+ solution
+      ret = gptlstart ('before_CTIPINT XION_barrier')
+      if(barriersOn) then
+!sms$insert       call ppp_barrier(status)
+      endif
+      ret = gptlstop  ('before_CTIPINT XION_barrier')
       ret = gptlstart ('CTIPINT XION')
       IF(EFLAG(2,1).EQ.0.AND.IHEPLS.GT.0) ! .AND. Z(midpoint)>200.00 )
      & CALL XION(TI,DT,DTMIN,9,EFLAG)
       ret = gptlstop  ('CTIPINT XION')
+      ret = gptlstart ('after_CTIPINT XION_barrier')
+      if(barriersOn) then
+!sms$insert       call ppp_barrier(status)
+      endif
+      ret = gptlstop  ('after_CTIPINT XION_barrier')
 
       !.. N+ solution
 !dbg20120301:
       IF ( sw_DEBUG_flip==1 )  print *,'!dbg! apex ht=',z(midpoint)
      &, midpoint,lp,mp
+      ret = gptlstart ('before_CTIPINT XION_barrier')
+      if(barriersOn) then
+!sms$insert       call ppp_barrier(status)
+      endif
+      ret = gptlstop  ('before_CTIPINT XION_barrier')
       ret = gptlstart ('CTIPINT XION')
       IF(EFLAG(2,1).EQ.0.AND.INPLS.GT.0) CALL XION(TI,DT,DTMIN,11,EFLAG)
       ret = gptlstop  ('CTIPINT XION')
+      ret = gptlstart ('after_CTIPINT XION_barrier')
+      if(barriersOn) then
+!sms$insert       call ppp_barrier(status)
+      endif
+      ret = gptlstop  ('after_CTIPINT XION_barrier')
 
       ret = gptlstart ('CTIPINT transfer')
         !.. transfer densities from FLIP to CTIP variable

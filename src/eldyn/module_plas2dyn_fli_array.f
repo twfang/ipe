@@ -9,11 +9,12 @@
       USE params_module,ONLY:kmlat,kmlon,kmlonp1
       USE cons_module,ONLY:idyn_save,lp_dyn_eq
       use dynamo_module,only:zigm11,zigm22,zigmc,zigm2,rim
-      use module_input_parameters,ONLY: stop_time,mype,lpe
+      use module_input_parameters,ONLY: stop_time,mype,lpe,barriersOn
       IMPLICIT NONE
+      include "gptl.inc"
       INTEGER (KIND=int_prec), INTENT(IN) :: utime !universal time [sec]
       REAL    (KIND=real_prec) :: dum(kmlon+1,kmlat) !dynamo FLI
-      INTEGER (KIND=int_prec ) :: jth,lp_dyn,lp_plas,ihem,i
+      INTEGER (KIND=int_prec ) :: jth,lp_dyn,lp_plas,ihem,i,ret
       INTEGER (KIND=int_prec ) :: ilat_dyn,ilon_dyn,mp,lp,status
 
 !     print *,'convert plas2dyn fli at utime=',utime,stop_time,mype
@@ -24,7 +25,14 @@
 
 !convert from plas_fli to dynamo fli array: dum(kmlon+1,kmlat)
 !(1) NH; (2) SH
+      ret = gptlstart ('plas2dyn_fli_array_barrier')
+      if(barriersOn) then
+!sms$insert       call ppp_barrier(status)
+      endif
+      ret = gptlstop  ('plas2dyn_fli_array_barrier')
+      ret = gptlstart ('plas2dyn_fli_array_serial')
 !SMS$SERIAL(<plas_fli,IN>,<zigm11,zigm22,zigmc,zigm2,rim,OUT>:default=ignore) BEGIN
+      ret = gptlstart ('plas2dyn_fli_array_jth_loop')
       jth_loop: do jth=1,6
 !        print *, '!dbg20140407: jth=',jth
 
@@ -52,11 +60,13 @@
                   if (jth==1) then
 !                   print *, '!dbg20140407: mp',mp,' ilon_dyn',ilon_dyn
                     if(plas_fli(ihem,lp_plas,mp,jth) <= 0.0) then
+!SMS$ignore begin
                       print *,'!STOP!'
                       print *,'INVALID zigm11 value in plasma folder'
                       print *,'In module_sub_plasma.f90'
                       print *,mype,ihem,lp_plas,mp,jth,plas_fli(ihem,   &
      &                        lp_plas,mp,jth)
+!SMS$ignore end
                       STOP
                     endif
                   endif
@@ -125,11 +135,13 @@
 
 
       end do jth_loop
+      ret = gptlstop  ('plas2dyn_fli_array_jth_loop')
 
 !UNDERCONSTRUCTION!!!
 !dbg20150608: copied from module_readin_ascii.f
 ! am 10/04 so far no value at the equator therefore set it
 ! but this shouldn't be in the code
+      ret = gptlstart ('plas2dyn_fli_array_mp_loop')
       lp = kmlat/2+1
       do mp = 1,kmlonp1
 	zigm11(mp,lp)= .125*(zigm11(mp,lp-1)+ zigm11(mp,lp+1))
@@ -139,16 +151,18 @@
 	rim(mp,lp,1) = .06 *(rim(mp,lp-1,1) + rim(mp,lp+1,1))
 	rim(mp,lp,2) = .06 *(rim(mp,lp-1,2) + rim(mp,lp+1,2))
       enddo ! i = 1,kmlon
+      ret = gptlstop  ('plas2dyn_fli_array_mp_loop')
 !
 ! am 10/04 change sign of K_(m lam)^D in the SH- that's what TIEGCM dynamo
 ! expects
+      ret = gptlstart ('plas2dyn_fli_array_lp_loop')
       do lp = 1,(kmlat+1)/2
-!        rim(:,lp,2) = rim(:,lp,2)*1.e8
         rim(:,lp,2) = -rim(:,lp,2)
       enddo
-!dbg20150608: copy end
+      ret = gptlstop  ('plas2dyn_fli_array_lp_loop')
 
 !SMS$SERIAL END
+      ret = gptlstop  ('plas2dyn_fli_array_serial')
       !t           IF ( sw_3DJ==1 )  Je_3d(IN:IS,mp,1:2) = zero
       end subroutine plas2dyn_fli_array
       end module module_plas2dyn_fli_array

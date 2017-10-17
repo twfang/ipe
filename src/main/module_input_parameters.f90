@@ -101,6 +101,7 @@
       LOGICAL, PUBLIC :: sw_debug_mpi
       LOGICAL, PUBLIC :: sw_output_fort167 =.false.
       LOGICAL, PUBLIC :: sw_output_wind    =.false. !unit=6000,6001
+      LOGICAL, PUBLIC :: barriersOn=.false. !true means turn on barriers.
       INTEGER(KIND=int_prec), PUBLIC :: peFort167=0 !default mype=0
       INTEGER(KIND=int_prec), PUBLIC :: mpfort167 = 10
       INTEGER(KIND=int_prec), PUBLIC :: lpfort167 = 14
@@ -237,7 +238,8 @@
            &, ut_start_perp_trans   &
            &, duration   &
            &, fac_BM   &
-           &, iout
+           &, iout     &
+           &, barriersOn
       NAMELIST/smsnamelist/ check_halo_on,compare_var_ntasks_1,compare_var_ntasks_2,compare_var_on,exact_parallel_sum,load_balance_method,load_balance_on,load_balance_size,process_layout,set_process_layout
 
 !nm20120304           &, PCO_flip       &
@@ -275,7 +277,7 @@
         READ(LUN_nmlt,NML=NMIPE    ,ERR=222,IOSTAT=IOST_RD)
 !SMS$IGNORE END
 
-!SMS$INSERT lpHaloSize=5
+!SMS$INSERT lpHaloSize=2
 !SMS$INSERT mpHaloSize=1
 !
 !set up MPI communicator for SMS

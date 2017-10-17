@@ -32,7 +32,7 @@
       USE module_input_parameters,ONLY:mpstop,ip_freq_output,start_time,stop_time,&
 &     sw_neutral_heating_flip,sw_perp_transport,lpmin_perp_trans,lpmax_perp_trans,sw_para_transport,sw_debug,        &
 &     sw_dbg_perp_trans,sw_exb_up,parallelBuild,mype, &
-& HPEQ_flip, sw_eldyn,ut_start_perp_trans
+&     HPEQ_flip, sw_eldyn,ut_start_perp_trans,barriersOn
       USE module_physical_constants,ONLY:rtd,zero
       USE module_FIELD_LINE_GRID_MKS,ONLY:JMIN_IN,plasma_grid_3d,plasma_grid_GL,plasma_grid_Z,JMAX_IS,hrate_mks3d,MaxFluxTube
       USE module_PLASMA,ONLY:utime_save,plasma_1d    
@@ -83,13 +83,20 @@ end if
       plasma_3d_old = plasma_3d
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-1")
       ret = gptlstart ('exchange_barrier')
-!sms$insert      call ppp_barrier(status)
+      if(barriersOn) then
+!sms$insert       call ppp_barrier(status)
+      endif
       ret = gptlstop ('exchange_barrier')
       ret = gptlstart ('EXCHANGE')
 !SMS$EXCHANGE(plasma_3d_old)
       ret = gptlstop  ('EXCHANGE')
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-2")
 !     apex_longitude_loop: DO mp = mpstrt,mpstop,mpstep !1,NMP
+      ret = gptlstart ('before_apex_longitude_loop_barrier')
+      if(barriersOn) then
+!sms$insert       call ppp_barrier(status)
+      endif
+      ret = gptlstop  ('before_apex_longitude_loop_barrier')
       apex_longitude_loop: DO mp = 1,mpstop
 !nm20121115        mp_save=mp
         IF ( sw_neutral_heating_flip==1 )  then
@@ -178,7 +185,17 @@ end if
           ret = gptlstart ('perp_transport')
           IF ( sw_perp_transport>=1 ) THEN
             IF ( lp>=lpmin_perp_trans.AND.lp<=lpmax_perp_trans ) THEN
+      ret = gptlstart ('before_perpendicular_transport_barrier')
+      if(barriersOn) then
+!sms$insert       call ppp_barrier(status)
+      endif
+      ret = gptlstop  ('before_perpendicular_transport_barrier')
               CALL perpendicular_transport ( utime,mp,lp )
+      ret = gptlstart ('after_perpendicular_transport_barrier')
+      if(barriersOn) then
+!sms$insert       call ppp_barrier(status)
+      endif
+      ret = gptlstop  ('after_perpendicular_transport_barrier')
 
 
 
@@ -205,7 +222,17 @@ endif
 ! call flux tube solver
           ret = gptlstart ('flux_tube_solver')
           IF ( sw_para_transport==1 ) THEN 
+      ret = gptlstart ('before_flux_tube_solver_barrier')
+      if(barriersOn) then
+!sms$insert       call ppp_barrier(status)
+      endif
+      ret = gptlstop  ('before_flux_tube_solver_barrier')
             CALL flux_tube_solver ( utime,mp,lp )
+      ret = gptlstart ('after_flux_tube_solver_barrier')
+      if(barriersOn) then
+!sms$insert       call ppp_barrier(status)
+      endif
+      ret = gptlstop  ('after_flux_tube_solver_barrier')
           ELSE IF ( sw_para_transport==0 ) THEN 
 
 !dbg20111101:v9: temporary ...
@@ -241,8 +268,18 @@ endif
 ! calculate the field line integrals for the electrodynamic solver
          IF ( sw_eldyn<=1 ) THEN
 !          print *, 'calling interface_field_line_integrals'
+      ret = gptlstart ('before_interface_field_line_integrals_barrier')
+      if(barriersOn) then
+!sms$insert       call ppp_barrier(status)
+      endif
+      ret = gptlstop  ('before_interface_field_line_integrals_barrier')
            CALL interface_field_line_integrals (lp,mp,utime,  &
        &   sigma_ped_3d,sigma_hall_3d,Ue1_3d,Ue2_3d,Ne_3d)
+      ret = gptlstart ('after_interface_field_line_integrals_barrier')
+      if(barriersOn) then
+!sms$insert       call ppp_barrier(status)
+      endif
+      ret = gptlstop  ('after_interface_field_line_integrals_barrier')
          END IF
 
 
@@ -261,6 +298,15 @@ endif
       END DO apex_longitude_loop !: DO mp = 
 !SMS$PARALLEL END
       ret = gptlstop ('apex_lon_loop')
+      ret = gptlstart ('after_apex_longitude_loop_barrier')
+      if(barriersOn) then
+!sms$insert       call ppp_barrier(status)
+      endif
+      ret = gptlstop  ('after_apex_longitude_loop_barrier')
+!!SMS$ignore begin
+!      print*,'JFM1 writing plas_fli',mype,size(plas_fli)
+!      call flush(6)
+!!SMS$ignore end
 !!SMS$IGNORE begin
 !      print *,mype,'TEST zigm within plasma folder'
 !      print *,mype,'zigm11',MAXVAL(plas_fli(:,:,:,1)),MINVAL(plas_fli(:,:,:,1))
