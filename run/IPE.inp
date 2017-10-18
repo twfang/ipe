@@ -54,7 +54,7 @@
   kp_eld=3.
 /
 &nmswitch
-  duration=400
+  duration=2400
   fac_bm=1.00
   iout(1)=1
   iout(2)=60
@@ -88,5 +88,5 @@
   sw_record_number=0
   sw_th_or_r=1
   ut_start_perp_trans=0
-  barriersOn=f
+  barriersOn=t
 /

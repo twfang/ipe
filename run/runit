@@ -1,5 +1,5 @@
 #!/bin/csh
-set compute_tasks = 35
+set compute_tasks = 80
 set RUNDATE = 20170214
 set i = 2
 echo "RUNDATE=" $RUNDATE

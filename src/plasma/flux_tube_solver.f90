@@ -16,7 +16,7 @@
       USE module_FIELD_LINE_GRID_MKS,ONLY: JMIN_IN,JMAX_IS,plasma_grid_3d,plasma_grid_Z,plasma_grid_GL,Pvalue,ISL,IBM,IGR,IQ,IGCOLAT,IGLON,plasma_3d,ON_m3,HN_m3,N2N_m3,O2N_m3,HE_m3,N4S_m3,TN_k,TINF_k,un_ms1
       USE module_input_parameters,ONLY: time_step,F107D,F107AV,DTMIN_flip  &
      &, sw_INNO,FPAS_flip,HPEQ_flip,HEPRAT_flip,COLFAC_flip,sw_IHEPLS,sw_INPLS,sw_debug,iout, start_time, sw_wind_flip, sw_depleted_flip, start_time_depleted, sw_output_fort167,mpfort167,lpfort167 &
-     &, sw_neutral_heating_flip, ip_freq_output, parallelBuild,mype,barriersOn
+     &, sw_neutral_heating_flip, ip_freq_output, parallelBuild,mype
       USE module_PLASMA,ONLY: plasma_1d !dbg20120501
 !dbg20110927      USE module_heating_rate,ONLY: NHEAT_cgs
       USE module_physical_constants,ONLY: pi,zero
@@ -303,11 +303,6 @@ END IF
       ret = gptlstop ('flux_tube_solver_loop1')
 
 ! call the flux tube solver (FLIP)
-      ret = gptlstart ('before_CTIPINT_barrier')
-      if(barriersOn) then
-!sms$insert       call ppp_barrier(status)
-      endif
-      ret = gptlstop  ('before_CTIPINT_barrier')
       ret = gptlstart ('CTIPINT')
       CALL CTIPINT( &
      &             JMINX, & !.. index of the first point on the field line
@@ -350,11 +345,6 @@ END IF
      &                lp, &
      &         hrate_cgs  ) !.. heating rates [eV/cm^3/s] !nm20121020
       ret = gptlstop  ('CTIPINT')
-      ret = gptlstart ('after_CTIPINT_barrier')
-      if(barriersOn) then
-!sms$insert       call ppp_barrier(status)
-      endif
-      ret = gptlstop  ('after_CTIPINT_barrier')
 
 !dbg20110802: 3D multiple-lp run
 !if ( sw_debug )  sw_debug=.false.

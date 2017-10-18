@@ -7,6 +7,6 @@
   load_balance_method=2,1
   load_balance_on=t,f
   load_balance_size=70,0
-  process_layout=35,1
+  process_layout=10,8
   set_process_layout=t
 /

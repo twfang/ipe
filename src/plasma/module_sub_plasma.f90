@@ -67,12 +67,8 @@
 !---------------
 ! array initialization
 !dbg20120313 note! needed to comment out temporarily for exb reading test:sw_exb=5
-if ( sw_exb_up/=5 ) then
-!JFM moved to allocate_arrays
-!     VEXBup=zero
-end if
 ! electrpdumics FLI array initialization
-           CALL initialize_fli_array ( )
+      CALL initialize_fli_array ( )
 
 
 ! save ut so that other subroutines can refer to it
@@ -112,7 +108,6 @@ end if
 !          plasma_3d4n(i,mp)%V_ms1(1:ISPEV)=zero
 !        END DO
 
-
 !!!dbg20120125: only temporary used to switch on the transport only during the daytime...
 !dbg20120509        IF ( sw_rw_sw_perp_trans.AND.sw_perp_transport(mp)==0 )  CALL activate_perp_transport (utime,mp)
 !!!dbg20120125:
@@ -120,14 +115,13 @@ end if
         apex_latitude_height_loop: DO lp = 1,NLP
 !nm20121115          lp_save=lp
 
-
 !dbg20120228: debug how2validate the transport
-if(sw_dbg_perp_trans.and.utime==start_time.and.lp==1)then
-  if(parallelBuild) then
-    print*,'sw_dbg_perp_trans=true does not work for parallel runs'
-    print*,'Stopping module_sub_plasma'
-    stop
-  endif
+          if(sw_dbg_perp_trans.and.utime==start_time.and.lp==1)then
+            if(parallelBuild) then
+              print*,'sw_dbg_perp_trans=true does not work for parallel runs'
+              print*,'Stopping module_sub_plasma'
+              stop
+            endif
 !  DO j=1,NLP
 !    DO i=JMIN_IN(j),JMAX_IS(j)
 !      DO jth=1,ISTOT
@@ -138,23 +132,20 @@ if(sw_dbg_perp_trans.and.utime==start_time.and.lp==1)then
 !      END DO !jth
 !    END DO !i
 !  END DO !j
-end if
+          end if
 !if(sw_dbg_perp_trans) print *, '1!dbg max o+',MAXVAL( plasma_3d(mp,lp)%N_m3( 1,1:IPDIM) ),MINVAL( plasma_3d(mp,lp)%N_m3( 1,1:IPDIM) )
-
-
-
 
 !20111025: not sure if these lines work when ut=0 & HPEQ=0.5(initial profiles are prepared within flip) , or maybe it is ok if they are zero?
 !save the values from the previous time step...
           DO i=JMIN_IN(lp),JMAX_IS(lp)
-             i1d=i-JMIN_IN(lp)+1
-             DO jth=1,ISTOT
-                plasma_1d(jth,i1d) = plasma_3d(i,lp,mp,jth)
+            i1d=i-JMIN_IN(lp)+1
+            DO jth=1,ISTOT
+              plasma_1d(jth,i1d) = plasma_3d(i,lp,mp,jth)
 !dbg20120501          DO i=1,IPDIM
 !dbg20120501            n0_1d%N_m3( 1:ISPEC,i) = plasma_3d(mp,lp)%N_m3( 1:ISPEC,i)
 !dbg20120501            n0_1d%Te_k(         i) = plasma_3d(mp,lp)%Te_k(         i)
 !dbg20120501            n0_1d%Ti_k( 1:ISPET,i) = plasma_3d(mp,lp)%Ti_k( 1:ISPET,i)
-             END DO !jth
+            END DO !jth
           END DO !i
 !dbg20120501
 !dbg20120501          j=1
@@ -168,49 +159,25 @@ end if
 !if(sw_dbg_perp_trans) print *, '2!dbg max o+',MAXVAL( n0_1d%N_m3( 1,1:IPDIM) ),MINVAL( n0_1d%N_m3( 1,1:IPDIM) )
 
           if ( sw_debug )  WRITE (0,"('sub-p: lp=',I4)")lp
-
-
-
-
-
 !dbg20120509          IF ( sw_perp_transport(mp)>=1 ) THEN
-!nm20130401: transport is not called when HPEQ_flip=0.5 as initial profiles do
-!not exist!
-        IF ( HPEQ_flip==0.5 .AND. utime==ut_start_perp_trans ) THEN
-
-          print *,lp,mp,'utime=',utime,' plasma perp transport is not called when HPEQ_flip=0.5 & start_time=0 because initial profiles do not exist!'
-
-        ELSE IF ( utime>0 ) THEN
-
-          ret = gptlstart ('perp_transport')
-          IF ( sw_perp_transport>=1 ) THEN
-            IF ( lp>=lpmin_perp_trans.AND.lp<=lpmax_perp_trans ) THEN
-      ret = gptlstart ('before_perpendicular_transport_barrier')
-      if(barriersOn) then
-!sms$insert       call ppp_barrier(status)
-      endif
-      ret = gptlstop  ('before_perpendicular_transport_barrier')
-              CALL perpendicular_transport ( utime,mp,lp )
-      ret = gptlstart ('after_perpendicular_transport_barrier')
-      if(barriersOn) then
-!sms$insert       call ppp_barrier(status)
-      endif
-      ret = gptlstop  ('after_perpendicular_transport_barrier')
-
-
-
-
-            ELSE  !IF ( lp>lpmin_perp_trans ) THEN
-if(utime==start_time) then
-midpoint=JMIN_IN(lp) + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
-print "('NO PERP. TRANS: mp=',I3,' lp=',I4,' mlatNd',F8.3,' apht',F10.2)", mp,lp,(90.-plasma_grid_GL(JMIN_IN(lp),lp)*rtd) &
-& ,plasma_grid_Z(midpoint,lp)*1.0e-3
-endif
-            END IF
-          END IF !( sw_perp_transport>=1 ) THEN
-          ret = gptlstop ('perp_transport')
-
-        END IF !( HPEQ_flip==0.5 .AND. utime==0 ) THEN
+!nm20130401: transport is not called when HPEQ_flip=0.5 as initial profiles do not exist!
+          IF ( HPEQ_flip==0.5 .AND. utime==ut_start_perp_trans ) THEN
+            print *,lp,mp,'utime=',utime,' plasma perp transport is not called when HPEQ_flip=0.5 & start_time=0 because initial profiles do not exist!'
+          ELSE IF ( utime>0 ) THEN
+            ret = gptlstart ('perp_transport')
+            IF ( sw_perp_transport>=1 ) THEN
+              IF ( lp>=lpmin_perp_trans.AND.lp<=lpmax_perp_trans ) THEN
+                CALL perpendicular_transport ( utime,mp,lp )
+              ELSE
+                if(utime==start_time) then
+                  midpoint=JMIN_IN(lp) + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
+                  print "('NO PERP. TRANS: mp=',I3,' lp=',I4,' mlatNd',F8.3,' apht',F10.2)", mp,lp,(90.-plasma_grid_GL(JMIN_IN(lp),lp)*rtd) &
+                                                                                         ,plasma_grid_Z(midpoint,lp)*1.0e-3
+                endif
+              END IF
+            END IF !( sw_perp_transport>=1 ) THEN
+            ret = gptlstop ('perp_transport')
+          END IF !( HPEQ_flip==0.5 .AND. utime==0 ) THEN
 
 ! update the boundary conditions if the top of the flux tube is open
 !t        CALL update_flux_tube_boundary_condition ( )
@@ -222,30 +189,18 @@ endif
 ! call flux tube solver
           ret = gptlstart ('flux_tube_solver')
           IF ( sw_para_transport==1 ) THEN 
-      ret = gptlstart ('before_flux_tube_solver_barrier')
-      if(barriersOn) then
-!sms$insert       call ppp_barrier(status)
-      endif
-      ret = gptlstop  ('before_flux_tube_solver_barrier')
             CALL flux_tube_solver ( utime,mp,lp )
-      ret = gptlstart ('after_flux_tube_solver_barrier')
-      if(barriersOn) then
-!sms$insert       call ppp_barrier(status)
-      endif
-      ret = gptlstop  ('after_flux_tube_solver_barrier')
           ELSE IF ( sw_para_transport==0 ) THEN 
-
-!dbg20111101:v9: temporary ...
             DO i=JMIN_IN(lp),JMAX_IS(lp)
-             i1d=i-JMIN_IN(lp)+1
+              i1d=i-JMIN_IN(lp)+1
               DO jth=1,ISTOT
-                 plasma_3d(i,lp,mp,jth) = plasma_1d(jth,i1d)
+                plasma_3d(i,lp,mp,jth) = plasma_1d(jth,i1d)
 !dbg20120501            DO i=1,IPDIM
 !dbg20120501              plasma_3d(mp,lp)%N_m3( 1:ISPEC,i)=            n0_1d%N_m3( 1:ISPEC,i)
 !dbg20120501              plasma_3d(mp,lp)%Te_k(         i)=            n0_1d%Te_k(         i)
 !dbg20120501              plasma_3d(mp,lp)%Ti_k( 1:ISPET,i)=            n0_1d%Ti_k( 1:ISPET,i)
               END DO !jth
-           END DO !i
+            END DO !i
 
 !dbg20120501
 !dbg20120501            j=1
@@ -266,34 +221,12 @@ endif
 !dbg20110927     &       CALL get_neutral_heating_rate ( )
 
 ! calculate the field line integrals for the electrodynamic solver
-         IF ( sw_eldyn<=1 ) THEN
-!          print *, 'calling interface_field_line_integrals'
-      ret = gptlstart ('before_interface_field_line_integrals_barrier')
-      if(barriersOn) then
-!sms$insert       call ppp_barrier(status)
-      endif
-      ret = gptlstop  ('before_interface_field_line_integrals_barrier')
-           CALL interface_field_line_integrals (lp,mp,utime,  &
-       &   sigma_ped_3d,sigma_hall_3d,Ue1_3d,Ue2_3d,Ne_3d)
-      ret = gptlstart ('after_interface_field_line_integrals_barrier')
-      if(barriersOn) then
-!sms$insert       call ppp_barrier(status)
-      endif
-      ret = gptlstop  ('after_interface_field_line_integrals_barrier')
-         END IF
-
-
-!d!SMS$ignore begin
-!d      print*,mype,lp,'after interface_field_line_integrals'
-!d!SMS$ignore end
-
+          IF ( sw_eldyn<=1 ) THEN
+            CALL interface_field_line_integrals (lp,mp,utime,  &
+                sigma_ped_3d,sigma_hall_3d,Ue1_3d,Ue2_3d,Ne_3d)
+          END IF
 
         END DO apex_latitude_height_loop !: DO lp = 1
-
-!d!SMS$ignore begin
-!d      print*,mype,mp,'end of apex_lat_loop'
-!d!SMS$ignore end
-
 
       END DO apex_longitude_loop !: DO mp = 
 !SMS$PARALLEL END
@@ -360,7 +293,7 @@ endif
 ! output plasma parameters to a file
       ret = gptlstart ('io_plasma_bin')
       IF ( MOD( (utime-start_time),ip_freq_output)==0 ) THEN 
-if(sw_debug) print *,'before call to output plasma',utime,start_time,ip_freq_output
+        if(sw_debug) print *,'before call to output plasma',utime,start_time,ip_freq_output
 !dbg20110923segmentation fault??? memory allocation run time error???
 !sms$compare_var(plasma_3d,"module_sub_plasma.f90 - plasma_3d-5")
 
