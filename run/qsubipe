@@ -301,7 +301,7 @@ mkdir $rundir || fail
 echo Created run directory: $rundir
 inp=IPE.inp
 smsnl=SMSnamelist
-for x in $exe coef* GPTLnamelist $inp load_balance_groups1 $smsnl wei96.cofcnts; do
+for x in $exe coef* GPTLnamelist $inp load_balance_groups* $smsnl wei96.cofcnts; do
   cp $x $rundir || fail
 done
 linksafe $gridfile $rundir/ipe_grid

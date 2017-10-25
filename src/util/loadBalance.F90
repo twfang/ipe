@@ -2,6 +2,7 @@ Program loadBalance
 !This routine does LP load balancing for the IPE code.
 !This code reads in timings (times) from a representative run of the IPE code parallelized on NLP points in the LP direction only: In SMSnamelist "process_layout=NLP,1".
 !The representative run should be made with "barriersOn=f' in IPE.inp and "load_balance_on=f,f" in SMSnamelist.
+! 10/24/17 IPEr504 theia_intel_parallel_170 CTIPINT time was almost indetical with and without barriers.
 !Since the run is made parallelized with NLP points in the LP direction, lpHaloSize must be <=1 which may require a smaller timestep.
 !Currently lpHaloSize s set in main/module_input_parameters.f90
 !Currently flux_tube_solver times are used which are grepped from timing.* by:

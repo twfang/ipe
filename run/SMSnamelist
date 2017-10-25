@@ -4,9 +4,9 @@
   compare_var_ntasks_2=0
   compare_var_on=f
   exact_parallel_sum=f
-  load_balance_method=2,1
-  load_balance_on=t,f
-  load_balance_size=70,0
-  process_layout=10,8
+  load_balance_method=2,2
+  load_balance_on=t,t
+  load_balance_size=70,72
+  process_layout=1,72
   set_process_layout=t
 /
