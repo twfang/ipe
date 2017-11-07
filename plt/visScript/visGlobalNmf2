@@ -13,7 +13,8 @@
 ###date: 20170313
 ###
 ###nm20170815: 0:original IO(runs before20170808); 1:george's new restart IO
-setenv sw_version_io 0
+setenv sw_version_io 1
+setenv sw_wam_ipe 0
 #setenv HPATH     /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe
 setenv HPATH     /scratch3/NCEPDEV/swpc/scrub/
 #setenv TEST      IPEr405
@@ -38,14 +39,15 @@ setenv UserName  Naomi.Maruyama
 #setenv RPATH /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20170726mergeIPEOptimization2SwpcIpeTest/JQIPEr420/IPEr420/run/ ##20170727 JQ reproduction
 #setenv RPATH /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20170726mergeIPEOptimization2SwpcIpeTest/20170726test/testing/run/ ##20170727 after merged with Master
 #setenv RPATH /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20170802debugNaomiBranch/ipe/run/ ##20170803
-setenv RPATH /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/$TEST/ipe/run/  ##20170809
+#setenv RPATH /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/$TEST/ipe/run/  ##20170809
+setenv RPATH /scratch3/NCEPDEV/swpc/noscrub/wam-ipe_initial_conditions/T62_80x170/20131603_0000UT/IPE
 #setenv RPATH  /scratch3/NCEPDEV/stmp2/$UserName/$TEST/IPE/run
 
 #0: idl on interactive queue; 1: submit a job on computer node queue
 set sw_qsubidl = $3
 setenv sw_output2file    1
 setenv sw_debug    0
-setenv alt       250.
+setenv alt       302.
 setenv factor_density  1.0E-12
 #setenv ArrowCol  0.  #black
 setenv ArrowCol  255. #white
@@ -73,8 +75,8 @@ setenv TimeStep 300
     ###VarType: 2:vo+(+southward),3:o+,4:un
     #set j = $3
     #set jmax = $4
-    set j = 7
-    set jmax = 7
+    set j = 0
+    set jmax = 0
 
 #    if ( $#argv < 6 ) then 
 #      setenv sw_frame 1  #default geographic 
@@ -158,7 +160,8 @@ echo "jid_output="  $jid_output
 #set rundir1 = "1502486157" #20170811 test development branchV3 standalone:20130316
 #set rundir1 = "1502826446" #20170815 test development branchV3 standalone:20130316
 #set rundir1 = "1504298928" #20170901 IPEOptimization/testing standalone:20130316
-set rundir1 = "1504821638" #20170907 IPEOptimization/testing standalone:20130316
+#set rundir1 = "1504821638" #20170907 IPEOptimization/testing standalone:20130316
+set rundir1 = "20130316" #20170907 IPEOptimization/testing standalone:20130316
 #set rundir1 = "1505642824" #20170908 IPEOptimization/testing standalone:20130316
 set NPRCS = "464";80" ;464" ;93" #80"
 #set rundir0 = "_ipe_theia_intel_parallel1_" #20160419 v0
@@ -176,9 +179,10 @@ echo "rundir="  ${rundir} >> listRunDir
 #
 ###prepare input files
 ###reference directory: contains the input files to get input parameters.
-set REFDIR = ${RPATH}/${rundir}
+#set REFDIR = ${RPATH}/${rundir} ###tmp20171025
+set REFDIR = ${RPATH}/ ###tmp20171025
 cd ${REFDIR}
-echo PWD= $PWD
+echo "REFDIR=" $PWD
 
 ###idealy i should extract grid info from output run and pass it on to idl
 ###choose grid
@@ -206,11 +210,11 @@ echo "extracting (2) nday finished:" $nday
 #echo "extracting (3) f107av finished:" $f107av
 ###
 ### set to defaul values
-setenv n_read_max 3 #1021 #2
-setenv n_plt_max  2 #1020 #1
+setenv n_read_max 1 #1021 #2
+setenv n_plt_max  0 #1020 #1
 setenv n_plt_min  0
-setenv plt_ut     864000 #432000
-setenv plt_ut_end 864600 #435600
+setenv plt_ut     0 #864000 #432000
+setenv plt_ut_end 0 #864600 #435600
 ###george's new restart IO
 #if ( $sw_version_io == 0 ) then
   set FN0 = ut_rec
@@ -235,7 +239,7 @@ echo "extracting (5) n_read_max from ut_rec=" $n_read_max
 
 setenv sw_quickPlot 1
 if ( $sw_quickPlot == 1 ) then 
-  setenv nColumnsMulti  3 #6 #
+  setenv nColumnsMulti  1 #3 #6 #
   setenv nRowsMulti     2 #5 #
 endif
 setenv sw_hourly_plot 0

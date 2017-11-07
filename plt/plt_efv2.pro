@@ -4,6 +4,9 @@
 ;20120530: fort.2010 added for ed2
 ;pro plot_efield ;shorter name
 pro plt_efv2
+;runDATE='20170727'
+;runDATE='20170917'
+runDATE='20171025'
 sw_debug=0L
 sw_output2file=1L ;1'PNG' ;0NONE';
 sw_output2save=1L ;1save ;0NONE';
@@ -26,36 +29,41 @@ utime_max=utime_min;+600.;to plot ExB time variation on the 6th panel
 ;t endif
 ;runDIR='/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/';before
 ;runDIR='/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/' ;after
-runDIR='/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/' ;20170916
-figDIR=runDIR
-TEST0='3d'
+runDIR0='/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/' ;20170916
+figDIR='/scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/fig/efield/'
+
 ;TEST1='JQIPEr420' ;ref20170727
 ;TEST1='IPEOptimization' ;testing20170917
-TEST1='ed1130Issue' ;testing20170918
-;
+;TEST1='ed1130Issue' ;testing20170918
+TEST1='raw_high_lat' ;debuging20171025
+
+parallelism='parallel_1'
+runid='1508957320'
+;parallelism='serial'
+;runid='1508956570'
+
+TEST0='20171025IpeOptimization/ipe/run/'
 ;TEST2='debugE20160401/run/1459548926_ipe_theia_intel_serial2' ;after
 ;TEST2='tmp20151117/trunk/run4/1459553660_ipe_theia_intel_serial2' ;before
 ;TEST2='tmp20151117/trunk/run4/1459554325_ipe_theia_intel_serial2' ;after
 ;TEST2='20170726mergeIPEOptimization2SwpcIpeTest/JQIPEr420/IPEr420/run/1501180820_ipe_theia_intel_parallel_464' ;20170727
 ;TEST2='20170811testDevelopmentV3/ipe/run/1505642824_ipe_theia_intel_parallel_464' ;20170916
 ;TEST2='20170811testDevelopmentV3/ipe/run/1505719032_ipe_theia_intel_serial' ;20170918
-TEST2='20170811testDevelopmentV3/ipe/run/1505733014_ipe_theia_intel_parallel_464' ;20170918;module_interp_poten.f
-;runDATE='20170727'
-;runDATE='20170917'
-runDATE='20170918'
+;TEST2='20170811testDevelopmentV3/ipe/run/1505733014_ipe_theia_intel_parallel_464' ;20170918;module_interp_poten.f
+TEST2=TEST0+runid+'_ipe_theia_intel_'+parallelism ;20171025 raw_high_lat test
 
 plot_DIR=$
 ;'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/fig/ef/20150317/after20160401/'
 ;'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/fig/ef/20150317/before20151210/'
-'/scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/fig/20170916/'+TEST1+'/' ;20170916
-;runDIR+'fig/efield/'+TEST2+'/'
+;'/scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/fig/20170916/'+TEST1+'/' ;20170916
+figDIR+runDATE+'/'+TEST1+'/' ;20171025
 print,' plot_DIR=', plot_DIR
-input_DIR=runDIR+TEST2+'/'
+input_DIR=runDIR0+TEST2+'/'
 
 
 utime=0L
 freq_output=5 ;min
-n_read_max=1L; ###CHANGE
+n_read_max=3L; ###CHANGE
 utsec_save=fltarr(n_read_max)
 utsec_save[*]=-9999L
 
@@ -133,19 +141,19 @@ if sw_debug eq 1L then begin
 endif
 dlonm90km=4.50 ;deg
 mlon90=findgen(nmp)*dlonm90km
-;if sw_debug eq 1 then $
-  print,'mlon90',mlon90
-for i=0,nlp*2-1 do begin
-   for mp=0,nmp-1 do begin
-      mlon90_2d[mp,i]=mlon90[mp]
+if sw_debug eq 1 then $
+   print,'mlon90',mlon90
+  for i=0,nlp*2-1 do begin
+     for mp=0,nmp-1 do begin
+        mlon90_2d[mp,i]=mlon90[mp]
 
-if ( sw_180 eq 1L ) then begin
-      if ( mlon90_2d[mp,i] ge 180. ) then mlon90_2d[mp,i]=mlon90_2d[mp,i]-360. 
-endif
+        if ( sw_180 eq 1L ) then begin
+           if ( mlon90_2d[mp,i] ge 180. ) then mlon90_2d[mp,i]=mlon90_2d[mp,i]-360. 
+        endif
 
 
-   endfor;mp
-endfor   ;i
+      endfor;mp
+   endfor   ;i
 
 for j=0,nmp-1 do begin
 mlat90_2d[j,0:nlp*2-1]=mlat90_1[0:nlp*2-1]
@@ -158,7 +166,7 @@ n_read=-1L
 while(eof(LUN10) eq 0 ) do begin
 n_read=n_read+1
 readf, LUN10, utime,  FORMAT=formatI
-print, n_read, utime
+print,'n_read=', n_read,' utime=', utime
 utsec_save[n_read]=utime
 print,'rd#',n_read,' uts',utime ;,' uts_save',utsec_save[n_read]
 
@@ -231,7 +239,7 @@ if ( utime gt utime_max ) then BREAK ;exit from while read loop
 ;20140225 separated out from plt_efv2.pro
 if ( sw_plt_cntr eq 1 ) then $
    plt_cntr_fill $
- , iplot_max,mlon90_2d,mlat90_2d, sw_180,mlat130,poten,ed1130,ed2130,ed190,ed290,sw_debug,mlon130,mlat90_0,utime,runDATE,TEST2,plot_DIR,mp,lp, sw_output2file,sw_output2save $
+ , iplot_max,mlon90_2d,mlat90_2d, sw_180,mlat130,poten,ed1130,ed2130,ed190,ed290,sw_debug,mlon130,mlat90_0,utime,runDATE,TEST2,plot_DIR,mp,lp, sw_output2file,sw_output2save, parallelism $
 
 else if ( sw_plt_cntr eq 2 ) then $
    plt_cntr_fill_plr $

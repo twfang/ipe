@@ -93,7 +93,8 @@ print,'rpath= ', rpath
 rundir = getenv('rundir')
 print,'rundir=',rundir
 ;dbg20170926
-input_DIR0 = rpath+'/'+rundir+'/'
+;input_DIR0 = rpath+'/'+rundir+'/' ;tmp20171025
+input_DIR0 = rpath+'/'
 ;input_DIR0
 ;='/scratch3/NCEPDEV/swpc/noscrub/Joseph.Schoonover/debug/after_ipe_nuopc_2d_petlayout/'
 ;input_DIR0 ='/scratch4/NCEPDEV/stmp3/Adam.Kubaryk/2c146c8_naomi/'
@@ -378,11 +379,12 @@ print,'UT_hr=',UT_hr
        ;WAM_IPE
        nHrMin=0 ;###CHANGE!
        nHrTimeStamp = nHrMin
-       runDate='20130316'           
+       runDate0=16
+       runDate='201303'+STRTRIM( STRING( runDate0, FORMAT='(i2)'), 1)           
        nMinMin=0
        ;nMinMin=0
        nMinTimeStamp = (n_read+1) * TimeStep + nMinMin
-print,' nMinTimeStamp=', nMinTimeStamp
+print,' nMinTimeStamp=', nMinTimeStamp,' runDate=',runDate,' n_read=',n_read
 ;dbg20170926
 UT_hr = FLOAT(nMinTimeStamp)/60.
 print,'UT_hr=',UT_hr
@@ -392,7 +394,9 @@ print,' nHrTimeStamp=', nHrTimeStamp
            if nHrTimeStamp ge 24 then begin
               nHrTimeStamp = ( FIX(nMinTimeStamp/60) MOD 24 )
 ;dbg20170825: temporary solution
-              runDate='20130322'           
+              runDate0 = runDate0+1 
+              runDate='201303'+STRTRIM( STRING( runDate0, FORMAT='(i2)'), 1)           
+print,' runDate=',runDate
            endif
          nMinTimeStamp = ( nMinTimeStamp MOD 60 )
       endif ;nMinTimeStamp

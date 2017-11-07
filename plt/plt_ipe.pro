@@ -15,8 +15,8 @@
 pro plt_ipe
 
 n_plt_min=0
-n_plt_max=2L
-n_read_max=3L
+n_plt_max=0L
+n_read_max=1L
 runDuration= $
 ;'1hr';
 '1day';;
@@ -26,7 +26,9 @@ sw_output2file=0 ;1:PNG' ;0:NONE';
 TEST = $
 ;'4to8';
 ;'swNeutral1O'
-'swNeutral1'
+;'swNeutral1'
+;'swFrictHeat0'
+'swFrictHeat2'
 ;1Tn';swNeutral1all';
 UserName = $
 'Naomi.Maruyama';Peggy.Li';Gerhard.Theurich';
@@ -77,7 +79,9 @@ print, 'rundir=', rundir
 
 
 input_DIR0=$
-'/scratch3/NCEPDEV/swpc/save/Tzu-Wei.Fang/IPE/trunk_electrodynamics_44514_PPEF/run/ipe_S_05time_60degree/'
+;'/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/mpi20160330v4/run/1509621646_ipe_theia_intel_parallel2_93/' ;sw_frictHeat=0
+'/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/mpi20160330v4/run/1509544725_ipe_theia_intel_parallel2_93/' ;sw_frictHeat=2
+;'/scratch3/NCEPDEV/swpc/save/Tzu-Wei.Fang/IPE/trunk_electrodynamics_44514_PPEF/run/ipe_S_05time_60degree/'
 ;'/scratch3/NCEPDEV/swpc/noscrub/'+rundir+'/'
 ;'/scratch3/NCEPDEV/swpc/scrub/'+rundir+'/'
 ;'/scratch3/NCEPDEV/swpc/save/Tzu-Wei.Fang/IPE/trunk_electrodynamics_44514_6/run/ipe_S6_137521/'
@@ -113,9 +117,9 @@ endif ;( sw_output2file_ascii eq 1 ) then begin
 ;n_plt_max=97L ;for quick plot
 ;n_read_max=1L;97L
 print,' n_read_max', n_read_max
-plot_UT    =559800 ;432000;691200;
-plot_UT_end=560400;plot_UT+3600.*24.*1.
-sw_quickplot=1L
+plot_UT    =432000;
+plot_UT_end=plot_UT ;+3600.*24.*1.
+sw_quickplot=0L
 ;20140117; plot every X hour
 sw_hourly_plot=0L
 plotXhr=1.0 
@@ -126,8 +130,8 @@ n_read_freq =15L
 print,'n_read_freq=',n_read_freq
 
 title_res= $
-'low20120709';
-;'2xdyn';
+;'low20120709';
+'2xdyn';
 ;'td20120709';
 ;'low'; 'high'
 
@@ -184,9 +188,9 @@ fac_window=10.0
 
 
 
-plot_type=0L ;0:contour; 1:ht profile; 2:LT-LAT contour; 3:LON-LAT contour; 4:refilling: 5:psphere, 6:tec
+plot_type=1L ;0:contour; 1:ht profile; 2:LT-LAT contour; 3:LON-LAT contour; 4:refilling: 5:psphere, 6:tec
 ;if plot_type eq 0 then begin
-  mp_plot=64-1+1;1-1L;80-1L ; longitude sector to plot
+  mp_plot=55L;80-1L ; longitude sector to plot
 mpstart=mp_plot
 mpstop=mpstart
 mpstep=1
@@ -228,10 +232,11 @@ version='3d'
 
 ;20161021: merging project
 fig_DIR ='/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/' ;theia
-n_file = 19L
+n_file = 21L
 input_flnm = ['','','','','','' $
 ,'','','','' $
-,'','','','','','','','']
+,'','','','','','','','' $
+,'','']
 input_DIR = input_flnm
 input_DIR[*]=input_DIR0
 input_DIR[1]='/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/grid/plt/';theia
@@ -247,14 +252,16 @@ sw_lun[11]=1 ;05 o2+
 sw_lun[12]=1 ;06 n2+
 sw_lun[13]=1 ;07 o+(2D)
 sw_lun[14]=1 ;08 o+(2P)
-sw_lun[3]=0 ;Te
-sw_lun[7]=0 ;Ti
+sw_lun[3]=1 ;Te
+sw_lun[7]=1 ;Ti
 sw_lun[4]=0 ;vo+
 sw_lun[5]=0 ;vexbup
 sw_lun[15]=0 ;vexbe
 sw_lun[16]=0 ;vexbth
 sw_lun[17]=0 ;sunlon
 sw_lun[18]=0 ;sza, plasma17
+sw_lun[19]=0
+sw_lun[20]=0
 if ( sw_dif eq 1 ) then begin
 LUNq  = INTARR(n_file)
    input_flnmq =input_flnm
@@ -311,7 +318,7 @@ NMP=80L ;=mpstop in IPE.inp
 ISPEC=9L
 ISPEV=4L
 MaxFluxTube=1115L ;=FLDIM
-FLDIM=549L;447l;455l;577L;415L  ;???used when plot_type=1
+FLDIM=695L;447l;455l;577L;415L  ;???used when plot_type=1
 
   
   sunlons1 =  -1.92900
@@ -409,7 +416,9 @@ endif
 if ( sw_save le 1 ) then $
 open_file,  input_DIR, LUN,version,input_flnm $
 ,sw_3DJ,sw_hr, sw_lun,title_res $
-,sw_debug
+,sw_debug $
+                , TimeStamp4Plot, n_read $
+                , input_DIR0,luntmp7, luntmp3, luntmp8, luntmp9, luntmp10, luntmp11,sw_wam_ipe
 
 if ( sw_dif eq 1 ) then $
    open_file,  input_DIRq, LUNq,version,input_flnmq $
@@ -861,7 +870,7 @@ plot_x = fltarr(plot_type_max, k_species,FLDIM_max,n_file_plot)
      plot_x[*,*,*,*] =-999999999.999999
  FLDIM_plot=LONARR(n_file_plot)
 for   mp_plot0=mp_plot,mp_plot,1  do begin
-  lp_plot0=15-1L;22;46-1; 58-1L
+  lp_plot0=10L;22;46-1; 58-1L
 
 for i_file = 0,n_file_plot-1 do begin
 

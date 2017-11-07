@@ -1,11 +1,11 @@
 pro eldy_take_diff
 
-RDIR00='/scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/fig/20170916/'
+RDIR00='/scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/fig/efield/20171025/raw_high_lat/'
 RDIR0=RDIR00+'JQIPEr420/'
 RDIR1=RDIR00+'IPEOptimization/'
-jmax=5L
+jmax=1L
 for j=0,jmax-1 do begin
-   restore,RDIR0+'eldynUTsec864000.sav'
+   restore,RDIR0+'eldynUTsec0.serial.sav'
 help
    print,'(0) utime=', utime
 
@@ -26,7 +26,7 @@ help
    print,j,'(0)poten:MAX=',max0,min0
    
 
-   restore,RDIR1+'eldynUTsec0.sav'
+   restore,RDIR1+'eldynUTsec0.parallel_1.sav'
 ;help
    print,'(1) utime=', utime
    

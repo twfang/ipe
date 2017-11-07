@@ -26,7 +26,7 @@ print,'inside ctr_lon_lat_quick: check on_m3', MAX( on_m3 ), MIN( on_m3 )
 
 
 ;nm20161220 profile validation
-sw_debug_prfl=1L
+sw_debug_prfl=0L
 
  sw_output_nmf2=0 ;NH:1; N&S:2 ; no nmf2 output:0
  sw_output_nmf2noon=0
@@ -341,10 +341,11 @@ if sw_debug_prfl eq 1 then begin
 ;dbgDate='20170927PostVector' ;22990
 ;dbgDate='20170927PreVector' ;52338
 ;dbgDate='20171002PostCorrection1X80' ;5043 1X80
-dbgDate='20171002PostCorrection2X40' ;34857 2X40
+;dbgDate='20171002PostCorrection2X40' ;34857 2X40
+dbgDate='20171002PostCorrection8X10' ;63647 8X10
 SwDensity=$
-;1 ;density  
-0 ;wind
+1 ;density  
+;0 ;wind
 
    mpPlot=0L ;68L
 ;lpPlot=35L ;SH -49.79  218.11 NH  40.19  243.17
@@ -720,8 +721,11 @@ zmax=960.
 ;        zmin=+17. ;[o]
 ;        zmax=+18.
 ;350km
-        zmin=+14.0 ;350km
-        zmax=+14.57;
+        zmin=+14.25 ;350km
+        zmax=+14.75;
+;200km
+        zmin=+15.4 ;
+        zmax=+16.1;
       endif else if ( VarType eq 5 ) then begin 
         zmin=-300.;zonal +eastward
         zmax=+300.
@@ -787,7 +791,7 @@ if ( xmax360 eq 1 ) then begin
   X_min=+  0.
 endif else if ( xmax360 eq 0 ) then begin
 ;dbg20170926 
-  X_max= +20. ;+180.
+  X_max= +180.
   X_min= -X_max
 endif
 if ( sw_frame eq 2 ) then begin
@@ -795,8 +799,8 @@ x_max=24.
 x_min=0.
 endif
 
-;dbg20180926
-Y_max= +20.0
+;dbg20170926
+Y_max= +80.0
 Y_min= -Y_max
 if ( sw_frame eq 0 ) or ( sw_frame eq 2 ) then $
   MAG_GEO='magnetic' $
@@ -942,7 +946,7 @@ endfor
            ,xrange=[X_min,X_max], /xstyle $
            ,yrange=[Y_min,Y_max], /ystyle $
            ,XTITLE=X_TITLE,YTITLE=Y_TITLE $
-           ,TITLE='UT '+STRTRIM( string(ut_hr_disp, FORMAT='(F8.4)'),1 )+'  MAX='+STRTRIM( string(maxZ, FORMAT='(F8.2)'),1 )+' MIN='+STRTRIM( string(minZ, FORMAT='(F8.2)'),1 ) $
+           ,TITLE='UT '+STRTRIM( string(ut_hr, FORMAT='(F8.4)'),1 )+'  MAX='+STRTRIM( string(maxZ, FORMAT='(F8.2)'),1 )+' MIN='+STRTRIM( string(minZ, FORMAT='(F8.2)'),1 ) $
            ;,POSITION=[X0,Y0,X1,Y1] $
            ,COLOR=text_color $
            ,charsize=char_size,charthick=char_thick $
@@ -959,7 +963,7 @@ endfor
            ,xrange=[X_min,X_max], /xstyle $
            ,yrange=[Y_min,Y_max], /ystyle $
            ,XTITLE=X_TITLE,YTITLE=Y_TITLE $
-           ,TITLE='UT '+STRTRIM( string(ut_hr_disp, FORMAT='(F6.2)'),1 ) $
+           ,TITLE='UT '+STRTRIM( string(ut_hr, FORMAT='(F6.2)'),1 ) $
            ;,POSITION=[X0,Y0,X1,Y1] $
            ,COLOR=text_color $
            ,charsize=char_size,charthick=char_thick $
@@ -969,8 +973,8 @@ endfor
    if ( sw_debug eq 1 ) then  print,'MAX=',MAX(plot_zz),' MIN=',MIN(plot_zz)
 
 ;dbg20170921: save values to calculate diff
-flnm_sav=plot_DIR+'rt40623nmf2UT'+STRTRIM( string(ut_hr_disp, FORMAT='(F6.2)'),1 )+'.sav'
-save,ut_hr_disp,plot_zz,plot_xx,plot_yy,/VARIABLES,filename=flnm_sav
+flnm_sav=plot_DIR+'rt'+getenv('rtNumber')+VarTitle[VarType]+'UT'+STRTRIM( string(ut_hr, FORMAT='(F6.2)'),1 )+'_ht'+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+'.sav'
+save,ut_hr,plot_zz,plot_xx,plot_yy,/VARIABLES,filename=flnm_sav
 
    ; add MIN & MAX values
 ;xyouts, 0.5, 0.84 $
@@ -986,7 +990,7 @@ save,ut_hr_disp,plot_zz,plot_xx,plot_yy,/VARIABLES,filename=flnm_sav
       if VarType eq 6 then $
          format_colorbar='(f7.2)' $
       else if VarType eq 4 then $
-         format_colorbar='(E9.2)' $
+         format_colorbar='(E9.3)' $
       else $
          format_colorbar='(E9.1)'
       

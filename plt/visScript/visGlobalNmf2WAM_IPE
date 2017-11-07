@@ -39,7 +39,8 @@ setenv HPATH        /scratch3/NCEPDEV/swpc/scrub
 ###CHANGE!
 #setenv compsetTitle  spacewx_gsm%wam%T62_ipe%80x170 #old
 #setenv compsetTitle  newspacewx_gsm%wam%T62_ipe%80x170  ###raffaele's new version
-setenv compsetTitle  spacewx_gsm%wam%T62_ipe%80x170_$7  ###raffaele's new version with new layout
+#setenv compsetTitle  spacewx_gsm%wam%T62_ipe%80x170_$7  ###raffaele's new version with new layout
+setenv compsetTitle  spacewx_gsm%wam%T62_ipe%80x170  ###raffaele's new version with new layout
 #setenv compsetTitle  spacewx_gsm%wam%T62_ipe%80x170_new #new20170819 for Bob milestone0.6
 #setenv compsetTitle  spacewx_gsm%wam%T62_ipe%80x170_restart #new20170825 for Bob milestone0.6
 #setenv compsetTitle  spacewx_gsm%wam%T62_ipe%80x170 #20170919 debug TW's
@@ -57,7 +58,7 @@ set sw_qsubidl = 0
 setenv sw_wam_ipe        1  #0:standalone IPE; 1:wam_ipe
 setenv sw_output2file    1
 setenv sw_debug          0
-setenv alt               180. ###91. ###350.
+setenv alt               200. ###91. ###350.
 setenv factor_density    1.0E-12
 #setenv ArrowCol  0.  #black
 setenv ArrowCol  255. #white
@@ -117,8 +118,8 @@ if ( $sw_quickPlot == 1 ) then
     setenv nColumnsMulti  4
     setenv nRowsMulti     7
   else if ( $runDuration == 5day ) then   
-    setenv nColumnsMulti  10
-    setenv nRowsMulti     6
+    setenv nColumnsMulti  4
+    setenv nRowsMulti     7
   endif
 endif
 
@@ -126,8 +127,8 @@ endif
 # if ( $runDuration == 1hr ) then 
 #  setenv sw_hourly_plot 0
 #else
-#  setenv sw_hourly_plot 1
-  setenv sw_hourly_plot 0
+  setenv sw_hourly_plot 1
+#  setenv sw_hourly_plot 0
 #endif
 
 if ( $sw_hourly_plot == 1 ) then 
@@ -165,7 +166,8 @@ while ( $i <= $imax )
 ###modified for Pauls latest version after r378(after merging)
 #t    setenv rundir  `cat $RPATH/$jid_output | awk -F "Created run directory: " '{print $2}'`
 #setenv rundir   rt_${rtNumber}/${compset}  
-setenv rundir   rt_${rtNumber}/oldcompsets/${compset} ###tmp20171002 temporary for debugging Raffaele
+#setenv rundir   rt_${rtNumber}/oldcompsets/${compset} ###tmp20171002 temporary for debugging Raffaele
+setenv rundir   rt_${rtNumber}/${compset} ###tmp20171002 temporary for debugging Raffaele
 echo "rundir="  ${rundir}
 echo "i="  ${i} >> listRunDir
 echo "rundir="  ${rundir} >> listRunDir
@@ -228,14 +230,14 @@ else if ( $runDuration == 6day ) then
   setenv n_read_max 288
   setenv n_plt_max  23
 else if ( $runDuration == 5day ) then 
-  setenv n_read_max 3 #47 #240
-  setenv n_plt_max  2 #46 #23
+  setenv n_read_max 240
+  setenv n_plt_max  19
 endif
 #
 
-setenv n_plt_min  0
-setenv plt_ut     360 #432000
-setenv plt_ut_end 9000 #433800
+setenv n_plt_min  11
+setenv plt_ut     1800 #432000
+setenv plt_ut_end 432000
 ###george's new restart IO
 #if ( $sw_version_io == 0 ) then
   set FN0 = ut_rec

@@ -1,7 +1,7 @@
 ;20140225 separated out from plt_efv2.pro
 ;purpose: plot filled color contour
 pro plt_cntr_fill $
-, iplot_max,mlon90_2d,mlat90_2d, sw_180,mlat130,poten,ed1130,ed2130,ed190,ed290,sw_debug,mlon130,mlat90_0,utime,runDATE,TEST2,plot_DIR,mp,lp, sw_output2file,sw_output2save 
+, iplot_max,mlon90_2d,mlat90_2d, sw_180,mlat130,poten,ed1130,ed2130,ed190,ed290,sw_debug,mlon130,mlat90_0,utime,runDATE,TEST2,plot_DIR,mp,lp, sw_output2file,sw_output2save,parallelism 
 ;
   var_title=['pot130[kV]','ed1130[mV/m]','ed2130[mV/m]','pot130-mlat90[kV]','ed190[mV/m]','ed290'] 
 SW_range=1L
@@ -156,10 +156,10 @@ xyouts, 0.03, 0.96  $
 filename=plot_DIR+'ts_efield.'+'UTsec'+STRTRIM( string(utime, FORMAT='(i6)'),1 )+runDATE+'.png'
 if ( plot_NH eq 1 ) then $
 ; filename='ts_efield.'+runDATE+'NH.png'
-filename=plot_DIR+'ts_efield.'+'UTsec'+STRTRIM( string(utime, FORMAT='(i6)'),1 )+runDATE+'NH'+STRTRIM( string(mlat90_2d[mp,lp], FORMAT='(F6.2)'),1 )+'mp'+STRTRIM( string(mp, FORMAT='(i2)'),1 )+'ed2.v2.png'
+filename=plot_DIR+'ts_efield.'+'UTsec'+STRTRIM( string(utime, FORMAT='(i6)'),1 )+runDATE+'NH'+STRTRIM( string(mlat90_2d[mp,lp], FORMAT='(F6.2)'),1 )+'mp'+STRTRIM( string(mp, FORMAT='(i2)'),1 )+'ed2.'+parallelism+'.png'
 
 if ( sw_output2file eq 1 ) THEN  output_png, filename
-if ( sw_output2save eq 1 ) THEN  save,utime,poten,ed1130,ed2130,ed190,ed290,mlon130,mlat130,mlon90_0,mlon90_2d,mlat90_2d,/VARIABLES,filename=plot_DIR+'eldyn'+'UTsec'+STRTRIM( string(utime, FORMAT='(i6)'),1 )+'.sav'
+if ( sw_output2save eq 1 ) THEN  save,utime,poten,ed1130,ed2130,ed190,ed290,mlon130,mlat130,mlon90_0,mlon90_2d,mlat90_2d,/VARIABLES,filename=plot_DIR+'eldyn'+'UTsec'+STRTRIM( string(utime, FORMAT='(i6)'),1 )+'.'+parallelism+'.sav'
 
 end ;plt_cntr_fill $
 

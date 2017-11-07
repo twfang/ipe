@@ -1,18 +1,33 @@
 pro nmf2_take_diff
 
-RDIR00='/scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/fig/Tzu-Wei.Fang/20170921/'
-RDIR0='120449' ;continuous
-RDIR1='40623'  ;restart
-UTimeTitle='1.45'
+UserName='Raffaele.Montuoro'
+RDIR00='/scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/fig/'+UserName+'/'
+RDIR0='124589'; 8x10;
+RDIR1='128625'; 1x80;
+
+;for utime=6,120,6 do begin
+for utime=36,36 do begin
+print,'utime=',utime
+
+if utime lt 10 then $
+  UTimeTitle=STRTRIM( string(utime, FORMAT='(i1)'),1 )+'.00' $
+else if utime lt 100 then $
+  UTimeTitle=STRTRIM( string(utime, FORMAT='(i2)'),1 )+'.00' $
+else if utime lt 1000 then $
+  UTimeTitle=STRTRIM( string(utime, FORMAT='(i3)'),1 )+'.00' 
+
 ;UTimeTitle='1.95'
-print,'UT=',UTimeTitle
+print,'UTimeTitle=',UTimeTitle
 jmax=0L;5L
+VarTitle='NmF2';Un';On_m3'
+htTitle='200.';350.'
 
 ;for j=0,jmax-1 do begin
 ;read continuous
-flnm_sav=RDIR00+'rt'+RDIR0+'nmf2UT'+UTimeTitle+'.sav'
-print,'restoring file=',flnm_sav
-   restore,flnm_sav
+flnm_sav0=RDIR00+'rt'+RDIR0+VarTitle+'UT'+UTimeTitle+'_ht'+htTitle+'.sav'
+flnm_sav1=RDIR00+'rt'+RDIR1+VarTitle+'UT'+UTimeTitle+'_ht'+htTitle+'.sav'
+print,'restoring file0=',flnm_sav0
+   restore,flnm_sav0
 ;help
    print,'(0) utime=', ut_hr_disp
 
@@ -26,9 +41,8 @@ print,'restoring file=',flnm_sav
    
 
 ;read restart
-flnm_sav=RDIR00+'rt'+RDIR1+'nmf2UT'+UTimeTitle+'.sav'
-print,'restoring file=',flnm_sav
-   restore,flnm_sav
+print,'restoring file1=',flnm_sav1
+   restore,flnm_sav1
 ;help
    print,'(1) utime=', ut_hr_disp
    
@@ -42,10 +56,13 @@ print,'restoring file=',flnm_sav
 
    diff=var1-var0
    rat=diff/max0
-   print,'diff=',max(diff),min(diff)
+   print,'diff=',max(diff,i),i,min(diff,j),j
    print,'rat=',max(diff)/max0, min(diff)/max0
    
 ;endfor                          ;j
+
+;if max(diff) eq 0.0 then STOP
+if max(diff) eq 0.0 then CONTINUE
 
    DEVICE, RETAIN=2, DECOMPOSED=0
 
@@ -87,6 +104,8 @@ Y_min= -Y_max
 Filename_png=RDIR00+'diff_'+RDIR0+'_'+RDIR1+'UT'+UTimeTitle+'.png'
 print,Filename_png
 output_png,Filename_png
+
+endfor ;utime=6,120,6 do begin
 
 print, "nmf2_take_diff finished!"
 end;pro nmf2_take_diff

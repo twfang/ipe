@@ -173,9 +173,9 @@ print,i,' lp=',(lp+1),' mlat=',mlat_deg[i],z_km[midpoint],' L-value=',lval;,(jmi
 
 endif ;if sw_debug eq 1 then begin
 
-lp=138
-midpoint = JMIN_IN[lp]-1 + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
-print, lp,midpoint,' apex ht=', z_km[midpoint]
+;lp=138
+;midpoint = JMIN_IN[lp]-1 + ( JMAX_IS(lp) - JMIN_IN(lp) )/2
+;print, lp,midpoint,' apex ht=', z_km[midpoint]
 ;stop 
 
 if ( sw_save_grid eq 1 ) then  begin

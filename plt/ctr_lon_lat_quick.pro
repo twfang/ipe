@@ -125,15 +125,15 @@ for mp=0,NMP-1 do begin
   for i=in,midpoint, istep  do begin
 
    if ( VarType lt 7 ) then begin
-print,in,'!dbg',i,' mp=',mp,' lp=',lp,z_km[i],ht_plot,z_km[i+istep],on_m3[i,mp]
+;dbg print,in,'!dbg',i,' mp=',mp,' lp=',lp,z_km[i],ht_plot,z_km[i+istep],on_m3[i,mp]
 
 
 if ( z_km[i] le ht_plot ) AND (z_km[i+istep] gt ht_plot ) then begin
 
 
 ;lp=68
-if mp eq 64 AND lp ge 58 AND lp le 78 then $
-print,'NH!dbg',i,' mp=',mp,' lp=',lp,XIONN_m3[0:8,i,mp],z_km[i]
+;dbg if mp eq 64 AND lp ge 58 AND lp le 78 then $
+;dbg print,'NH!dbg',i,' mp=',mp,' lp=',lp,XIONN_m3[0:8,i,mp],z_km[i]
 
 
 
@@ -301,11 +301,11 @@ if ( z_km[i] le ht_plot ) AND ( z_km[i+istep] gt ht_plot ) then begin
 
 
 ;lps=270
-if mp eq 64  AND lps ge 260 AND lps le 280 then begin
-   print,'SH!dbg',i,' mp=',mp,' lp=',lp,' lps=',lps,XIONN_m3[0:8,i,mp],z_km[i]
+;dbg if mp eq 64  AND lps ge 260 AND lps le 280 then begin
+;dbg    print,'SH!dbg',i,' mp=',mp,' lp=',lp,' lps=',lps,XIONN_m3[0:8,i,mp],z_km[i]
 ;if mp eq 48 AND lps eq 270 then print,'!dbg',i,mp,lps,XIONN_m3[0:8,i,mp]
    ;STOP
-endif
+;dbg endif
       if ( VarType eq 0 ) then $ 
         for jth=0,ISPEC-1 do  plot_zz[mp,lps]=plot_zz[mp,lps]+XIONN_m3[jth,i,mp]*factor $
       else if ( VarType eq 1 ) then $
@@ -392,7 +392,7 @@ lpPlot=35L ;SH -49.79  218.11 NH  40.19  243.17
                    ,'O'  $
                    , charsize=2.0, charthick=2.0, /norm, /noclip
            
-           loadct,39
+           loadct,33
 ;SH [N2]
            oplot,xtmp1,ytmp $
                  ,linestyle=0 $
@@ -742,7 +742,7 @@ if ( sw_plot_contour eq 1 ) then begin
 	text_color=255.
 char_size=1.0
 char_thick=1.0
-n_ldct=39;5;39
+n_ldct=33 ;39;5;39
 ;if ( vartype eq 6 ) then N_LDCT=70
 
 	iwindow=1L
