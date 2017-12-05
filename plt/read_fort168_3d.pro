@@ -18,10 +18,11 @@ for m=0,1-1 do begin ;NMP-1 do begin
 
 ;dbg print,'sub-read_fort168: m=',m;,' l=',l
 
+;dbg20171115
    readf, LUN168, string_mp,mp,string_lp,lp,string_tmp,UT_hr,LT_hr, FORMAT='(A3,i3,A4,i3,A16,2F10.2)'
-print,"n_read#",n_read,' sub-read_fort168:', string_mp,mp,string_lp,lp,string_tmp,UT_hr,' LT=',LT_hr
-
-mp_plot=mp-1 ;IDL convention
+   print,"n_read#",n_read,' sub-read_fort168:', string_mp,mp,string_lp,lp,string_tmp,UT_hr,' LT=',LT_hr
+   mp_plot=mp-1 ;IDL convention
+;mp_plot=1-1L
 ;dbg20120304: LT_hr calculation in flux_tube_...f90 was not correct!
 ;if ( mp eq 4 ) then lt_hr=UT_hr+19.9999999-24.
 ;if ( mp eq 1 ) then lt_hr=UT_hr+19.2-24.
@@ -64,15 +65,15 @@ if ( sw_debug eq 1 ) then print, string_tmp
  endif
 ;endif ;( m eq 0 ) then begin
 
-if ( sw_debug eq 1 ) then begin
+;if ( sw_debug eq 1 ) then begin
    if ( j eq 0 ) then  print, UT_hr,LT_hr $
     , FORMAT='(2F10.2)'
 
-  print,j,zj,tnxj,unj,nnoj,eht3j,ti1j,ti3j,n1j,n2j $
-  ,n3j,n4j,phionj $
-  ,SUMIONJ,XIONNJ,EQN2DJ,NPLSPRDJ  $
-  , FORMAT='(i5,3F10.2,22E9.2)'
-endif
+;  print,j,zj,tnxj,unj,nnoj,eht3j,ti1j,ti3j,n1j,n2j $
+;  ,n3j,n4j,phionj $
+;  ,SUMIONJ,XIONNJ,EQN2DJ,NPLSPRDJ  $
+;  , FORMAT='(i5,3F10.2,22E9.2)'
+;endif
 
     ENDFOR                          ;   for j=1-1,(FLDIM_l/2)+1-1 do begin
 ;  ENDFOR                           ;l=0,NLP-1 do begin

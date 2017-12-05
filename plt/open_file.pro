@@ -37,10 +37,12 @@ pro open_file,  input_DIR, LUN,version,input_flnm $
   if(sw_lun[18] eq 1 ) then  input_flnm[18]='plasma17' ;sza
   if(sw_lun[20] eq 1 ) then  begin
      if n_read gt 0 then  free_lun, lun[20]
-;     input_flnm[20]='ipe_grid_plasma_params.'+TimeStamp4Plot
+print,TimeStamp4Plot
+     input_flnm[20]='ipe_grid_plasma_params.'+TimeStamp4Plot
 ;     ;george's new io  ;tmp20171025
-     input_flnm[20]='ipe_grid_plasma_params';.'+TimeStamp4Plot  ;george's new io
-     if ( sw_debug eq 1 ) then  print,'input_flnm[20]=', input_flnm[20]
+;     input_flnm[20]='ipe_grid_plasma_params';.'+TimeStamp4Plot  ;george's new io
+;     if ( sw_debug eq 1 ) then  
+print,'input_flnm[20]=', input_flnm[20]
   endif ;sw_lun20
 
 ;if ( sw_hr  eq 1 ) then begin
@@ -55,6 +57,8 @@ pro open_file,  input_DIR, LUN,version,input_flnm $
   for i = 0, n_file-1  do begin
 
      if ( sw_lun[i] ne 1 ) then  CONTINUE
+
+print,i,input_DIR[i]+input_flnm[i]
 
 ;dbg20121124      if ( i eq 0 ) or ( i gt 9 ) then $ 
      if ( i eq 0 OR i eq 17 )  then $ 

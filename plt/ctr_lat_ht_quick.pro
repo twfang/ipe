@@ -15,7 +15,7 @@
 , VarType_step $;=4L
 ,n_plt_max $;
 , input_DIR0, TEST, TEST1, TEST2, glon_deg2D, rundir  $
-,n_plt_min,on_m3
+,n_plt_min,tn_k,on_m3
 
 
 ;n_readInit=0L;default
@@ -36,24 +36,24 @@ lpmax_perp_trans=149
 ;mpstart=mp_plot-5;0
 ;mpstop=mp_plot;0
 ;mpstep=1
-;debug
-for i=mpstart, mpstop  do print,' mp', (i+1),' LT',lt_hr[i]
 
-HTmin=90.  ;min(yy)   ;75.   ;400. ;
-HTmax=200.;2000. 
+
+
+HTmin=90. 
+HTmax=400.
 ; plot range
 if ( title_hemi eq 'NH' ) then begin
   gLATmax=+83.;+90.;-10.;
   gLATmin=+55.;+50.;-gLATmax;-27.; 
 endif else if ( title_hemi eq 'SH' ) then begin
-  gLATmax=-55.;+90.;-10.;
-  gLATmin=-85.;+50.;-gLATmax;-27.; 
+  gLATmax=-16.;
+  gLATmin=-20.;-gLATmax; 
 endif else if ( title_hemi eq 'glb' ) then begin
-  gLATmax=+8.;+60.;+90.
+  gLATmax=+90.
   gLATmin=-gLATmax;
 endif else if ( title_hemi eq 'eq' ) then begin
-  gLATmax=-15.;+90.;-10.;
-  gLATmin=-33.;-gLATmax;-27.;
+  gLATmax=+20.;
+  gLATmin=-gLATmax;
 ;  HTmax=1.001E+03 
 endif
 
@@ -104,7 +104,7 @@ FileID=time_string+'_'+STRTRIM(STRING( lt_hr[mp], FORMAT='(F6.2)'),1)+'LT'+'_mp'
 
 VarTitle=[ $
 'Ne',$
-'Te',$ 
+'Tn',$; 'Te',$ 
 'vo+',$;Ti',$ ;dbg20140815
 ;'O+','H+','He+','N+','NO+','O2+','N2+','O+2D','O+2P' $
 ;tmp20121128 temporary o+ is assigned to plot_z(6)(n+) instead of 3 for faster debug molecular ions
@@ -154,7 +154,7 @@ Y=dblarr(4)
 if ( sw_dif eq 0 ) then begin
 
    ARY_min0=[ $
-2.5,$;1.3,$                
+3.0,$;1.3,$                
 ;3.2,$ ;3.,$
 ;178.8,$
 154.,$
@@ -171,10 +171,10 @@ if ( sw_dif eq 0 ) then begin
          ] 
 
 ARY_max0=[ $
-4.5,$;6.5,$;4.5,$;6.1,$ ;7.,$
+6.4,$;6.5,$;4.5,$;6.1,$ ;7.,$
 ;4.,$
 ;800. ,$
-6083. ,$
+1000.,$ ;dbg 6083. ,$
 6083.,$;+50. , $ ;800. ,$  ;dbg20140815
 ;6.1, 3.5,3.5,$
 6.4  , $ ;3.5,
@@ -299,11 +299,13 @@ if ( sw_debug eq 1 ) then  print, 'after',!P.BACKGROUND
 ;print, 'Y.MARGIN', !Y.MARGIN
 ;!X.MARGIN=[7,5] ;left,right
 ;!Y.MARGIN=[4,10] ;bottom,top
-
+nColumnsMulti = getenv('nColumnsMulti')  ;for quick plot
+nRowsMulti    = getenv('nRowsMulti'   )  ;for quick plot
+	!p.multi=[0,nColumnsMulti,nRowsMulti,0] 
 ;  !P.MULTI=[0,4,4,0,1] ;plot goes vertically downward 
 ;  !P.MULTI=[0,4,5,0,0] ;plot goes vertically downward 
 ;  !P.MULTI=[0,6,6,0,0] ;plot goes vertically downward 
-  !P.MULTI=[0,2,3,0] ;plot goes horizontally from left to right
+;  !P.MULTI=[0,2,3,0] ;plot goes horizontally from left to right
 ;  ;1:# of plot columns
 ;  ;2:# of rows
 
@@ -415,41 +417,42 @@ Yd=z_km(ipts) ;-dYY*.5   ;Yc     ;
  X=[Xa, Xb, Xc, Xd]  ;glat [deg]
  Y=[Ya, Yb, Yc, Yd]  ;altitude [km]
 
-if ( VarType eq 0 ) OR ( VarType ge 3 ) then begin
+ if ( VarType eq 0 ) OR ( VarType ge 3 ) then begin
 
   
-  density=plot_z[n_read,VarType, 0,ipts] * 1.0E-6  ;m-3 --> cm-3
-  if ( density gt 0.0 ) then $
-     Value= ALOG10( density ) $
-  else $ 
-     Value= ALOG10( 0.1 )
-
-;20131204debug
-;Value=plot_z[n_read,VarType, 0,ipts] * factor_value
+    density=plot_z[n_read,VarType, 0,ipts] * 1.0E-6 ;m-3 --> cm-3
+    if ( density gt 0.0 ) then $
+       Value= ALOG10( density ) $
+    else $ 
+       Value= ALOG10( 0.1 )
 
 
-endif else if ( VarType eq 1 ) or ( VarType eq 2 ) then $ ;Te/i
-  Value = plot_z[n_read,VarType,0,ipts] ;
+ endif else if ( VarType eq 1 ) or ( VarType eq 2 ) then $ ;Te/i
+;    Value = plot_z[n_read,VarType,0,ipts]                  ;
+    Value = tn_k[ipts,mp]                  ;
 
 
 
 ; save actual MIN & MAX values
-if ( Value lt ARY_minZ ) then  ARY_minZ=Value
+ if ( Value lt ARY_minZ ) then  ARY_minZ=Value
 
-if ( Value gt ARY_maxZ ) then begin
- ARY_maxZ=Value
-; print,'ARY_maxZ',ARY_maxZ,' z_km',z_km(ipts),' mlat',mlat_deg(ipts)
-endif
+ if ( Value gt ARY_maxZ ) then begin
+    ARY_maxZ=Value
+ endif
 
-ColorData=(col_max-col_min)*(Value-ARY_min0(VarType))/(ARY_max0(VarType)-ARY_min0(VarType)) + col_min
+ ColorData=(col_max-col_min)*(Value-ARY_min0(VarType))/(ARY_max0(VarType)-ARY_min0(VarType)) + col_min
 
 
 ;061904: for fancy looking
-if ( ColorData lt col_min ) then  ColorData=col_min
-if ( ColorData gt col_max ) then  ColorData=col_max
+ if ( ColorData lt col_min ) then  ColorData=col_min
+ if ( ColorData gt col_max ) then  ColorData=col_max
 
-;091604: debug
-;091604: if ( (ipts MOD 2)  eq 0 ) then $
+;dbg20171117: temporary mask these data points
+if( z_km[ipts] ge 180. ) AND (z_km[ipts] le 200. ) AND (mlat_deg[ipts] ge -18.15) AND (mlat_deg[ipts] le -17.38) then begin
+  print,'mp=',mp,' lp=',lp,' z_km',z_km(ipts),' mlat',mlat_deg(ipts), plot_z[n_read,VarType, 0,ipts],n_read,vartype,ipts,(ipts-istrt) 
+  ;ColorData=col_max
+endif
+
 POLYFILL, X , Y       $      ;[, Z]]
 , FILL_PATTERN=0      $      ; solid fill
 , COLOR=ColorData    ;$
@@ -641,8 +644,11 @@ else if ( device_type eq 'png' ) then begin
   if ( sw_anim eq 1 ) then FILE_DISP=plot_DIR+'anim/'+STRTRIM( string( (n_read+1), FORMAT='(i3)'), 1)+'.'+device_type
 
 
-print,'n_read=',n_read,' n_plt_max=',n_plt_max
-  if ( n_read eq n_plt_max ) AND (sw_output2file eq 1 ) then  output_png, FILE_DISP
+print,'output_png:n_read=',n_read,' n_plt_max=',n_plt_max
+  if ( n_read eq n_plt_max ) AND (sw_output2file eq 1 ) then begin
+     print,'filename=',FILE_DISP
+     output_png, FILE_DISP
+  endif
 endif
 
 

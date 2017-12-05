@@ -17,7 +17,9 @@ if sw_debug eq 1 then $
 
 ;for velocity
 if ( sw_v_or_e eq 0 ) then begin
-  ArrowRef=1000.;300. ;2000. ;m/s
+;  ArrowRef=1000.;300. ;2000. ;m/s
+  ArrowRef=20. ;km/s
+  ArrowRefUnit='[km/s]'
 ;for velocity
 ;  ArrowCol=0.;255. ;defalt black ;256 ;
   ArrowCol=getenv('ArrowCol') ;defalt black ;256 ;
@@ -169,8 +171,9 @@ ARROW, X0_arrow, Y0_arrow, X1_arrow, Y1_arrow  $
 xyouts,$
 ; ( (X00+dX-3.2)/X_SIZE ), ( (Y0-0.07)/Y_SIZE) $
  0.70, 0.07 $
-, 'V='+STRTRIM( string(ArrowRef,FORMAT='(f5.0)') ,1)+'[m/s]'  $
+, 'V='+STRTRIM( string(ArrowRef,FORMAT='(f5.0)') ,1)+ArrowRefUnit  $
 , charsize=2.0, charthick=2.0, /norm, /noclip
 loadct,nLdctSav
+
 
 end ;pro draw_arrow_test3

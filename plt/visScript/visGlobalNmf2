@@ -12,52 +12,46 @@
 ###status: completed
 ###date: 20170313
 ###
+setenv sw_read_wind 0 
+setenv todaysDate 20171130
 ###nm20170815: 0:original IO(runs before20170808); 1:george's new restart IO
-setenv sw_version_io 1
+setenv sw_version_io 0
 setenv sw_wam_ipe 0
 #setenv HPATH     /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe
 setenv HPATH     /scratch3/NCEPDEV/swpc/scrub/
-#setenv TEST      IPEr405
 #setenv TEST      IPEr420
 #setenv TEST      20170314Init4Jacques
 #setenv TEST      mpi20160330v4
-#setenv TEST  IPEr420  ##20170727 JQ reproduction
-#setenv TEST  testing ##20170727 after merged
-#setenv TEST  20170802debugNaomiBranch ##20170802
-#setenv TEST  20170803testDevelopment ##20170803
-#setenv TEST  20170808testDevelopmentV2 ##20170809
-setenv TEST  20170811testDevelopmentV3 ##20170811
-#setenv TEST      neutralIo20170315
+setenv TEST  JQIPEr420  ##20170727 JQ reproduction
+#setenv TEST  20170811testDevelopmentV3 ##20170811
+#setenv VTEST 2222
+#setenv TEST  20171109debugRawHighLatWamIpe${VTEST} ##20171114
 #setenv TEST      tmp20150730
 
 #setenv UserName  Jacques.Middlecoff 
 setenv UserName  Naomi.Maruyama
 
 #setenv RPATH  ${HPATH}/runs/$TEST/trunk/run
-#setenv RPATH  /scratch3/BMC/gsd-hpcs/$UserName/$TEST/run/
-#setenv RPATH  /scratch3/NCEPDEV/stmp2/$UserName/$TEST/run/
-#setenv RPATH /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20170726mergeIPEOptimization2SwpcIpeTest/JQIPEr420/IPEr420/run/ ##20170727 JQ reproduction
-#setenv RPATH /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20170726mergeIPEOptimization2SwpcIpeTest/20170726test/testing/run/ ##20170727 after merged with Master
-#setenv RPATH /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20170802debugNaomiBranch/ipe/run/ ##20170803
-#setenv RPATH /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/$TEST/ipe/run/  ##20170809
-setenv RPATH /scratch3/NCEPDEV/swpc/noscrub/wam-ipe_initial_conditions/T62_80x170/20131603_0000UT/IPE
 #setenv RPATH  /scratch3/NCEPDEV/stmp2/$UserName/$TEST/IPE/run
+#setenv RPATH /scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/stmp${VTEST}/Naomi.Maruyama/new_compsets
+#setenv RPATH /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20171025IpeOptimization/ipe/run/1510894666_ipe_theia_intel_parallel_464
+setenv RPATH /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20170726mergeIPEOptimization2SwpcIpeTest/JQIPEr420/IPEr420/run/1492799015_ipe_theia_intel_parallel_464
 
 #0: idl on interactive queue; 1: submit a job on computer node queue
 set sw_qsubidl = $3
 setenv sw_output2file    1
-setenv sw_debug    0
+setenv sw_debug    1
 setenv alt       302.
 setenv factor_density  1.0E-12
 #setenv ArrowCol  0.  #black
 setenv ArrowCol  255. #white
-setenv TimeStep 300
+setenv TimeStepMin 1440 #15 #[min]
 
 #(7)mp_plot
 #if ( $#argv == 7 ) then 
 #    setenv mp_plot $6
 #else if ( $#argv < 7 ) then 
-    setenv mp_plot 2 #default
+    setenv mp_plot 0 #default
 
     #(6)sw-frame
     #setenv sw_frame $6
@@ -75,8 +69,8 @@ setenv TimeStep 300
     ###VarType: 2:vo+(+southward),3:o+,4:un
     #set j = $3
     #set jmax = $4
-    set j = 0
-    set jmax = 0
+    set j = 7
+    set jmax = 7
 
 #    if ( $#argv < 6 ) then 
 #      setenv sw_frame 1  #default geographic 
@@ -161,8 +155,9 @@ echo "jid_output="  $jid_output
 #set rundir1 = "1502826446" #20170815 test development branchV3 standalone:20130316
 #set rundir1 = "1504298928" #20170901 IPEOptimization/testing standalone:20130316
 #set rundir1 = "1504821638" #20170907 IPEOptimization/testing standalone:20130316
-set rundir1 = "20130316" #20170907 IPEOptimization/testing standalone:20130316
+#set rundir1 = "20130316" #20170907 IPEOptimization/testing standalone:20130316
 #set rundir1 = "1505642824" #20170908 IPEOptimization/testing standalone:20130316
+set rundir1 = "15010894666" #20171116 IPEOptimization/testing standalone:20130316
 set NPRCS = "464";80" ;464" ;93" #80"
 #set rundir0 = "_ipe_theia_intel_parallel1_" #20160419 v0
 #set rundir0 = "_ipe_theia_intel_parallel2_" #20160511 frictional heating
@@ -180,7 +175,7 @@ echo "rundir="  ${rundir} >> listRunDir
 ###prepare input files
 ###reference directory: contains the input files to get input parameters.
 #set REFDIR = ${RPATH}/${rundir} ###tmp20171025
-set REFDIR = ${RPATH}/ ###tmp20171025
+setenv REFDIR  ${RPATH}/ ###tmp20171025
 cd ${REFDIR}
 echo "REFDIR=" $PWD
 
@@ -210,11 +205,11 @@ echo "extracting (2) nday finished:" $nday
 #echo "extracting (3) f107av finished:" $f107av
 ###
 ### set to defaul values
-setenv n_read_max 1 #1021 #2
-setenv n_plt_max  0 #1020 #1
+setenv n_read_max 2 
+setenv n_plt_max  1
 setenv n_plt_min  0
-setenv plt_ut     0 #864000 #432000
-setenv plt_ut_end 0 #864600 #435600
+setenv plt_ut     864000
+setenv plt_ut_end 950400
 ###george's new restart IO
 #if ( $sw_version_io == 0 ) then
   set FN0 = ut_rec
@@ -239,15 +234,16 @@ echo "extracting (5) n_read_max from ut_rec=" $n_read_max
 
 setenv sw_quickPlot 1
 if ( $sw_quickPlot == 1 ) then 
-  setenv nColumnsMulti  1 #3 #6 #
-  setenv nRowsMulti     2 #5 #
+  setenv nColumnsMulti  6 #3
+  setenv nRowsMulti     5 #
 endif
 setenv sw_hourly_plot 0
 if ( $sw_hourly_plot == 1 ) then 
-  setenv plotXhr .0
+  setenv plotXhr 1.0
 endif
 setenv fac_window 5.0
 #
+setenv sw_lun0  1  #ut_rec
 setenv sw_lun6  1  #plasma1 h+
 setenv sw_lun8  1  #plasma2 he+
 setenv sw_lun9  1  #plasma3 n+
@@ -264,6 +260,7 @@ setenv sw_lun15 0 #1  #plasma17 VEXBe
 setenv sw_lun16 0 #1  #plasma18 VEXBth
 ###george's new restart IO
 if ( $sw_version_io == 1 ) then
+    setenv sw_lun0  0  #ut_rec
     setenv sw_lun20 1 #ipe_grid_plasma_params.dummytimestam
     setenv sw_lun6 0  #plasma1 h+
     setenv sw_lun8 0  #plasma2 he+
@@ -289,7 +286,7 @@ setenv sw_read_sunlon 0
 #t setenv PPATH ${HPATH}/fig/${TEST}/${rundir}/quick
 #setenv PPATH ${HPATH}/fig/20170311jacques/${rundir}
 #setenv PPATH ${HPATH}/fig/${TEST}/${rundir}
-setenv PPATH ${HPATH}/Naomi.Maruyama/fig/${UserName}
+setenv PPATH ${HPATH}/Naomi.Maruyama/fig/${UserName}/${todaysDate}
 mkdir ${PPATH}
 mkdir ${PPATH}/${UserName}/${rundir}
 #

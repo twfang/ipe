@@ -17,13 +17,17 @@ pro ctr_lon_lat_quick_wam_ipe $
 , ht_plot,rundir $
 , VarType_max, VarType_min, VarType_step $
 , n_plt_min ;=0L
-;print, 'ht_plot', ht_plot
-;print, 'VarType_max', VarType_max, 'VarType_min', VarType_min
-;print,  'VarType_step',  VarType_step
 
 
-print,'inside ctr_lon_lat_quick: check on_m3', MAX( on_m3 ), MIN( on_m3 )
+sw_polar_contour=getenv('sw_polar_contour')
 
+;0:no save
+;1:save values to calculate diff in a separate routine:nmf2_take_diff.pro
+sw_saveNmf2=0
+
+;1:rename rundir to get rid of %
+;0:no rename
+sw_renameRundir=0
 
 ;nm20161220 profile validation
 sw_debug_prfl=0L
@@ -134,14 +138,7 @@ for mp=0,NMP-1 do begin
   for i=in,midpoint, istep  do begin
 
 
-;dbg20170926
-if ( mp le 1 ) OR ( mp eq 179 ) then  begin
-  if ( lp ge 138 ) AND ( lp le 140)  then  begin
-   if ( z_km[i] gt 194.1 ) then begin 
-     print,'NHTn', mp,lp,' tn=', tn_k[i,mp], i,' ht=', z_km[i],' mlat=', mlat_deg[i],mlon_deg[mp],lps
-   endif
-  endif
-endif
+
 
 
    if ( VarType lt 7 ) then begin
@@ -301,14 +298,7 @@ endif ;( lp eq 47 AND mp eq 49 ) then begin
   istep=-1 
   for i=is,midpoint, istep  do begin
 
-;dbg20170926
-if ( mp le 1 ) OR ( mp eq 179 ) then  begin
-  if ( lp ge 138 ) AND ( lp le 140)  then  begin
-    if ( z_km[i] gt 194.1 ) then begin 
-     print,'SHTn', mp,lp,' tn=', tn_k[i,mp], i,' ht=', z_km[i],' mlat=', mlat_deg[i],mlon_deg[mp],lps
-    endif
-  endif
-endif
+
 
 
    
@@ -704,9 +694,9 @@ if ( sw_range eq 1 ) then begin
       if ( VarType eq 0 ) then begin 
 ;f107-120
 ;zmin=750.
-;zmax=1090.
-zmin=820.
-zmax=960.
+zmax=1218.
+zmin=870.
+;zmax=960.
       endif else if ( VarType eq 1 ) then begin
 
       endif else if  (VarType eq 2 ) then begin 
@@ -737,7 +727,8 @@ zmax=960.
         zmin=0.  ; 0.0084; 1.0e+10
         zmax= $
 ;40. ;for TW
-22.55
+22.55 ;before MS0.6
+;45. ;after MS0.6 with WAM density
 ;7.521 ;1.983e+12
       endif else if ( VarType eq 8 ) then begin 
         zmin=100.
@@ -790,22 +781,20 @@ if ( xmax360 eq 1 ) then begin
   X_max=+360.
   X_min=+  0.
 endif else if ( xmax360 eq 0 ) then begin
-;dbg20170926 
   X_max= +180.
   X_min= -X_max
 endif
 if ( sw_frame eq 2 ) then begin
-x_max=24.
-x_min=0.
+   x_max=24.
+   x_min=0.
 endif
 
-;dbg20170926
-Y_max= +80.0
+Y_max= +85.0
 Y_min= -Y_max
 if ( sw_frame eq 0 ) or ( sw_frame eq 2 ) then $
-  MAG_GEO='magnetic' $
+   MAG_GEO='magnetic' $
 else if ( sw_frame eq 1 ) then $
-  MAG_GEO='geographic'
+   MAG_GEO='geographic'
 
 if ( n_read eq 0 ) then begin 
   X_TITLE=MAG_GEO+' longitude[deg]'
@@ -918,10 +907,7 @@ STOP
 RETURN
 endif ;( sw_plot_grid eq 1 ) then begin
 
-;debug
-;mp=0
-;print,'mp==',mp
-;for l=0,nlp-1 do print,plot_zz(mp,l),plot_xx(mp,l),plot_yy(mp,l)
+
 
 
 
@@ -930,12 +916,7 @@ if ( sw_plot_contour eq 1 ) then begin
    ut_hr_disp= ut_hr MOD 24.
 
 
-print,'dbg20170926: ht_plot=',ht_plot
-ii=0L
-for kk=130,210,1 do begin
-  print,kk,' Tn=',plot_zz[ii,kk],' mlat=',plot_yy[ii,kk],' mlon=',plot_xx[ii,kk]
-endfor
-;stop
+
 
 
    LOADCT, 0
@@ -972,10 +953,12 @@ endfor
 
    if ( sw_debug eq 1 ) then  print,'MAX=',MAX(plot_zz),' MIN=',MIN(plot_zz)
 
-;dbg20170921: save values to calculate diff
-flnm_sav=plot_DIR+'rt'+getenv('rtNumber')+VarTitle[VarType]+'UT'+STRTRIM( string(ut_hr, FORMAT='(F6.2)'),1 )+'_ht'+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+'.sav'
-save,ut_hr,plot_zz,plot_xx,plot_yy,/VARIABLES,filename=flnm_sav
-
+;dbg20170921: save values to calculate diff in a separate routine:nmf2_take_diff.pro
+   if ( sw_saveNmf2 eq 1 ) then begin
+      flnm_sav=plot_DIR+'rt_'+getenv('rtNumber')+'/'+VarTitle[VarType]+'UT'+STRTRIM( string(ut_hr, FORMAT='(F6.2)'),1 )+'_ht'+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+'.sav'
+      save,ut_hr,plot_zz,plot_xx,plot_yy,/VARIABLES,filename=flnm_sav
+   endif
+   
    ; add MIN & MAX values
 ;xyouts, 0.5, 0.84 $
 ;, 'MIN='+STRTRIM(STRING( MIN(plot_zz), FORMAT='(E11.3)'),1)+' MAX='+STRTRIM(STRING( MAX(plot_zz), FORMAT='(E11.3)'),1)  $
@@ -1020,9 +1003,13 @@ save,ut_hr,plot_zz,plot_xx,plot_yy,/VARIABLES,filename=flnm_sav
       else if ( sw_frame eq 2 ) then $ ;noon in the center
          title_frame='lt'
 ;nm2017
+   if ( sw_renameRundir eq 1 ) then begin
       b = strsplit(rundir,'%',/extract)
       newRundir = b[0] + '_' + b[1] + '_' + b[2] + '_' + b[3] + '_' + b[4]
-      print,' newRundir=', newRundir
+   endif else if ( sw_renameRundir eq 0 ) then begin
+      newRundir = rundir
+   endif
+   print,' newRundir=', newRundir
       
 
       Filename_png= $

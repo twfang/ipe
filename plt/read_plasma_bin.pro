@@ -3,7 +3,8 @@ pro read_plasma_bin,LUN,UT_hr, XIONN_m3,XIONV_ms1,TE_TI_k,VEXB,sw_debug $
 ,NMP_in, sunlons1 $
 , sza_rad
 
-
+;dbg20171130
+;sw_debug=1L
 
 UT_sec=0L
 record_number=0L
@@ -392,6 +393,7 @@ endif
 ;     readf, LUN[4], dum
 ;XIONN_m3[jth,0:NPTS2D-1,mp]=dum[0:NPTS2D-1]
 ;if sw_debug eq 1 then  print, 'XIONN_m3=',jth,XIONN_m3[jth,60,mp]
+
 
 
 

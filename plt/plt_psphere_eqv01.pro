@@ -8,7 +8,10 @@ titleYear='2013'
 sw_LNewZCircle=0;1
 sw_SedPlumeFluxTube=0;1
 
-sw_arrow=0L
+;0:no arrow
+;1:arrow read in vexbup
+;2:calculate Vr
+sw_arrow=2L
 ;###CHANGE
 titlePlot= $
 ;'2013-3-17 quiet';run2
@@ -23,10 +26,10 @@ sw_dbg=0L
   ut00=$
 ;518400L ;start_time 00--17ut
 ;579600;518400+17*3600; ;17--24ut
-;583080
-604800L ;start_time 00--24ut ;v2
-  utStart=604800L ;ut00
-  utStop=691200L ;utStart+24*3600;
+583080
+;604800L ;start_time 00--24ut ;v2
+  utStart=ut00
+  utStop=utStart;+24*3600;
   utHrPlt=ut00/3600.
 titleRundir='_ipe_theia_intel_parallel2_93'
 ;###CHANGE
@@ -35,13 +38,13 @@ rundir=$
 ;'ipe_S_25827' ;depeleted
 ;'ipe_S_26060'; ;transport only
 ;'1461312397_ipe_theia_intel_parallel2_93';20130317 00--17 before dep
-; '1461343191_ipe_theia_intel_parallel2_93' ;20130317 17--24 ;mac
+'1461343191' ;20130317 17--24 ;mac
 ;'1461417243_ipe_theia_intel_parallel2_93';.00_17UT20150317';mac
 ;'1461436195_ipe_theia_intel_parallel2_93'; 17ut
 ;'1463696937_ipe_theia_intel_parallel2_93' ;2013 theia after dep
 ;'1462618349_ipe_theia_intel_parallel2_93' ;2013 00--17ut quiet
 ;'1462657622_ipe_theia_intel_parallel2_93' ;17ut quiet
-'1486587459'; 00--24UT 20130317 theia v2 on 20170209
+;'1486587459'; 00--24UT 20130317 theia v2 on 20170209
 ;---
   ut0=0L
   ut0=ut00 - dt ;sec 133.                      ;[ut hr]
@@ -100,16 +103,19 @@ plt_DIR=$
 lun00=0L
 lun17=0L
 lun16=0L
+lun18=0L
 lun2013=0L
-openr,lun00,rpath+'plasma01',/get_lun, /F77_UNFORMATTED
-openr,lun17,rpath+'plasma17',/get_lun, /F77_UNFORMATTED
-openr,lun16,rpath+'plasma16',/get_lun, /F77_UNFORMATTED
+openr,lun00,rpath+'plasma01',/get_lun, /F77_UNFORMATTED ;h+
+openr,lun17,rpath+'plasma17',/get_lun, /F77_UNFORMATTED ;VEXBe
+openr,lun16,rpath+'plasma16',/get_lun, /F77_UNFORMATTED ;VEXBup
+openr,lun18,rpath+'plasma18',/get_lun, /F77_UNFORMATTED ;VEXBth
 openr,lun2013,rpath+'fort.2013',/get_lun ;, /F77_UNFORMATTED
 openr,lun0,rpath+'ut_rec',/get_lun ;, /F77_UNFORMATTED
 ;read loop
 dum=fltarr(NPTS2D,NMP)
 vexbe=fltarr(NLP,NMP);plasma17
 vexbup=fltarr(NLP,NMP);plasma16
+vexbth=fltarr(NLP,NMP);plasma17
 ut = 0L
 ;ut = ut0
 min_record_number=1079L
@@ -118,6 +124,7 @@ while ( eof(LUN00) eq 0 ) do begin
    readu, lun00,dum
    readu, lun17,vexbe
    readu, lun16,vexbup
+   readu, lun18,vexbth
    readf, lun0,record_number, ut
    print,'rec#',record_number,' ut=', ut
 ;   ut = ut + dt ;[sec]
@@ -266,14 +273,23 @@ contour,z,x,y $
 
 
 ;add arrow
-if sw_arrow eq 1 then begin
+if sw_arrow ge 1 then begin
    u=fltarr(nmp,nlp)
    v=fltarr(nmp,nlp)
 ;assign u,v
    for lp=0,nlp-1 do begin
       for mp=0,nmp-1 do begin
-         u[mp,lp]=vexbe[lp,mp]
-         v[mp,lp]=vexbup[lp,mp]
+
+
+         u[mp,lp] = vexbe[lp,mp]*1.0e-3
+         v[mp,lp] = vexbup[lp,mp]*1.0e-3
+         if sw_arrow eq 2 then begin
+            calculate_vr, vr,ve,mp,lp,VEXBTH,VEXBE,z_km,mlat_deg,jmin_in,jmax_is
+;print,mp,lp,'Vr=',vr,' VEXBup=',vexbup[lp,mp]
+if lp eq 21 then print,mp,lp,'Vr[m/s]=',vr,' VEXBup',vexbup[lp,mp],' Ve=',ve,' VEXBe=',vexbe[lp,mp]
+            u[mp,lp]=ve*1.0e-3 ;m/s==>km/s
+            ;v[mp,lp]=vr*1.0e-3 ;m/s==>km/s
+         endif ;sw_arrow
       endfor                    ;mp
    endfor                       ;lp
 ;plot VEXB

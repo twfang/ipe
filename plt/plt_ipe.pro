@@ -38,49 +38,22 @@ UserName = $
 
 rtNumber = $
 '63815';after NaN corrected
-;'110226';merging WAM density
-;'43381'
-;'138014';20170412 after bob newly commited the mediator
-;'94095_noZchange_output18h' ;before weiyu commit
-;'15669_Zchange_output18h' ;after weiyu commit
-;'74190';6dy bob's new compset
-;'44867';after peggy's correction 1dy
-;'79720';after peggy's correction 1hr
-;'77590';after Bob's correction with ori-startup with WAM den 1hr 20090115
-;'114127';Valery's startup withOUT WAM density 6dy 20090115
-;'119670';Valery's startup withOUT WAM density 6dy 20130316
-;'78053';Valery's startup withOUT WAM density 3dy 20130316
-;'80907';Valery's startup with WAM density 3dy 20130316
-;'89361';Valery's startup with WAM density 3dy 20090115
-;'75225';Valery's startup without WAM density 3dy
-;'78663';3dy run
-;'9733' ;20170111 after bob new revision
-;'115955' ;time step=1m
-;'94125' ;1dy all fields 80prcs
-;'84272' ;1dy no density 40p
-;'128509';1dy all fields 40p
-;'114035';12/22 after bug is removed
-;'10700' ;12/21 after extrapolation corrected in mediator(with bug!!!)
-;'98264' ;12/20 after extrapolation correction in IPE
-;'118422';9/14 after peggy correction 
-;'13204';9/12 before peggy correction 
-;'44826'
-;'135940'
-
-
-
 
 
 rundir=$
+;'1510024259'
+'1510178112'
 ;UserName+'/ipe/runs/r336.2.2/trunk/run/ipe_S_'+rtNumber
- UserName+'/rt_'+rtNumber+'/swpc%'+runDate+'_'+runDuration+'_spacewx_gsm%wam%T62_ipe%80x170'
+; UserName+'/rt_'+rtNumber+'/swpc%'+runDate+'_'+runDuration+'_spacewx_gsm%wam%T62_ipe%80x170'
 ; UserName+'/rt_'+rtNumber+'/swpc%'+runDate+'_nodensities_'+runDuration+'_spacewx_gsm%wam%T62_ipe%80x170'
 print, 'rundir=', rundir
 
 
 input_DIR0=$
 ;'/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/mpi20160330v4/run/1509621646_ipe_theia_intel_parallel2_93/' ;sw_frictHeat=0
-'/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/mpi20160330v4/run/1509544725_ipe_theia_intel_parallel2_93/' ;sw_frictHeat=2
+;'/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/mpi20160330v4/run/1509544725_ipe_theia_intel_parallel2_93/' ;sw_frictHeat=2
+;'/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/mpi20160330v4/run/'+rundir+'_ipe_theia_intel_parallel2_93/' ;v1:sw_frictHeat=2
+'/scratch4/NCEPDEV/stmp4/Naomi.Maruyama/ipe/mpi20160330v4/run/'+rundir+'_ipe_theia_intel_parallel2_93/'
 ;'/scratch3/NCEPDEV/swpc/save/Tzu-Wei.Fang/IPE/trunk_electrodynamics_44514_PPEF/run/ipe_S_05time_60degree/'
 ;'/scratch3/NCEPDEV/swpc/noscrub/'+rundir+'/'
 ;'/scratch3/NCEPDEV/swpc/scrub/'+rundir+'/'
@@ -117,7 +90,7 @@ endif ;( sw_output2file_ascii eq 1 ) then begin
 ;n_plt_max=97L ;for quick plot
 ;n_read_max=1L;97L
 print,' n_read_max', n_read_max
-plot_UT    =432000;
+plot_UT    =1123200;
 plot_UT_end=plot_UT ;+3600.*24.*1.
 sw_quickplot=0L
 ;20140117; plot every X hour
@@ -130,8 +103,8 @@ n_read_freq =15L
 print,'n_read_freq=',n_read_freq
 
 title_res= $
-;'low20120709';
-'2xdyn';
+'low20120709';
+;'2xdyn';
 ;'td20120709';
 ;'low'; 'high'
 
@@ -900,7 +873,7 @@ endif
 ;  else if (i_file eq 3 ) then $
 ;    lp_plot=9-1L   
 
-print,'i_file',i_file,'lp_plot',lp_plot,'mp_plot0',mp_plot0
+print,'plotting htProfile: i_file=',i_file,'lp_plot=',lp_plot,'mp_plot0=',mp_plot0
 
   lp_title=lp_plot+1 ;=42
 ;  if ( lp_title eq 40 ) then $

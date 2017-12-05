@@ -9,17 +9,14 @@
 ;,rundate,title_test $
 ,sw_debug, title_hemi,sw_anim,mpstart,mpstop,mpstep, lt_hr,fac_window $
 , sw_output2file, TEST $
-, VarType_min $;=8L
-, VarType_max $;=8L ;PAR-1
-, VarType_step ;=4L
-;
-;
-;VarType_min=3L
-;VarType_max=3L ;PAR-1
-;VarType_step=4L
+, VarType_min $
+, VarType_max $
+, VarType_step 
 
-print,' mpstart', mpstart,'mpstop',mpstop
 
+print,' mpstart=', mpstart,'mpstop=',mpstop
+
+factor_density=getenv('factor_density')
 sw_arw_vpara=0
 fac_arw_para=0.7
 
@@ -27,29 +24,25 @@ n_read0=0L
 sw_plot_grid=0L  ;1: plot grid only
 sw_arrow_exb=0L
 reference_arrow=40L  ;m/s
-;factor_arrow=5.
 factor_arrow=5.
 
 lp_step_arrow=7
 ;lpmax_perp_trans=37;151-1
 lpmax_perp_trans=149
-;mpstart=mp_plot-5;0
-;mpstop=mp_plot;0
-;mpstep=1
-;debug
+
 for i=mpstart, mpstop  do print,' mp', (i+1),' LT',lt_hr[i]
 
-HTmin=90.  ;min(yy)   ;75.   ;400. ;
-HTmax=600.;2000. ;1.000000E+03;700.; 
+HTmin=90. 
+HTmax=1000.
 ; plot range
 if ( title_hemi eq 'NH' ) then begin
   gLATmax=+90.;+90.;-10.;
   gLATmin=+60.;+50.;-gLATmax;-27.; 
 endif else if ( title_hemi eq 'SH' ) then begin
-  gLATmax=-20.;+90.;-10.;
-  gLATmin=-35.;+50.;-gLATmax;-27.; 
+  gLATmax=-60.
+  gLATmin=-90.
 endif else if ( title_hemi eq 'glb' ) then begin
-  gLATmax=+50.;90.
+  gLATmax=+90.
   gLATmin=-gLATmax 
 endif else if ( title_hemi eq 'eq' ) then begin
   gLATmax=-15.;+90.;-10.;
@@ -58,9 +51,6 @@ endif else if ( title_hemi eq 'eq' ) then begin
 endif
 
 
-
-
-;title_test='trans'
 sw_dif=0L
 device_type='png' ;ps';'
 
@@ -164,7 +154,7 @@ if ( sw_dif eq 0 ) then begin
          ] 
 
 ARY_max0=[ $
-6.1,$ ;6.1,$ ;7.,$
+6.18,$ ;6.1,$ ;7.,$
 ;4.,$
 ;800. ,$
 1400. ,$
@@ -243,11 +233,13 @@ endfor  ;lp=lp_strt,lp_stop do begin
 
 
 for VarType=VarType_min , VarType_max,  VarType_step   do begin
-if ( sw_debug eq 1 ) then  print,'plotting ',VarTitle(VarType)
-MainTitle=VarTitle(VarType)+' '+VarUnit(VarType)
-FILE_DISP=plot_DIR+device_type+'/'+title_hemi+'/'+FileID+'_'+VarTitle(VarType)+'_'+title_res+'.'+title_hemi+'.'+device_type
-if ( sw_debug eq 1 ) then  print, file_disp
-if ( device_type eq 'ps' ) then begin
+
+  ;if ( sw_debug eq 1 ) then  
+   print,'plotting VarType=',VarTitle(VarType)
+   MainTitle=VarTitle(VarType)+' '+VarUnit(VarType)
+   FILE_DISP=plot_DIR+device_type+'/'+title_hemi+'/'+FileID+'_'+VarTitle(VarType)+'_'+title_res+'.'+title_hemi+'.'+device_type
+   if ( sw_debug eq 1 ) then  print, file_disp
+   if ( device_type eq 'ps' ) then begin
 
 
 
@@ -341,10 +333,7 @@ for lp=lp_strt , lp_stop do begin
     endif
 
 
-;if ( mlat_deg[ is2d[lp]-1 ] ge -66. ) AND ( mlat_deg[ is2d[lp]-1 ] lt -62. ) THEN  begin
-;print,'check mlat!', is2d[lp], lp ,  mlat_deg[ is2d[lp]-1 ]
-;stop
-;endif
+
 
 
 ;if ( lp ge 50 ) then $
@@ -362,9 +351,7 @@ dYY=(z_km[ipts+1]-z_km[ipts] )*0.9 ;nm20121130
 if ( z_km(ipts  ) gt HTmin ) and ( z_km(ipts) lt (HTmax-dYY) ) then begin
 if ( mlat_deg(ipts ) gt gLATmin ) and ( mlat_deg(ipts) lt gLATmax ) then begin
 
-;dbg20140828
-;if ( mlat_deg[ipts] gt -24. ) AND  ( mlat_deg[ipts] lt -22. )  AND (z_km[ipts] gt 340. ) AND (z_km[ipts] lt 344. ) then $
-;print,'lp', lp,' mlat',mlat_deg[ipts],' z_km',z_km[ipts],plot_z[n_read,VarType, 0,ipts]*1.0E-12
+
 
 Xa=mlat_deg(ipts) ;-dXX*.5
 Xb=mlat_deg(ipts) ;-dXX*.5   ;glatd(ipts  ,ifl)+dLAT  ;
@@ -390,8 +377,9 @@ if ( VarType eq 0 ) OR ( VarType ge 3 ) then begin
      Value= ALOG10( density ) $
   else $ 
      Value= ALOG10( 0.1 )
+
 ;20131204
-Value=plot_z[n_read,VarType, 0,ipts] ;*1.0E-12  
+Value=plot_z[n_read,VarType, 0,ipts]*factor_density 
 
 endif else if ( VarType eq 1 ) or ( VarType eq 2 ) then $ ;Te/i
   Value = plot_z[n_read,VarType,0,ipts] ;
@@ -550,7 +538,7 @@ LOADCT, N_LDCT
 endif ;( sw_arrow_exb ) then begin
 
 
-print,'colorbarMIN',ARY_min0(VarType),' MAX',ARY_max0(VarType)
+print,'colorbarMIN=',ARY_min0(VarType),' MAX=',ARY_max0(VarType)
 Draw_Colorbar, ARY_min0(VarType), ARY_max0(VarType), N_LVLs $
 , col_min, col_max, X1, Y1, dX1, dY1, X_SIZE, Y_SIZE, VarType
 

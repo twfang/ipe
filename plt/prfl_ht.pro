@@ -10,21 +10,15 @@ PRO  prfl_ht $
 print,'prfl_ht',sw_output2file ;debug
 
 y_min =90.;1.0E+2; 90.
-y_max =800.;1300.;2.E+4;800.
+y_max =625.13;;2.E+4;800.
 if ( sw_debug eq 1 ) then  print, "y_max=", y_max
 
 if ( sw_fort eq 168L ) then begin
-;x_min=[-15.,   +100.,     0. ,     0.]
-;x_min=[-1.,    +400.,     0. ,     -25.]
-x_min=[-10.,    +150.,     0. ,     -30.]
-;x_max=[ 7.,  +2400.,  +1000. ,    +25.]
-x_max=[ 6.,  +2400.,  +350. ,    +25.]
-;x_max=[+6.1,  +17000.,  +1600. ,    +30.] ;dbg20141208
-;x_max=[+6.1,  +3500.,  +1600. ,    +30.]
-;x_max=[ 4.0,  +1300.,  +700. , +7000.]
+  x_min=[-10.,    +100.,   -15. ,     -110.]
+  x_max=[ 7.,    +1200.,   +1.  ,       +110.]
 endif else if ( sw_fort eq 167L ) then begin
-x_min=[ 5.2,  + 0.,   -1. ,   0.]
-x_max=[ 11.,  +180.,   +0.6, +14.]
+  x_min=[ 5.2,  + 0.,   -1. ,   0.]
+  x_max=[ 11.,  +180.,   +0.6, +14.]
 endif
 
 
@@ -62,7 +56,7 @@ line_style=INTarr(k_species)
 ;title_var=['O+/H+/He+/Min+', 'Ti/Te/Tn', 'Vo+/Un/fo+', 'PHION/EHT']
 if ( sw_dif eq 0 ) then begin
    if ( sw_fort eq 168L ) then  title_var=$
-['O+/H+/He+/MIN+', 'Ti/Te', 'PHION/SUMION', 'UN'] else $
+['O+/H+/He+/MIN+', 'Ti/Te/Tn', 'PHION/SUMION', 'UN'] else $
 ;['O+/H+/He+/N+', 'Ti/Te', 'PHION/SUMION', 'EHT'] else $
    if ( sw_fort eq 167L ) then  title_var=['SL', 'GL/SZA', 'BM/GR', 'O/H+He/N2+O2/N4S']
 endif else if ( sw_dif eq 1 ) then begin
@@ -147,9 +141,7 @@ endif
 
 for k=0,k_species-1 do begin
   for i=0,n_file-1 do begin
-;d print,'check i=',i,n_file
-;dbg20110803
-;d   if i ge 3 then continue
+
 
 
 ;if ( title_hemi eq 'NH' ) then begin
@@ -163,8 +155,7 @@ for k=0,k_species-1 do begin
 if ( sw_debug eq 1 ) then  print, i, i_plot[i], line_color[i_plot[i]]
 ;if ( sw_debug eq 1 ) then  print, plot_x[plot_type,k,j0:j1,i_plot[i]]
 
-;dbg20141028
-if ( plot_type eq 1 ) then print, k,'check Te',MAX(plot_x[plot_type,k,j0:j1,i_plot[i]]),MIN(plot_x[plot_type,k,j0:j1,i_plot[i]])
+
 
 
 

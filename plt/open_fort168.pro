@@ -1,13 +1,6 @@
 ;opening files
 pro open_fort168, n_file,LUN,sw_debug,title_hemi,lp_title,sw_fort,rundir,TEST0,HOME_DIR
 
-;HOME_DIR=$
-;'/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/30s/run/'
-;'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/'+TEST0+'/trunk/run/'
-;'/home/Naomi.Maruyama/wamns/'+TEST0+'/trunk/run/'
-;'/home/Naomi.Maruyama/iper/'
-;'/lfs0/projects/idea/maruyama/sandbox/ipe/run/'
-
 input_DIR=['','','','']
 rundate='20110817'
 rundate1='20110813'
@@ -17,6 +10,7 @@ test1='low'
 ;blue lp10
 input_DIR[0]=$
 rundir+'/'
+;HOME_DIR+'/'
 ;rundate+'.'+versionD+'.lp'+STRTRIM( string(   lp_title,     FORMAT='(i2)'),1)+'.'+test1+'/'
 ;red  lp11
 input_DIR[1]=rundate+'.'+versionD+'.lp'+STRTRIM( string(  (lp_title+1),  FORMAT='(i2)'),1)+'.'+test1+'/'
@@ -46,7 +40,7 @@ print,i, HOME_DIR+input_DIR[i]+input_flnm[i]
 
     openr, LUNi, HOME_DIR+input_DIR[i]+input_flnm[i], /GET_LUN
     LUN[i]=LUNi
-    print,title_hemi,' opening file:',HOME_DIR+input_DIR[i]+input_flnm[i], LUN[i]
+    print,title_hemi,' opening file=',HOME_DIR+input_DIR[i]+input_flnm[i], LUN[i]
 
   endfor ;i = 0, n_file-1  do begin
 end ;pro open_fort168

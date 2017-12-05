@@ -92,13 +92,10 @@ rpath = getenv('RPATH')
 print,'rpath= ', rpath
 rundir = getenv('rundir')
 print,'rundir=',rundir
-;dbg20170926
-;input_DIR0 = rpath+'/'+rundir+'/' ;tmp20171025
-input_DIR0 = rpath+'/'
-;input_DIR0
-;='/scratch3/NCEPDEV/swpc/noscrub/Joseph.Schoonover/debug/after_ipe_nuopc_2d_petlayout/'
-;input_DIR0 ='/scratch4/NCEPDEV/stmp3/Adam.Kubaryk/2c146c8_naomi/'
-;input_DIR0 ='/scratch4/NCEPDEV/stmp4/Adam.Kubaryk/2c146c8_fort167/'
+input_DIR0 = $
+;rpath+'/'+rundir+'/'
+;rpath+'/'
+getenv('REFDIR')+'/'
 print,'input_DIR0= ',input_DIR0
 
 plot_type=FIX( getenv('plot_type') ) ;0L ;0:contour; 1:ht profile; 2:LT-LAT contour; 3:LON-LAT contour; 4:refilling: 5:psphere, 6:tec
@@ -107,8 +104,8 @@ if plot_type eq 0 or plot_type eq 1 or plot_type eq 4 or plot_type eq 7 then beg
    mp_plot=FIX( getenv('mp_plot') ) ; longitude sector to plot
    print, 'mp_plot=', mp_plot
    mpstart=mp_plot
-   mpstep=+40
-   mpstop=mpstart+mpstep
+   mpstep=+1
+   mpstop=mp_plot ;mpstart+mpstep
 endif ;plot_type
 
 
@@ -140,7 +137,7 @@ Varstop=0
 STOP_TIME='230406'
 TEST0='trans'
 title_test=TEST0+'.'+TEST  ;trans.'+TEST
-title_hemi='glb';SH';glb';SH'eq';
+title_hemi='eq';glb';SH' ;glb';eq';
 version='3d'
 
 
@@ -359,63 +356,67 @@ n_plt=-1L
 
 
 ;George's new restart io
-    TimeStep=getenv('TimeStep')
+    TimeStepMin=getenv('TimeStepMin')
     if sw_wam_ipe eq 0 then begin
        ;standalone IPE
-       nSecMin=0
-       nMinMin=0
-       nTimeStamp = (n_read) * Timestep + nSecMin
-print,' nTimeStamp=', nTimeStamp,' n_read=',n_read,' nSecMin=',nSecMin
-UT_hr = FLOAT(nTimeStamp)/3600.
-print,'UT_hr=',UT_hr
-       if nTimeStamp lt 10 then $
-          TimeStamp4Plot =  'iter_0000000'+STRTRIM( string( nTimeStamp, FORMAT='(i1)'), 1) $
-       else if nTimeStamp lt 100 then $
-          TimeStamp4Plot =  'iter_000000'+STRTRIM( string( nTimeStamp, FORMAT='(i2)'), 1)  $
-       else if nTimeStamp lt 1000 then $
-          TimeStamp4Plot =  'iter_00000'+STRTRIM( string( nTimeStamp, FORMAT='(i3)'), 1) 
+       nSecMIN=0
+       nMinMIN=0
+       nSecTimeStamp = (n_read * TimestepMin * 60) + nSecMIN  ;[seconds]
+       UT_hr = FLOAT(nSecTimeStamp)/3600.
+       print,' nSecTimeStamp=', nSecTimeStamp,' n_read=',n_read,' nSecMin=',nSecMIN,' UT_hr=',UT_hr
+       if nSecTimeStamp lt 10 then $
+          TimeStamp4Plot =  'iter_0000000'+STRTRIM( string( nSecTimeStamp, FORMAT='(i1)'), 1) $
+;dbg          TimeStamp4Plot =  'iter_000000'+STRTRIM( string( nSecTimeStamp, FORMAT='(i1)'), 1) $
+       else if nSecTimeStamp lt 100 then $
+          TimeStamp4Plot =  'iter_000000'+STRTRIM( string( nSecTimeStamp, FORMAT='(i2)'), 1)  $
+       else if nSecTimeStamp lt 1000 then $
+          TimeStamp4Plot =  'iter_00000'+STRTRIM( string( nSecTimeStamp, FORMAT='(i3)'), 1)  $
+;dbg          TimeStamp4Plot =  'iter_00000'+STRTRIM( string( nSecTimeStamp, FORMAT='(i2)'), 1) 
+       else if nSecTimeStamp lt 10000 then $
+          TimeStamp4Plot =  'iter_0000'+STRTRIM( string( nSecTimeStamp, FORMAT='(i4)'), 1) 
 
     endif else if sw_wam_ipe eq 1 then begin
        ;WAM_IPE
-       nHrMin=0 ;###CHANGE!
-       nHrTimeStamp = nHrMin
+       nHrMIN=0 ;###CHANGE!
+       nHrTimeStamp = nHrMIN
+;       runDate0=15
        runDate0=16
-       runDate='201303'+STRTRIM( STRING( runDate0, FORMAT='(i2)'), 1)           
-       nMinMin=0
-       ;nMinMin=0
-       nMinTimeStamp = (n_read+1) * TimeStep + nMinMin
-print,' nMinTimeStamp=', nMinTimeStamp,' runDate=',runDate,' n_read=',n_read
-;dbg20170926
-UT_hr = FLOAT(nMinTimeStamp)/60.
-print,'UT_hr=',UT_hr
+;       runDate0=17
+;       runYear0=2013
+       runYear0=2015
+       runDate=STRTRIM( STRING( runYear0, FORMAT='(i4)'), 1)+'03'+STRTRIM( STRING( runDate0, FORMAT='(i2)'), 1)           
+       nMinMIN=-TimeStepMin   ;0
+       nMinTimeStamp = (n_read+1) * TimeStepMin + nMinMIN
+       UT_hr = FLOAT(nMinTimeStamp)/60.
+       print,' nMinTimeStamp=', nMinTimeStamp,' runDate=',runDate,' n_read=',n_read,' UT_hr=',UT_hr
        if nMinTimeStamp ge 60 then begin
          nHrTimeStamp = FIX( nMinTimeStamp/60 ) + nHrTimeStamp
-print,' nHrTimeStamp=', nHrTimeStamp
+         print,' nHrTimeStamp=', nHrTimeStamp
            if nHrTimeStamp ge 24 then begin
               nHrTimeStamp = ( FIX(nMinTimeStamp/60) MOD 24 )
 ;dbg20170825: temporary solution
               runDate0 = runDate0+1 
-              runDate='201303'+STRTRIM( STRING( runDate0, FORMAT='(i2)'), 1)           
-print,' runDate=',runDate
+              runDate=STRTRIM( STRING( runYear0, FORMAT='(i4)'), 1)+'03'+STRTRIM( STRING( runDate0, FORMAT='(i2)'), 1)           
+              print,' runDate=',runDate
            endif
-         nMinTimeStamp = ( nMinTimeStamp MOD 60 )
-      endif ;nMinTimeStamp
-print,' nMinTimeStamp=', nMinTimeStamp,' nHrTimeStamp=', nHrTimeStamp
-      if nMinTimeStamp lt 10 then begin
-         if nHrTimeStamp lt 10 then $
-            TimeStamp4Plot = runDate+'0'+STRTRIM( STRING( nHrTimeStamp, FORMAT='(i2)'), 1)+'0'+STRTRIM( STRING( nMinTimeStamp, FORMAT='(i2)'), 1) $
-         else if nHrTimeStamp lt 100 then $
-            TimeStamp4Plot = runDate+STRTRIM( STRING( nHrTimeStamp, FORMAT='(i2)'), 1)+'0'+STRTRIM( STRING( nMinTimeStamp, FORMAT='(i2)'), 1)
+           nMinTimeStamp = ( nMinTimeStamp MOD 60 )
+        endif                   ;nMinTimeStamp
+       print,' nMinTimeStamp=', nMinTimeStamp,' nHrTimeStamp=', nHrTimeStamp
+       if nMinTimeStamp lt 10 then begin
+          if nHrTimeStamp lt 10 then $
+             TimeStamp4Plot = runDate+'0'+STRTRIM( STRING( nHrTimeStamp, FORMAT='(i2)'), 1)+'0'+STRTRIM( STRING( nMinTimeStamp, FORMAT='(i2)'), 1) $
+          else if nHrTimeStamp lt 100 then $
+             TimeStamp4Plot = runDate+STRTRIM( STRING( nHrTimeStamp, FORMAT='(i2)'), 1)+'0'+STRTRIM( STRING( nMinTimeStamp, FORMAT='(i2)'), 1)
+          
+       endif else if nMinTimeStamp lt 100 then begin
+          if nHrTimeStamp lt 10 then $
+             TimeStamp4Plot = runDate+'0'+STRTRIM( STRING( nHrTimeStamp, FORMAT='(i2)'), 1)+STRTRIM( STRING( nMinTimeStamp, FORMAT='(i2)'), 1) $
+          else if nHrTimeStamp lt 100 then $
+             TimeStamp4Plot = runDate+STRTRIM( STRING( nHrTimeStamp, FORMAT='(i2)'), 1)+STRTRIM( STRING( nMinTimeStamp, FORMAT='(i2)'), 1)
+       endif                    ;nMinTimeStamp
 
-      endif else if nMinTimeStamp lt 100 then begin
-         if nHrTimeStamp lt 10 then $
-            TimeStamp4Plot = runDate+'0'+STRTRIM( STRING( nHrTimeStamp, FORMAT='(i2)'), 1)+STRTRIM( STRING( nMinTimeStamp, FORMAT='(i2)'), 1) $
-         else if nHrTimeStamp lt 100 then $
-            TimeStamp4Plot = runDate+STRTRIM( STRING( nHrTimeStamp, FORMAT='(i2)'), 1)+STRTRIM( STRING( nMinTimeStamp, FORMAT='(i2)'), 1)
-      endif ;nMinTimeStamp
 
-
-    endif ;sw_wam_ipe
+    endif                       ;sw_wam_ipe
     print,' TimeStamp4Plot=', TimeStamp4Plot
 
 
@@ -496,21 +497,16 @@ if ( plot_type eq 0 ) or ( plot_type eq 2 ) or ( plot_type eq 4 )  or ( plot_typ
 
 
     for mp=mpstart,mpstop,mpstep do begin ;NMP-1 do begin
-;for mp=72,78 do begin ;NMP-1 do begin
 
 ;0: Ne electron density[m-3]
       k=0L
-      if ( sw_lun[2] eq 1 ) then begin
+      ;if ( sw_lun[2] eq 1 ) then begin
         for ipts=0L,NPTS2D-1L do begin 
           for jth=0,ISPEC-1L do begin
             plot_z[n_read,k,mp,ipts] = plot_z[n_read,k,mp,ipts] + XIONN_m3[jth,ipts,mp] 
           endfor;jth
         endfor ;ipts
-
-;dbg20170208
-;d print,k,mp,' MAX=', max(plot_z[n_read,k,mp,*]), min(plot_z[n_read,k,mp,*])
-;d stop
-      endif
+      ;endif  ;sw_lun[2
 
 
 ;1 Te electron temperature
@@ -610,7 +606,8 @@ if  (sw_hourly_plot eq 1) AND ( (UT_hr MOD plotXhr) ge 0.010 ) then continue
 
 n_plt = n_plt + 1
 ;dbg20170421 WAM IPE validation
-if sw_wam_ipe eq 1 then begin 
+;dbg20171114 temporary commented out to use the identical ctr routines!
+;if sw_wam_ipe eq 1 then begin 
    ctr_lon_lat_quick_wam_ipe $
       , JMIN_IN,JMAX_IS,Z_km,mlat_deg  $ 
       , XIONN_m3, TE_TI_k $
@@ -627,40 +624,40 @@ if sw_wam_ipe eq 1 then begin
       , VarType_max, VarType_min, VarType_step $
       , n_plt_min
 
-endif else if sw_wam_ipe eq 0 then begin 
-
-   if ( sw_quickplot eq 0 ) then $
-      ctr_lon_lat $
-      , JMIN_IN,JMAX_IS,Z_km,mlat_deg  $ 
-      , XIONN_m3, TE_TI_k $
-      , XIONV_ms1 $
-      , UT_hr, plot_DIR $
-      , n_read $
-      , sw_output2file $
-      ,glon_deg,glat_deg,sw_frame,fac_window, TEST $
-      , sw_debug $
-      , sw_output2file_ascii,luntmp,ncount $
-      , Vn_ms1,VEXB, sunlons1 $
-      , alt,rundir, LUN9001 $
-      , VarType_Min,VarType_Max, VarType_Step $
-   else if ( sw_quickplot eq 1 ) then $
-      ctr_lon_lat_quick $
-      , JMIN_IN,JMAX_IS,Z_km,mlat_deg  $ 
-      , XIONN_m3, TE_TI_k $
-      , XIONV_ms1 $
-      , UT_hr, plot_DIR $
-      , n_plt $
-      , sw_output2file $
-      ,glon_deg,glat_deg,sw_frame,fac_window, TEST $
-      , sw_debug $
-      , sw_output2file_ascii,luntmp,luntmp1,ncount $
-      , Vn_ms1,tn_k,on_m3,n2n_m3,o2n_m3 $
-      , n_plt_max,input_DIR0 $
-      , alt,rundir $
-      , VarType_max, VarType_min, VarType_step $
-      , n_plt_min
-
-endif                           ;sw_wam_ipe eq 0 then begin 
+;endif else if sw_wam_ipe eq 0 then begin 
+;
+;   if ( sw_quickplot eq 0 ) then $
+;      ctr_lon_lat $
+;      , JMIN_IN,JMAX_IS,Z_km,mlat_deg  $ 
+;      , XIONN_m3, TE_TI_k $
+;      , XIONV_ms1 $
+;      , UT_hr, plot_DIR $
+;      , n_read $
+;      , sw_output2file $
+;      ,glon_deg,glat_deg,sw_frame,fac_window, TEST $
+;      , sw_debug $
+;      , sw_output2file_ascii,luntmp,ncount $
+;      , Vn_ms1,VEXB, sunlons1 $
+;      , alt,rundir, LUN9001 $
+;      , VarType_Min,VarType_Max, VarType_Step $
+;   else if ( sw_quickplot eq 1 ) then $
+;      ctr_lon_lat_quick $
+;      , JMIN_IN,JMAX_IS,Z_km,mlat_deg  $ 
+;      , XIONN_m3, TE_TI_k $
+;      , XIONV_ms1 $
+;      , UT_hr, plot_DIR $
+;      , n_plt $
+;      , sw_output2file $
+;      ,glon_deg,glat_deg,sw_frame,fac_window, TEST $
+;      , sw_debug $
+;      , sw_output2file_ascii,luntmp,luntmp1,ncount $
+;      , Vn_ms1,tn_k,on_m3,n2n_m3,o2n_m3 $
+;      , n_plt_max,input_DIR0 $
+;      , alt,rundir $
+;      , VarType_max, VarType_min, VarType_step $
+;      , n_plt_min;
+;
+;endif                           ;sw_wam_ipe eq 0 then begin 
 
 
 ;nm20161204 kitamura plot
@@ -805,7 +802,7 @@ else if ( sw_quickplot eq 1 ) then $
 ,VarType_step $
 ,n_plt_max $
 , input_DIR0,TEST,  TEST1, TEST2, glon_deg2D,rundir $
-,n_plt_min
+,n_plt_min ,tn_k,on_m3
 
 
 

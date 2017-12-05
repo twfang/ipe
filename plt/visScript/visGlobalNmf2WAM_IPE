@@ -13,9 +13,10 @@
 ###date: 20170313
 ###CHANG
 ###nm20170815: 0:original IO(runs before20170808); 1:george's new restart IO
+setenv TodaysDate 20171201
 setenv sw_version_io 1
-setenv TimeStep 30
-#setenv TimeStep 15  #30
+setenv TimeStepMin      60  ###wam-ipe
+#setenv TimeStepMin      1  ###[min]standaloneIPE
 setenv UserName     $1
 #setenv UserName     Robert.Oehmke   ###CHANGE
 setenv rtNumber     $2
@@ -36,15 +37,16 @@ else if ( $WAMDensity == 3 ) then
 endif
 
 setenv HPATH        /scratch3/NCEPDEV/swpc/scrub
+#setenv HPATH        /scratch4/NCEPDEV/stmp4 #20171130
 ###CHANGE!
 #setenv compsetTitle  spacewx_gsm%wam%T62_ipe%80x170 #old
-#setenv compsetTitle  newspacewx_gsm%wam%T62_ipe%80x170  ###raffaele's new version
 #setenv compsetTitle  spacewx_gsm%wam%T62_ipe%80x170_$7  ###raffaele's new version with new layout
-setenv compsetTitle  spacewx_gsm%wam%T62_ipe%80x170  ###raffaele's new version with new layout
 #setenv compsetTitle  spacewx_gsm%wam%T62_ipe%80x170_new #new20170819 for Bob milestone0.6
 #setenv compsetTitle  spacewx_gsm%wam%T62_ipe%80x170_restart #new20170825 for Bob milestone0.6
-#setenv compsetTitle  spacewx_gsm%wam%T62_ipe%80x170 #20170919 debug TW's
-#setenv compsetTitle  wam_gsm%wam%T62_ipe%80x170 #20170829 debug adam's input
+setenv compsetTitle raw_high_latWAM_IPE #20171115 validate wam-ipe raw_high_lat branch
+#setenv compsetTitle verticalEddyMixing #20171130 validate wam-ipe VEM
+#setenv compsetTitle raw_high_latIPE #20171115 validate standalone ipe raw_high_lat branch
+#setenv compsetTitle  spacewx_gsm%wam%T62_ipe%80x170 #20171127 validate bob's new ht grid
 
 setenv compset      swpc%${runDate}${titleWamDensity}_${runDuration}_${compsetTitle}
 if ( $WAMDensity == 3 ) then
@@ -58,7 +60,7 @@ set sw_qsubidl = 0
 setenv sw_wam_ipe        1  #0:standalone IPE; 1:wam_ipe
 setenv sw_output2file    1
 setenv sw_debug          0
-setenv alt               200. ###91. ###350.
+setenv alt               300. ###91. ###350.
 setenv factor_density    1.0E-12
 #setenv ArrowCol  0.  #black
 setenv ArrowCol  255. #white
@@ -106,8 +108,8 @@ if ( $sw_quickPlot == 1 ) then
     setenv nColumnsMulti  6
     setenv nRowsMulti     5
   else if ( $runDuration == 1day ) then   
-    setenv nColumnsMulti  4 #6
-    setenv nRowsMulti     4 #5
+    setenv nColumnsMulti  6
+    setenv nRowsMulti     5
   else if ( $runDuration == 2day ) then   
     setenv nColumnsMulti  6
     setenv nRowsMulti     5
@@ -142,7 +144,7 @@ if ( $sw_hourly_plot == 1 ) then
   else if ( $runDuration == 2day ) then  
     setenv plotXhr 2.0  ###plot every 2hr
   else if ( $runDuration == 1day ) then  
-    setenv plotXhr 0.25  ###plot every 2hrs
+    setenv plotXhr 1.0  ###plot every 2hrs
   endif #$runDuration
 endif #$sw_hourly
 
@@ -174,13 +176,21 @@ echo "rundir="  ${rundir} >> listRunDir
 #
 ###prepare input files
 ###reference directory: contains the input files to get input parameters.
-set REFDIR = ${RPATH}/${rundir}
-###dbg20170926
-#set REFDIR = /scratch3/NCEPDEV/swpc/noscrub/Joseph.Schoonover/debug/after_ipe_nuopc_2d_petlayout
-#set REFDIR = /scratch4/NCEPDEV/stmp3/Adam.Kubaryk/2c146c8_naom
-#set REFDIR = /scratch4/NCEPDEV/stmp4/Adam.Kubaryk/2c146c8_fort167
+if ( $sw_wam_ipe == 1 ) then
+  #wam-ipe
+    #setenv REFDIR  ${RPATH}/${rundir} #20171127 validate bob's new htgrid
+    #  setenv REFDIR  ${RPATH}/stmp${rtNumber}/Naomi.Maruyama/new_compsets
+      #setenv REFDIR  ${RPATH}/stmp${rtNumber}/Naomi.Maruyama/variablef107kp
+      setenv REFDIR  ${RPATH}/ptmp${rtNumber}/Naomi.Maruyama/variablef107kp
+      #setenv REFDIR  ${RPATH}/WAM-IPE/ptmp${rtNumber}/Naomi.Maruyama/march2013_rc0.0.8_opt #20171130
+else if ( $sw_wam_ipe == 0 ) then
+
+    #standaloneIPE
+    #  setenv REFDIR /scratch4/NCEPDEV/stmp3/Naomi.Maruyama/WAM-IPE/20171023debug_raw_high_lat/WAM-IPE/IPELIB/run/1510169371_ipe_theia_intel_parallel_464
+    setenv REFDIR /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20171025IpeOptimization/ipe/run/1510852798_ipe_theia_intel_parallel_464
+endif
 cd ${REFDIR}
-echo PWD= $PWD
+echo "REFDIR="  $PWD
 
 ###idealy i should extract grid info from output run and pass it on to idl
 ###choose grid
@@ -188,7 +198,7 @@ echo PWD= $PWD
 ###setenv sw_grid  `cat $RPATH/$jid_output | awk -F "sw_grid: " '{print $2}'`
 setenv sw_grid 1
 #t setenv sw_grid 2
-echo sw_grid= ${sw_grid}
+echo "sw_grid=" ${sw_grid}
 
 ###extracting input paramters
 #set FN0 = IPE.inp${sw_grid}_1
@@ -211,15 +221,15 @@ echo "extracting (2) nday finished:" $nday
 
 
 if ( $runDuration == 1hr ) then 
-  setenv n_read_max  4 #2
-  setenv n_plt_max   1 #1
+  setenv n_read_max  2
+  setenv n_plt_max   1
 ###nm20170712: added to debug houjun's output
 else if ( $runDuration == 13hr ) then 
   setenv n_read_max 12
   setenv n_plt_max  11
 else if ( $runDuration == 1day ) then 
-  setenv n_read_max 10 #480  #48
-  setenv n_plt_max  9 #462  #23
+  setenv n_read_max 480
+  setenv n_plt_max  23
 else if ( $runDuration == 2day ) then 
   setenv n_read_max 96
   setenv n_plt_max  23
@@ -235,8 +245,8 @@ else if ( $runDuration == 5day ) then
 endif
 #
 
-setenv n_plt_min  11
-setenv plt_ut     1800 #432000
+setenv n_plt_min  0
+setenv plt_ut     0
 setenv plt_ut_end 432000
 ###george's new restart IO
 #if ( $sw_version_io == 0 ) then
@@ -299,7 +309,8 @@ setenv sw_arrow 0
 setenv sw_read_sunlon 0
 
 ###run IDL ###CHANGE
-setenv PPATH ${HPATH}/Naomi.Maruyama/fig/${UserName}
+#setenv PPATH ${HPATH}/Naomi.Maruyama/fig/${UserName}/${TodaysDate}
+setenv PPATH /scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/fig/${UserName}/${TodaysDate} #20171130
 echo "mkdir PPATH=" ${PPATH}
 mkdir ${PPATH}
 echo "mkdir PPATH1=" ${PPATH}/rt_${rtNumber}

@@ -1,12 +1,13 @@
 pro nmf2_take_diff
 
-UserName='Raffaele.Montuoro'
-RDIR00='/scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/fig/'+UserName+'/'
-RDIR0='124589'; 8x10;
-RDIR1='128625'; 1x80;
+UserName='Robert.Oehmke'
+RDIR00='/scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/fig/'+UserName+'/20171117'
+RDIR0='110766'; new htgrid;
+RDIR1='110773'; original;
 
 ;for utime=6,120,6 do begin
-for utime=36,36 do begin
+for utime=1,1 do begin
+;for utime=1,2 do begin
 print,'utime=',utime
 
 if utime lt 10 then $
@@ -16,17 +17,24 @@ else if utime lt 100 then $
 else if utime lt 1000 then $
   UTimeTitle=STRTRIM( string(utime, FORMAT='(i3)'),1 )+'.00' 
 
+;dbg20171127; quick and dirty fix
+if utime eq 1 then $
+  UTimeTitle='0.50' $
+else if utime eq 2 then $
+  UTimeTitle='1.00'
+
 ;UTimeTitle='1.95'
 print,'UTimeTitle=',UTimeTitle
 jmax=0L;5L
 VarTitle='NmF2';Un';On_m3'
-htTitle='200.';350.'
+htTitle='300.'
 
 ;for j=0,jmax-1 do begin
 ;read continuous
-flnm_sav0=RDIR00+'rt'+RDIR0+VarTitle+'UT'+UTimeTitle+'_ht'+htTitle+'.sav'
-flnm_sav1=RDIR00+'rt'+RDIR1+VarTitle+'UT'+UTimeTitle+'_ht'+htTitle+'.sav'
+flnm_sav0=RDIR00+'/rt_'+RDIR0+'/'+VarTitle+'UT'+UTimeTitle+'_ht'+htTitle+'.sav'
+flnm_sav1=RDIR00+'/rt_'+RDIR1+'/'+VarTitle+'UT'+UTimeTitle+'_ht'+htTitle+'.sav'
 print,'restoring file0=',flnm_sav0
+;STOP ;dbg20171127
    restore,flnm_sav0
 ;help
    print,'(0) utime=', ut_hr_disp

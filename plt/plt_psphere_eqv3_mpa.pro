@@ -2,13 +2,30 @@
 ;purpose: compare with MPA cold plasma density
 pro plt_psphere_eqv3_mpa
 
-runYear=15
+runYear=13;15
 titleYear='20'+STRTRIM( string( (runYear), FORMAT='(i2)'),1 )
 print,' titleYear=', titleYear
 sw_contourPlot=3L ;1: contour plot; 2: density profiles as function of L; 3: MPA comparison
-lpGEOSY=21L       ;21      6.19546      66.1310     0.602465
-sw_output2file=1L
+LValue=[6.19,5.130,3.948,2.925,2.026]
+;L Loop
+for kL=0,4 do begin 
+if kL eq 0 then $ ;geosynchronous
+  lpGEOSY=22-1L $       ;      L=6.19546      mlat=66.1310     dL=0.602465
+else if kL eq 1 then $
+  lpGEOSY=24-1L $       ;      L=5.13083      63.5990     0.462165
+else if kL eq 2 then $
+  lpGEOSY=27-1L $       ;      L=3.94819      59.5431     0.360240
+else if kL eq 3 then $
+  lpGEOSY=31-1L $       ;      L=2.92576&nbsp; &nbsp; &nbsp; 53.9256&nbsp; &nbsp; &nbsp;0.226813
+else if kL eq 4 then $
+  lpGEOSY=37-1L        ;      L=2.02664      44.9684     0.119776
+print,kL,' LValue=',LValue[kL],' LpGEOSY=',(LpGEOSY+1)
+
+sw_output2file=0L
+sw_output2fileAscii=1L
+sw_Plt2Display=0L
 sw_dbg=0L
+m3ToCm3=1.0e-6
 
 nmp=80L
 nlp=93L
@@ -48,7 +65,7 @@ print,'MAX=', zMAX,' MIN=',zMIN
 ; n read loop
 n_read=-1L
 nDay=70L
-iFileMax=9L;7L
+iFileMax=9L
 ;---
   ut00=$
 ;518400L ;start_time 00--17ut ;v0
@@ -65,6 +82,14 @@ if sw_contourPlot eq 3 then begin
    xPlt=fltarr(NMP,nMax)
    yPlt=fltarr(NMP,nMax)
    zPlt=fltarr(NMP,nMax)
+
+if sw_output2fileAscii eq 1 then begin
+  lunTmp=2000L
+  flnmAsc='equatorialDensity4obana'+'_L'+STRTRIM( string((LValue[kL]), FORMAT='(f4.1)'),1 )+'.YR'+STRTRIM( string( (titleYear), FORMAT='(i4)'),1 )+'.dat'
+  print,'opening Ascii file=',flnmAsc
+  openw,luntmp,flnmAsc, /GET_LUN
+
+endif
 endif
 ;---iFile loop
 for iFile=0, iFileMax do begin
@@ -147,13 +172,19 @@ plt_DIR=$
 ;'~/stmp2/'+TEST+'/fig/'+rundir+'/hplus/' ;theia
 '/scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/fig/plumes/hplus/'
 ;'/Users/naomimaruyama/sandbox/ipe/fig/'+rundir+'/' ;mac
-lun00=0L
+lun00=0L;h+
+lun01=0L;he+
+lun02=0L;o+
 lun2013=0L
-openr,lun00,rpath+'plasma01',/get_lun, /F77_UNFORMATTED
+openr,lun00,rpath+'plasma01',/get_lun, /F77_UNFORMATTED ;h+
+openr,lun01,rpath+'plasma02',/get_lun, /F77_UNFORMATTED ;he+
+openr,lun02,rpath+'plasma00',/get_lun, /F77_UNFORMATTED ;o+
 openr,lun2013,rpath+'fort.2013',/get_lun ;, /F77_UNFORMATTED
 openr,lun0,rpath+'ut_rec',/get_lun ;, /F77_UNFORMATTED
 ;read loop
-dum=fltarr(NPTS2D,NMP)
+dum=fltarr(NPTS2D,NMP);h+
+dum1=fltarr(NPTS2D,NMP);he+
+dum2=fltarr(NPTS2D,NMP);o+
 ut = 0L
 ;ut = ut0
 record_number=0L
@@ -161,7 +192,9 @@ record_number=0L
 
 
 while ( eof(LUN00) eq 0 ) do begin
-   readu, lun00,dum
+   readu, lun00,dum ;h+
+   readu, lun01,dum1 ;he+
+   readu, lun02,dum2 ;o+
    readf, lun0,record_number, ut
 ;   ut = ut + dt ;[sec]
    n_read = n_read + 1
@@ -178,7 +211,7 @@ while ( eof(LUN00) eq 0 ) do begin
 
 ; plot only every pltXsec 
    ;if sw_dbg eq 1 then  $
-print,'ut=',ut,' difut=',(ut-ut00),' MOD difut=',( (ut-ut00)  MOD pltXsec) 
+;d print,'ut=',ut,' difut=',(ut-ut00),' MOD difut=',( (ut-ut00)  MOD pltXsec) 
    if (   ((ut-ut00) MOD pltXsec) ne 0 ) then CONTINUE
    ;if sw_dbg eq 1 then  $
    if sw_dbg eq 1 then print,'start plotting ut=',ut
@@ -231,7 +264,15 @@ print,'ut=',ut,' difut=',(ut-ut00),' MOD difut=',( (ut-ut00)  MOD pltXsec)
 
              xPlt[mp,n_read]=mltHr
              yPlt[mp,n_read]=FIX(nDay) + (ut-ut00)/86400.
-             zPlt[mp,n_read]=dum[midpoint,mp]*1.0e-6 ;h+ number density [cm-3]  
+             zPlt[mp,n_read]=dum[midpoint,mp]*m3ToCm3 ;h+ number density [cm-3]  
+
+
+if (sw_output2fileAscii eq 1) AND (yPlt[mp,n_read] ge 73.00) then $
+  printf,lunTmp,yPlt[mp,n_read],xPlt[mp,n_read], (dum[midpoint,mp]*m3ToCm3) $ ;h+
+,(dum1[midpoint,mp]*m3ToCm3) $ ;he+
+,(dum2[midpoint,mp]*m3ToCm3) $ ;o+
+, FORMAT='(F7.3,F7.2,3e12.4)'
+
         
          endif                    ;sw_contourPlot=3   
 
@@ -463,7 +504,8 @@ xyouts, 0.80, 0.02  $
  endif  else if (sw_contourPlot eq 3 AND n_read eq nMax-1) then begin 
 
 ;  MPA comparison    
-    print,"MPA comparison", ut, ut00, (ut-ut00),nMax
+if sw_Plt2Display eq 1 then begin
+    print,"plotting MPA comparison", ut, ut00, (ut-ut00),nMax
 
     iwindow=1L
     DEVICE, RETAIN=2, DECOMPOSED=0
@@ -525,15 +567,26 @@ COLORBAR, BOTTOM=bottom, CHARSIZE=charsize_colorbar, COLOR=color, DIVISIONS=divi
         , NCOLORS=ncolors, TITLE=title, VERTICAL=vertical, TOP=top, RIGHT=right $
         , MINOR=minor, RANGE=range, FONT=font, TICKLEN=ticklen $
           , _EXTRA=extra, INVERTCOLORS=invertcolors,  TICKNAMES=ticknames
-   
+
+    if ( sw_output2file eq 1 ) then begin
+       filename_png=plt_DIR+'hp_MPA_lp'+STRTRIM( string((lpGEOSY+1), FORMAT='(i3)'),1 )+'_'+rundir+'.png'
+       if sw_dbg eq 1 then print, filename_png
+       output_png, filename_png
+    endif                       ; ( sw_output2file eq 1 ) then begin
+
+endif else if sw_Plt2Display eq 0 then print,'plotting contour skipped'
+
  endif                          ;sw_contourPlot   
 
 
 endwhile                        ;( eof(LUN00) eq 0 ) do begin
 
 free_Lun,lun00
+free_Lun,lun01
+free_Lun,lun02
 free_Lun,lun0
 free_Lun,lun2013
 endfor ;iFile=0, 1 do begin
+endfor ;kL=0,4 do begin 
 print, 'plt_psphere_eqv3_MPA finished!'
 end                             ;pro plt_psphere_eqv3_MPA

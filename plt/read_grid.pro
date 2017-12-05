@@ -84,9 +84,6 @@ if sw_debug eq 1 then print,'mlon[deg]',dum[mp]*180./!PI
     Z_km     = dum * 1.0E-3
     if sw_debug eq 1 then print,lpj,ipts,' z_km',z_km[ipts]
 
-;dbg20170926
-;for k=0,100 do  print,(k+1),z_km[k]
-;stop
 
 
 if plot_type eq 5 then begin
@@ -104,6 +101,15 @@ endif ;projName
     readu, LUN[1], dum ;(    1:NPTS2D_dum) !rad
     mlat_deg = ( !PI*0.50 - dum ) * 180.0 / !PI
     if sw_debug eq 1 then print,'mlat_deg',mlat_deg[ipts]
+
+
+;dbg20171130
+;lpk=74-1;103-1
+;k0=jmin_in[lpk]-1
+;k1=jmax_is[lpk]-1
+;print,'k0=', k0,' k1=',k1,' JMAX=',(k1-k0+1)
+;for k=k0,k1 do  print,(k+1),(k-k0+1),z_km[k],mlat_deg[k]
+;stop
 
 
     dum=fltarr(NPTS2D_dum, NMP_all)
@@ -155,8 +161,7 @@ print,mp1,lp, glat_deg[i,mp1],glon_deg[i,mp1]
    Re=6.3712E+03                ;km
    r_ref=Re+90.                 ;km for reference ht for rcm
 
-;   for lp=30,33 do begin
-   for lp=90,106 do begin
+   for lp=20,37 do begin
       i=jmin_in[lp]-1L
 
 ;assuming that latitude grid is identical for all LT sectors
@@ -166,7 +171,7 @@ print,mp1,lp, glat_deg[i,mp1],glon_deg[i,mp1]
       sinthet = SIN( theta ) 
       lval    = r_ref / ( Re * sinthet * sinthet )
 
-print,i,' lp=',(lp+1),' mlat=',mlat_deg[i],z_km[midpoint],' L-value=',lval;,(jmin_in(lp)-1),(jmax_is(lp)-1)
+print,' lp=',(lp+1),' mlat=',mlat_deg[i],' L-value=',lval,' z_km=',z_km[midpoint],i;,(jmin_in(lp)-1),(jmax_is(lp)-1)
 ;print,midpoint,mlat_deg[midpoint]
    endfor
    stop
