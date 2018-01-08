@@ -257,11 +257,14 @@ case $machine in
   "theia")
     compiler_check "intel/16.1.150 pgi" $compiler $machine
 #    setc IPEDATA  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/IPEdata/data
-    setc IPEDATA  /scratch3/NCEPDEV/swpc/save/Tzu-Wei.Fang/IPE/trunk_electrodynamics_44514_feedback/run/ipe_S_onlyEd1_crashed_newtest
+#    setc IPEDATA  /scratch3/NCEPDEV/swpc/save/Tzu-Wei.Fang/IPE/trunk_electrodynamics_44514_feedback/run/ipe_S_onlyEd1_crashed_newtest
+    setc IPEDATA   /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/20130316_1day_spacewx_80x170_old_eldyn
     setc IPEQUEUE debug
     setc IPETIME  00:30:00
 #    setc IPEWIND  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/IPEdata/wind
     setc IPEWIND /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/mergeEldyn20170127Stefan/ipe/run
+    setc IPEWIND /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/20130316_1day_spacewx_80x170_old_eldyn/
+
     acct=swpc
     griddir=/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/grid
     queue_cmd=qsub
@@ -311,7 +314,8 @@ for j in $(seq 0 11); do
   linksafe $IPEDATA/plasma${pad}${j} $rundir/stup${pad}${j}
 done
 ###20170119 eldyn
-cp /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/mergeEldyn20170127Stefan/ipe/run/output_fli  $rundir/stup_fli
+#cp /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/mergeEldyn20170127Stefan/ipe/run/output_fli  $rundir/stup_fli
+cp  /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/20130316_1day_spacewx_80x170_old_eldyn/stup_fli  $rundir/stup_fli
 if [ $sw_neutral -eq 4 ]; then
   linksafe $IPEWIND/ut_input_mod  $rundir/ut_input_mod
   linksafe $IPEWIND/wind_input    $rundir/wind_input

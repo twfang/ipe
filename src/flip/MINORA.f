@@ -1,3 +1,4 @@
+
 C.................... MINORA.FOR .......... .................
 C.... This function is the main sequencing control for the He+ and N+
 C.... routines. It is similar to subroutine LOOPS on RSLPSD.FOR. Look 
@@ -28,7 +29,7 @@ C.... Cleaned up and commented by P. Richards in April 2000
       DOUBLE PRECISION ZLBHE,ZLBNP         !.. He+ & N+ lower boundary
       DOUBLE PRECISION XMAS,XMASS(9)       !.. Ion mass
       DOUBLE PRECISION NMORIG(2,FLDIM)     !.. Original density at previous time step
-      integer ret
+      integer ret,iterSave
       DATA XMASS/23.4164D-24,26.7616D-24,6.6904D-24,6*0.0/
       DATA NION/1/      ! # species: do not change
 
@@ -125,6 +126,7 @@ C- OUTER LOOP Return here on Non-Convergence with reduced time step
 
         !************* Main Newton Solver Iteration Loop begins *****************
         DO 220 ITER=1,20
+          iterSave=iter
           !.. set boundary conditions on density
           ret = gptlstart ('XION_4')
           DO J=JMIN,JMAX
@@ -221,7 +223,7 @@ C- OUTER LOOP Return here on Non-Convergence with reduced time step
  220    CONTINUE
 
  230    CONTINUE    !*************** end main loop ***************
-
+        write(mype+800,*) iterSave
         !.. Testing for convergence to see if need to reduce time step
         IF(IDIV.EQ.0) THEN
           !============== Convergence success ========
@@ -284,12 +286,14 @@ C.... for more details
       USE FIELD_LINE_GRID    !.. FLDIM JMIN JMAX FLDIM Z BM GR SL GL SZA
       USE ION_DEN_VEL    !.. O+ H+ He+ N+ NO+ O2+ N2+ O+(2D) O+(2P)
       IMPLICIT NONE
+      include "gptl.inc"
       INTEGER I,J,JSJ,NION,IHEPNP,ID
       INTEGER JBNN,JBNS,JEQ                !.. boundary indices
       DOUBLE PRECISION VL(2),VU(2),FLU(2),FLL(2),ANM(2),PM(2),Q(2)
       DOUBLE PRECISION TINCR(2),N(4,FLDIM),TI(3,FLDIM),F(20)
       DOUBLE PRECISION NMSAVE(2,FLDIM),L(2),XMAS
       DOUBLE PRECISION BU,BL,BD,DT,FGR
+      integer ret
       DATA FLU/0.0,0.0/
 
       !... ID is the unit number for writing diagnostics in
@@ -302,24 +306,38 @@ C.... for more details
       !.. MINVEL to get the velocities(fluxes) at the lower 1/2 pt
       FLL(1)=FLU(1)
       FLL(2)=FLU(2)
+      ret = gptlstart ('MDFIJ_MINVEL1')
       CALL MINVEL(J-1,VL,FLL,N,JSJ,0,XMAS,IHEPNP)
+      ret = gptlstop  ('MDFIJ_MINVEL1')
 
       !..  CALL CHEMO to evaluate the source (Q) and sink(L) terms 
-      IF(IABS(IHEPNP).EQ.9) 
-     >   CALL CHEMO9(NION,J,Q,N,NMSAVE,TI,L)
-      IF(IABS(IHEPNP).EQ.11) CALL CHEM11(NION,J,Q,N,NMSAVE,TI,1,L)
+      IF(IABS(IHEPNP).EQ.9) then
+        ret = gptlstart ('MDFIJ_CHEMO9')
+        CALL CHEMO9(NION,J,Q,N,NMSAVE,TI,L)
+        ret = gptlstop  ('MDFIJ_CHEMO9')
+      endif
+      IF(IABS(IHEPNP).EQ.11) then
+        ret = gptlstart ('MDFIJ_CHEMO11')
+        CALL CHEM11(NION,J,Q,N,NMSAVE,TI,1,L)
+        ret = gptlstop  ('MDFIJ_CHEMO11')
+      endif
 
       !..  Call DAVE for dn/dt. PM(AM)=future(present) cpt of dn/dt
+      ret = gptlstart ('MDFIJ_DAVE')
       CALL DAVE(NION,J,ANM,PM,N,NMSAVE)
+      ret = gptlstop  ('MDFIJ_DAVE')
 
       !.. MINVEL to get the velocities(fluxes) at the upper 1/2 pt
-360   CALL MINVEL(J,VU,FLU,N,JSJ,ID,XMAS,IHEPNP)
+      ret = gptlstart ('MDFIJ_MINVEL2')
+      CALL MINVEL(J,VU,FLU,N,JSJ,ID,XMAS,IHEPNP)
+      ret = gptlstop  ('MDFIJ_MINVEL2')
 
       !.. magnetic field strength at midpoints
       BU=(BM(J)+BM(J+1))*0.5
       BL=(BM(J)+BM(J-1))*0.5
 
       !.. Set up F=prod-loss-dn/dt-div(flux)
+      ret = gptlstart ('MDFIJ_do380')
       DO 380 I=1,NION
       TINCR(I)=(PM(I)-ANM(I))/DT     !.. dn/dt
       FGR=(FLU(I)/BU-FLL(I)/BL)      !.. div(flux)
@@ -341,6 +359,7 @@ C.... for more details
   666    FORMAT(2X,'FIJ2',I4,1P,22E11.3)
          IF(I.EQ.2) WRITE(ID,*) '   '
   380 CONTINUE
+      ret = gptlstop  ('MDFIJ_do380')
       RETURN
       END
 C::::::::::::::::::::::::::: MCHEMQ :::::::::::::::::::::::::::::::::::::
@@ -572,11 +591,13 @@ C.... to do the interpolation.
       !.. TEJ TIJ NUX UNJ DS GRADTE GRADTI GRAV OLOSS HLOSS HPROD
       USE AVE_PARAMS    !.. midpoint values - TEJ TIJ NUX UNJ etc. 
       IMPLICIT NONE
-      INTEGER I,J,K,JI,NION
+      include "gptl.inc"
+      INTEGER I,J,K,JI,NION,ret
       DOUBLE PRECISION N(4,FLDIM),TI(3,FLDIM),NMSAVE(2,FLDIM),Q(2,3)
      > ,L(2,3),SOURCE(2),SINK(2),RTS(99)
       DOUBLE PRECISION HELOSS,QM,LM
       !-- Q and L are chemical source and sink
+      ret = gptlstart ('RATS_LOOP')
       DO 300 K=1,3
         J=K+JI-2
         CALL RATS(J,TI(3,J),TI(1,J),TN(J),RTS)
@@ -585,14 +606,17 @@ C.... to do the interpolation.
         Q(1,K)=(OTHPR1(2,J)+1.0E-07)/BM(J)
         L(1,K)=HELOSS*N(1,J)/BM(J)
  300  CONTINUE
+      ret = gptlstop  ('RATS_LOOP')
 
       !.... terd is called to interpolate
+      ret = gptlstart ('TERLIN_LOOP')
       DO 400 I=1,NION
         CALL TERLIN(Q(I,1),Q(I,2),Q(I,3),DS(JI-1),DS(JI),QM)
         CALL TERLIN(L(I,1),L(I,2),L(I,3),DS(JI-1),DS(JI),LM)
         SOURCE(I)=QM
         SINK(I)=LM
  400  CONTINUE
+      ret = gptlstop  ('TERLIN_LOOP')
       RETURN
       END
 C:::::::::::::::::::::::::: CHEM11 ::::::::::::::::::::::::::::::::::::::

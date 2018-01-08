@@ -52,6 +52,7 @@
       use module_threed,ONLY:threed
 !t      use module_sub_ncplot,ONLY:ncplot
       implicit none
+      include "gptl.inc"
 !
 ! !DESCRIPTION:
 ! Transform needed fields to geomagnetic coordinates
@@ -77,12 +78,14 @@
       real :: sym
       real :: array(-15:kmlon0+16,kmlat0),cs(kmlat0)
       character :: fname*10,labl*56,units*12
-     
+      integer   :: ret     
 
 !     print *, 'sub-dyn: isolve=' ,isolve 
 !
 
+      ret = gptlstart ('transf')
       call transf
+      ret = gptlstop  ('transf')
 !
 ! Fold southern hemisphere over on to northern  (was in transf.F version tgcm15)
 ! -Value at the equator is also folded therefore at the equatorial boundary
@@ -131,7 +134,9 @@
 ! ~ J_(Mr)*r^2*cos(theta_m)/cos(theta_0)/DT0DTS
 !
 
+      ret = gptlstart ('rhspde')
       call rhspde
+      ret = gptlstop  ('rhspde')
 
 !
 ! Set index array nc and magnetic latitude cosine array:
@@ -198,7 +203,9 @@
       enddo
 !
 ! Clear array for difference stencils at all levels:
+      ret = gptlstart ('clearcee')
       call clearcee(cee,kmlon0,kmlat0)
+      ret = gptlstop  ('clearcee')
 
 !
 ! Calculate contribution to stencils from each PDE coefficient
@@ -207,6 +214,7 @@
 ! isolve = 2 -> modified mudpack solver (modified and unmodified coefficients)
 !
       if (isolve==2) then
+        ret = gptlstart ('stencmd1')
         cofum(:,:,:) = 0. ! init
 !
 ! Sigma_(phi phi)(0)/( cos(lam_0)*(d lon)^2 )
@@ -227,12 +235,14 @@
 	zigm2(:,kmlat0) = -zigm2(:,kmlat0)
         call stencmd(zigm2(1,kmlat0),kmlon0,kmlat0,cee,3)
 	zigm2(:,kmlat0) = -zigm2(:,kmlat0)
+        ret = gptlstop  ('stencmd1')
 
 !
 ! isolve /= 2: original or hybrid solver (only modified stencil).
       else
 !
 ! Sigma_(phi phi)(0)/( cos(lam_0)*(d lon)^2 )
+        ret = gptlstart ('stencmd2')
         call stencil(zigm11(1,kmlat0),kmlon0,kmlat0,cee,1)
 
 ! Sigma_(lam lam)(0)*cos(lam_0)*/(d lam_0)^2
@@ -249,35 +259,44 @@
 	zigm2(:,kmlat0) = -zigm2(:,kmlat0)
         call stencil(zigm2(1,kmlat0),kmlon0,kmlat0,cee,3)
 	zigm2(:,kmlat0) = -zigm2(:,kmlat0)
+        ret = gptlstop  ('stencmd2')
 
 !
       endif ! isolve
 !
 ! Insert RHS in finest stencil (formerly sub rths):
+      ret = gptlstart ('sub_dynamo_loop1')
       do j = 1,kmlat0
         jj = kmlath-kmlat0+j
         do i = 1,kmlon0
           c0(i,j,10) = rhs(i,jj)
         enddo ! i = 1,kmlon0
       enddo ! j = 1,kmlat0
+      ret = gptlstop  ('sub_dynamo_loop1')
 !
 ! Set boundary condition at the pole:
+      ret = gptlstart ('edges')
       call edges(c0,kmlon0,kmlat0)
       call edges(c1,kmlon1,kmlat1)
       call edges(c2,kmlon2,kmlat2)
       call edges(c3,kmlon3,kmlat3)
       call edges(c4,kmlon4,kmlat4)
-      if (isolve==2)                                                    &
-     &  call edges(cofum,kmlon0,kmlat0)
+      if (isolve==2) then
+        call edges(cofum,kmlon0,kmlat0)
+      endif
+      ret = gptlstop  ('edges')
 !
 ! Divide stencils by cos(lam_0) (not rhs):
+      ret = gptlstart ('divide')
       call divide(c0,kmlon0,kmlat0,kmlon0,kmlat0,cs,1)
       call divide(c1,kmlon1,kmlat1,kmlon0,kmlat0,cs,1)
       call divide(c2,kmlon2,kmlat2,kmlon0,kmlat0,cs,1)
       call divide(c3,kmlon3,kmlat3,kmlon0,kmlat0,cs,1)
       call divide(c4,kmlon4,kmlat4,kmlon0,kmlat0,cs,1)
-      if (isolve==2)                                                    &
-     &  call divide(cofum,kmlon0,kmlat0,kmlon0,kmlat0,cs,0)
+      if (isolve==2) then
+        call divide(cofum,kmlon0,kmlat0,kmlon0,kmlat0,cs,0)
+      endif
+      ret = gptlstop  ('divide')
 !
 ! Set value of solution to 1. at pole:
       do i=1,kmlon0
@@ -295,6 +314,7 @@
 !  back into the 2-D phim before the call threed, and before it is
 !  transformed to geographic coordinates.
 !
+      ret = gptlstart ('sub_dynamo_loop2')
       ncc = 1
       nmaglon = kmlon0
       nmaglat = kmlat0
@@ -309,9 +329,11 @@
         nmaglon = (nmaglon+1)/2
         nmaglat = (nmaglat+1)/2
       enddo ! n=1,5
+      ret = gptlstop  ('sub_dynamo_loop2')
 !
       jntl = 0
 !
+      ret = gptlstart ('sub_dynamo_if')
       ier = 0 
       if(isolve==0) then
         call mud(rim,jntl,isolve,ier)	 ! solver in mud.F
@@ -331,6 +353,7 @@
         write(6,*) 'dynamo: solver type ',isolve,' not implemented.'
         stop 'isolve'
       endif
+      ret = gptlstop  ('sub_dynamo_if')
 !
 ! Copy output potential from rim to phim(kmlonp1,kmlat):
 !  Correct the SH potential for the anti-symmetric imposed NH high lat poten
@@ -341,6 +364,7 @@
 ! jn index for NH part of potential (kmlat down to ~kmlat0)
 ! jp index for NH pfrac (kmlat0 down to 1)
 !
+      ret = gptlstart ('sub_dynamo_loop3')
       do j=1,kmlat0
         jn = kmlat - j + 1
         jp = kmlat0 - j + 1
@@ -356,12 +380,16 @@
           phim(i,j) = rim(i,j,1)
         enddo ! i=1,kmlonp1
       enddo ! j=1,kmlat 
+      ret = gptlstop  ('sub_dynamo_loop3')
 
-      fname = 'poten'
-      labl = 'poten'
-      units = 'V'
-      call ncplot(noid,fname,labl,start3_out,count3,dim3,               &
-     &  	  phim,5,units,1)
+!JFM The call to ncplot is commented out becasue it severly anti-scales.
+!JFM There should be a better way to do what ncplot does.
+!      ret = gptlstart ('dynamo_ncplot')
+!      fname = 'poten'
+!      labl = 'poten'
+!      units = 'V'
+!      call ncplot(noid,fname,labl,start3_out,count3,dim3,phim,5,units,1)
+!      ret = gptlstop  ('dynamo_ncplot')
 
 !dbg20140801(27)
 !      print *,'(27)output dyn PHIM at utime=',jsecs
@@ -372,7 +400,9 @@
 ! Call threed to calculate 2-d electric potential array in geomagnetic coordinates
 !   from 2-d solver output phim, corrected for the SH potential
 !
+      ret = gptlstart ('threed')
       call threed
+      ret = gptlstop  ('threed')
 !    
       end subroutine dynamo
 !-----------------------------------------------------------------------

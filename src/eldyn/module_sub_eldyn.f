@@ -21,6 +21,7 @@
       USE efield !,ONLY:iday,imo,iday_m,iyear,ut,kp,by,bz,f107d
       use module_get_efield,ONLY:get_efield
       IMPLICIT NONE
+      include "gptl.inc"
       PRIVATE
       PUBLIC :: eldyn
       CONTAINS
@@ -46,6 +47,7 @@
       integer (KIND=int_prec) :: iyr
       real (KIND=real_prec)   :: utsecs
       character :: fname*10,labl*56,units*12
+      integer   :: ret
 
       iyr = 1997
       utsecs=REAL(utime, real_prec)
@@ -62,7 +64,9 @@
 
 !     print *,'sub-eldyn: sunloc: utsecs=',iyr,NDAY,utsecs
 !      call sunloc(iyr,NDAY,utsecs)
+      ret = gptlstart ('sunloc')
       call sunloc(iyr,97,utsecs)
+      ret = gptlstop  ('sunloc')
 
 !dbg20150615: temporary commented out
 ! output sunlons(1)
@@ -81,13 +85,19 @@
       if (sw_debug) print *,'sunlons(1)',sunlons(1)
 
       if (sw_debug) print *,'sub-eldyn: update_fli'
+      ret = gptlstart ('update_fli')
       call update_fli ( utime )
+      ret = gptlstop  ('update_fli')
 
       if (sw_debug) print *,'sub-eldyn: highlat'
+      ret = gptlstart ('highlat')
       call highlat
+      ret = gptlstop  ('highlat')
 
       if (sw_debug) print *,'sub-dynamo: dynamo'
+      ret = gptlstart ('dynamo')
       call dynamo
+      ret = gptlstop  ('dynamo')
 
 !2: WACCM empirical electric field model
 !t      ELSE IF ( sw_eldyn==1 ) THEN 
@@ -102,7 +112,9 @@
 !      imo=3                     !month
       iyear = NYEAR 
 !nm20121127: calculate month/day from iyear and iday
+      ret = gptlstart ('cal_monthday')
       call cal_monthday ( iyear,iday, imo,iday_m )
+      ret = gptlstop  ('cal_monthday')
 !nm20130402: temporarily hard-code the iday to get b4bconfirmed.
       iday_m=15                 !day of month 
 
@@ -120,7 +132,9 @@
         print *,'By=',by,' Bz=',bz,' F107d=',f107d
       end if
 
+      ret = gptlstart ('get_efield')
       call get_efield
+      ret = gptlstop  ('get_efield')
 !dbg        print*,'www'
 !        ed11=ed1
 !        ed22=ed2
@@ -135,7 +149,9 @@
       IF ( utime==start_time ) then
         j0=-999
       endif
+      ret = gptlstart ('GET_EFIELD90km')
       CALL GET_EFIELD90km ( utime )
+      ret = gptlstop  ('GET_EFIELD90km')
       if ( sw_debug )  print *,'GET_EFIELD90km finished'
 
 !t      END IF !( sw_eldyn==0 ) THEN 

@@ -13,6 +13,7 @@
 !     nc-output: define plot variable & attributes
 
       implicit none
+      include "gptl.inc"
 !     
 !#ifdef SUN
 !#include "/opt/local/include/netcdf.inc"
@@ -26,12 +27,14 @@
       real, intent(in) :: psi
       character, intent(in) :: fname*10,labl*56,units*12
 
-      integer :: istat,id
+      integer :: istat,id,ret
       character :: msgerr*19
 
-      
+      ret = gptlstart ('ncplot')
 ! check if field is already defined
+      ret = gptlstart ('nf_inq_varid')
       istat = nf_inq_varid(noid,fname,id)
+      ret = gptlstop  ('nf_inq_varid')
       if (istat /= NF_NOERR) then
 	
         istat = nf_redef(noid)
@@ -58,6 +61,7 @@
       msgerr = 'putvar '//fname
       istat = nf_put_vara_double(noid,id,start3,count3,psi)
       if (istat /= NF_NOERR) call check_err(istat,msgerr) 
+      ret = gptlstop  ('ncplot')
 
       end subroutine ncplot
 !--------------------------------------------------------------------------

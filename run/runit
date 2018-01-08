@@ -1,9 +1,8 @@
 #!/bin/csh
-set compute_tasks = 170
+set compute_tasks = 2
 set RUNDATE = 20170214
 set i = 2
 echo "RUNDATE=" $RUNDATE
-set WORKDIR = /scratch3/BMC/gsd-hpcs/Jacques.Middlecoff/IPEr504
 set machine = theia
 echo "machine" $machine
 set compiler = intel/16.1.150
@@ -16,10 +15,9 @@ endif
 echo "parallelism" $parallelism
 #
 ### over-write the setting inside qsubipe:
-setenv IPEQUEUE  "debug" 
-setenv IPETIME  00:30:00
+setenv IPEQUEUE  "batch" 
+setenv IPETIME  03:00:00
 #
-cd $WORKDIR/run
 pwd
 if ( $compute_tasks == "S" ) then
   ./qsubipe ${machine} ${compiler} ${parallelism}                 

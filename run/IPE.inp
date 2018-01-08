@@ -85,8 +85,8 @@
   sw_para_transport=1
   sw_pcp=0
   sw_perp_transport=1
-  sw_record_number=0
+  sw_record_number=1
   sw_th_or_r=1
   ut_start_perp_trans=0
-  barriersOn=t
+  barriersOn=f
 /

@@ -647,10 +647,11 @@ c      ENDIF
 !sms$insert       call ppp_barrier(status)
       endif
       ret = gptlstop  ('before_CTIPINT XION_barrier')
-      ret = gptlstart ('CTIPINT XION')
-      IF(EFLAG(2,1).EQ.0.AND.IHEPLS.GT.0) ! .AND. Z(midpoint)>200.00 )
-     & CALL XION(TI,DT,DTMIN,9,EFLAG)
-      ret = gptlstop  ('CTIPINT XION')
+      IF(EFLAG(2,1).EQ.0.AND.IHEPLS.GT.0) then ! .AND. Z(midpoint)>200.00 )
+        ret = gptlstart ('CTIPINT XION1')
+        CALL XION(TI,DT,DTMIN,9,EFLAG)
+        ret = gptlstop  ('CTIPINT XION1')
+      endif
       ret = gptlstart ('after_CTIPINT XION_barrier')
       if(barriersOn) then
 !sms$insert       call ppp_barrier(status)
@@ -666,9 +667,11 @@ c      ENDIF
 !sms$insert       call ppp_barrier(status)
       endif
       ret = gptlstop  ('before_CTIPINT XION_barrier')
-      ret = gptlstart ('CTIPINT XION')
-      IF(EFLAG(2,1).EQ.0.AND.INPLS.GT.0) CALL XION(TI,DT,DTMIN,11,EFLAG)
-      ret = gptlstop  ('CTIPINT XION')
+      IF(EFLAG(2,1).EQ.0.AND.INPLS.GT.0) then
+        ret = gptlstart ('CTIPINT XION2')
+        CALL XION(TI,DT,DTMIN,11,EFLAG)
+        ret = gptlstop  ('CTIPINT XION2')
+      endif
       ret = gptlstart ('after_CTIPINT XION_barrier')
       if(barriersOn) then
 !sms$insert       call ppp_barrier(status)

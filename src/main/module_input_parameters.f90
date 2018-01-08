@@ -277,7 +277,7 @@
         READ(LUN_nmlt,NML=NMIPE    ,ERR=222,IOSTAT=IOST_RD)
 !SMS$IGNORE END
 
-!SMS$INSERT lpHaloSize=2
+!SMS$INSERT lpHaloSize=1
 !SMS$INSERT mpHaloSize=1
 !
 !set up MPI communicator for SMS

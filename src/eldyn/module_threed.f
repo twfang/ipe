@@ -120,23 +120,20 @@
 !      write(unit=4029,FMT='(20E12.4)')ed2dy
 
 !nm20140408
-      fname = 'ed1'
-      labl = 'ed1'
-      units = 'V/m'
-!
-
+!JFM The call to ncplot is commented out becasue it severly anti-scales.
+!JFM There should be a better way to do what ncplot does.
+!      fname = 'ed1'
+!      labl = 'ed1'
+!      units = 'V/m'
 !d      print *,'!dbg20140409 threed ed1dy',ed1dy(:,33)
-
-      call ncplot(noid,fname,labl,start3_out,count3,dim3,               &
-     &            ed1dy,3,units,3)
+!      call ncplot(noid,fname,labl,start3_out,count3,dim3,               &
+!     &            ed1dy,3,units,3)
 !      
-      fname = 'ed2'
-      labl = 'ed2'
-      units = 'V/m'
-      call ncplot(noid,fname,labl,start3_out,count3,dim3,               &
-     &            ed2dy,3,units,3)
-
-
+!      fname = 'ed2'
+!      labl = 'ed2'
+!      units = 'V/m'
+!      call ncplot(noid,fname,labl,start3_out,count3,dim3,               &
+!     &            ed2dy,3,units,3)
 
       end subroutine threed
 !-----------------------------------------------------------------------

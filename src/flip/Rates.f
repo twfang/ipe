@@ -12,7 +12,7 @@ C.... Rates updated by P. Richards in May 2009
       DIMENSION RTS(99)
       integer ret
 
-c     ret = gptlstart ('RATS')
+      ret = gptlstart ('RATS')
       !.. zero out array
       DO 898 ITJS=1,99
  898  RTS(ITJS)=0.0
@@ -366,7 +366,7 @@ c     ret = gptlstart ('RATS')
       RTS(98)=2.87E-10*(TE/300)**0.91
 
 	!.. RTS(99) used in the RVN2PB file for N2+(v) + O > N2 + O+ calculation
-c     ret = gptlstop ('RATS')
+      ret = gptlstop ('RATS')
 
         RETURN
         END
