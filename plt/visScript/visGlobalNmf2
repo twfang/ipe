@@ -13,16 +13,17 @@
 ###date: 20170313
 ###
 setenv sw_read_wind 0 
-setenv todaysDate 20171130
+setenv todaysDate 20171224
 ###nm20170815: 0:original IO(runs before20170808); 1:george's new restart IO
-setenv sw_version_io 0
+setenv sw_version_io 1
 setenv sw_wam_ipe 0
 #setenv HPATH     /scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe
 setenv HPATH     /scratch3/NCEPDEV/swpc/scrub/
 #setenv TEST      IPEr420
 #setenv TEST      20170314Init4Jacques
 #setenv TEST      mpi20160330v4
-setenv TEST  JQIPEr420  ##20170727 JQ reproduction
+setenv TEST 20171025IpeOptimization
+#setenv TEST  JQIPEr420  ##20170727 JQ reproduction
 #setenv TEST  20170811testDevelopmentV3 ##20170811
 #setenv VTEST 2222
 #setenv TEST  20171109debugRawHighLatWamIpe${VTEST} ##20171114
@@ -34,24 +35,25 @@ setenv UserName  Naomi.Maruyama
 #setenv RPATH  ${HPATH}/runs/$TEST/trunk/run
 #setenv RPATH  /scratch3/NCEPDEV/stmp2/$UserName/$TEST/IPE/run
 #setenv RPATH /scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/stmp${VTEST}/Naomi.Maruyama/new_compsets
-#setenv RPATH /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20171025IpeOptimization/ipe/run/1510894666_ipe_theia_intel_parallel_464
-setenv RPATH /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20170726mergeIPEOptimization2SwpcIpeTest/JQIPEr420/IPEr420/run/1492799015_ipe_theia_intel_parallel_464
+setenv RPATH /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20171025IpeOptimization/ipe/run/1514310037_ipe_theia_intel_parallel_464
+#setenv RPATH /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20170726mergeIPEOptimization2SwpcIpeTest/JQIPEr420/IPEr420/run/1492799015_ipe_theia_intel_parallel_464
 
 #0: idl on interactive queue; 1: submit a job on computer node queue
 set sw_qsubidl = $3
 setenv sw_output2file    1
-setenv sw_debug    1
+setenv sw_debug    0
 setenv alt       302.
 setenv factor_density  1.0E-12
 #setenv ArrowCol  0.  #black
 setenv ArrowCol  255. #white
-setenv TimeStepMin 1440 #15 #[min]
+setenv TimeStepMin 1 #[min]
 
 #(7)mp_plot
 #if ( $#argv == 7 ) then 
 #    setenv mp_plot $6
 #else if ( $#argv < 7 ) then 
-    setenv mp_plot 0 #default
+#    setenv mp_plot 0 #default
+    setenv mp_plot 13 #default
 
     #(6)sw-frame
     #setenv sw_frame $6
@@ -63,14 +65,15 @@ setenv TimeStepMin 1440 #15 #[min]
     setenv xmax360 0
 
     #(5)plot_type
-    setenv plot_type 3
+#    setenv plot_type 3
+    setenv plot_type 0
 
     #(3-4)VarType min max
     ###VarType: 2:vo+(+southward),3:o+,4:un
     #set j = $3
     #set jmax = $4
-    set j = 7
-    set jmax = 7
+    set j = 0 #7
+    set jmax = 0 #7
 
 #    if ( $#argv < 6 ) then 
 #      setenv sw_frame 1  #default geographic 
@@ -205,11 +208,11 @@ echo "extracting (2) nday finished:" $nday
 #echo "extracting (3) f107av finished:" $f107av
 ###
 ### set to defaul values
-setenv n_read_max 2 
-setenv n_plt_max  1
+setenv n_read_max 11 
+setenv n_plt_max  10
 setenv n_plt_min  0
-setenv plt_ut     864000
-setenv plt_ut_end 950400
+setenv plt_ut     0 #864000
+setenv plt_ut_end 600 #950400
 ###george's new restart IO
 #if ( $sw_version_io == 0 ) then
   set FN0 = ut_rec
@@ -235,7 +238,7 @@ echo "extracting (5) n_read_max from ut_rec=" $n_read_max
 setenv sw_quickPlot 1
 if ( $sw_quickPlot == 1 ) then 
   setenv nColumnsMulti  6 #3
-  setenv nRowsMulti     5 #
+  setenv nRowsMulti     3 #5 #
 endif
 setenv sw_hourly_plot 0
 if ( $sw_hourly_plot == 1 ) then 

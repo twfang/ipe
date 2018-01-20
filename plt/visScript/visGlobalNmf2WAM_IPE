@@ -13,10 +13,10 @@
 ###date: 20170313
 ###CHANG
 ###nm20170815: 0:original IO(runs before20170808); 1:george's new restart IO
-setenv TodaysDate 20171201
+setenv TodaysDate 20171224
 setenv sw_version_io 1
-setenv TimeStepMin      60  ###wam-ipe
-#setenv TimeStepMin      1  ###[min]standaloneIPE
+#setenv TimeStepMin      60  ###wam-ipe
+setenv TimeStepMin      1  ###[min]standaloneIPE
 setenv UserName     $1
 #setenv UserName     Robert.Oehmke   ###CHANGE
 setenv rtNumber     $2
@@ -57,7 +57,7 @@ setenv RPATH        ${HPATH}/${UserName}
 #0: idl on interactive queue; 1: submit a job on computer node queue
 #set sw_qsubidl = $3
 set sw_qsubidl = 0
-setenv sw_wam_ipe        1  #0:standalone IPE; 1:wam_ipe
+setenv sw_wam_ipe        0  #0:standalone IPE; 1:wam_ipe
 setenv sw_output2file    1
 setenv sw_debug          0
 setenv alt               300. ###91. ###350.
@@ -70,7 +70,8 @@ setenv mp_plot 0 #default
 setenv sw_frame 0 
 
 #(5)plot_type
-setenv plot_type 3
+#setenv plot_type 3
+setenv plot_type 0
 
 #(3-4)VarType min max
 ###VarType: 2:vo+(+southward),3:o+,4:un
@@ -129,8 +130,8 @@ endif
 # if ( $runDuration == 1hr ) then 
 #  setenv sw_hourly_plot 0
 #else
-  setenv sw_hourly_plot 1
-#  setenv sw_hourly_plot 0
+#  setenv sw_hourly_plot 1
+  setenv sw_hourly_plot 0
 #endif
 
 if ( $sw_hourly_plot == 1 ) then 
@@ -187,7 +188,7 @@ else if ( $sw_wam_ipe == 0 ) then
 
     #standaloneIPE
     #  setenv REFDIR /scratch4/NCEPDEV/stmp3/Naomi.Maruyama/WAM-IPE/20171023debug_raw_high_lat/WAM-IPE/IPELIB/run/1510169371_ipe_theia_intel_parallel_464
-    setenv REFDIR /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20171025IpeOptimization/ipe/run/1510852798_ipe_theia_intel_parallel_464
+    setenv REFDIR /scratch3/NCEPDEV/stmp2/Naomi.Maruyama/20171025IpeOptimization/ipe/run/${rtNumber}_ipe_theia_intel_parallel_464
 endif
 cd ${REFDIR}
 echo "REFDIR="  $PWD
@@ -228,8 +229,8 @@ else if ( $runDuration == 13hr ) then
   setenv n_read_max 12
   setenv n_plt_max  11
 else if ( $runDuration == 1day ) then 
-  setenv n_read_max 480
-  setenv n_plt_max  23
+  setenv n_read_max 11 #480
+  setenv n_plt_max  10 #23
 else if ( $runDuration == 2day ) then 
   setenv n_read_max 96
   setenv n_plt_max  23

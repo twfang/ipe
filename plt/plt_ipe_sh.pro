@@ -373,7 +373,9 @@ n_plt=-1L
           TimeStamp4Plot =  'iter_00000'+STRTRIM( string( nSecTimeStamp, FORMAT='(i3)'), 1)  $
 ;dbg          TimeStamp4Plot =  'iter_00000'+STRTRIM( string( nSecTimeStamp, FORMAT='(i2)'), 1) 
        else if nSecTimeStamp lt 10000 then $
-          TimeStamp4Plot =  'iter_0000'+STRTRIM( string( nSecTimeStamp, FORMAT='(i4)'), 1) 
+          TimeStamp4Plot =  'iter_0000'+STRTRIM( string( nSecTimeStamp, FORMAT='(i4)'), 1)   $
+       else if nSecTimeStamp lt 100000 then $
+          TimeStamp4Plot =  'iter_000'+STRTRIM( string( nSecTimeStamp, FORMAT='(i5)'), 1) 
 
     endif else if sw_wam_ipe eq 1 then begin
        ;WAM_IPE

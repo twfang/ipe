@@ -161,7 +161,8 @@ print,mp1,lp, glat_deg[i,mp1],glon_deg[i,mp1]
    Re=6.3712E+03                ;km
    r_ref=Re+90.                 ;km for reference ht for rcm
 
-   for lp=20,37 do begin
+;   for lp=20,37 do begin
+   for lp=140,140 do begin
       i=jmin_in[lp]-1L
 
 ;assuming that latitude grid is identical for all LT sectors
@@ -171,7 +172,7 @@ print,mp1,lp, glat_deg[i,mp1],glon_deg[i,mp1]
       sinthet = SIN( theta ) 
       lval    = r_ref / ( Re * sinthet * sinthet )
 
-print,' lp=',(lp+1),' mlat=',mlat_deg[i],' L-value=',lval,' z_km=',z_km[midpoint],i;,(jmin_in(lp)-1),(jmax_is(lp)-1)
+print,' lp=',(lp+1),' mlat=',mlat_deg[i],' L-value=',lval,' Apex_ht=',z_km[midpoint],i;,(jmin_in(lp)-1),(jmax_is(lp)-1)
 ;print,midpoint,mlat_deg[midpoint]
    endfor
    stop

@@ -6,20 +6,23 @@
 pro plt_efv2
 ;runDATE='20170727'
 ;runDATE='20170917'
-runDATE='20171025'
+;runDATE='20171025'
+runDATE='20180113'
 sw_debug=0L
 sw_output2file=1L ;1'PNG' ;0NONE';
 sw_output2save=1L ;1save ;0NONE';
-sw_plt_cntr=1L ;1:rectangular; 2:polar
+sw_plt_cntr=2L ;1:rectangular; 2:polar
 sw_plt_exb=0L ;1
 version=3  ;2: 20120530; 3:20121120
 sw_180=0L ;1:-180<+180; 0:0~360
 title_res=$
-'low20120709'
-;'2xdyn';'
+;'low20120709'
+'2xdyn';'
 ;low';dyn';'low' ; 'high'
-utime_min=0;864000;550800.;547200.;###CHANGE
-utime_max=utime_min;+600.;to plot ExB time variation on the 6th panel 
+;ut00=1641600
+ut00=1555200
+utime_min=ut00;1641600;0;864000;550800.;547200.;###CHANGE
+utime_max=utime_min+86400;to plot ExB time variation on the 6th panel 
 ;t if sw_plt_exb eq 0 then begin 
   iplot_max=6-1L 
 ;t  freq_plot_sec=900
@@ -30,19 +33,25 @@ utime_max=utime_min;+600.;to plot ExB time variation on the 6th panel
 ;runDIR='/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/runs/';before
 ;runDIR='/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/' ;after
 runDIR0='/scratch3/NCEPDEV/stmp2/Naomi.Maruyama/' ;20170916
-figDIR='/scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/fig/efield/'
+;figDIR='/scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/fig/efield/'
+figDIR='/scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/fig/obana/2017/'
 
 ;TEST1='JQIPEr420' ;ref20170727
 ;TEST1='IPEOptimization' ;testing20170917
 ;TEST1='ed1130Issue' ;testing20170918
-TEST1='raw_high_lat' ;debuging20171025
-
-parallelism='parallel_1'
-runid='1508957320'
+;TEST1='raw_high_lat' ;debuging20171025
+;TEST1='20170908storm' ;newE20180113
+TEST1='20170907storm' ;newE20180113
+;TEST1='20170907stormEtest' ;newE20180113 testE
+nTask='93'
+parallelism='parallel2';parallel_1'
 ;parallelism='serial'
-;runid='1508956570'
+;runid='1514424629';20170908 ;1508957320'
+runid='1514117841' ;20170907 23--24UT original
+;runid='1516293695' ;20170907TEST
 
-TEST0='20171025IpeOptimization/ipe/run/'
+;TEST0='20171025IpeOptimization/ipe/run/'
+TEST0='mpi20160330v2/run17/'
 ;TEST2='debugE20160401/run/1459548926_ipe_theia_intel_serial2' ;after
 ;TEST2='tmp20151117/trunk/run4/1459553660_ipe_theia_intel_serial2' ;before
 ;TEST2='tmp20151117/trunk/run4/1459554325_ipe_theia_intel_serial2' ;after
@@ -50,7 +59,8 @@ TEST0='20171025IpeOptimization/ipe/run/'
 ;TEST2='20170811testDevelopmentV3/ipe/run/1505642824_ipe_theia_intel_parallel_464' ;20170916
 ;TEST2='20170811testDevelopmentV3/ipe/run/1505719032_ipe_theia_intel_serial' ;20170918
 ;TEST2='20170811testDevelopmentV3/ipe/run/1505733014_ipe_theia_intel_parallel_464' ;20170918;module_interp_poten.f
-TEST2=TEST0+runid+'_ipe_theia_intel_'+parallelism ;20171025 raw_high_lat test
+;TEST2=TEST0+runid+'_ipe_theia_intel_'+parallelism ;20171025 raw_high_lat test
+TEST2=TEST0+runid+'_ipe_theia_intel_'+parallelism+'_'+nTask ;newE20180113
 
 plot_DIR=$
 ;'/scratch3/NCEPDEV/swpc/noscrub/Naomi.Maruyama/ipe/fig/ef/20150317/after20160401/'
@@ -62,8 +72,8 @@ input_DIR=runDIR0+TEST2+'/'
 
 
 utime=0L
-freq_output=5 ;min
-n_read_max=3L; ###CHANGE
+freq_output=15 ;min
+n_read_max=4;97L; ###CHANGE
 utsec_save=fltarr(n_read_max)
 utsec_save[*]=-9999L
 
@@ -92,7 +102,7 @@ ed190_save=fltarr(n_read_max)
 
 ed290=fltarr(nmp,nlp*2)
 ed290_save=fltarr(n_read_max)
-
+sunlons1=0.0e+0
 mlon90_2d=fltarr(nmp,nlp*2)
 mlat90_2d=fltarr(nmp,nlp*2)
 formatE='(20E12.4)'
@@ -121,6 +131,7 @@ openr, LUN7, input_DIR+'fort.2007', /GET_LUN ;theta90
 readf, LUN7, mlat90_0,  FORMAT=formatF
 openr, LUN8, input_DIR+'fort.2008', /GET_LUN ;ed1_90
 openr, LUN9, input_DIR+'fort.2009', /GET_LUN ;ed2_90
+openr, LUN13, input_DIR+'fort.2013', /GET_LUN ;sunlon
 ;20130408: fort.2006 does not exist any more!!!
 get_gl, mlat90_1,title_res,sw_debug
 ;openr, LUN6, input_DIR+'fort.2006', /GET_LUN
@@ -173,6 +184,7 @@ print,'rd#',n_read,' uts',utime ;,' uts_save',utsec_save[n_read]
 readf, LUN0, poten,  FORMAT=formatE
 readf, LUN1, ed1130,  FORMAT=formatE
 readf, LUN2, ed2130,  FORMAT=formatE
+readf, LUN13, sunlons1;,  FORMAT=formatE
 if ( version eq 2 ) then begin  ;nm201205
   readf, LUN8, ed190,  FORMAT=formatE  
   readf, LUN9, ed290,  FORMAT=formatE
@@ -243,7 +255,7 @@ if ( sw_plt_cntr eq 1 ) then $
 
 else if ( sw_plt_cntr eq 2 ) then $
    plt_cntr_fill_plr $
- , iplot_max,mlon90_2d,mlat90_2d, sw_180,mlat130,poten,ed1130,ed2130,ed190,ed290,sw_debug,mlon130,mlat90_0,utime,runDATE,TEST2,plot_DIR,mp,lp, sw_output2file
+ , iplot_max,mlon90_2d,mlat90_2d, sw_180,mlat130,poten,ed1130,ed2130,ed190,ed290,sw_debug,mlon130,mlat90_0,utime,runDATE,TEST2,plot_DIR,mp,lp, sw_output2file,ut00,sunlons1
 
 
 ;plot ExB time variation
@@ -269,6 +281,7 @@ free_lun,lun4
 free_lun,lun7
 free_lun,lun8
 free_lun,lun9
+free_lun,lun13
 
 ;print,'mlat90='
 ;for i=0,nlp*2-1 do print,i,mlat90_2d[0,i]

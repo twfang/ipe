@@ -2,9 +2,9 @@
 ;20140225 separated out from plt_efv2.pro
 ;purpose: plot filled color contour
 pro plt_cntr_fill_plr $
-, iplot_max,mlon90_2d,mlat90_2d, sw_180,mlat130,poten,ed1130,ed2130,ed190,ed290,sw_debug,mlon130,mlat90_0,utime,runDATE,TEST2,plot_DIR,mp,lp, sw_output2file
+, iplot_max,mlon90_2d,mlat90_2d, sw_180,mlat130,poten,ed1130,ed2130,ed190,ed290,sw_debug,mlon130,mlat90_0,utime,runDATE,TEST2,plot_DIR,mp,lp, sw_output2file,ut00,sunlons1
 ;
-fac_window=10.
+fac_window=1.;10.
 sw_arrow=1
   var_title=['pot130[kV]','ed1130[mV/m]','ed2130[mV/m]','pot130-mlat90[kV]','ed190[mV/m]','ed290'] 
 SW_range=1L
@@ -14,8 +14,10 @@ if( SW_range eq 1 ) then  begin
 ;  value_max_fix=[  +30.,     +20.,    +25. ,+30.,+20.]
   if (plot_NH eq 1) then begin
 ;    value_min_fix=[  -43.,     -33.,    -33. ,-43.,-33.,-33.]
-    value_min_fix=[  -19.,     -29.,    -15. ,-19.,-29.,-15.]
-    value_max_fix=[  +19.,     +29.,    +15. ,+19.,+29.,+15.]
+;    value_min_fix=[  -19.,     -29.,    -15. ,-19.,-29.,-15.]
+;    value_max_fix=[  +19.,     +29.,    +15. ,+19.,+29.,+15.]
+    value_min_fix=[  -150.,     -100.,    -100. ,-150.,-100.,-100.]
+    value_max_fix=[  +150.,     +100.,    +100. ,+150.,+100.,+100.]
 ;    value_max_fix=[  +43.,     +33.,    +33. ,+43.,+33.,+33.]
 
 ;     val0=1.3
@@ -24,14 +26,7 @@ if( SW_range eq 1 ) then  begin
   endif
 endif
 
-iwindow=0L
-DEVICE, RETAIN=2, DECOMPOSED=0
-WINDOW,iwindow,XSIZE=1000*fac_window,YSIZE=700*fac_window
-!p.multi=[0,3,2,0]
-;!p.multi=[0,1,1,0]
-n_ldct=39  ;rainbow+black
-;loadct,n_ldct
-redblue
+
 text_color=160  ;within rainbow+black color table
 char_size =2.0
 char_thick=1.5
@@ -57,7 +52,136 @@ if ( plot_NH eq 1 ) then begin
 endif
 
 charsize_colorbar=3.4
-format_colorbar='(f6.2)'
+format_colorbar='(f7.1)'
+
+
+
+;---
+;nm20180118 include penetration
+potmax=max(poten)
+potmin=min(poten)
+cpcp=potmax-potmin
+print,'MAXpot=',potmax*1.0E-3,' MINpot=',potmin*1.0E-3,' cpcp[kV]=',cpcp*1.0E-3
+
+cpcpMax=100.*1.0E-3 ;[Volt]
+nlpmax=41-1L
+nlpmin=17-1L
+nmp=80L
+if  (cpcp ge cpcpMax) then begin
+
+
+
+ed2max=max(ed290(0:nmp-1,nlpmin:nlpmax),lmaxS,MIN=ed2min,SUBSCRIPT_MIN=lminS)
+print,'ed2MAX=',ed2max,lmaxs,' ed2MIN=',ed2min,lmins
+;ed1min=min(ed190(0:nmp-1,0:nlpmax),lminS)
+;print,'ed1min=',ed1min,lminS
+
+;print,'mp', ed190(0:10,0)
+;print,'lp', ed190(0,0:10)
+;print,'ed190', ed190
+
+;find out the 2D subscript: MAX
+ix0 = lmaxs MOD nmp
+iy0 = lmaxs / nmp
+print,'the MAX value of ed290 is at location(',ix0,iy0,') at mlat=',mlat90_2d[ix0,iy0]
+print,'double check ed2MIN=', ed2max,ed290[ix0,iy0]
+
+; MIN
+ix1 = lmins MOD nmp
+iy1 = lmins / nmp
+print,'the MIN value of ed290 is at location(',ix1,iy1,') at mlat=',mlat90_2d[ix1,iy1]
+print,'double check ed2MIN=', ed2min,ed290[ix1,iy1]
+
+
+iwindow=1L
+DEVICE, RETAIN=2, DECOMPOSED=0
+WINDOW,iwindow,XSIZE=1000*20,YSIZE=700*20.
+
+;search for mp for MLT=24
+
+
+lp65=22
+for i=0,nmp-1 do begin
+   mlt    = mlon90_2d[i,lp65]/15.0D0 - sunlons1 * 12.0D0 / !PI   +12.0 ;[hr]  
+  if ( mlt lt  0. ) then  mlt = mlt MOD 24.
+  if ( mlt ge 24. ) then  mlt = mlt - 24.
+
+   if ( 23.85 lt mlt ) or ( mlt lt 0.15 ) then begin
+      mp24=i
+      print,'mlt24=', mlt
+      break
+   endif
+endfor
+
+;plot,mlat90_2d[mp24,0:185], ed290[mp24,0:185]
+plot,mlat90_2d[mp24,0:185], ed190[mp24,0:185] $;,linestyle=5
+,xrange=[-60.    ,+60.    ], xstyle=1 $
+,yrange=[-20.,+20.], ystyle=1
+
+
+lp55=28 ;-56
+lp30=69 ;-18.
+print,'mlat55=',mlat90_2d[mp24,lp55],mlat90_2d[mp24,lp30]
+Re=6.3712E+03                ;km                                            
+r_ref=Re+90.                 ;km for reference ht for rcm
+ppe=ed190*0.0
+facEe=ed190*0.0
+;for mp=0,nmp-1 do begin
+for mp=mp24,mp24 do begin
+;SH
+   for lp=lp55,lp30 do begin
+
+      theta = (mlat90_2d[mp,lp]+90.)  *!PI / 180. ;[deg]-->[rad]          
+      sinthet = SIN( theta )
+      ;costhet = COS( theta )
+      lval    = r_ref / ( Re * SIN( theta ) * SIN( theta ) )
+;      facEe[mp,lp]   = lval^(3/2)
+      facEe[mp,lp]   = lval^(2.6)
+
+      if lp eq lp55 then facEe55 = facEe[mp,lp]
+
+print,lp,mlat90_2d[mp,lp],lval,facEe[mp,lp]
+      ppe[mp,lp]     = ed190[mp,lp55] * facEe[mp,lp] / facEe55
+
+print,ed190[mp,lp],ppe[mp,lp],(ed190[mp,lp]+ppe[mp,lp])
+;      ed190[mp,lp]= ed190[mp,lp]+ppe[mp,lp]
+
+     if (ABS(ppe[mp,lp]) gt ABS(ed190[mp,lp]) ) then ed190[mp,lp]= ppe[mp,lp] 
+   endfor ;lp ;SH
+
+;NH
+;      theta = (90.- mlat90_2d[mp,lp])  *!PI / 180. ;[deg]-->[rad]          
+
+
+   endfor ;mp
+
+;n_loadct=39
+oplot,mlat90_2d[mp24,0:185], ed190[mp24,0:185],linestyle=4, thick=4;,color=200
+
+oplot,mlat90_2d[mp24,0:185], ppe[mp24,0:185],linestyle=2,thick=2;,color=50
+;n_loadct=0
+oplot,mlat90_2d[mp24,0:185], facEe[mp24,0:185],linestyle=5
+flnmPng=plot_DIR+'ppe'+STRTRIM( string(utime, FORMAT='(i7)'),1 )+'.png'
+print,flnmPng
+output_png, flnmPng
+;STOP
+endif ;cpcp
+;---
+
+
+iwindow=0L
+DEVICE, RETAIN=2, DECOMPOSED=0
+WINDOW,iwindow,XSIZE=1000*fac_window,YSIZE=700*fac_window
+;!p.multi=[0,3,2,0]
+!p.multi=[0,3,3,0]
+;!p.multi=[0,1,1,0]
+n_ldct=39  ;rainbow+black
+;loadct,n_ldct
+redblue
+
+
+
+
 ;dbg20150313  for iplot=0,iplot_max do begin
 for iplot=0,5 do begin
    if ( iplot eq 0 ) then begin
@@ -77,11 +201,12 @@ for iplot=0,5 do begin
 
 ; polar plot
 ;temporary set sunlon
-sunlons1 = $
+;sunlons1 = $
 ;-1.929 ;  near 0ut
-0.2409E+00 ;17ut
+;0.2409E+00 ;17ut
 if ( iplot le 2 ) then begin
-  krmax=11L;25L;SH -42.
+;  krmax=11L;25L;SH -42.
+  krmax=27L;25L;SH -38.0
 
 ;if ( which_hem eq 'NH' ) then $
   jj=krmax-1 ;$ SH
@@ -90,19 +215,22 @@ if ( iplot le 2 ) then begin
 
 
   rim_lat = mlat130[jj]
-  print, 'mlat130=',mlat130[0:jj]
+  if ( sw_debug eq 1 ) then  print, 'mlat130=',mlat130[0:jj]
 endif else if ( iplot eq 3 ) then begin
-  krmax=11L;SH  -4
+;  krmax=11L;SH  -70deg
+  krmax=27L;SH -38.2
   jj=krmax-1 ;$ SH
   rim_lat = mlat90_0[jj]
-  print,'mlat90_0=', mlat90_0[0:jj+5]
+  if ( sw_debug eq 1 ) then print,'mlat90_0=', mlat90_0[0:jj+5]
 endif else begin 
-  krmax=14L;SH  -41.9
+  krmax=41L;SH  -38.85deg
   jj=krmax-1 ;$ SH
-  rim_lat = mlat90_2d[0,jj+5]
-  print,'mlat90_2d=', mlat90_2d[0,0:jj+5]
+  rim_lat = mlat90_2d[0,jj]
+;  if ( sw_debug eq 1 ) then $
+     for jjj=0,lp30 do print,jjj,'mlat90_2d=', mlat90_2d[0,jjj]
 endelse 
-print,iplot,krmax,' rim_lat[deg]=', rim_lat
+if ( sw_debug eq 1 ) then $
+   print,'iplot=',iplot,' krmax=',krmax,' rim_lat[deg]=', rim_lat
 
 
 if ( iplot lt 4 ) then $
@@ -110,7 +238,7 @@ if ( iplot lt 4 ) then $
 else $
   size_result=SIZE(mlon90_2d)
 imax=size_result[1]
-print,iplot,' imax', imax
+if ( sw_debug eq 1 ) then  print,iplot,' imax', imax
 mlt=fltarr(imax)
 comlat = fltarr(krmax)
 if ( iplot ge 4 ) then begin
@@ -158,6 +286,10 @@ else $
   endfor ;j
 endfor ;i
 
+
+;---
+;---
+
 mlt = mlt*!PI/12.0D0   ;MLT_hr --> THETA[rad]
 ;shift the MLT so that 00MLT comes at the bottom of the plot!
 ;clockwise 90deg rotation
@@ -175,6 +307,9 @@ mlt = mlt - !PI*0.50D0       ;(radian)
 endif
 max_z_data = MAX(zz_plr)
 min_z_data = MIN(zz_plr)
+
+
+
 
 get_position $
 , iplot, iwindow  $
@@ -213,25 +348,66 @@ polar_contour_qhull,zz_plr,mlt,comlat $
 ;, charsize = char_size, charthick = char_thick  $
 
 
-else $
+else begin;$
 ;dbg20150313 contour,zz,mlon130,mlat130 $
-polar_contour_qhull,zz_plr,mlt,comlat $
-,/fill $
-, levels=findgen(n_levels)*(zmax-zmin)/float(n_levels-1) +zmin $
+
+   polar_contour_qhull,zz_plr,mlt,comlat $
+                       ,/fill $
+                       , levels=findgen(n_levels)*(zmax-zmin)/float(n_levels-1) +zmin $
 ;, xrange=[X_min,X_max], /xstyle  $
 ;, yrange=[Y_min,Y_max], /ystyle  $
-  , xstyle = 5, ystyle = 5  $
+                       , xstyle = 5, ystyle = 5  $
 ;,XTITLE = 'mlon130', YTITLE = 'mlat130' $ 
-,TITLE = ' ' $
-, POSITION=[X0 , Y0 , X1 , Y1 ] $
-, COLOR=text_color $
-, charsize = char_size, charthick = char_thick $
-,sw_debug
+                       ,TITLE = ' ' $
+                       , POSITION=[X0 , Y0 , X1 , Y1 ] $
+                       , COLOR=text_color $
+                       , charsize = char_size, charthick = char_thick $
+                       ,sw_debug
+;add potential line contours 
+
+   if iplot le 2 then begin
+      loadct, 0
+
+      if iplot eq 0 then zz_plrp = zz_plr
+      n_levelsp=20L
+      value_maxp = +100.00
+      value_minp = -value_maxp
+      zmaxp=+100.00
+      zminp=-zmaxp
+
+
+      polar_contour_qhull,zz_plrp,mlt,comlat $
+                          ;,/fill $
+                          , levels=findgen(n_levelsp)*(zmaxp-zminp)/float(n_levelsp-1) +zminp $
+;, xrange=[X_min,X_max], /xstyle  $                                                                                   
+;, yrange=[Y_min,Y_max], /ystyle  $                                                                                  
+                       , xstyle = 5, ystyle = 5  $
+;,XTITLE = 'mlon130', YTITLE = 'mlat130' $                                                                              
+;                       ,TITLE = ' ' $
+;                       , POSITION=[X0 , Y0 , X1 , Y1 ] $
+                       ;, COLOR=text_color $
+                                ;, charsize = char_size, charthick =
+                                ;char_thick $
+  , max_value = zmaxp $
+  , min_value = zminp $
+  , c_charsize = 1.0 $
+  , c_charthick = 1.0 $
+;  , c_colors = 255 $ ;contour_color $ white                                                             
+  , c_colors = 0 $ ;contour_color $ black                                                              
+  , c_linestyle = 0 $
+  , c_thick = 1.0 $  
+                       , sw_debug $
+,/overplot
+
+   redblue ;return to the normal colortable  
+   endif ;iplot
+
+endelse
 
 if sw_arrow eq 1 then begin
 if  iplot eq 0 OR iplot eq  4 then begin
 loadct, 2
-print,iplot,'check imax=', imax,krmax
+if ( sw_debug eq 1 ) then print,iplot,'check imax=', imax,krmax
 u=fltarr(imax,krmax)
 v=fltarr(imax,krmax)
 for j=0,krmax-1 do begin
@@ -309,14 +485,17 @@ endfor ;iplot=0,2 do begin
 
 loadct,0
 xyouts, 0.03, 0.96  $
-,'UT [sec]='+STRTRIM( string(utime, FORMAT='(i7)'),1 )+' '+runDATE+TEST2 $
+,'UT [sec]='+STRTRIM( string((utime-ut00)/3600., FORMAT='(f8.2)'),1 )+' '+runDATE+TEST2 $
 , charsize =1.5, charthick=char_thick $
 , /norm, /noclip
 
-filename=plot_DIR+'ts_efield.'+'UTsec'+STRTRIM( string(utime, FORMAT='(i6)'),1 )+runDATE+'.png'
-if ( plot_NH eq 1 ) then $
+filename=plot_DIR+'ts_efield.'+'UTsec'+STRTRIM( string(utime, FORMAT='(i7)'),1 )+runDATE+'.png'
+if ( plot_NH eq 1 ) then begin
 ; filename='ts_efield.'+runDATE+'NH.png'
-filename=plot_DIR+'ts_efield.'+'UTsec'+STRTRIM( string(utime, FORMAT='(i6)'),1 )+runDATE+'NH'+STRTRIM( string(mlat90_2d[mp,lp], FORMAT='(F6.2)'),1 )+'mp'+STRTRIM( string(mp, FORMAT='(i2)'),1 )+'ed2.v2.plr.png'
+   ;ut00=1638000
+   titleUT=STRTRIM( string(utime, FORMAT='(i7)'),1 )
+   filename=plot_DIR+'ts_efield.'+'UThr'+titleUT+'.'+runDATE+'NH'+STRTRIM( string(mlat90_2d[mp,lp], FORMAT='(F6.2)'),1 )+'mp'+STRTRIM( string(mp, FORMAT='(i2)'),1 )+'ed2.v3.plr.png'
+endif ;plot_NH
 
 if ( sw_output2file eq 1 ) THEN  output_png, filename
 

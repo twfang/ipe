@@ -40,7 +40,7 @@ lpmax_perp_trans=149
 
 
 HTmin=90. 
-HTmax=400.
+HTmax=200;400.
 ; plot range
 if ( title_hemi eq 'NH' ) then begin
   gLATmax=+83.;+90.;-10.;
@@ -52,7 +52,7 @@ endif else if ( title_hemi eq 'glb' ) then begin
   gLATmax=+90.
   gLATmin=-gLATmax;
 endif else if ( title_hemi eq 'eq' ) then begin
-  gLATmax=+20.;
+  gLATmax=+10.;20.;
   gLATmin=-gLATmax;
 ;  HTmax=1.001E+03 
 endif
@@ -154,7 +154,8 @@ Y=dblarr(4)
 if ( sw_dif eq 0 ) then begin
 
    ARY_min0=[ $
-3.0,$;1.3,$                
+2.5,$;1.3,$                
+;3.0,$;1.3,$                
 ;3.2,$ ;3.,$
 ;178.8,$
 154.,$
@@ -171,7 +172,8 @@ if ( sw_dif eq 0 ) then begin
          ] 
 
 ARY_max0=[ $
-6.4,$;6.5,$;4.5,$;6.1,$ ;7.,$
+5.1,$;6.5,$;4.5,$;6.1,$ ;7.,$
+;6.4,$;6.5,$;4.5,$;6.1,$ ;7.,$
 ;4.,$
 ;800. ,$
 1000.,$ ;dbg 6083. ,$
@@ -420,7 +422,8 @@ Yd=z_km(ipts) ;-dYY*.5   ;Yc     ;
  if ( VarType eq 0 ) OR ( VarType ge 3 ) then begin
 
   
-    density=plot_z[n_read,VarType, 0,ipts] * 1.0E-6 ;m-3 --> cm-3
+;    density=plot_z[n_read,VarType, 0,ipts] * 1.0E-6 ;m-3 --> cm-3
+    density=plot_z[n_read,VarType, mp,ipts] * 1.0E-6 ;m-3 --> cm-3
     if ( density gt 0.0 ) then $
        Value= ALOG10( density ) $
     else $ 

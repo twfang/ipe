@@ -1,8 +1,11 @@
 ;date 20170804
-;purpose: compare with MPA cold plasma density
-pro plt_psphere_eqv3_mpa
-
+;purpose: compare with MPA cold ion speed
+pro plt_psphere_eqv3_mpa_speed
+;titleComponent='Speed_Azim';Radi'
+;titleComponent='Velo_East'
+titleComponent='Velo_Earthward'
 sw_saveData=1
+;runYear=15
 runYear=13
 titleYear='20'+STRTRIM( string( (runYear), FORMAT='(i2)'),1 )
 print,' titleYear=', titleYear
@@ -50,8 +53,19 @@ if sw_dbg eq 1 then begin
 print, JMIN_IN[0:1]
 print, JMAX_IS[0:1]
 print, z_km[0]
-endif
 print,mlat_deg[0:1]
+endif
+
+
+;---calculate sinIm
+print,'mlatS=',mlat_deg[ JMAX_IS[lpGEOSY]-1 ], JMAX_IS[lpGEOSY],lpGEOSY
+coslam_m2lp = COS( mlat_deg[ JMAX_IS[lpGEOSY]-1 ]*!pi/180.)
+cos2Lambda_m = coslam_m2lp * coslam_m2lp
+sinLambda_m  = + SQRT( 1.0 - cos2Lambda_m )  ;!>0 ---NH
+sinIm=2.0*sinLambda_m/SQRT(4.0-3.0*cos2Lambda_m) ;e.g., sin(66.13)=0.914
+print,' sinIm=', sinIm
+
+;---
 
 ;mlon_deg
 mlon_deg=findgen(nmp)*360./FIX(NMP)
@@ -181,29 +195,29 @@ plt_DIR=$
 ;'/scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/fig/plumes/hplus/'
 '/scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/fig/20171208/'
 ;'/Users/naomimaruyama/sandbox/ipe/fig/'+rundir+'/' ;mac
-lun00=0L;h+
-lun01=0L;he+
-lun02=0L;o+
+lun17=0L;vexbe
+lun16=0L;vexbup
+lun18=0L;vexbth
 lun2013=0L
-openr,lun00,rpath+'plasma01',/get_lun, /F77_UNFORMATTED ;h+
-openr,lun01,rpath+'plasma02',/get_lun, /F77_UNFORMATTED ;he+
-openr,lun02,rpath+'plasma00',/get_lun, /F77_UNFORMATTED ;o+
+openr,lun17,rpath+'plasma17',/get_lun, /F77_UNFORMATTED ;vexbe
+openr,lun16,rpath+'plasma16',/get_lun, /F77_UNFORMATTED ;vexbup
+openr,lun18,rpath+'plasma18',/get_lun, /F77_UNFORMATTED ;vexbth
 openr,lun2013,rpath+'fort.2013',/get_lun ;, /F77_UNFORMATTED
 openr,lun0,rpath+'ut_rec',/get_lun ;, /F77_UNFORMATTED
 ;read loop
-dum=fltarr(NPTS2D,NMP);h+
-dum1=fltarr(NPTS2D,NMP);he+
-dum2=fltarr(NPTS2D,NMP);o+
+dum =fltarr(NLP,NMP);vexbe
+dum1=fltarr(NLP,NMP);vexbup
+dum2=fltarr(NLP,NMP);vexbth = ve2 * sinIm
 ut = 0L
 ;ut = ut0
 record_number=0L
 
 
 
-while ( eof(LUN00) eq 0 ) do begin
-   readu, lun00,dum ;h+
-   readu, lun01,dum1 ;he+
-   readu, lun02,dum2 ;o+
+while ( eof(LUN17) eq 0 ) do begin
+   readu, lun17,dum ;vexbe
+   readu, lun16,dum1 ;vexbup
+   readu, lun18,dum2 ;vexbth
    readf, lun0,record_number, ut
 ;   ut = ut + dt ;[sec]
    n_read = n_read + 1
@@ -264,22 +278,28 @@ while ( eof(LUN00) eq 0 ) do begin
          r[mp,lp] = (Z_km[midpoint] * 1.0E+3  + Re_m) / Re_m ;L value
          x[mp,lp] = r[mp,lp] * COS(theta)
          y[mp,lp] = r[mp,lp] * SIN(theta)
-         z[mp,lp] = dum[midpoint,mp] ;h+ number density [m-3]     
          mlatIN[lp] = mlat_deg[ JMIN_IN[lp] ]
 
-         if ( sw_contourPlot eq 3 AND lp eq lpGEOSY ) then begin
+         if ( sw_contourPlot lt 3 ) then $
+           z[mp,lp] = dum[midpoint,mp] $;h+ number density [m-3]     
+
+         else if ( sw_contourPlot eq 3 AND lp eq lpGEOSY ) then begin
              if n_read eq 0 AND mp eq 0 then print,' lp=',lp,' mlatIN=',mlatIN[lp]
              if sw_dbg eq 1 then  print,'n_read=',n_read,' mltHr=',mltHr,' mp=',mp
 
              xPlt[mp,n_read]=mltHr
              yPlt[mp,n_read]=FIX(nDay) + (ut-ut00)/86400.
 
-             totalDen=(dum[midpoint,mp] $ ;h+ number density [m-3]   
-+dum1[midpoint,mp]  $ ;he+
-+dum2[midpoint,mp]  $ ;o+
-)*m3ToCm3 ; m-3 ==>cm-3
-             ;zPlt[mp,n_read]=alog10(totalDen)
-             zPlt[mp,n_read]=totalDen
+;---cold ion speed
+;calculate_ve2=vexbth/sinIm
+            
+             zPlt[mp,n_read] = $
+;dum[lp,mp]               ;v_e(1) eastward
++dum2[lp,mp]/sinIm               ;v_e(2) earthward/equatorward
+;SQRT( $
+;  dum[lp,mp]*dum[lp,mp] $               ;v_e(1)
+;+  dum2[lp,mp]*dum2[lp,mp]/sinIm/sinIm $ ;v_e(2)
+;);totalSpeed
 
 
 ;output to an ascii file for obana
@@ -527,13 +547,16 @@ if sw_Plt2Display eq 1 then begin
     DEVICE, RETAIN=2, DECOMPOSED=0
     WINDOW,0,XSIZE=1000,YSIZE=1000
     n_ldct=39
-    loadct, n_ldct
+    ;loadct, n_ldct
+redblue ;velocity
 
-    n_levels=100
-    zmax=100.
+    n_levels=200
+;    zmax=2000. ;cold ion speed
+    zmax=2000. ;cold ion velo
     ;zmax=10. ;log
     ;zmax=50. ;
-    zmin=0.
+;    zmin=0. ;cold ion speed
+    zmin=-zmax ;cold ion velocity
     x_max=24.
     x_min=0.
     y_max=80.
@@ -550,7 +573,8 @@ if sw_Plt2Display eq 1 then begin
     
     print,'MAX=', MAX(zPlt),MIN(zPlt)
 
-    loadct,39
+    ;loadct,39
+redblue ;velocity
     contour,zplt,xplt,yplt $
 ,/zlog $
            ,/irregular $
@@ -559,7 +583,7 @@ if sw_Plt2Display eq 1 then begin
            , xrange=[X_min,X_max], /xstyle  $
            , yrange=[Y_min,Y_max], /ystyle  $
            ,XTITLE = 'MLT', YTITLE = 'DOY' $ 
-           ,TITLE = 'IPE Cold Ion Number Density [cm!U-3!N]: '+titleYear $
+           ,TITLE = 'IPE Cold Ion '+titleComponent+' [m!U-1!N]: '+titleYear $
 ;, POSITION=[X0 , Y0 , X1 , Y1 ] $
            , COLOR=255 $;text_color $
            , charsize = char_size, charthick = char_thick ;$
@@ -588,7 +612,7 @@ COLORBAR, BOTTOM=bottom, CHARSIZE=charsize_colorbar, COLOR=color, DIVISIONS=divi
           , _EXTRA=extra, INVERTCOLORS=invertcolors,  TICKNAMES=ticknames
 
     if ( sw_output2file eq 1 ) then begin
-       filename_png=plt_DIR+STRTRIM( string( (titleYear), FORMAT='(i4)'),1 )+'/hp_MPA_lp'+STRTRIM( string((lpGEOSY+1), FORMAT='(i3)'),1 )+'_'+rundir+'.png'
+       filename_png=plt_DIR+STRTRIM( string( (titleYear), FORMAT='(i4)'),1 )+'/hp_MPA_lp'+STRTRIM( string((lpGEOSY+1), FORMAT='(i3)'),1 )+'_'+rundir+titleComponent+'.png'
        if sw_dbg eq 1 then print, filename_png
        output_png, filename_png
     endif                       ; ( sw_output2file eq 1 ) then begin
@@ -598,11 +622,11 @@ endif else if sw_Plt2Display eq 0 then print,'plotting contour skipped'
  endif                          ;sw_contourPlot   
 
 
-endwhile                        ;( eof(LUN00) eq 0 ) do begin
+endwhile                        ;( eof(LUN17) eq 0 ) do begin
 
-free_Lun,lun00
-free_Lun,lun01
-free_Lun,lun02
+free_Lun,lun17
+free_Lun,lun16
+free_Lun,lun18
 free_Lun,lun0
 free_Lun,lun2013
 endfor ;iFile=0, 1 do begin
@@ -610,10 +634,10 @@ endfor ;kL=0,4 do begin
 
 
 if sw_saveData eq 1 then begin
-flnm_sav=plt_DIR+STRTRIM( string( (titleYear), FORMAT='(i4)'),1 )+'/hp_MPA_lp'+STRTRIM( string((lpGEOSY+1), FORMAT='(i3)'),1 )+'.sav'
+flnm_sav=plt_DIR+STRTRIM( string( (titleYear), FORMAT='(i4)'),1 )+'/hp_MPA_lp'+STRTRIM( string((lpGEOSY+1), FORMAT='(i3)'),1 )+titleComponent+'.sav'
 print,flnm_sav
 save,/VARIABLES,filename=flnm_sav
 endif
 
-print, 'plt_psphere_eqv3_MPA finished!'
-end                             ;pro plt_psphere_eqv3_MPA
+print, 'plt_psphere_eqv3_MPA SPEED finished!'
+end                             ;pro plt_psphere_eqv3_MPA SPEED

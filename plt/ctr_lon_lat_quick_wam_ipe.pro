@@ -789,7 +789,7 @@ if ( sw_frame eq 2 ) then begin
    x_min=0.
 endif
 
-Y_max= +85.0
+Y_max=20.; +85.0
 Y_min= -Y_max
 if ( sw_frame eq 0 ) or ( sw_frame eq 2 ) then $
    MAG_GEO='magnetic' $
@@ -1013,7 +1013,7 @@ if ( sw_plot_contour eq 1 ) then begin
       
 
       Filename_png= $
-         plot_DIR+newRundir+'_'+VarTitle[VarType]+'_ht'+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+title_frame+'.quick.png'
+         plot_DIR+newRundir+'_'+VarTitle[VarType]+'_ht'+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+title_frame+'.quick.v1.png'
 ;plot_DIR+'quick/'+TEST+'_'+rundir+'_'+VarTitle[VarType]+'_ht'+STRTRIM( string(ht_plot, FORMAT='(F4.0)'),1 )+title_frame+'.quick.png'
       output_png, Filename_png
    endif                        ;( sw_output2file eq 1 ) then begin

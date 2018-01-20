@@ -111,14 +111,15 @@ echo "jid_output="  $jid_output
 ###previous run directory, i.e., path to the startup files
 #    set rundir = `cat $RPATH/$jid_output | awk -F "Created " '{print $2}'`
 ###modified for Pauls latest version after r378(after merging)
-    setenv rundir  `cat $RPATH/$jid_output | awk -F "Created run directory: " '{print $2}'`
-echo "rundir="  ${rundir} 
-echo "i="  ${i}  >> listRunDir 
-echo "rundir="  ${rundir}  >> listRunDir 
+#    setenv rundir  `cat $RPATH/$jid_output | awk -F "Created run directory: " '{print $2}'`
+#echo "rundir="  ${rundir} 
+#echo "i="  ${i}  >> listRunDir 
+#echo "rundir="  ${rundir}  >> listRunDir 
 #
 ###prepare input files
 ###reference directory: contains the input files to get input parameters.
-set REFDIR = ${RPATH}/${rundir}
+#set REFDIR = ${RPATH}/${rundir}
+setenv REFDIR /scratch3/NCEPDEV/swpc/scrub/Naomi.Maruyama/ptmp2015031500.v4/Naomi.Maruyama/variablef107kp
 cd ${REFDIR}
 echo PWD= $PWD
 
@@ -146,11 +147,11 @@ echo "extracting (2) nday finished=" $nday
 #set f107av = `cat ${REFDIR}/$FN0 | awk -F "F107AV=" '{print $2}'`
 #echo "extracting (3) f107av finished:" $f107av
 ###note: plotting continues to the end as long as plt_ut_end is big enough...
-setenv n_read_max 3 #1021 #2
-setenv n_plt_max  2 #1020 #1
+setenv n_read_max 1 #1021 #2
+setenv n_plt_max  0 #1020 #1
 setenv n_plt_min 0
 setenv plt_ut 0 #432000
-setenv plt_ut_end 600 #604800 #434160
+setenv plt_ut_end 900 #604800 #434160
 setenv utHrPlt0   0.
 set FN0 = ut_rec
 cat -n   ${REFDIR}/$FN0
